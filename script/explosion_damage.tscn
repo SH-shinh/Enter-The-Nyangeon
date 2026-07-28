@@ -1,0 +1,47 @@
+[gd_scene load_steps=5 format=3 uid="uid://667yyp8p3mrr"]
+
+[ext_resource type="Script" path="res://script/explosion_damage.gd" id="1_tyc5v"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_n4hdt"]
+
+[sub_resource type="Gradient" id="Gradient_xh0rg"]
+interpolation_mode = 1
+colors = PackedColorArray(0.729412, 0.0941176, 0, 0.156863, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_wtxtv"]
+gradient = SubResource("Gradient_xh0rg")
+width = 100
+height = 100
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0)
+metadata/_snap_enabled = true
+
+[node name="ExplosionDamage" type="Node2D" groups=["PlayerExplosion"]]
+z_index = -1
+script = ExtResource("1_tyc5v")
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 1032
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("CircleShape2D_n4hdt")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+offset_left = -50.0
+offset_top = -50.0
+offset_right = 50.0
+offset_bottom = 50.0
+scale = Vector2(0.2, 0.2)
+pivot_offset = Vector2(50, 50)
+mouse_filter = 2
+texture = SubResource("GradientTexture2D_wtxtv")
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 0.1
+one_shot = true
+
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
+[connection signal="body_exited" from="Area2D" to="." method="_on_area_2d_body_exited"]
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

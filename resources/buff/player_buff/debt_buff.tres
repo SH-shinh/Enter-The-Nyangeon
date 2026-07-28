@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://d1h88krhem3it"]
+
+[ext_resource type="Texture2D" uid="uid://bk40psg4fwryg" path="res://sprites/buff_icon/debt_buff_icon.png" id="1_6ejft"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_nmks4"]
+
+[resource]
+script = ExtResource("2_nmks4")
+id = "debt_buff"
+icon = ExtResource("1_6ejft")
+name = "负债buff"
+ability = ""
+remove_by_layer = false
+description = ""

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://bygc7wqsxokmh"]
+
+[ext_resource type="Texture2D" uid="uid://kpr7w4plw0kn" path="res://sprites/update_item/a_pod_pro.png" id="1_wyao8"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_7i8wt"]
+
+[resource]
+script = ExtResource("2_7i8wt")
+id = "a_pod_pro"
+icon = ExtResource("1_wyao8")
+name = "A-pod Pro"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "最近在基沃托斯的学生们之间流行的无线耳机。"
+forward = "独特
+装备每造成50击杀+3%装备伤害"
+negative = ""
+item_tags = 1028
+tags = Array[String](["装备", "成长"])
+weight = 1.0

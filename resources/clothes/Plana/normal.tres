@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ClothesCard" load_steps=5 format=3 uid="uid://dxsqbbtlnda00"]
+
+[ext_resource type="Texture2D" uid="uid://bo1qbjqcln1yx" path="res://ui/ark_of_Shittim/plana_icon.png" id="1_06e5l"]
+[ext_resource type="Texture2D" uid="uid://b11lxmh66cyai" path="res://ui/ark_of_Shittim/plana_icon_2.png" id="2_f6wwe"]
+[ext_resource type="Script" path="res://resources/clothes/clothes_card.gd" id="3_i8inf"]
+[ext_resource type="Texture2D" uid="uid://bixolireen61q" path="res://ui/ark_of_Shittim/plana_picture.png" id="4_bypxg"]
+
+[resource]
+script = ExtResource("3_i8inf")
+id = "normal"
+id_name = "Plana"
+name_1 = "normal"
+name_2 = "制服"
+user_name = "PLANA"
+icon_1 = ExtResource("1_06e5l")
+icon_2 = ExtResource("2_f6wwe")
+cost = 0
+sprite = ExtResource("4_bypxg")

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://dr522g2uk0e16"]
+
+[ext_resource type="Texture2D" uid="uid://c3q6jjangb47v" path="res://sprites/update_item/effective_cure.png" id="1_t1p7g"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_gkjs0"]
+
+[resource]
+script = ExtResource("2_gkjs0")
+id = "effective_cure"
+icon = ExtResource("1_t1p7g")
+name = "万能特效药"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "据说对什么疾病都有效的万灵药，但是，严禁过度依赖和过量摄取！"
+forward = "独特
+回合结束时将10%的临时生命值转化为最大生命值"
+negative = ""
+item_tags = 1536
+tags = Array[String](["防御", "成长"])
+weight = 1.0

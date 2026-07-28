@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://bvpgwirb0odc"]
+
+[ext_resource type="Texture2D" uid="uid://xwokxlrxkkpg" path="res://sprites/update_item/ancient_battery.png" id="1_2w5kd"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_5ik7a"]
+
+[resource]
+script = ExtResource("2_5ik7a")
+id = "ancient_battery"
+icon = ExtResource("1_2w5kd")
+name = "古代电池"
+rare = 2
+order_num = -1
+special_rules = 0
+description = "子弹造成击杀+10%子弹伤害，最大叠加5层，射击后清空。"
+forward = "+5最大叠加层数"
+negative = ""
+item_tags = 1
+tags = Array[String](["弹道"])
+weight = 1.0

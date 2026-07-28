@@ -1,0 +1,273 @@
+[gd_scene load_steps=14 format=3 uid="uid://dwsd13u7soadu"]
+
+[ext_resource type="Script" path="res://ui/support_ui/support_select_ui.gd" id="1_ggi4a"]
+[ext_resource type="Theme" uid="uid://bxrwumqxp32a3" path="res://rounded_corner_theme.tres" id="1_kweuy"]
+[ext_resource type="Texture2D" uid="uid://dukre71u1l6r7" path="res://sprites/player_support/kei/kei_picture.png" id="2_r1r0d"]
+[ext_resource type="Script" path="res://script/ScrollBox.gd" id="3_y7nr3"]
+[ext_resource type="PackedScene" uid="uid://bmgdyaumkmynv" path="res://ui/support_ui/support_shop_card.tscn" id="4_gn7qm"]
+[ext_resource type="Resource" uid="uid://c6x6fhqakh5v2" path="res://resources/support/null_support.tres" id="5_1lifw"]
+[ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="6_2v01w"]
+
+[sub_resource type="Animation" id="Animation_cr5rs"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("main_card:size")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(80, 140)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("MarginContainer:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("MarginContainer:size")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(80, 120)]
+}
+
+[sub_resource type="Animation" id="Animation_yh71b"]
+resource_name = "select_anim"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("main_card:size")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(80, 140), Vector2(80, 260)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("MarginContainer:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.0333333),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("MarginContainer:size")
+tracks/2/interp = 2
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(80, 0), Vector2(80, 120)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_8gc0c"]
+_data = {
+"RESET": SubResource("Animation_cr5rs"),
+"select_anim": SubResource("Animation_yh71b")
+}
+
+[sub_resource type="Animation" id="Animation_lsmb2"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("main_card/Node2D/ColorRect3:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-1, 125)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("main_card/Node2D/ColorRect2:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-1, 128)]
+}
+
+[sub_resource type="Animation" id="Animation_scopv"]
+resource_name = "change_card"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("main_card/Node2D/ColorRect3:position")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.133333),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-1, 125), Vector2(-1, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("main_card/Node2D/ColorRect2:position")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.0333333, 0.133333),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-1, 128), Vector2(-1, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_4k58p"]
+_data = {
+"RESET": SubResource("Animation_lsmb2"),
+"change_card": SubResource("Animation_scopv")
+}
+
+[node name="support_ui" type="Node2D"]
+script = ExtResource("1_ggi4a")
+support_card = ExtResource("4_gn7qm")
+null_card = ExtResource("5_1lifw")
+test_d = {
+"a": 1,
+"b": 3
+}
+
+[node name="main_card" type="PanelContainer" parent="."]
+clip_children = 1
+custom_minimum_size = Vector2(0, 140)
+offset_right = 80.0
+offset_bottom = 140.0
+theme = ExtResource("1_kweuy")
+
+[node name="ColorRect" type="ColorRect" parent="main_card"]
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.14902, 0.14902, 0.14902, 1)
+
+[node name="Sprite2D" type="Sprite2D" parent="main_card"]
+texture_filter = 2
+position = Vector2(29, 190)
+scale = Vector2(0.4, 0.4)
+texture = ExtResource("2_r1r0d")
+flip_h = true
+hframes = 4
+
+[node name="Node2D" type="Node2D" parent="main_card"]
+
+[node name="MainName" type="Label" parent="main_card/Node2D"]
+unique_name_in_owner = true
+offset_left = 3.0
+offset_top = 107.0
+offset_right = 80.0
+offset_bottom = 122.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.933333, 0.392157, 0.458824, 1)
+theme_override_colors/font_outline_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 7
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("6_2v01w")
+theme_override_font_sizes/font_size = 14
+text = "KEI"
+
+[node name="ColorRect3" type="ColorRect" parent="main_card/Node2D"]
+offset_left = -1.0
+offset_top = 125.0
+offset_right = 88.0
+offset_bottom = 390.0
+mouse_filter = 2
+
+[node name="ColorRect2" type="ColorRect" parent="main_card/Node2D"]
+offset_left = -1.0
+offset_top = 128.0
+offset_right = 88.0
+offset_bottom = 396.0
+mouse_filter = 2
+color = Color(0.211765, 0.211765, 0.211765, 1)
+
+[node name="ColorRect" type="ColorRect" parent="main_card/Node2D"]
+offset_left = -1.0
+offset_top = -67.0
+offset_right = 88.0
+offset_bottom = 12.0
+mouse_filter = 2
+color = Color(0.211765, 0.211765, 0.211765, 1)
+
+[node name="support" type="Label" parent="main_card/Node2D"]
+offset_top = 9.0
+offset_right = 80.0
+offset_bottom = 24.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.933333, 0.392157, 0.458824, 1)
+theme_override_colors/font_outline_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 7
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("6_2v01w")
+theme_override_font_sizes/font_size = 10
+text = "- SUPPORT -"
+horizontal_alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+visible = false
+clip_contents = true
+offset_top = 132.0
+offset_right = 80.0
+offset_bottom = 252.0
+mouse_filter = 0
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer"]
+layout_mode = 2
+horizontal_scroll_mode = 3
+vertical_scroll_mode = 3
+script = ExtResource("3_y7nr3")
+
+[node name="support_box" type="VBoxContainer" parent="MarginContainer/ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="ui_anim" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_8gc0c")
+}
+
+[node name="card_anim" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_4k58p")
+}
+
+[connection signal="gui_input" from="main_card" to="." method="_on_main_card_gui_input"]

@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://chcls4o4vp0sh"]
+
+[ext_resource type="Script" path="res://scenes/update_item/cowboy_hat.gd" id="1_2lsv8"]
+[ext_resource type="Resource" uid="uid://bwxyvlrn2eu1a" path="res://resources/buff/player_buff/critical_sure_buff.tres" id="2_noeir"]
+
+[node name="CowboyHat" type="Node2D"]
+script = ExtResource("1_2lsv8")
+player_buff = ExtResource("2_noeir")
+buff_layer = 1
+buff_value = 500.0
+buff_erase_timer = 60.0

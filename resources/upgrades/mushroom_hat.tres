@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://btjli2xyubik4"]
+
+[ext_resource type="Texture2D" uid="uid://dibforhcbm478" path="res://sprites/update_item/mushroom_hat.png" id="1_urepa"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_33orr"]
+
+[resource]
+script = ExtResource("2_33orr")
+id = "mushroom_hat"
+icon = ExtResource("1_urepa")
+name = "蘑菇！"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "蘑菇长出来了！蘑菇长出来了！蘑菇长出来了！"
+forward = "独特
++25%子弹伤害
+增大子弹体积"
+negative = "大幅缩短射程"
+item_tags = 1
+tags = Array[String](["弹道"])
+weight = 1.0

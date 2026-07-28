@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c3kasthn23fmx"]
+
+[ext_resource type="Script" path="res://scenes/update_item/concentrated_ammo.gd" id="1_pdn4n"]
+
+[node name="ConcentratedAmmo" type="Node2D"]
+script = ExtResource("1_pdn4n")

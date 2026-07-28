@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EnemyCard" load_steps=3 format=3 uid="uid://cos7wg8husrce"]
+
+[ext_resource type="PackedScene" uid="uid://b7vb8yy2kwu83" path="res://scenes/enemies/mp_automaton.tscn" id="1_eopnp"]
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_w463h"]
+
+[resource]
+script = ExtResource("2_w463h")
+id = "mp_automaton"
+body = ExtResource("1_eopnp")
+description = ""

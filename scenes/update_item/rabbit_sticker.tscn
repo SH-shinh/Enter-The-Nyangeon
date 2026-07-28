@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dptm0rgghrnu4"]
+
+[ext_resource type="Script" path="res://scenes/update_item/rabbit_sticker.gd" id="1_cctxa"]
+
+[node name="RabbitSticker" type="Node2D"]
+script = ExtResource("1_cctxa")

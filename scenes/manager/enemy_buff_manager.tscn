@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://btl1l8a33rp5b"]
+
+[ext_resource type="Script" path="res://scenes/manager/enemy_buff_manager.gd" id="1_5bf67"]
+[ext_resource type="PackedScene" uid="uid://p0upwahvpxbe" path="res://ui/buff_card.tscn" id="2_8wi7a"]
+
+[node name="EnemyBuffManager" type="Node"]
+script = ExtResource("1_5bf67")
+buff_card = ExtResource("2_8wi7a")

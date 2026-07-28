@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://bxsqr0hsyfkft"]
+
+[ext_resource type="Script" path="res://scenes/update_item/matcha_ramune.gd" id="1_284rb"]
+[ext_resource type="Resource" uid="uid://dsblwps2uxvdu" path="res://resources/buff/enemy_buff/poison_dot.tres" id="2_l37wn"]
+
+[node name="matcha_ramune" type="Node2D"]
+script = ExtResource("1_284rb")
+enemy_buff = ExtResource("2_l37wn")

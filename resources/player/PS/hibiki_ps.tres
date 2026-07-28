@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PSCard" load_steps=3 format=3 uid="uid://dhp05wra1rlh2"]
+
+[ext_resource type="Script" path="res://resources/player/PS/ps_card.gd" id="1_sict8"]
+[ext_resource type="Texture2D" uid="uid://bp2b3eutm1exv" path="res://sprites/weapon/fancy_light.png" id="2_o0gu7"]
+
+[resource]
+script = ExtResource("1_sict8")
+weapon_icon = ExtResource("2_o0gu7")
+t_level = Array[String](["不移动时可获得额外射程和100%子弹伤害，击中地图上的标记点可引发额外3次爆炸。", "每次命中标记永久+1%爆炸范围，标记点可同时存在5个。", "不移动时获得50%伤害减免和50%抗击退，标记点可同时存在8个。", "不移动时每秒叠加10%子弹伤害，移动后清空，击中地图上的标记点可引发额外5次爆炸。"])

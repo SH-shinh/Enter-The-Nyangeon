@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://rjflgai2om3f"]
+
+[ext_resource type="Texture2D" uid="uid://cdhycrpwxn7qy" path="res://sprites/update_item/variable_zoom_scope.png" id="1_0dab3"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_f8qmy"]
+
+[resource]
+script = ExtResource("2_f8qmy")
+id = "variable_zoom_scope"
+icon = ExtResource("1_0dab3")
+name = "变焦瞄准镜"
+rare = 2
+order_num = -1
+special_rules = 0
+description = "可以切换倍率的瞄准镜，造成击杀的子弹+1穿透值。"
+forward = "+1点增加的穿透值"
+negative = ""
+item_tags = 1
+tags = Array[String](["弹道"])
+weight = 1.0

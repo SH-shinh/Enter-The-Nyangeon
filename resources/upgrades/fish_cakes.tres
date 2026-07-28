@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://dsb4gcrawqrk8"]
+
+[ext_resource type="Texture2D" uid="uid://ojmhjvj3ta0l" path="res://sprites/update_item/fish_cakes.png" id="1_oln2h"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_mie73"]
+
+[resource]
+script = ExtResource("2_mie73")
+id = "fish_cakes"
+icon = ExtResource("1_oln2h")
+name = "红白鱼糕"
+rare = 1
+order_num = 3
+special_rules = 0
+description = "红白两色的鱼糕，红色寓意幸运，白色寓意祛邪的祥瑞之物。"
+forward = "最大持有3个
++35%装备伤害
++35%异常伤害"
+negative = ""
+item_tags = 228
+tags = Array[String](["装备", "异常", "燃烧", "中毒"])
+weight = 1.0

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RaidFormwork" load_steps=5 format=3 uid="uid://dhg5sk0m44bum"]
+
+[ext_resource type="Resource" uid="uid://bo5aojm81wiil" path="res://resources/enemy/enhanced_sweeper.tres" id="1_bko5k"]
+[ext_resource type="Script" path="res://resources/raid_formwork/raid_formwork.gd" id="1_g33hd"]
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="1_roays"]
+[ext_resource type="Resource" uid="uid://dx43aolfidycr" path="res://resources/enemy/mystic_sweeper.tres" id="2_x8114"]
+
+[resource]
+script = ExtResource("1_g33hd")
+enemy = Array[ExtResource("1_roays")]([ExtResource("1_bko5k"), ExtResource("2_x8114")])
+enemy_id = Array[String](["enhanced_sweeper", "mystic_sweeper"])
+enemy_num = Array[int]([3, 6])
+spawn_position = {
+"enhanced_sweeper": [true, true, true, true],
+"mystic_sweeper": [true, true, true, true]
+}

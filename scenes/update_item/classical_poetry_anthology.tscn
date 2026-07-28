@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c2k4iv60bodyx"]
+
+[ext_resource type="Script" path="res://scenes/update_item/classical_poetry_anthology.gd" id="1_hvqwa"]
+
+[node name="classical_poetry_anthology" type="Node2D"]
+script = ExtResource("1_hvqwa")

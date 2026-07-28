@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://bykx0l2nmt4m7"]
+
+[ext_resource type="Texture2D" uid="uid://c1ovebkgjg3ri" path="res://sprites/update_item/cherino_matryoshka.png" id="1_avb7e"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_oum2l"]
+
+[resource]
+script = ExtResource("2_oum2l")
+id = "cherino_matryoshka"
+icon = ExtResource("1_avb7e")
+name = "切里诺套娃"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "模仿切里诺的样貌制造的威严套娃。"
+forward = "独特
+每产生10次爆炸在自身周围产生一次（10+子弹伤害）爆炸"
+negative = ""
+item_tags = 6
+tags = Array[String](["爆炸", "装备"])
+weight = 1.0

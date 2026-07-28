@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://c45ydpcjx1y8b"]
+
+[ext_resource type="Texture2D" uid="uid://c4lvm5dlr66oq" path="res://sprites/update_item/cathedral_candle.png" id="1_c7p2n"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_uq0y6"]
+
+[resource]
+script = ExtResource("2_uq0y6")
+id = "cathedral_candle"
+icon = ExtResource("1_c7p2n")
+name = "大教堂烛台"
+rare = 1
+order_num = 3
+special_rules = 0
+description = "烛火的微光照亮身旁，近身范围内造成伤害恢复3点生命值。"
+forward = "最大持有3个
++3回复量"
+negative = ""
+item_tags = 256
+tags = Array[String](["防御"])
+weight = 1.0

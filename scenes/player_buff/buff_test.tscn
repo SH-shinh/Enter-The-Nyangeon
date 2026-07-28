@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://bavu53wq8i1c3"]
+
+[ext_resource type="Script" path="res://scenes/player_buff/buff_test.gd" id="1_cv1bh"]
+
+[node name="BuffTest" type="Node2D"]
+script = ExtResource("1_cv1bh")
+buff_id = "buff_test"
+buff_layer = 10
+
+[node name="BuffTimer" type="Timer" parent="."]
+wait_time = 2.0
+
+[connection signal="timeout" from="BuffTimer" to="." method="_on_buff_timer_timeout"]

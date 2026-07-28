@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://voxip8vojin"]
+
+[ext_resource type="Script" path="res://scenes/manager/player_buff_manager.gd" id="1_rtngr"]
+[ext_resource type="PackedScene" uid="uid://p0upwahvpxbe" path="res://ui/buff_card.tscn" id="2_p7wuk"]
+
+[node name="PlayerBuffManager" type="Node"]
+script = ExtResource("1_rtngr")
+buff_card = ExtResource("2_p7wuk")

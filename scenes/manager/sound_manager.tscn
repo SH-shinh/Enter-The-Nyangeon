@@ -1,0 +1,1098 @@
+[gd_scene load_steps=191 format=3 uid="uid://c15663ri7ekj1"]
+
+[ext_resource type="Script" path="res://scenes/manager/SoundManager.gd" id="1_fvbol"]
+[ext_resource type="AudioStream" uid="uid://dbvrnpaktc5pm" path="res://sounds/hurt_sound_3.wav" id="2_d30cq"]
+[ext_resource type="AudioStream" uid="uid://u6p5v72je6as" path="res://sounds/hurt_sound_1.wav" id="3_ir5kp"]
+[ext_resource type="AudioStream" uid="uid://dsfgy3khubhem" path="res://sounds/damage5.wav" id="3_mfdhk"]
+[ext_resource type="AudioStream" uid="uid://b8yqhgshpr42n" path="res://sounds/explosion_sound_1.wav" id="4_4kyom"]
+[ext_resource type="AudioStream" uid="uid://bqqs4akeispjg" path="res://sounds/OnHit.wav" id="4_22kva"]
+[ext_resource type="AudioStream" uid="uid://dxrwufiyxixpe" path="res://sounds/GUNAuto_Assault Rifle A Fire_01.wav" id="5_bi6s0"]
+[ext_resource type="AudioStream" uid="uid://bpb8yo6cu206y" path="res://sounds/game_explosion.wav" id="5_nw8bs"]
+[ext_resource type="AudioStream" uid="uid://crevttq3qli6e" path="res://sounds/grenade.wav" id="6_3x7h5"]
+[ext_resource type="AudioStream" uid="uid://3emsrpajv54j" path="res://sounds/game_over_sound.wav" id="6_wypnx"]
+[ext_resource type="AudioStream" uid="uid://bxa1n1wdm8oqr" path="res://sounds/click_sounds.wav" id="7_q2o72"]
+[ext_resource type="AudioStream" uid="uid://b5fdodmk5utji" path="res://sounds/coin.wav" id="8_k0gvk"]
+[ext_resource type="AudioStream" uid="uid://c455uakiky3g7" path="res://sounds/ButtonSounds2.wav" id="9_ltpf3"]
+[ext_resource type="AudioStream" uid="uid://cd1yiknftlunf" path="res://sounds/win_sounds.wav" id="10_c8pg8"]
+[ext_resource type="AudioStream" uid="uid://v32y5o7casro" path="res://sounds/GUNTech_Sci Fi Shotgun Fire Heavy_02.wav" id="10_cto4u"]
+[ext_resource type="AudioStream" uid="uid://34iahchqpa63" path="res://sounds/GUNTech_Tormentor Shotgun Fire_01.wav" id="11_cvbot"]
+[ext_resource type="AudioStream" uid="uid://etugxopfqu2b" path="res://sounds/warring_sound.wav" id="11_dgxpn"]
+[ext_resource type="AudioStream" uid="uid://x55ll63ruwda" path="res://sounds/equip_sound.wav" id="12_demxj"]
+[ext_resource type="AudioStream" uid="uid://dnajymkl244p7" path="res://sounds/GUNAuto_Assault Rifle D Fire_06.wav" id="12_kbuyr"]
+[ext_resource type="AudioStream" uid="uid://chd4i3qefyx05" path="res://sounds/equip_sound_2.wav" id="13_1rb70"]
+[ext_resource type="AudioStream" uid="uid://dg7qqdb77r5dh" path="res://sounds/chorus_of_angels1.wav" id="14_c3mre"]
+[ext_resource type="AudioStream" uid="uid://dewr5f5h73fmu" path="res://sounds/middle_punch1.wav" id="15_jouju"]
+[ext_resource type="AudioStream" uid="uid://cxlx1gjdtb4v0" path="res://sounds/middle_punch1_1.wav" id="16_w1j2s"]
+[ext_resource type="AudioStream" uid="uid://btwf6uenynlxs" path="res://sounds/starting_gong.wav" id="17_omv7x"]
+[ext_resource type="AudioStream" uid="uid://ble1iqqub2wcy" path="res://sounds/ui_sounds_1.wav" id="18_v8auv"]
+[ext_resource type="AudioStream" uid="uid://dmdlkhci11qk7" path="res://sounds/ui_sounds_2.wav" id="19_kewmw"]
+[ext_resource type="AudioStream" uid="uid://3wklowfvhte7" path="res://sounds/swing1.wav" id="20_6by0w"]
+[ext_resource type="AudioStream" uid="uid://bii1cehqjeg4c" path="res://sounds/voice/momoi/Momoi_Formation_In_1.ogg" id="20_wgv6f"]
+[ext_resource type="AudioStream" uid="uid://cfon02235nvs6" path="res://sounds/flying_pan.wav" id="21_phc8b"]
+[ext_resource type="AudioStream" uid="uid://cjx4imofcfr7" path="res://sounds/voice/momoi/Momoi_Formation_In_2.ogg" id="21_u8y3e"]
+[ext_resource type="AudioStream" uid="uid://chaerce1rjpg6" path="res://sounds/voice/momoi/Momoi_Tactic_Victory_1.ogg" id="22_1n1k4"]
+[ext_resource type="AudioStream" uid="uid://db14f5vyurcl7" path="res://sounds/GUNTech_Sci Fi Shotgun Fire Heavy_01.wav" id="22_sppuy"]
+[ext_resource type="AudioStream" uid="uid://kwnk6qk3h6w0" path="res://sounds/voice/momoi/Momoi_Tactic_Victory_2.ogg" id="23_q0it3"]
+[ext_resource type="AudioStream" uid="uid://cg65hdqjo3hwr" path="res://sounds/voice/momoi/Momoi_ExSkill_Level_2.ogg" id="24_iqepu"]
+[ext_resource type="AudioStream" uid="uid://c1mrruq075ll8" path="res://sounds/laser2.wav" id="24_xv0x7"]
+[ext_resource type="AudioStream" uid="uid://jxhtf4gpip6d" path="res://sounds/voice/momoi/Momoi_Tactic_Defeat_2.ogg" id="25_8j5hr"]
+[ext_resource type="AudioStream" uid="uid://cyai4ph75vhnv" path="res://sounds/voice/midori/Midori_Formation_In_1.ogg" id="26_bfbq7"]
+[ext_resource type="AudioStream" uid="uid://b314uj2v2b0of" path="res://sounds/voice/midori/Midori_Formation_In_2.ogg" id="27_xeds2"]
+[ext_resource type="AudioStream" uid="uid://bwcqhlgmlmqr4" path="res://sounds/voice/midori/Midori_Tactic_Victory_1.ogg" id="28_rdc76"]
+[ext_resource type="AudioStream" uid="uid://b3ldxe6o4vnbr" path="res://sounds/168707__qubodup__tank-firing.wav" id="28_vuuyk"]
+[ext_resource type="AudioStream" uid="uid://bn4isyh7bq3hv" path="res://sounds/voice/midori/Midori_Tactic_Victory_2.ogg" id="29_pfdop"]
+[ext_resource type="AudioStream" uid="uid://b5iknhfth6kac" path="res://sounds/powerup03.wav" id="30_bgxan"]
+[ext_resource type="AudioStream" uid="uid://cdyo2vba83iw2" path="res://sounds/voice/midori/Midori_Tactic_Defeat_1.ogg" id="30_ki2kk"]
+[ext_resource type="AudioStream" uid="uid://2ospehfpmkgf" path="res://sounds/voice/midori/Midori_Tactic_Defeat_2.ogg" id="31_4i1bg"]
+[ext_resource type="AudioStream" uid="uid://baht8i6vwxvcc" path="res://sounds/voice/yuzu/Yuzu_Formation_In_1.ogg" id="32_mjjnu"]
+[ext_resource type="AudioStream" uid="uid://4t5ew5rw6nkm" path="res://sounds/voice/yuzu/Yuzu_Formation_In_2.ogg" id="33_b65c4"]
+[ext_resource type="AudioStream" uid="uid://07582kyim4vq" path="res://sounds/GUNMech_Insert Clip_01.wav" id="33_f7pgi"]
+[ext_resource type="AudioStream" uid="uid://yoapii8yduh3" path="res://sounds/voice/yuzu/Yuzu_Tactic_Victory_1.ogg" id="34_1ecbs"]
+[ext_resource type="AudioStream" uid="uid://i68x01kt3175" path="res://sounds/laser_sounds.wav" id="34_i7um8"]
+[ext_resource type="AudioStream" uid="uid://dbgadpbgky72n" path="res://sounds/reload_ammo_2.wav" id="35_aa6tp"]
+[ext_resource type="AudioStream" uid="uid://bcfbqd4nxa6c6" path="res://sounds/voice/yuzu/Yuzu_Tactic_Victory_2.ogg" id="35_xbfkg"]
+[ext_resource type="AudioStream" uid="uid://nhtkxi5306se" path="res://sounds/voice/yuzu/Yuzu_Tactic_Defeat_1.ogg" id="36_5s4nw"]
+[ext_resource type="AudioStream" uid="uid://bqa1kr63dcf86" path="res://sounds/voice/yuzu/Yuzu_Tactic_Defeat_2.ogg" id="36_a31ub"]
+[ext_resource type="AudioStream" uid="uid://s4hxy32w8x1q" path="res://sounds/voice/aris/Aris_Formation_In_1.ogg" id="37_ymk2i"]
+[ext_resource type="AudioStream" uid="uid://c71dwq4j68bv0" path="res://sounds/voice/aris/Aris_Formation_In_2.ogg" id="38_ch7nk"]
+[ext_resource type="AudioStream" uid="uid://cw50dktiwy8qp" path="res://sounds/voice/aris/Aris_Tactic_Victory_1.ogg" id="39_psmb0"]
+[ext_resource type="AudioStream" uid="uid://bkqcupu7tklcp" path="res://sounds/voice/aris/Aris_Tactic_Victory_2.ogg" id="40_11jej"]
+[ext_resource type="AudioStream" uid="uid://mj51meuitlgv" path="res://sounds/voice/aris/Aris_Tactic_Defeat_1.ogg" id="41_rww5l"]
+[ext_resource type="AudioStream" uid="uid://bish4j6b1iobe" path="res://sounds/voice/aris/Aris_Tactic_Defeat_2.ogg" id="42_6qaaf"]
+[ext_resource type="AudioStream" uid="uid://dwhj454to6gek" path="res://sounds/voice/utaha/Utaha_Formation_In_1.ogg" id="46_n7abv"]
+[ext_resource type="AudioStream" uid="uid://bc262qn7s7whb" path="res://sounds/voice/utaha/Utaha_Formation_In_2.ogg" id="47_ncccv"]
+[ext_resource type="AudioStream" uid="uid://bchjeso7ejcc7" path="res://sounds/voice/utaha/CH0182_Tactic_Victory_1.ogg" id="48_m53uw"]
+[ext_resource type="AudioStream" uid="uid://btbrl0idc7qva" path="res://sounds/voice/utaha/CH0182_Tactic_Victory_2.ogg" id="49_d2t6m"]
+[ext_resource type="AudioStream" uid="uid://dsax2ghvg8ldc" path="res://sounds/voice/utaha/CH0182_Tactic_Defeat_1.ogg" id="50_8kcil"]
+[ext_resource type="AudioStream" uid="uid://4k37sa3r7tdi" path="res://sounds/voice/utaha/CH0182_Tactic_Defeat_2.ogg" id="51_dbduw"]
+[ext_resource type="AudioStream" uid="uid://crdaocqb58jkr" path="res://sounds/voice/kotori/Kotori_Formation_In_1.ogg" id="52_yl1uk"]
+[ext_resource type="AudioStream" uid="uid://d137v4ku7fqri" path="res://sounds/voice/kotori/Kotori_Formation_In_2.ogg" id="53_eylkr"]
+[ext_resource type="AudioStream" uid="uid://dppo3ty06ecnl" path="res://sounds/voice/kotori/Kotori_Tactic_Victory_1.ogg" id="54_177n8"]
+[ext_resource type="AudioStream" uid="uid://c3aw73htdke7b" path="res://sounds/voice/kotori/Kotori_Tactic_Victory_2.ogg" id="55_beogc"]
+[ext_resource type="AudioStream" uid="uid://dlxxg3mqjijg1" path="res://sounds/voice/kotori/Kotori_Tactic_Defeat_1.ogg" id="56_lkvfh"]
+[ext_resource type="AudioStream" uid="uid://c6v42c5eq3pjw" path="res://sounds/voice/kotori/Kotori_Tactic_Defeat_2.ogg" id="57_tfwvq"]
+[ext_resource type="AudioStream" uid="uid://cjprlwi6cihos" path="res://sounds/voice/hibiki/Hibiki_Formation_In_1.ogg" id="58_tibgp"]
+[ext_resource type="AudioStream" uid="uid://c1wtqktd67r1x" path="res://sounds/voice/hibiki/Hibiki_Formation_In_2.ogg" id="59_6duye"]
+[ext_resource type="AudioStream" uid="uid://cnf8fowkqkn04" path="res://sounds/voice/hibiki/CH0181_Tactic_Victory_1.ogg" id="60_4xclk"]
+[ext_resource type="AudioStream" uid="uid://dfnygat1ppsqb" path="res://sounds/voice/hibiki/Hibiki_Battle_In_1.ogg" id="61_df2m5"]
+[ext_resource type="AudioStream" uid="uid://ckh1cjh0u7w8h" path="res://sounds/voice/hibiki/CH0181_Tactic_Defeat_1.ogg" id="62_wuuyi"]
+[ext_resource type="AudioStream" uid="uid://bv0bnbtdgocd7" path="res://sounds/voice/hibiki/CH0181_Tactic_Defeat_2.ogg" id="63_c5ytb"]
+[ext_resource type="AudioStream" uid="uid://crkwoe0rebwcb" path="res://sounds/voice/kasumi/CH0089_Formation_In_1.ogg.ogg" id="68_hxalm"]
+[ext_resource type="AudioStream" uid="uid://br5a57c6q3ymf" path="res://sounds/voice/kasumi/CH0089_Formation_In_2.ogg.ogg" id="69_1ihwj"]
+[ext_resource type="AudioStream" uid="uid://b41p8c5qh741f" path="res://sounds/voice/kasumi/CH0089_Battle_Victory_1.ogg.ogg" id="70_lnhlt"]
+[ext_resource type="AudioStream" uid="uid://b7oy2g5bgu3ho" path="res://sounds/voice/kasumi/CH0089_Battle_Victory_2.ogg.ogg" id="71_32q4s"]
+[ext_resource type="AudioStream" uid="uid://cgaq7w73pw03g" path="res://sounds/voice/kasumi/CH0089_Tactic_Defeat_1.ogg.ogg" id="72_slrmb"]
+[ext_resource type="AudioStream" uid="uid://dh458khq2g5xk" path="res://sounds/voice/kasumi/CH0089_Tactic_Defeat_2.ogg.ogg" id="73_bgmkd"]
+[ext_resource type="AudioStream" uid="uid://bnrmn30uv7e7" path="res://sounds/voice/megu/CH0088_Formation_In_1.ogg.ogg" id="74_y5lhu"]
+[ext_resource type="AudioStream" uid="uid://c4voolad3dedn" path="res://sounds/voice/megu/CH0088_Formation_In_2.ogg.ogg" id="75_4ma31"]
+[ext_resource type="AudioStream" uid="uid://cli7iu4du2rwe" path="res://sounds/voice/megu/CH0088_Tactic_Victory_1.ogg.ogg" id="76_agehw"]
+[ext_resource type="AudioStream" uid="uid://buj0hbjbpu8o0" path="res://sounds/voice/megu/CH0088_Battle_Victory_2.ogg.ogg" id="77_pr2s6"]
+[ext_resource type="AudioStream" uid="uid://dy4r1wtrssald" path="res://sounds/voice/megu/CH0088_Tactic_Defeat_1.ogg.ogg" id="78_gvjm7"]
+[ext_resource type="AudioStream" uid="uid://bkha0q2vwrq4u" path="res://sounds/voice/megu/CH0088_Tactic_Defeat_2.ogg.ogg" id="79_5ol3k"]
+[ext_resource type="AudioStream" uid="uid://fns3e7h7k7h7" path="res://sounds/voice/hoshino/Hoshino_Formation_In_1.ogg" id="81_84opk"]
+[ext_resource type="AudioStream" uid="uid://ck37rx2b7s2vj" path="res://sounds/voice/arona/Arona_Work_In_1.ogg" id="81_rjyjf"]
+[ext_resource type="AudioStream" uid="uid://pll8axcuhsds" path="res://sounds/voice/hoshino/Hoshino_Formation_In_2.ogg" id="82_dsg13"]
+[ext_resource type="AudioStream" uid="uid://bb4nvjoeob666" path="res://sounds/voice/arona/Arona_Work_In_2.ogg" id="82_xr4yv"]
+[ext_resource type="AudioStream" uid="uid://dmf21cwkcykj3" path="res://sounds/voice/arona/Arona_Work_In_3.ogg" id="83_1n5ls"]
+[ext_resource type="AudioStream" uid="uid://dinea8ujcnulf" path="res://sounds/voice/hoshino/Hoshino_Tactic_Victory_1.ogg" id="83_6syd6"]
+[ext_resource type="AudioStream" uid="uid://db74bhhyfegul" path="res://sounds/voice/arona/Arona_Work_In_4.ogg" id="84_g5c5c"]
+[ext_resource type="AudioStream" uid="uid://dq6xrkm5o63vq" path="res://sounds/voice/hoshino/Hoshino_Tactic_Victory_2.ogg" id="84_qrpa0"]
+[ext_resource type="AudioStream" uid="uid://bf02n7r5a5t3s" path="res://sounds/voice/arona/New_Arona_Work_Talk_1.ogg" id="85_7k7dm"]
+[ext_resource type="AudioStream" uid="uid://bj4vndsk7f6jg" path="res://sounds/voice/hoshino/Hoshino_Tactic_Defeat_1.ogg" id="85_mawg7"]
+[ext_resource type="AudioStream" uid="uid://dboamw3y76j6t" path="res://sounds/voice/arona/New_Arona_Work_Talk_2.ogg" id="86_e7roj"]
+[ext_resource type="AudioStream" uid="uid://dclrmt6ics0jb" path="res://sounds/voice/hoshino/Hoshino_Tactic_Defeat_2.ogg" id="86_me4je"]
+[ext_resource type="AudioStream" uid="uid://3fj2hrgihjs2" path="res://sounds/voice/nonomi/Nonomi_Formation_In_1.ogg" id="87_60un1"]
+[ext_resource type="AudioStream" uid="uid://doa514n84of2r" path="res://sounds/voice/arona/New_Arona_Work_Talk_3.ogg" id="87_oveim"]
+[ext_resource type="AudioStream" uid="uid://xaef71yp1s27" path="res://sounds/voice/arona/New_Arona_Work_Talk_4.ogg" id="88_d8dxs"]
+[ext_resource type="AudioStream" uid="uid://d2uv0eeybjy1n" path="res://sounds/voice/nonomi/Nonomi_Formation_In_2.ogg" id="88_vfo7b"]
+[ext_resource type="AudioStream" uid="uid://bqneb8bb6q6pr" path="res://sounds/voice/nonomi/Nonomi_Battle_Victory_1.ogg" id="89_5l18u"]
+[ext_resource type="AudioStream" uid="uid://c0qvvhiwevh08" path="res://sounds/voice/arona/New_Arona_Work_Talk_5.ogg" id="89_ti5nw"]
+[ext_resource type="AudioStream" uid="uid://byndc12w4xo87" path="res://sounds/voice/arona/New_Arona_Work_Talk_6.ogg" id="90_4e351"]
+[ext_resource type="AudioStream" uid="uid://dlo1ukjbdt4uj" path="res://sounds/voice/nonomi/Nonomi_Battle_Victory_2.ogg" id="90_vvr35"]
+[ext_resource type="AudioStream" uid="uid://cm7uc1mtthsd7" path="res://sounds/voice/nonomi/Nonomi_Tactic_Defeat_1.ogg" id="91_jhnjm"]
+[ext_resource type="AudioStream" uid="uid://bo0fyfppp5ury" path="res://sounds/voice/arona/New_Arona_Work_Talk_7_1.ogg" id="91_uothy"]
+[ext_resource type="AudioStream" uid="uid://cl6fwvsyxpw3d" path="res://sounds/voice/nonomi/Nonomi_Tactic_Defeat_2.ogg" id="92_xtxas"]
+[ext_resource type="AudioStream" uid="uid://8tm71idf1dbk" path="res://sounds/voice/arona/Arona_Work_Sleep_Exit_2.ogg" id="92_yqr3i"]
+[ext_resource type="AudioStream" uid="uid://pifaegtbruha" path="res://sounds/voice/arona/Arona_Work_Sleep_Exit_1.ogg" id="93_da5mo"]
+[ext_resource type="AudioStream" uid="uid://ni7roqk55t0a" path="res://sounds/voice/serika/Serika_Formation_In_1.ogg" id="93_hbijb"]
+[ext_resource type="AudioStream" uid="uid://bf5l6qxowl3nm" path="res://sounds/voice/arona/Arona_Etc_Fue_Normal.ogg" id="94_0nk6k"]
+[ext_resource type="AudioStream" uid="uid://denensfmc38ks" path="res://sounds/voice/serika/Serika_Formation_In_2.ogg" id="94_vp3l0"]
+[ext_resource type="AudioStream" uid="uid://da35sfrglngct" path="res://sounds/voice/serika/Serika_Battle_Victory_1.ogg" id="95_nuw0u"]
+[ext_resource type="AudioStream" uid="uid://38wxu0g02v34" path="res://sounds/voice/arona/Arona_Etc_Fue_Long.ogg" id="95_qxfc2"]
+[ext_resource type="AudioStream" uid="uid://onylfcbagpjh" path="res://sounds/voice/arona/Arona_Work_Sit_Talk_1.ogg" id="96_1ns8m"]
+[ext_resource type="AudioStream" uid="uid://lbd7ow7sgwmw" path="res://sounds/voice/serika/Serika_Tactic_Victory_2.ogg" id="96_8wl1j"]
+[ext_resource type="AudioStream" uid="uid://b7corgqggpwhl" path="res://sounds/voice/serika/Serika_Tactic_Defeat_1.ogg" id="97_06p0h"]
+[ext_resource type="AudioStream" uid="uid://cfirwxi0260t1" path="res://sounds/voice/arona/Arona_Work_Sit_Talk_2.ogg" id="97_tq55n"]
+[ext_resource type="AudioStream" uid="uid://bojtup046ylof" path="res://sounds/voice/serika/Serika_Tactic_Defeat_2.ogg" id="98_03bv7"]
+[ext_resource type="AudioStream" uid="uid://ctg42lrkdavd" path="res://sounds/voice/arona/Arona_Work_Sleep_Talk_2.ogg" id="98_vksf5"]
+[ext_resource type="AudioStream" uid="uid://bkury5s1gjydx" path="res://sounds/voice/arona/Arona_Work_Sleep_Talk_5.ogg" id="99_poqbs"]
+[ext_resource type="AudioStream" uid="uid://6x33i4c31tpl" path="res://sounds/voice/arona/Arona_Work_Sit_Exit_2.ogg" id="100_lj1ou"]
+[ext_resource type="AudioStream" uid="uid://dg4nr0tr4yffk" path="res://sounds/voice/plana/NP0035_Work_In_1_1.ogg" id="100_ynspt"]
+[ext_resource type="AudioStream" uid="uid://b0gagnsndnd8k" path="res://sounds/voice/plana/NP0035_Work_In_1_2.ogg" id="101_h3l5o"]
+[ext_resource type="AudioStream" uid="uid://c14h21pfilhgk" path="res://sounds/voice/arona/Arona_Work_Watch_Exit_2.ogg" id="101_whleu"]
+[ext_resource type="AudioStream" uid="uid://7dyb7bl0uxxx" path="res://sounds/voice/shiroko/Shiroko_Formation_In_1.ogg" id="102_47222"]
+[ext_resource type="AudioStream" uid="uid://dicbntvr667ag" path="res://sounds/voice/plana/NP0035_Work_In_2.ogg" id="102_kyev2"]
+[ext_resource type="AudioStream" uid="uid://byu8vdt0b7k75" path="res://sounds/voice/shiroko/Shiroko_Formation_In_2.ogg" id="103_egu8c"]
+[ext_resource type="AudioStream" uid="uid://r346y5yi1qqd" path="res://sounds/voice/plana/NP0035_Work_In_3.ogg" id="103_rb1kn"]
+[ext_resource type="AudioStream" uid="uid://cw7s728nk8aci" path="res://sounds/voice/plana/NP0035_Work_In_4.ogg" id="104_a1gry"]
+[ext_resource type="AudioStream" uid="uid://cyakxhesu2ung" path="res://sounds/voice/shiroko/Shiroko_Battle_Victory_1.ogg" id="104_jymf0"]
+[ext_resource type="AudioStream" uid="uid://b6h6e6fu687ya" path="res://sounds/voice/plana/NP0035_Work_Talk_1.ogg" id="105_ekkvb"]
+[ext_resource type="AudioStream" uid="uid://co6d6k2m0p36v" path="res://sounds/voice/shiroko/Shiroko_Battle_Victory_2.ogg" id="105_yvg05"]
+[ext_resource type="AudioStream" uid="uid://cbjukpucv4765" path="res://sounds/voice/plana/NP0035_Work_Talk_2.ogg" id="106_1oyvs"]
+[ext_resource type="AudioStream" uid="uid://bd70kdrs53aiu" path="res://sounds/voice/shiroko/Shiroko_Tactic_Defeat_1.ogg" id="106_68x8u"]
+[ext_resource type="AudioStream" uid="uid://b0p1akivpa6ij" path="res://sounds/voice/shiroko/Shiroko_Tactic_Defeat_2.ogg" id="107_idxto"]
+[ext_resource type="AudioStream" uid="uid://o0j3m3dbjhwg" path="res://sounds/voice/plana/NP0035_Work_Talk_3.ogg" id="107_vd46e"]
+[ext_resource type="AudioStream" uid="uid://dpdq031lbrsm2" path="res://sounds/voice/plana/NP0035_Work_Talk_4.ogg" id="108_m8j5y"]
+[ext_resource type="AudioStream" uid="uid://bre1jh2in6ywc" path="res://sounds/voice/plana/NP0035_Work_Talk_5.ogg" id="109_8f0nu"]
+[ext_resource type="AudioStream" uid="uid://42fcaur7asiy" path="res://sounds/voice/plana/NP0035_Work_Sit_Exit_1.ogg" id="110_6kowi"]
+[ext_resource type="AudioStream" uid="uid://ck3x72xqqkcqb" path="res://sounds/voice/plana/NP0035_Work_Sit_In_1.ogg" id="111_igrdd"]
+[ext_resource type="AudioStream" uid="uid://cho281v60ij0t" path="res://sounds/voice/ichika/CH0071_Formation_In_1.ogg" id="111_mg347"]
+[ext_resource type="AudioStream" uid="uid://dkvko0m3ycngp" path="res://sounds/voice/ichika/CH0071_Formation_In_2.ogg" id="112_8yy03"]
+[ext_resource type="AudioStream" uid="uid://b48jh8ctvcqft" path="res://sounds/voice/plana/NP0035_Work_PlanaSitPeek_Talk_2.ogg" id="112_u45xa"]
+[ext_resource type="AudioStream" uid="uid://blsewn7xr0sw4" path="res://sounds/voice/plana/NP0035_Work_Cabinet_In_2.ogg" id="113_jdufc"]
+[ext_resource type="AudioStream" uid="uid://ot3eanhdygid" path="res://sounds/voice/ichika/CH0071_Tactic_Victory_1.ogg" id="113_rug63"]
+[ext_resource type="AudioStream" uid="uid://dxalibwnx11fd" path="res://sounds/voice/plana/NP0035_Work_Cabinet_Talk_1.ogg" id="114_6xciw"]
+[ext_resource type="AudioStream" uid="uid://cialc8l1abjb1" path="res://sounds/voice/ichika/CH0071_Tactic_Victory_2.ogg" id="114_wmy61"]
+[ext_resource type="AudioStream" uid="uid://b6licj348epbq" path="res://sounds/voice/ichika/CH0071_Battle_Damage_2.ogg" id="115_3wqoj"]
+[ext_resource type="AudioStream" uid="uid://ccbos50te0gmq" path="res://sounds/voice/plana/NP0035_Work_PlanaWatchSky_Talk_1_2.ogg" id="115_oslb8"]
+[ext_resource type="AudioStream" uid="uid://cwdo4vuyovx8l" path="res://sounds/voice/ichika/CH0071_Tactic_Defeat_2.ogg" id="116_k4ueo"]
+[ext_resource type="AudioStream" uid="uid://djjmn6g7sobfh" path="res://sounds/voice/tsurugi/Tsurugi_Formation_In_1.ogg" id="117_q7phv"]
+[ext_resource type="AudioStream" uid="uid://c1sxxqyq057jh" path="res://sounds/voice/tsurugi/Tsurugi_Relationship_Up_1.ogg" id="118_31j78"]
+[ext_resource type="AudioStream" uid="uid://cbghxkd44qv4h" path="res://sounds/voice/tsurugi/Tsurugi_Tactic_Victory_2.ogg" id="119_dgf8p"]
+[ext_resource type="AudioStream" uid="uid://cxcm7p5ehfhha" path="res://sounds/voice/tsurugi/Tsurugi_Relationship_Up_4.ogg" id="120_a05tj"]
+[ext_resource type="AudioStream" uid="uid://dttuusejo8fy4" path="res://sounds/voice/tsurugi/Tsurugi_Tactic_Defeat_1.ogg" id="121_i1lid"]
+[ext_resource type="AudioStream" uid="uid://dphn27snx81dr" path="res://sounds/voice/tsurugi/Tsurugi_Tactic_Defeat_2.ogg" id="122_vf42t"]
+[ext_resource type="AudioStream" uid="uid://c652pif8qgo8n" path="res://sounds/voice/mashiro/Mashiro_Formation_In_1.ogg" id="123_6bh4a"]
+[ext_resource type="AudioStream" uid="uid://kow6yh4igjd" path="res://sounds/voice/mashiro/Mashiro_Formation_In_2.ogg" id="124_ip8wc"]
+[ext_resource type="AudioStream" uid="uid://w1hr70bnjmuv" path="res://sounds/voice/mashiro/Mashiro_ExSkill_Level_2.ogg" id="125_7ctcx"]
+[ext_resource type="AudioStream" uid="uid://ctohi05bv2y3t" path="res://sounds/voice/mashiro/Mashiro_ExWeapon_Get.ogg" id="126_o8fxt"]
+[ext_resource type="AudioStream" uid="uid://dvlnpujwo3ob6" path="res://sounds/voice/mashiro/Mashiro_Cafe_monolog_3.ogg" id="127_vjh26"]
+[ext_resource type="AudioStream" uid="uid://c16rtb31720hm" path="res://sounds/voice/mashiro/Mashiro_MemorialLobby_1.ogg" id="128_l46tb"]
+[ext_resource type="AudioStream" uid="uid://cvy3tgrckrfks" path="res://sounds/voice/hasumi/Hasumi_Formation_In_1.ogg" id="130_fjfm6"]
+[ext_resource type="AudioStream" uid="uid://c1pk5u0thrf0j" path="res://sounds/voice/hasumi/Hasumi_Formation_In_2.ogg" id="131_fkw62"]
+[ext_resource type="AudioStream" uid="uid://dlu1lqmsimtxt" path="res://sounds/voice/hasumi/Hasumi_Tactic_Victory_1.ogg" id="132_h1n3c"]
+[ext_resource type="AudioStream" uid="uid://c1mity8d6yrrd" path="res://sounds/voice/hasumi/Hasumi_Tactic_Victory_2.ogg" id="133_ymo7w"]
+[ext_resource type="AudioStream" uid="uid://dg6aansd747nn" path="res://sounds/voice/hasumi/Hasumi_Tactic_Defeat_1.ogg" id="134_v6k8i"]
+[ext_resource type="AudioStream" uid="uid://vuuj4xjx46uj" path="res://sounds/voice/hasumi/Hasumi_Tactic_Defeat_2.ogg" id="135_w8nse"]
+[ext_resource type="AudioStream" uid="uid://bjfbm5aky3yvy" path="res://sounds/voice/hina/Hina_CommonSkill.ogg" id="138_ybor0"]
+[ext_resource type="AudioStream" uid="uid://div3qoxj1wtbj" path="res://sounds/voice/hina/Hina_Formation_In_2.ogg" id="139_m85ti"]
+[ext_resource type="AudioStream" uid="uid://5iwm7ibkyqp0" path="res://sounds/voice/hina/Hina_Tactic_Victory_1.ogg" id="140_lvah2"]
+[ext_resource type="AudioStream" uid="uid://bmv1ymilwhegi" path="res://sounds/voice/hina/Hina_Battle_Victory_2.ogg" id="141_opclw"]
+[ext_resource type="AudioStream" uid="uid://bqfugtudae68j" path="res://sounds/voice/hina/Hina_Tactic_Defeat_1.ogg" id="142_dmj4k"]
+[ext_resource type="AudioStream" uid="uid://btmhipclekmp6" path="res://sounds/voice/hina/Hina_Tactic_Defeat_2.ogg" id="143_3npul"]
+[ext_resource type="AudioStream" uid="uid://b86lxgmiwtg03" path="res://sounds/voice/iori/Iori_Formation_In_1.ogg" id="144_7gvv5"]
+[ext_resource type="AudioStream" uid="uid://dhxxeh85mi1js" path="res://sounds/voice/iori/Iori_Formation_In_2.ogg" id="145_h0xyj"]
+[ext_resource type="AudioStream" uid="uid://dt32rhka646fc" path="res://sounds/voice/iori/Iori_Battle_Victory_1.ogg" id="146_atsso"]
+[ext_resource type="AudioStream" uid="uid://cttcipmq7nc5m" path="res://sounds/voice/iori/Iori_Tactic_Victory_2.ogg" id="147_vvotc"]
+[ext_resource type="AudioStream" uid="uid://br64ynb8x4ikf" path="res://sounds/voice/iori/Iori_Tactic_Defeat_1.ogg" id="148_e3dpu"]
+[ext_resource type="AudioStream" uid="uid://bhi2wkjev5spf" path="res://sounds/voice/iori/Iori_Tactic_Defeat_2.ogg" id="149_t7qf5"]
+
+[sub_resource type="Animation" id="Animation_4rqlr"]
+resource_name = "1s"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("BGMPlayer:volume_db")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, -40.0]
+}
+
+[sub_resource type="Animation" id="Animation_nnt0m"]
+resource_name = "new_animation"
+length = 4.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("BGMPlayer:volume_db")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 4),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, -40.0]
+}
+
+[sub_resource type="Animation" id="Animation_74w0b"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("BGMPlayer:volume_db")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_c2aud"]
+_data = {
+"1s": SubResource("Animation_4rqlr"),
+"4s": SubResource("Animation_nnt0m"),
+"RESET": SubResource("Animation_74w0b")
+}
+
+[node name="SoundManager" type="Node"]
+process_mode = 3
+script = ExtResource("1_fvbol")
+
+[node name="SFX" type="Node" parent="."]
+
+[node name="HurtSounds" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("2_d30cq")
+volume_db = 2.0
+bus = &"SFX"
+
+[node name="HurtSounds2" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("3_mfdhk")
+volume_db = -4.0
+pitch_scale = 1.3
+bus = &"SFX"
+
+[node name="HurtSounds3" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("4_22kva")
+volume_db = -3.0
+pitch_scale = 1.3
+bus = &"SFX"
+
+[node name="DeadSounds" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("3_ir5kp")
+bus = &"SFX"
+
+[node name="ExplosionSounds" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("4_4kyom")
+bus = &"SFX"
+
+[node name="ExplosionSounds2" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("5_nw8bs")
+volume_db = -4.0
+bus = &"SFX"
+
+[node name="ExplosionSounds3" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("6_3x7h5")
+volume_db = 2.0
+bus = &"SFX"
+
+[node name="GunSounds3" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("5_bi6s0")
+volume_db = -2.0
+pitch_scale = 0.8
+bus = &"SFX"
+
+[node name="GunSounds4" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("15_jouju")
+volume_db = -10.0
+bus = &"SFX"
+
+[node name="GunSounds5" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("10_cto4u")
+pitch_scale = 0.8
+bus = &"SFX"
+
+[node name="GunSounds6" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("11_cvbot")
+pitch_scale = 0.8
+bus = &"SFX"
+
+[node name="GunSounds7" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("12_kbuyr")
+volume_db = -2.0
+bus = &"SFX"
+
+[node name="GameOver" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("6_wypnx")
+bus = &"SFX"
+
+[node name="ButtonSounds" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("7_q2o72")
+volume_db = 4.0
+pitch_scale = 1.5
+bus = &"SFX"
+
+[node name="CoinSounds" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("8_k0gvk")
+bus = &"SFX"
+
+[node name="CoinCostSounds" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("8_k0gvk")
+volume_db = -8.0
+pitch_scale = 0.7
+bus = &"SFX"
+
+[node name="ButtonSounds2" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("9_ltpf3")
+volume_db = -2.0
+pitch_scale = 1.1
+bus = &"SFX"
+
+[node name="Win" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("10_c8pg8")
+bus = &"SFX"
+
+[node name="WarringSounds" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("11_dgxpn")
+volume_db = 2.0
+bus = &"SFX"
+
+[node name="EquipSounds1" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("12_demxj")
+volume_db = -10.0
+bus = &"SFX"
+
+[node name="EquipSounds2" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("13_1rb70")
+volume_db = -4.0
+bus = &"SFX"
+
+[node name="EquipSounds3" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("14_c3mre")
+volume_db = -4.0
+bus = &"SFX"
+
+[node name="EquipSounds4" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("16_w1j2s")
+volume_db = -8.0
+bus = &"SFX"
+
+[node name="EquipSounds5" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("17_omv7x")
+bus = &"SFX"
+
+[node name="UISounds1" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("18_v8auv")
+volume_db = -1.0
+bus = &"SFX"
+
+[node name="UISounds2" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("19_kewmw")
+bus = &"SFX"
+
+[node name="Swing1" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("20_6by0w")
+volume_db = -4.0
+bus = &"SFX"
+
+[node name="FlyingPan1" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("21_phc8b")
+volume_db = -8.0
+pitch_scale = 1.2
+bus = &"SFX"
+
+[node name="CannonSounds1" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("22_sppuy")
+volume_db = 4.0
+pitch_scale = 1.24
+bus = &"SFX"
+
+[node name="CannonSounds2" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("28_vuuyk")
+pitch_scale = 0.9
+bus = &"SFX"
+
+[node name="LaserSounds1" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("24_xv0x7")
+volume_db = 4.0
+bus = &"SFX"
+
+[node name="PowerUp1" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("30_bgxan")
+volume_db = 4.0
+pitch_scale = 0.9
+bus = &"SFX"
+
+[node name="ReloadSounds" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("33_f7pgi")
+volume_db = 2.0
+bus = &"SFX"
+
+[node name="LaserSounds" type="AudioStreamPlayer" parent="SFX"]
+process_mode = 1
+stream = ExtResource("34_i7um8")
+volume_db = -5.0
+bus = &"SFX"
+
+[node name="ReloadSounds2" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("35_aa6tp")
+volume_db = 20.0
+pitch_scale = 0.8
+bus = &"SFX"
+
+[node name="BGM" type="Node" parent="."]
+
+[node name="BGMPlayer" type="AudioStreamPlayer" parent="BGM"]
+bus = &"BGM"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="BGM"]
+libraries = {
+"": SubResource("AnimationLibrary_c2aud")
+}
+
+[node name="VOICE" type="Node" parent="."]
+
+[node name="momoi" type="Node" parent="VOICE"]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/momoi"]
+stream = ExtResource("20_wgv6f")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/momoi"]
+stream = ExtResource("21_u8y3e")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/momoi"]
+stream = ExtResource("22_1n1k4")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/momoi"]
+stream = ExtResource("23_q0it3")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/momoi"]
+stream = ExtResource("24_iqepu")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/momoi"]
+stream = ExtResource("25_8j5hr")
+bus = &"VOICE"
+
+[node name="midori" type="Node" parent="VOICE"]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/midori"]
+stream = ExtResource("26_bfbq7")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/midori"]
+stream = ExtResource("27_xeds2")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/midori"]
+stream = ExtResource("28_rdc76")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/midori"]
+stream = ExtResource("29_pfdop")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/midori"]
+stream = ExtResource("30_ki2kk")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/midori"]
+stream = ExtResource("31_4i1bg")
+bus = &"VOICE"
+
+[node name="yuzu" type="Node" parent="VOICE"]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/yuzu"]
+stream = ExtResource("32_mjjnu")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/yuzu"]
+stream = ExtResource("33_b65c4")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/yuzu"]
+stream = ExtResource("34_1ecbs")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/yuzu"]
+stream = ExtResource("35_xbfkg")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/yuzu"]
+stream = ExtResource("36_5s4nw")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/yuzu"]
+stream = ExtResource("36_a31ub")
+bus = &"VOICE"
+
+[node name="aris" type="Node" parent="VOICE"]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/aris"]
+stream = ExtResource("37_ymk2i")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/aris"]
+stream = ExtResource("38_ch7nk")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/aris"]
+stream = ExtResource("39_psmb0")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/aris"]
+stream = ExtResource("40_11jej")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/aris"]
+stream = ExtResource("41_rww5l")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/aris"]
+stream = ExtResource("42_6qaaf")
+bus = &"VOICE"
+
+[node name="utaha" type="Node" parent="VOICE"]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/utaha"]
+stream = ExtResource("46_n7abv")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/utaha"]
+stream = ExtResource("47_ncccv")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/utaha"]
+stream = ExtResource("48_m53uw")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/utaha"]
+stream = ExtResource("49_d2t6m")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/utaha"]
+stream = ExtResource("50_8kcil")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/utaha"]
+stream = ExtResource("51_dbduw")
+bus = &"VOICE"
+
+[node name="kotori" type="Node" parent="VOICE"]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/kotori"]
+stream = ExtResource("52_yl1uk")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/kotori"]
+stream = ExtResource("53_eylkr")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/kotori"]
+stream = ExtResource("54_177n8")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/kotori"]
+stream = ExtResource("55_beogc")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/kotori"]
+stream = ExtResource("56_lkvfh")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/kotori"]
+stream = ExtResource("57_tfwvq")
+bus = &"VOICE"
+
+[node name="hibiki" type="Node" parent="VOICE"]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/hibiki"]
+stream = ExtResource("58_tibgp")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/hibiki"]
+stream = ExtResource("59_6duye")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/hibiki"]
+stream = ExtResource("60_4xclk")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/hibiki"]
+stream = ExtResource("61_df2m5")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/hibiki"]
+stream = ExtResource("62_wuuyi")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/hibiki"]
+stream = ExtResource("63_c5ytb")
+bus = &"VOICE"
+
+[node name="kasumi" type="Node" parent="VOICE"]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/kasumi"]
+stream = ExtResource("68_hxalm")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/kasumi"]
+stream = ExtResource("69_1ihwj")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/kasumi"]
+stream = ExtResource("70_lnhlt")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/kasumi"]
+stream = ExtResource("71_32q4s")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/kasumi"]
+stream = ExtResource("72_slrmb")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/kasumi"]
+stream = ExtResource("73_bgmkd")
+bus = &"VOICE"
+
+[node name="megu" type="Node" parent="VOICE"]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/megu"]
+stream = ExtResource("74_y5lhu")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/megu"]
+stream = ExtResource("75_4ma31")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/megu"]
+stream = ExtResource("76_agehw")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/megu"]
+stream = ExtResource("77_pr2s6")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/megu"]
+stream = ExtResource("78_gvjm7")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/megu"]
+stream = ExtResource("79_5ol3k")
+bus = &"VOICE"
+
+[node name="hoshino" type="Node" parent="VOICE"]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/hoshino"]
+stream = ExtResource("81_84opk")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/hoshino"]
+stream = ExtResource("82_dsg13")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/hoshino"]
+stream = ExtResource("83_6syd6")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/hoshino"]
+stream = ExtResource("84_qrpa0")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/hoshino"]
+stream = ExtResource("85_mawg7")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/hoshino"]
+stream = ExtResource("86_me4je")
+bus = &"VOICE"
+
+[node name="nonomi" type="Node" parent="VOICE"]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/nonomi"]
+stream = ExtResource("87_60un1")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/nonomi"]
+stream = ExtResource("88_vfo7b")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/nonomi"]
+stream = ExtResource("89_5l18u")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/nonomi"]
+stream = ExtResource("90_vvr35")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/nonomi"]
+stream = ExtResource("91_jhnjm")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/nonomi"]
+stream = ExtResource("92_xtxas")
+bus = &"VOICE"
+
+[node name="serika" type="Node" parent="VOICE"]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/serika"]
+stream = ExtResource("93_hbijb")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/serika"]
+stream = ExtResource("94_vp3l0")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/serika"]
+stream = ExtResource("95_nuw0u")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/serika"]
+stream = ExtResource("96_8wl1j")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/serika"]
+stream = ExtResource("97_06p0h")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/serika"]
+stream = ExtResource("98_03bv7")
+bus = &"VOICE"
+
+[node name="shiroko" type="Node" parent="VOICE"]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/shiroko"]
+stream = ExtResource("102_47222")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/shiroko"]
+stream = ExtResource("103_egu8c")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/shiroko"]
+stream = ExtResource("104_jymf0")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/shiroko"]
+stream = ExtResource("105_yvg05")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/shiroko"]
+stream = ExtResource("106_68x8u")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/shiroko"]
+stream = ExtResource("107_idxto")
+bus = &"VOICE"
+
+[node name="ichika" type="Node" parent="VOICE"]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/ichika"]
+stream = ExtResource("111_mg347")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/ichika"]
+stream = ExtResource("112_8yy03")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/ichika"]
+stream = ExtResource("113_rug63")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/ichika"]
+stream = ExtResource("114_wmy61")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/ichika"]
+stream = ExtResource("115_3wqoj")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/ichika"]
+stream = ExtResource("116_k4ueo")
+bus = &"VOICE"
+
+[node name="tsurugi" type="Node" parent="VOICE"]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/tsurugi"]
+stream = ExtResource("117_q7phv")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/tsurugi"]
+stream = ExtResource("118_31j78")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/tsurugi"]
+stream = ExtResource("119_dgf8p")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/tsurugi"]
+stream = ExtResource("120_a05tj")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/tsurugi"]
+stream = ExtResource("121_i1lid")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/tsurugi"]
+stream = ExtResource("122_vf42t")
+bus = &"VOICE"
+
+[node name="mashiro" type="Node" parent="VOICE"]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/mashiro"]
+stream = ExtResource("123_6bh4a")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/mashiro"]
+stream = ExtResource("124_ip8wc")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/mashiro"]
+stream = ExtResource("125_7ctcx")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/mashiro"]
+stream = ExtResource("126_o8fxt")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/mashiro"]
+stream = ExtResource("127_vjh26")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/mashiro"]
+stream = ExtResource("128_l46tb")
+bus = &"VOICE"
+
+[node name="hasumi" type="Node" parent="VOICE"]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/hasumi"]
+stream = ExtResource("130_fjfm6")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/hasumi"]
+stream = ExtResource("131_fkw62")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/hasumi"]
+stream = ExtResource("132_h1n3c")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/hasumi"]
+stream = ExtResource("133_ymo7w")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/hasumi"]
+stream = ExtResource("134_v6k8i")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/hasumi"]
+stream = ExtResource("135_w8nse")
+bus = &"VOICE"
+
+[node name="hina" type="Node" parent="VOICE"]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/hina"]
+stream = ExtResource("138_ybor0")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/hina"]
+stream = ExtResource("139_m85ti")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/hina"]
+stream = ExtResource("140_lvah2")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/hina"]
+stream = ExtResource("141_opclw")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/hina"]
+stream = ExtResource("142_dmj4k")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/hina"]
+stream = ExtResource("143_3npul")
+bus = &"VOICE"
+
+[node name="iori" type="Node" parent="VOICE"]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/iori"]
+stream = ExtResource("144_7gvv5")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/iori"]
+stream = ExtResource("145_h0xyj")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/iori"]
+stream = ExtResource("146_atsso")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/iori"]
+stream = ExtResource("147_vvotc")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/iori"]
+stream = ExtResource("148_e3dpu")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/iori"]
+stream = ExtResource("149_t7qf5")
+bus = &"VOICE"
+
+[node name="Talk" type="Node" parent="."]
+
+[node name="Arona" type="Node" parent="Talk"]
+
+[node name="WorkIn1" type="AudioStreamPlayer" parent="Talk/Arona"]
+stream = ExtResource("81_rjyjf")
+bus = &"VOICE"
+
+[node name="WorkIn2" type="AudioStreamPlayer" parent="Talk/Arona"]
+stream = ExtResource("82_xr4yv")
+bus = &"VOICE"
+
+[node name="WorkIn3" type="AudioStreamPlayer" parent="Talk/Arona"]
+stream = ExtResource("83_1n5ls")
+bus = &"VOICE"
+
+[node name="WorkIn4" type="AudioStreamPlayer" parent="Talk/Arona"]
+stream = ExtResource("84_g5c5c")
+bus = &"VOICE"
+
+[node name="WorkTalk1" type="AudioStreamPlayer" parent="Talk/Arona"]
+stream = ExtResource("85_7k7dm")
+bus = &"VOICE"
+
+[node name="WorkTalk2" type="AudioStreamPlayer" parent="Talk/Arona"]
+stream = ExtResource("86_e7roj")
+bus = &"VOICE"
+
+[node name="WorkTalk3" type="AudioStreamPlayer" parent="Talk/Arona"]
+stream = ExtResource("87_oveim")
+bus = &"VOICE"
+
+[node name="WorkTalk4" type="AudioStreamPlayer" parent="Talk/Arona"]
+stream = ExtResource("88_d8dxs")
+bus = &"VOICE"
+
+[node name="WorkTalk5" type="AudioStreamPlayer" parent="Talk/Arona"]
+stream = ExtResource("89_ti5nw")
+bus = &"VOICE"
+
+[node name="WorkTalk6" type="AudioStreamPlayer" parent="Talk/Arona"]
+stream = ExtResource("90_4e351")
+bus = &"VOICE"
+
+[node name="WorkTalk7" type="AudioStreamPlayer" parent="Talk/Arona"]
+stream = ExtResource("91_uothy")
+bus = &"VOICE"
+
+[node name="Surprise1" type="AudioStreamPlayer" parent="Talk/Arona"]
+stream = ExtResource("92_yqr3i")
+bus = &"VOICE"
+
+[node name="Surprise2" type="AudioStreamPlayer" parent="Talk/Arona"]
+stream = ExtResource("93_da5mo")
+bus = &"VOICE"
+
+[node name="Surprise3" type="AudioStreamPlayer" parent="Talk/Arona"]
+stream = ExtResource("94_0nk6k")
+bus = &"VOICE"
+
+[node name="Surprise4" type="AudioStreamPlayer" parent="Talk/Arona"]
+stream = ExtResource("95_qxfc2")
+bus = &"VOICE"
+
+[node name="Head1" type="AudioStreamPlayer" parent="Talk/Arona"]
+stream = ExtResource("96_1ns8m")
+bus = &"VOICE"
+
+[node name="Head2" type="AudioStreamPlayer" parent="Talk/Arona"]
+stream = ExtResource("97_tq55n")
+bus = &"VOICE"
+
+[node name="Head3" type="AudioStreamPlayer" parent="Talk/Arona"]
+stream = ExtResource("98_vksf5")
+bus = &"VOICE"
+
+[node name="Head4" type="AudioStreamPlayer" parent="Talk/Arona"]
+stream = ExtResource("99_poqbs")
+bus = &"VOICE"
+
+[node name="Lack1" type="AudioStreamPlayer" parent="Talk/Arona"]
+stream = ExtResource("100_lj1ou")
+bus = &"VOICE"
+
+[node name="Lack2" type="AudioStreamPlayer" parent="Talk/Arona"]
+stream = ExtResource("101_whleu")
+bus = &"VOICE"
+
+[node name="Plana" type="Node" parent="Talk"]
+
+[node name="WorkIn1" type="AudioStreamPlayer" parent="Talk/Plana"]
+stream = ExtResource("100_ynspt")
+bus = &"VOICE"
+
+[node name="WorkIn2" type="AudioStreamPlayer" parent="Talk/Plana"]
+stream = ExtResource("101_h3l5o")
+bus = &"VOICE"
+
+[node name="WorkIn3" type="AudioStreamPlayer" parent="Talk/Plana"]
+stream = ExtResource("102_kyev2")
+bus = &"VOICE"
+
+[node name="WorkIn4" type="AudioStreamPlayer" parent="Talk/Plana"]
+stream = ExtResource("103_rb1kn")
+bus = &"VOICE"
+
+[node name="WorkIn5" type="AudioStreamPlayer" parent="Talk/Plana"]
+stream = ExtResource("104_a1gry")
+bus = &"VOICE"
+
+[node name="WorkTalk1" type="AudioStreamPlayer" parent="Talk/Plana"]
+stream = ExtResource("105_ekkvb")
+bus = &"VOICE"
+
+[node name="WorkTalk2" type="AudioStreamPlayer" parent="Talk/Plana"]
+stream = ExtResource("106_1oyvs")
+bus = &"VOICE"
+
+[node name="WorkTalk3" type="AudioStreamPlayer" parent="Talk/Plana"]
+stream = ExtResource("107_vd46e")
+bus = &"VOICE"
+
+[node name="WorkTalk4" type="AudioStreamPlayer" parent="Talk/Plana"]
+stream = ExtResource("108_m8j5y")
+bus = &"VOICE"
+
+[node name="WorkTalk5" type="AudioStreamPlayer" parent="Talk/Plana"]
+stream = ExtResource("109_8f0nu")
+bus = &"VOICE"
+
+[node name="Surprise1" type="AudioStreamPlayer" parent="Talk/Plana"]
+stream = ExtResource("110_6kowi")
+bus = &"VOICE"
+
+[node name="Surprise2" type="AudioStreamPlayer" parent="Talk/Plana"]
+stream = ExtResource("111_igrdd")
+bus = &"VOICE"
+
+[node name="Surprise3" type="AudioStreamPlayer" parent="Talk/Plana"]
+stream = ExtResource("112_u45xa")
+bus = &"VOICE"
+
+[node name="Surprise4" type="AudioStreamPlayer" parent="Talk/Plana"]
+bus = &"VOICE"
+
+[node name="Head1" type="AudioStreamPlayer" parent="Talk/Plana"]
+stream = ExtResource("113_jdufc")
+bus = &"VOICE"
+
+[node name="Head2" type="AudioStreamPlayer" parent="Talk/Plana"]
+stream = ExtResource("114_6xciw")
+bus = &"VOICE"
+
+[node name="Head3" type="AudioStreamPlayer" parent="Talk/Plana"]
+stream = ExtResource("115_oslb8")
+bus = &"VOICE"
+
+[node name="Head4" type="AudioStreamPlayer" parent="Talk/Plana"]
+stream = ExtResource("111_igrdd")
+bus = &"VOICE"
+
+[node name="SupportVoice" type="Node" parent="."]
+
+[node name="VoicePlayer" type="AudioStreamPlayer" parent="SupportVoice"]
+bus = &"VOICE"

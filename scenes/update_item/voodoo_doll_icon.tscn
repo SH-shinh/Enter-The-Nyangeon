@@ -1,0 +1,102 @@
+[gd_scene load_steps=14 format=3 uid="uid://58i0oevi7mu7"]
+
+[ext_resource type="Script" path="res://scenes/update_item/follow_icon.gd" id="1_o03ac"]
+[ext_resource type="Texture2D" uid="uid://5bnd2uittitk" path="res://sprites/update_item/voodoo_doll_icon.png" id="2_5pmx8"]
+[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="2_ppcnd"]
+[ext_resource type="PackedScene" uid="uid://b78jo1set8q45" path="res://script/follow.tscn" id="3_w50yy"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_dg4ys"]
+shader = ExtResource("2_ppcnd")
+shader_parameter/outline_width = 1.0
+shader_parameter/outline_color = Color(20, 0, 0, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="Curve" id="Curve_5q2da"]
+max_value = 100.0
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 13.1868), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_sp66y"]
+curve = SubResource("Curve_5q2da")
+
+[sub_resource type="Curve" id="Curve_4aybj"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_7qria"]
+curve = SubResource("Curve_4aybj")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_540mf"]
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 20.0
+inherit_velocity_ratio = 0.5
+direction = Vector3(0, -1, 0)
+initial_velocity_min = 10.0
+initial_velocity_max = 15.0
+gravity = Vector3(0, 0, 0)
+damping_min = 1.0
+damping_max = 2.0
+damping_curve = SubResource("CurveTexture_sp66y")
+scale_max = 2.0
+scale_curve = SubResource("CurveTexture_7qria")
+color = Color(20, 0, 0, 1)
+
+[sub_resource type="Animation" id="Animation_x60ic"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-1, -7)]
+}
+
+[sub_resource type="Animation" id="Animation_p0thg"]
+resource_name = "move_anim"
+length = 3.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5, 1.5, 2),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(-1, -7), Vector2(-1, -20), Vector2(-1, -18), Vector2(-1, -5)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_uebh1"]
+_data = {
+"RESET": SubResource("Animation_x60ic"),
+"move_anim": SubResource("Animation_p0thg")
+}
+
+[node name="voodoo_doll_icon" type="CharacterBody2D"]
+script = ExtResource("1_o03ac")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_dg4ys")
+position = Vector2(-1, -7)
+texture = ExtResource("2_5pmx8")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="Sprite2D"]
+position = Vector2(0, 3)
+process_material = SubResource("ParticleProcessMaterial_540mf")
+lifetime = 2.0
+
+[node name="Follow" parent="." instance=ExtResource("3_w50yy")]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_uebh1")
+}
+autoplay = "move_anim"

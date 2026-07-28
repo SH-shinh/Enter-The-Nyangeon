@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="RaidFormwork" load_steps=4 format=3 uid="uid://dkw82mpidm6je"]
+
+[ext_resource type="Script" path="res://resources/raid_formwork/raid_formwork.gd" id="1_21n3u"]
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="1_tasqp"]
+[ext_resource type="Resource" uid="uid://1wrnoropoerp" path="res://resources/enemy/tester_automaton_shield.tres" id="1_vl64n"]
+
+[resource]
+script = ExtResource("1_21n3u")
+enemy = Array[ExtResource("1_tasqp")]([ExtResource("1_vl64n")])
+enemy_id = Array[String](["tester_automaton_shield"])
+enemy_num = Array[int]([4])
+spawn_position = {
+"tester_automaton_shield": [true, true, true, true]
+}

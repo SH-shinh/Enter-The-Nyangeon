@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://d26nlgpffsx6a"]
+
+[ext_resource type="Texture2D" uid="uid://dondvnjba71pq" path="res://sprites/update_item/sports_gloves.png" id="1_adwan"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_g2u6v"]
+
+[resource]
+script = ExtResource("2_g2u6v")
+id = "sports_gloves"
+icon = ExtResource("1_adwan")
+name = "运动手套"
+rare = 0
+order_num = -1
+description = "使用了阻燃材料的运动手套，可放心触摸热枪管。"
+forward = "+5子弹伤害"
+negative = ""
+item_tags = 0
+tags = Array[String](["通用"])

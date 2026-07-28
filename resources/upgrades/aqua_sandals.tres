@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://1go0yiemh0xm"]
+
+[ext_resource type="Texture2D" uid="uid://bhef002k222im" path="res://sprites/update_item/aqua_sandals.png" id="1_exjx6"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_hqdfq"]
+
+[resource]
+script = ExtResource("2_hqdfq")
+id = "aqua_sandals"
+icon = ExtResource("1_exjx6")
+name = "海蓝凉鞋"
+rare = 0
+order_num = 3
+special_rules = 0
+description = "使用疏水性强的防水原料制成的一体式凉鞋，提高移动速度。"
+forward = "最大持有3个
++10%移动速度"
+negative = ""
+item_tags = 8192
+tags = Array[String](["通用", "速度"])
+weight = 1.0

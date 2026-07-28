@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CharacterCard" load_steps=5 format=3 uid="uid://dsl8b1bn0jr5s"]
+
+[ext_resource type="Texture2D" uid="uid://bqdyikqbnp6h" path="res://sprites/player/hina/hina_picture.png" id="1_wi1tq"]
+[ext_resource type="Texture2D" uid="uid://dhol5kko8375y" path="res://ui/school/GEHENNA_icon.png" id="2_a37ba"]
+[ext_resource type="Script" path="res://resources/shop/character/character_card.gd" id="3_r4cj5"]
+[ext_resource type="Texture2D" uid="uid://bdrbfoxum1iba" path="res://ui/weapon/MG_icon.png" id="4_xrhdu"]
+
+[resource]
+script = ExtResource("3_r4cj5")
+cost = 6
+name_1 = "SORASAKI"
+name_2 = "HINA"
+character_sprite = ExtResource("1_wi1tq")
+weapon_name = "DESTROYER OF DENOUEMENT"
+weapon_type_name = "MG"
+weapon_icon = ExtResource("4_xrhdu")
+school_name = "GEHENNA"
+school_icon = ExtResource("2_a37ba")
+id = "hina"
+group = "DC"

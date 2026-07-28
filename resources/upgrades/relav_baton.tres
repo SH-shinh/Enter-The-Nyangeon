@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://htmluysetv3x"]
+
+[ext_resource type="Texture2D" uid="uid://d2nr7ipy3w6r8" path="res://sprites/update_item/relav_baton.png" id="1_rfvuc"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_ly302"]
+
+[resource]
+script = ExtResource("2_ly302")
+id = "relav_baton"
+icon = ExtResource("1_rfvuc")
+name = "接力棒"
+rare = 0
+order_num = -1
+special_rules = 0
+description = "做成了旧式柄式手榴弹样子的接力棒，其中装入了电子雷管，能够提升爆炸范围。"
+forward = "+25%爆炸范围"
+negative = ""
+item_tags = 2
+tags = Array[String](["爆炸"])
+weight = 1.0

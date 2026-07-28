@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3 uid="uid://d2qvisjmm6kap"]
+
+[ext_resource type="Script" path="res://scenes/player_buff/critical_damage_buff_1.gd" id="1_8oav2"]
+[ext_resource type="Resource" uid="uid://cv1g4f2ag5elh" path="res://resources/buff/player_buff/critical_damage_buff_1.tres" id="2_qg3el"]
+
+[node name="critical_damage_buff_1" type="Node2D" groups=["PlayerBuff"]]
+script = ExtResource("1_8oav2")
+buff = ExtResource("2_qg3el")
+buff_id = "critical_damage_buff_1"
+buff_layer = 1
+buff_value = 0.5
+buff_erase_timer = 3.0
+
+[node name="BuffTimer" type="Timer" parent="."]
+wait_time = 2.0
+
+[connection signal="timeout" from="BuffTimer" to="." method="_on_buff_timer_timeout"]

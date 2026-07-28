@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://bne7551c6m85h"]
+
+[ext_resource type="Texture2D" uid="uid://b6aa4luydkvkb" path="res://sprites/update_item/classical_poetry_anthology.png" id="1_5qgf1"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_6wv86"]
+
+[resource]
+script = ExtResource("2_6wv86")
+id = "classical_poetry_anthology"
+icon = ExtResource("1_5qgf1")
+name = "古典诗集"
+rare = 1
+order_num = -1
+special_rules = 0
+description = "充满古风感的古典诗集。"
+forward = "+15护甲值"
+negative = "-10%移动速度"
+item_tags = 16384
+tags = Array[String](["护甲"])
+weight = 1.0

@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="SupportCard" load_steps=14 format=3 uid="uid://cx6hnjoq3ucid"]
+
+[ext_resource type="Texture2D" uid="uid://crhkvd1skyo8n" path="res://sprites/player_support/ayane/ayane_picture_halo.png" id="1_cyn4i"]
+[ext_resource type="Texture2D" uid="uid://fvmqoa560ec0" path="res://sprites/player_support/ayane/ayane_picture.png" id="2_25vcx"]
+[ext_resource type="AudioStream" uid="uid://ctfuuhr8hcwqw" path="res://sounds/voice/ayane/Ayane_ExSkill_Level_1.ogg" id="3_ngb7v"]
+[ext_resource type="Script" path="res://resources/support/support_card.gd" id="3_pu0mh"]
+[ext_resource type="AudioStream" uid="uid://dqx1rjbmlq4wx" path="res://sounds/voice/ayane/Ayane_ExSkill_Level_2.ogg" id="4_0fwp0"]
+[ext_resource type="Texture2D" uid="uid://c05dptk46g0xl" path="res://sprites/player_support/ayane/common_sense .png" id="4_rrmfq"]
+[ext_resource type="AudioStream" uid="uid://bxkk4j16nbll1" path="res://sounds/voice/ayane/Ayane_ExSkill_Level_3.ogg" id="5_fiyba"]
+[ext_resource type="AudioStream" uid="uid://dcqwbrqwcoego" path="res://sounds/voice/ayane/Ayane_Growup_1.ogg" id="6_g40ja"]
+[ext_resource type="AudioStream" uid="uid://ql1gqkd2rfg1" path="res://sounds/voice/ayane/Ayane_Growup_2.ogg" id="7_2db4w"]
+[ext_resource type="AudioStream" uid="uid://4ig74u0o68ku" path="res://sounds/voice/ayane/Ayane_Growup_3.ogg" id="8_8762i"]
+[ext_resource type="AudioStream" uid="uid://j0eq5kqqf18g" path="res://sounds/voice/ayane/Ayane_Growup_4.ogg" id="9_c03c1"]
+[ext_resource type="PackedScene" uid="uid://cxsvb1leo6v7i" path="res://scenes/player_support/ayane/ayane.tscn" id="11_71ctw"]
+
+[sub_resource type="Curve" id="Curve_3sptc"]
+min_value = 0.01
+max_value = 0.5
+_data = [Vector2(0, 0.01), 0.0, 0.75, 0, 0, Vector2(1, 0.5), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[resource]
+script = ExtResource("3_pu0mh")
+character_sprite = ExtResource("2_25vcx")
+character_halo = ExtResource("1_cyn4i")
+weapon_icon = ExtResource("4_rrmfq")
+support_id = "ayane"
+support_name = "OKUSORA AYANE"
+support_name2 = "AYANE"
+weapon_name = "COMMON SENSE"
+ex_cost = 100
+unlock_cost = 20
+max_lv = 100
+pa_ability = "player_explosion_damage"
+ability_id = "explosion_damage_mult"
+pa_value = SubResource("Curve_3sptc")
+support_pack = ExtResource("11_71ctw")
+ex_voice = Array[AudioStream]([ExtResource("3_ngb7v"), ExtResource("4_0fwp0"), ExtResource("5_fiyba")])
+lv_voice = Array[AudioStream]([ExtResource("6_g40ja"), ExtResource("7_2db4w"), ExtResource("8_8762i"), ExtResource("9_c03c1")])

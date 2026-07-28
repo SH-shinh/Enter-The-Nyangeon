@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://cw38a48glg18c"]
+
+[ext_resource type="Texture2D" uid="uid://dd3efc1a6wb53" path="res://sprites/update_item/blunderbuss_muzzle_icon.png" id="1_l7ddb"]
+[ext_resource type="PackedScene" uid="uid://bjvr1nuwo7ish" path="res://script/muzzle.tscn" id="2_s54dw"]
+
+[node name="BlunderbussMuzzleIcon" type="Sprite2D"]
+position = Vector2(3, 0.5)
+texture = ExtResource("1_l7ddb")
+
+[node name="Muzzle" parent="." instance=ExtResource("2_s54dw")]
+position = Vector2(5, -0.5)

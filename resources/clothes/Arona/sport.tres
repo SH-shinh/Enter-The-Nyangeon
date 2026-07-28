@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ClothesCard" load_steps=5 format=3 uid="uid://b4esgf785f6d4"]
+
+[ext_resource type="Texture2D" uid="uid://cua017wjo34i3" path="res://ui/ark_of_Shittim/sport_arona_icon.png" id="1_8gfa8"]
+[ext_resource type="Texture2D" uid="uid://6pyor1147fui" path="res://ui/ark_of_Shittim/sport_arona_icon_2.png" id="2_i21rc"]
+[ext_resource type="Script" path="res://resources/clothes/clothes_card.gd" id="3_d2quu"]
+[ext_resource type="Texture2D" uid="uid://dip6sxj4rxsxt" path="res://ui/ark_of_Shittim/sport_arona_picture.png" id="4_u16or"]
+
+[resource]
+script = ExtResource("3_d2quu")
+id = "sport"
+id_name = "Arona"
+name_1 = "GYM SUIT"
+name_2 = "体操服"
+user_name = "ARONA"
+icon_1 = ExtResource("1_8gfa8")
+icon_2 = ExtResource("2_i21rc")
+cost = 12
+sprite = ExtResource("4_u16or")

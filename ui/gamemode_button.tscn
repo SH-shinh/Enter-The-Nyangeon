@@ -1,0 +1,23 @@
+[gd_scene load_steps=5 format=3 uid="uid://c7svo40h476xs"]
+
+[ext_resource type="Script" path="res://ui/gamemode_button.gd" id="1_ry6c0"]
+[ext_resource type="Script" path="res://resources/game_mode/game_mode.gd" id="2_gy71h"]
+[ext_resource type="Resource" uid="uid://cwvyflq4fpd83" path="res://resources/game_mode/blitzkrieg_mode.tres" id="3_ucoqv"]
+[ext_resource type="Resource" uid="uid://b0rcjdt3s42m3" path="res://resources/game_mode/endless_mode.tres" id="4_2qhuv"]
+
+[node name="gamemode_button" type="Node2D"]
+script = ExtResource("1_ry6c0")
+gamemode_card = Array[ExtResource("2_gy71h")]([ExtResource("3_ucoqv"), ExtResource("4_2qhuv")])
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+offset_right = 143.0
+offset_bottom = 287.0
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer"]
+layout_mode = 2
+horizontal_scroll_mode = 3
+vertical_scroll_mode = 3
+
+[node name="GridContainer" type="GridContainer" parent="MarginContainer/ScrollContainer"]
+layout_mode = 2
+columns = 3

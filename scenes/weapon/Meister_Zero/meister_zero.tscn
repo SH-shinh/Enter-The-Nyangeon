@@ -1,0 +1,109 @@
+[gd_scene load_steps=11 format=3 uid="uid://ch27pk1d52ndk"]
+
+[ext_resource type="Script" path="res://scenes/weapon/Unique_Idea/unique_idea.gd" id="1_4n7x3"]
+[ext_resource type="Texture2D" uid="uid://csj5p6d0qhwgl" path="res://sprites/weapon/meister_zero.png" id="2_0f4sq"]
+[ext_resource type="PackedScene" uid="uid://bgrnq5hfhg2fd" path="res://scenes/bullet/utaha_bullet.tscn" id="2_t5d6f"]
+[ext_resource type="PackedScene" uid="uid://5xnka7kne7w" path="res://script/picatinny_rail.tscn" id="3_1d65g"]
+[ext_resource type="PackedScene" uid="uid://bjvr1nuwo7ish" path="res://script/muzzle.tscn" id="4_usepq"]
+[ext_resource type="AudioStream" uid="uid://dewr5f5h73fmu" path="res://sounds/middle_punch1.wav" id="5_0chi7"]
+[ext_resource type="AudioStream" uid="uid://07582kyim4vq" path="res://sounds/GUNMech_Insert Clip_01.wav" id="6_q2gmv"]
+
+[sub_resource type="Animation" id="Animation_yiltc"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+
+[sub_resource type="Animation" id="Animation_sw87n"]
+resource_name = "shoot"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.0, -1.0472, 3.14159, 6.63225, 6.28319]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.9),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"reload_ammo"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_w0ptx"]
+_data = {
+"RESET": SubResource("Animation_yiltc"),
+"reload": SubResource("Animation_sw87n")
+}
+
+[node name="Meister_Zero" type="Node2D"]
+script = ExtResource("1_4n7x3")
+bullet = ExtResource("2_t5d6f")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(2, 0)
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("2_0f4sq")
+
+[node name="PicatinnyRail" parent="Sprite2D" instance=ExtResource("3_1d65g")]
+position = Vector2(1.66667, -9)
+scale = Vector2(1.66667, 1.66667)
+
+[node name="Muzzle" parent="Sprite2D" instance=ExtResource("4_usepq")]
+position = Vector2(27, -4)
+scale = Vector2(1.66667, 1.66667)
+
+[node name="ShootPosition" type="Marker2D" parent="."]
+position = Vector2(15.5, -2)
+
+[node name="ShootTimer" type="Timer" parent="."]
+wait_time = 0.2
+one_shot = true
+
+[node name="FireSounds" type="AudioStreamPlayer2D" parent="."]
+process_mode = 3
+stream = ExtResource("5_0chi7")
+volume_db = 2.0
+pitch_scale = 1.1
+bus = &"SFX"
+
+[node name="ReloadAnim" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_w0ptx")
+}
+
+[node name="AmmoReloadTimer" type="Timer" parent="."]
+wait_time = 0.5
+one_shot = true
+
+[node name="ReloadSounds" type="AudioStreamPlayer2D" parent="."]
+process_mode = 3
+stream = ExtResource("6_q2gmv")
+volume_db = 8.0
+bus = &"SFX"
+
+[node name="EXskillTimer" type="Timer" parent="."]
+wait_time = 0.5
+one_shot = true

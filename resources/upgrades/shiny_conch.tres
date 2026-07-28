@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://bklihv3nynm6h"]
+
+[ext_resource type="Texture2D" uid="uid://comtapruh1y0" path="res://sprites/update_item/shiny_conch.png" id="1_1mgdj"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_nhw2d"]
+
+[resource]
+script = ExtResource("2_nhw2d")
+id = "shiny_conch"
+icon = ExtResource("1_1mgdj")
+name = "光滑海螺"
+rare = 0
+order_num = -1
+special_rules = 0
+description = "表面光滑的海螺。"
+forward = "+25%装备伤害"
+negative = ""
+item_tags = 4
+tags = Array[String](["装备"])
+weight = 1.0

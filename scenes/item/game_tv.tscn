@@ -1,0 +1,107 @@
+[gd_scene load_steps=8 format=3 uid="uid://5ydowjl70ul0"]
+
+[ext_resource type="Texture2D" uid="uid://cihbvmjdvq2ph" path="res://sprites/item/game_tv.png" id="1_cjwqm"]
+[ext_resource type="Script" path="res://scenes/item/game_tv.gd" id="1_lvv0d"]
+[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="2_7l755"]
+[ext_resource type="Texture2D" uid="uid://qlgf57gfdy35" path="res://sprites/item/game_tv_table.png" id="2_qwhtm"]
+[ext_resource type="Texture2D" uid="uid://yr5vvcvuc53h" path="res://sprites/item/game_tv_foreground.png" id="5_qfcsc"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_i1xpl"]
+shader = ExtResource("2_7l755")
+shader_parameter/outline_width = 0.0
+shader_parameter/outline_color = Color(30, 30, 30, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_si6us"]
+radius = 26.0
+height = 90.0
+
+[node name="GameTV" type="CharacterBody2D" groups=["UseItem"]]
+collision_layer = 33
+collision_mask = 33
+script = ExtResource("1_lvv0d")
+
+[node name="RoundUI" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="ColorRect" type="ColorRect" parent="RoundUI"]
+z_index = -1
+layout_mode = 0
+offset_left = -696.0
+offset_top = -456.0
+offset_right = 696.0
+offset_bottom = 504.0
+color = Color(0.0534168, 0.0733899, 0.109176, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="RoundUI/ColorRect"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.351
+anchor_right = 0.5
+anchor_bottom = 0.351
+offset_left = -76.0
+offset_top = 1.03998
+offset_right = 76.0
+offset_bottom = 49.04
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(76, 24)
+
+[node name="Label" type="Label" parent="RoundUI/ColorRect/VBoxContainer"]
+layout_mode = 2
+text = "NEXT ROUND"
+horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="RoundUI/ColorRect/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="No" type="Button" parent="RoundUI/ColorRect/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "×"
+
+[node name="Yes" type="Button" parent="RoundUI/ColorRect/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "○"
+
+[node name="Sprite2D2" type="Sprite2D" parent="."]
+position = Vector2(5, -20)
+texture = ExtResource("2_qwhtm")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_i1xpl")
+position = Vector2(5, -20)
+texture = ExtResource("1_cjwqm")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 4)
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_si6us")
+
+[node name="Sprite2D3" type="Sprite2D" parent="."]
+position = Vector2(5, -20)
+texture = ExtResource("5_qfcsc")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(0, -56)
+enabled = false
+zoom = Vector2(2, 2)
+position_smoothing_enabled = true
+position_smoothing_speed = 10.0
+
+[node name="UseCD" type="Timer" parent="."]
+wait_time = 0.3
+one_shot = true
+
+[node name="Marker2D" type="Marker2D" parent="."]
+position = Vector2(0, -56)
+
+[connection signal="pressed" from="RoundUI/ColorRect/VBoxContainer/HBoxContainer/No" to="." method="_on_no_pressed"]
+[connection signal="pressed" from="RoundUI/ColorRect/VBoxContainer/HBoxContainer/Yes" to="." method="_on_yes_pressed"]

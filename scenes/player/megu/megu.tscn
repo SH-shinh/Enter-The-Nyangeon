@@ -1,0 +1,457 @@
+[gd_scene load_steps=50 format=3 uid="uid://dq52e3miku6tg"]
+
+[ext_resource type="Script" path="res://scenes/player/momoi/momoi.gd" id="1_l0k3q"]
+[ext_resource type="Resource" uid="uid://cdcchien0vluj" path="res://resources/player/megu.tres" id="2_bikcc"]
+[ext_resource type="Resource" uid="uid://8twh1hvi3pnh" path="res://resources/player/PS/megu_ps.tres" id="3_dxaig"]
+[ext_resource type="PackedScene" uid="uid://b78jo1set8q45" path="res://script/follow.tscn" id="4_m8vee"]
+[ext_resource type="PackedScene" uid="uid://bdo12rjvieur7" path="res://scenes/shadow/shadow.tscn" id="5_3adcx"]
+[ext_resource type="PackedScene" uid="uid://ceydnirh2w7yb" path="res://scenes/player/smoke.tscn" id="6_asd4o"]
+[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="7_44w0c"]
+[ext_resource type="Texture2D" uid="uid://ulgu41ge3qy7" path="res://sprites/player/megu/megu_halo.png" id="7_ei4me"]
+[ext_resource type="Texture2D" uid="uid://wfw3fomelpwc" path="res://sprites/player/megu/megu.png" id="8_hw2ee"]
+[ext_resource type="PackedScene" uid="uid://wffnchsknkba" path="res://script/hat.tscn" id="10_duyg4"]
+[ext_resource type="PackedScene" uid="uid://y2w5mq6l1wb5" path="res://scenes/weapon/Molten_Meg_MA/molten_meg_ma.tscn" id="11_70s03"]
+[ext_resource type="PackedScene" uid="uid://bqttxcv5qb727" path="res://scenes/bullet/megu_bullet.tscn" id="12_u7336"]
+[ext_resource type="Script" path="res://scenes/player/StateMachine.gd" id="13_0pwqu"]
+[ext_resource type="Script" path="res://script/Stats.gd" id="14_w7x02"]
+[ext_resource type="AudioStream" uid="uid://5rnyiqxeiusa" path="res://sounds/RunSounds.wav" id="15_gekxu"]
+[ext_resource type="AudioStream" uid="uid://b6t6pjb3evtw4" path="res://sounds/jump.wav" id="16_cgwe4"]
+[ext_resource type="AudioStream" uid="uid://bqqs4akeispjg" path="res://sounds/OnHit.wav" id="17_lafmo"]
+[ext_resource type="AudioStream" uid="uid://b5fdodmk5utji" path="res://sounds/coin.wav" id="18_8a2nc"]
+[ext_resource type="PackedScene" uid="uid://1th2ey27vgac" path="res://ui/game_ui.tscn" id="19_dacio"]
+[ext_resource type="PackedScene" uid="uid://cb5gh3hfe077g" path="res://ui/pause_screen.tscn" id="20_kt8wf"]
+[ext_resource type="Texture2D" uid="uid://nu6i7yovali6" path="res://ui/cd_bar.png" id="21_dka1p"]
+[ext_resource type="Texture2D" uid="uid://ben34oyvgea61" path="res://ui/cd_bar_2.png" id="22_snmml"]
+[ext_resource type="PackedScene" uid="uid://d1gmjbadbxsjp" path="res://scenes/game_camera/gamecamera.tscn" id="23_cl4n2"]
+[ext_resource type="PackedScene" uid="uid://ccbfmsfn7ay8r" path="res://script/kick.tscn" id="24_35ryu"]
+[ext_resource type="PackedScene" uid="uid://voxip8vojin" path="res://scenes/manager/player_buff_manager.tscn" id="25_ct17v"]
+[ext_resource type="PackedScene" uid="uid://c620jv6qq2f8w" path="res://scenes/player/t_hp_count.tscn" id="27_hspf4"]
+[ext_resource type="Script" path="res://scenes/player/megu/megu_ps.gd" id="27_jiiwr"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_l238d"]
+radius = 7.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_aw66b"]
+shader = ExtResource("7_44w0c")
+shader_parameter/outline_width = 2.0
+shader_parameter/outline_color = Color(50, 10, 10, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_b3iia"]
+shader = ExtResource("7_44w0c")
+shader_parameter/outline_width = 1.0
+shader_parameter/outline_color = Color(50, 10, 10, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6duy4"]
+atlas = ExtResource("8_hw2ee")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rgrja"]
+atlas = ExtResource("8_hw2ee")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_p84wv"]
+atlas = ExtResource("8_hw2ee")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0nhbb"]
+atlas = ExtResource("8_hw2ee")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_deiut"]
+atlas = ExtResource("8_hw2ee")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8acuj"]
+atlas = ExtResource("8_hw2ee")
+region = Rect2(64, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0l31v"]
+atlas = ExtResource("8_hw2ee")
+region = Rect2(128, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tsuvx"]
+atlas = ExtResource("8_hw2ee")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1npx4"]
+atlas = ExtResource("8_hw2ee")
+region = Rect2(0, 64, 64, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_5ep7b"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6duy4")
+}, {
+"duration": 1.2,
+"texture": SubResource("AtlasTexture_rgrja")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_p84wv")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0nhbb")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 13.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_deiut")
+}],
+"loop": true,
+"name": &"jump",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_8acuj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0l31v")
+}, {
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_tsuvx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1npx4")
+}],
+"loop": true,
+"name": &"run",
+"speed": 13.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_dqk1k"]
+radius = 1.0
+height = 2.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_4tsyc"]
+radius = 35.0
+
+[sub_resource type="Environment" id="Environment_64vlg"]
+background_mode = 3
+glow_enabled = true
+glow_strength = 0.7
+
+[sub_resource type="Animation" id="Animation_quqct"]
+resource_name = "Invincible frame"
+length = 0.5
+step = 0.075
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.075, 0.15, 0.225, 0.3, 0.375, 0.45),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [true, false, true, false, true, false, true]
+}
+
+[sub_resource type="Animation" id="Animation_54v52"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Graphics:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Graphics:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_apy7m"]
+_data = {
+"Invincible frame": SubResource("Animation_quqct"),
+"RESET": SubResource("Animation_54v52")
+}
+
+[sub_resource type="Animation" id="Animation_btd8x"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics/AnimatedSprite2D:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Graphics/AnimatedSprite2D:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, -17)]
+}
+
+[sub_resource type="Animation" id="Animation_kssmf"]
+resource_name = "kick_anim"
+length = 0.1
+step = 0.01
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics/AnimatedSprite2D:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.03, 0.1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [0.0, -0.698132, 0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Graphics/AnimatedSprite2D:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.03, 0.1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0, -17), Vector2(5, -20), Vector2(0, -17)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_y8tsq"]
+_data = {
+"RESET": SubResource("Animation_btd8x"),
+"kick_anim": SubResource("Animation_kssmf")
+}
+
+[node name="megu" type="CharacterBody2D" node_paths=PackedStringArray("stats") groups=["Player"]]
+collision_mask = 256
+motion_mode = 1
+platform_floor_layers = 4294967040
+script = ExtResource("1_l0k3q")
+player_card = ExtResource("2_bikcc")
+ps_card = ExtResource("3_dxaig")
+stats = NodePath("Stats")
+player_color = Color(1, 0.498039, 0.470588, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -6)
+shape = SubResource("CircleShape2D_l238d")
+
+[node name="Follow" parent="." instance=ExtResource("4_m8vee")]
+
+[node name="Shadow" parent="." instance=ExtResource("5_3adcx")]
+scale = Vector2(0.445313, 0.445313)
+
+[node name="GPUParticles2D" parent="." instance=ExtResource("6_asd4o")]
+emitting = false
+
+[node name="Graphics" type="Node2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Halo" type="Sprite2D" parent="Graphics"]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_aw66b")
+position = Vector2(-10, -32)
+rotation = 0.47822
+scale = Vector2(0.254, 0.276)
+texture = ExtResource("7_ei4me")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Graphics"]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_b3iia")
+position = Vector2(0, -17)
+sprite_frames = SubResource("SpriteFrames_5ep7b")
+animation = &"idle"
+autoplay = "idle"
+frame_progress = 0.141798
+flip_h = true
+
+[node name="HaloRoot" type="Node2D" parent="Graphics/AnimatedSprite2D"]
+unique_name_in_owner = true
+position = Vector2(-9, -28)
+
+[node name="Hat" parent="Graphics/AnimatedSprite2D" instance=ExtResource("10_duyg4")]
+position = Vector2(1, -12)
+
+[node name="Gun" parent="Graphics" node_paths=PackedStringArray("stats") instance=ExtResource("11_70s03")]
+unique_name_in_owner = true
+position = Vector2(0, -8)
+stats = NodePath("../../Stats")
+bullet = ExtResource("12_u7336")
+
+[node name="HitBox" type="Area2D" parent="." groups=["PlayerBox"]]
+collision_layer = 2048
+collision_mask = 1160
+
+[node name="HitboxShape" type="CollisionShape2D" parent="HitBox"]
+position = Vector2(0, -8)
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_dqk1k")
+debug_color = Color(3.18866e-06, 0.0816588, 0.291816, 0.42)
+
+[node name="PickBox" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 64
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PickBox"]
+position = Vector2(0, -11)
+shape = SubResource("CircleShape2D_4tsyc")
+debug_color = Color(0.724221, 0.462988, 0.32265, 0.42)
+
+[node name="FlyTimer" type="Timer" parent="."]
+wait_time = 0.3
+one_shot = true
+
+[node name="JumpTimer" type="Timer" parent="."]
+wait_time = 0.1
+one_shot = true
+
+[node name="JumpCDTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="RunSoundsTimer" type="Timer" parent="."]
+wait_time = 0.2
+one_shot = true
+
+[node name="InvincibleFrame" type="Timer" parent="."]
+wait_time = 0.5
+one_shot = true
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("13_0pwqu")
+
+[node name="Stats" type="Node" parent="."]
+script = ExtResource("14_w7x02")
+max_hp = 68
+max_ammo = 20
+bullet_kill_time = 1.2
+bullet_shoot_time = 350
+bullet_speed = 350
+bullet_damage = 5
+bullet_recoil = 25
+bullet_knockback = 40
+bullet_count = 3
+bullet_arc = 15.0
+reload_timer = 1.8
+dot_time = 1.2
+dot_damage = 1.2
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_64vlg")
+
+[node name="RunSounds" type="AudioStreamPlayer2D" parent="."]
+process_mode = 3
+stream = ExtResource("15_gekxu")
+volume_db = -6.0
+bus = &"SFX"
+
+[node name="JumpSounds" type="AudioStreamPlayer2D" parent="."]
+process_mode = 3
+stream = ExtResource("16_cgwe4")
+bus = &"SFX"
+
+[node name="OnHitSounds" type="AudioStreamPlayer2D" parent="."]
+process_mode = 3
+stream = ExtResource("17_lafmo")
+volume_db = 8.0
+bus = &"SFX"
+
+[node name="CoinSounds" type="AudioStreamPlayer2D" parent="."]
+process_mode = 3
+stream = ExtResource("18_8a2nc")
+volume_db = -2.0
+bus = &"SFX"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_apy7m")
+}
+
+[node name="GameUI" parent="." node_paths=PackedStringArray("player", "stats") instance=ExtResource("19_dacio")]
+player = NodePath("..")
+stats = NodePath("../Stats")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+layer = 3
+
+[node name="PauseScreen" parent="CanvasLayer" instance=ExtResource("20_kt8wf")]
+visible = false
+
+[node name="JumpCDBar" type="TextureProgressBar" parent="."]
+visible = false
+z_index = 20
+offset_left = -16.0
+offset_top = 7.0
+offset_right = 16.0
+offset_bottom = 13.0
+size_flags_horizontal = 4
+max_value = 1.0
+step = 0.0
+value = 0.355
+texture_under = ExtResource("21_dka1p")
+texture_progress = ExtResource("22_snmml")
+
+[node name="Camera2D" parent="." instance=ExtResource("23_cl4n2")]
+offset = Vector2(0, -15)
+
+[node name="Kick" parent="." node_paths=PackedStringArray("player") instance=ExtResource("24_35ryu")]
+position = Vector2(0, -16)
+player = NodePath("..")
+
+[node name="AnimationPlayer2" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_y8tsq")
+}
+
+[node name="PlayerBuffManager" parent="." instance=ExtResource("25_ct17v")]
+
+[node name="T_HP_Count" parent="." node_paths=PackedStringArray("stats") instance=ExtResource("27_hspf4")]
+stats = NodePath("../Stats")
+
+[node name="megu_ps" type="Node2D" parent="." node_paths=PackedStringArray("stats")]
+script = ExtResource("27_jiiwr")
+stats = NodePath("../Stats")
+
+[connection signal="is_health" from="." to="." method="_on_is_health"]
+[connection signal="is_hurt" from="." to="." method="_on_is_hurt"]
+[connection signal="body_entered" from="HitBox" to="." method="_on_hit_box_body_entered"]
+[connection signal="area_entered" from="PickBox" to="." method="_on_pick_box_area_entered"]
+[connection signal="timeout" from="JumpCDTimer" to="." method="_on_jump_cd_timer_timeout"]
+[connection signal="pick_up_range_changed" from="Stats" to="." method="_on_stats_pick_up_range_changed"]

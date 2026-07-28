@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://cssyepu17kyaa"]
+
+[ext_resource type="Script" path="res://scenes/update_item/pratt_helmet.gd" id="1_ogv8d"]
+[ext_resource type="PackedScene" uid="uid://bi0b5ycx6td33" path="res://scenes/update_item/player_bullet_launcher.tscn" id="2_whg65"]
+
+[node name="PrattHelmet" type="Node2D"]
+script = ExtResource("1_ogv8d")
+
+[node name="PlayerBulletLauncher" parent="." instance=ExtResource("2_whg65")]
+position = Vector2(0, -8)
+shoot_at_once = false
+end_free = false
+bullet_can_r = true

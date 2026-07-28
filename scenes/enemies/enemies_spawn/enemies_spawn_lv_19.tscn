@@ -1,0 +1,34 @@
+[gd_scene load_steps=10 format=3 uid="uid://bol6ehvjw6w21"]
+
+[ext_resource type="Script" path="res://script/enemies_spawn.gd" id="1_dc6ia"]
+[ext_resource type="Resource" uid="uid://dx43aolfidycr" path="res://resources/enemy/mystic_sweeper.tres" id="2_gksvo"]
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_p12uf"]
+[ext_resource type="Resource" uid="uid://cos7wg8husrce" path="res://resources/enemy/mp_automaton.tres" id="3_4ev65"]
+[ext_resource type="Resource" uid="uid://dwgipm2sx68ue" path="res://resources/enemy/tester_automaton_rl.tres" id="4_2cp5q"]
+[ext_resource type="Resource" uid="uid://q1y8ttghyuve" path="res://resources/enemy/modded_sweeper.tres" id="5_omod7"]
+[ext_resource type="Resource" uid="uid://domddqeo286ox" path="res://resources/enemy/menacing_automaton.tres" id="6_jucog"]
+[ext_resource type="Resource" uid="uid://1wrnoropoerp" path="res://resources/enemy/tester_automaton_shield.tres" id="7_r3np1"]
+[ext_resource type="PackedScene" uid="uid://co5e8236e250k" path="res://scenes/enemies/enemies_spawn/raid_spawn.tscn" id="10_xdojy"]
+
+[node name="EnemiesSpawnLV19" type="Node2D"]
+script = ExtResource("1_dc6ia")
+num_mult = 2.0
+round_mult = 1.0
+hp_mult = 28.0
+damage_mult = 6.0
+enemy = Array[ExtResource("2_p12uf")]([ExtResource("2_gksvo"), ExtResource("3_4ev65"), ExtResource("4_2cp5q"), ExtResource("5_omod7"), ExtResource("6_jucog"), ExtResource("7_r3np1")])
+enemy_spawn_num = Array[int]([2, 1, 1, 2, 2, 2])
+enemy_spawn_time = Array[float]([5.0, 25.0, 20.0, 35.0, 35.0, 35.0])
+
+[node name="RoundTimer" type="Timer" parent="."]
+wait_time = 60.0
+
+[node name="EnemySpawnCDTime" type="Timer" parent="."]
+wait_time = 0.1
+
+[node name="RaidSpawn" parent="." instance=ExtResource("10_xdojy")]
+
+[node name="RaidSpawn2" parent="." instance=ExtResource("10_xdojy")]
+raid_spawn_time = 40.0
+
+[connection signal="timeout" from="EnemySpawnCDTime" to="." method="_on_enemy_spawn_cd_time_timeout"]

@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://cudoky3pum7qx"]
+
+[ext_resource type="Script" path="res://scenes/update_item/grs_grilled_corn.gd" id="1_q3yva"]
+
+[node name="GRS_grilled_corn" type="Node2D"]
+script = ExtResource("1_q3yva")
+
+[node name="CDTimer" type="Timer" parent="."]
+wait_time = 0.03
+one_shot = true

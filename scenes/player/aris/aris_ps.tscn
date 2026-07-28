@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://b5jxmfj6i4tlf"]
+
+[ext_resource type="Script" path="res://scenes/player/aris/aris_ps.gd" id="1_ivhs1"]
+[ext_resource type="Resource" uid="uid://cbu3icnrpaygx" path="res://resources/buff/player_buff/aris_buff.tres" id="2_st4sa"]
+
+[node name="ArisPS" type="Node2D"]
+script = ExtResource("1_ivhs1")
+player_buff = ExtResource("2_st4sa")
+buff_layer = 2
+buff_value = 12.0
+buff_erase_timer = 999.0

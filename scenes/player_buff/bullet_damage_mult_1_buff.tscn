@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://d0ipgwy3ntgfx"]
+
+[ext_resource type="Script" path="res://scenes/player_buff/bullet_damage_mult_1_buff.gd" id="1_sw4n3"]
+[ext_resource type="Resource" uid="uid://dbvp83gmjg071" path="res://resources/buff/player_buff/bullet_damage_mult_1_buff.tres" id="2_3mt2h"]
+
+[node name="bullet_damage_mult_1_buff" type="Node2D" groups=["PlayerBuff"]]
+script = ExtResource("1_sw4n3")
+buff = ExtResource("2_3mt2h")
+buff_id = "bullet_damage_mult_1_buff"
+is_remove_by_layer = true
+
+[node name="BuffTimer" type="Timer" parent="."]
+
+[connection signal="timeout" from="BuffTimer" to="." method="_on_buff_timer_timeout"]

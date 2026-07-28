@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="Equip" load_steps=13 format=3 uid="uid://6glcqtxabkk1"]
+
+[ext_resource type="Script" path="res://resources/equip/equip.gd" id="1_3c6i2"]
+[ext_resource type="Texture2D" uid="uid://caewkud8kmak5" path="res://sprites/equipment/watch/watch_t0.png" id="1_lwxqo"]
+[ext_resource type="Texture2D" uid="uid://dqp2fnnse8ppj" path="res://sprites/equipment/watch/waterproof_digital_watch.png" id="2_4wisr"]
+[ext_resource type="Texture2D" uid="uid://bngnmuib0vwbc" path="res://sprites/equipment/watch/leather_wristwatch.png" id="3_qaecr"]
+[ext_resource type="Texture2D" uid="uid://b48j4chtrqo3k" path="res://sprites/equipment/watch/wavecat_wristwatch.png" id="4_sc8k0"]
+[ext_resource type="Texture2D" uid="uid://nwiiw48rxtok" path="res://sprites/equipment/watch/antique_pocket_watch.png" id="5_4w3np"]
+[ext_resource type="Texture2D" uid="uid://qdwawns8uncq" path="res://sprites/equipment/watch/dustproof_leather_wristwatch.png" id="6_1mh74"]
+[ext_resource type="Texture2D" uid="uid://bbniok14e5kl3" path="res://sprites/equipment/watch/gothic_leather_wristwatch.png" id="7_s1rs6"]
+[ext_resource type="Texture2D" uid="uid://b70luq0dr7nui" path="res://sprites/equipment/watch/street_fashion_wristwatch.png" id="8_hocqw"]
+[ext_resource type="Texture2D" uid="uid://v33k03jwnlha" path="res://sprites/equipment/watch/lorelei_wristwatch.png" id="9_y7mlw"]
+[ext_resource type="Texture2D" uid="uid://nl11ellenk2b" path="res://sprites/equipment/watch/diver_watch.png" id="10_h6ehf"]
+[ext_resource type="Texture2D" uid="uid://bxjvtnt20xdsy" path="res://sprites/equipment/watch/watch_t10.png" id="11_he07s"]
+
+[resource]
+script = ExtResource("1_3c6i2")
+id = "watch"
+icon = Array[Texture2D]([ExtResource("1_lwxqo"), ExtResource("2_4wisr"), ExtResource("3_qaecr"), ExtResource("4_sc8k0"), ExtResource("5_4w3np"), ExtResource("6_1mh74"), ExtResource("7_s1rs6"), ExtResource("8_hocqw"), ExtResource("9_y7mlw"), ExtResource("10_h6ehf"), ExtResource("11_he07s")])
+value_1_name = ""
+value_2_name = "player_critical"
+value_3_name = ""
+value_1_id = ""
+value_2_id = "critical_luck_add"
+value_3_id = ""
+value_1 = Array[int]([])
+value_2 = Array[float]([0.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 8.0, 8.0])
+value_3 = Array[float]([])
+name = "手表"
+description = "增加暴击率"

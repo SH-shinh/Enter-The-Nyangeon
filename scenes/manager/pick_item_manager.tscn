@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://cckcyx843p0iq"]
+
+[ext_resource type="Script" path="res://scenes/manager/pick_item_manager.gd" id="1_airu1"]
+[ext_resource type="PackedScene" uid="uid://bn1f8nr3qe3s7" path="res://scenes/item/medical_kit.tscn" id="2_ky7s3"]
+
+[node name="PickItemManager" type="Node" groups=["PickManager"]]
+script = ExtResource("1_airu1")
+medical_kit = ExtResource("2_ky7s3")
+medical_cd_num = 1
+
+[node name="SpawnTimer" type="Timer" parent="."]
+
+[connection signal="timeout" from="SpawnTimer" to="." method="_on_spawn_timer_timeout"]

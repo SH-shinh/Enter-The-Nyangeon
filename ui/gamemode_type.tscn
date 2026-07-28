@@ -1,0 +1,244 @@
+[gd_scene load_steps=20 format=3 uid="uid://xkb476kh0k68"]
+
+[ext_resource type="Script" path="res://ui/gamemode_type.gd" id="1_n6tyh"]
+[ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="1_t6rmu"]
+[ext_resource type="Resource" uid="uid://cwvyflq4fpd83" path="res://resources/game_mode/blitzkrieg_mode.tres" id="2_c45oc"]
+[ext_resource type="Texture2D" uid="uid://c1rawvvpiqgix" path="res://sprites/item/mission_data_1.png" id="2_ffacl"]
+[ext_resource type="Texture2D" uid="uid://jcqmwo1t8vv0" path="res://ui/ui.png" id="5_g2jhj"]
+[ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="6_y0v7g"]
+
+[sub_resource type="Gradient" id="Gradient_6wln4"]
+offsets = PackedFloat32Array(0)
+colors = PackedColorArray(0.191, 0.191, 0.191, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_ol5lq"]
+gradient = SubResource("Gradient_6wln4")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_e6ddu"]
+content_margin_left = 3.0
+content_margin_top = 5.0
+content_margin_right = 3.0
+content_margin_bottom = 3.0
+texture = SubResource("GradientTexture2D_ol5lq")
+
+[sub_resource type="Theme" id="Theme_aonsi"]
+PanelContainer/styles/panel = SubResource("StyleBoxTexture_e6ddu")
+
+[sub_resource type="Gradient" id="Gradient_ltde1"]
+offsets = PackedFloat32Array(0)
+colors = PackedColorArray(0.118581, 0.118581, 0.118581, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_8jwlv"]
+gradient = SubResource("Gradient_ltde1")
+width = 18
+height = 18
+
+[sub_resource type="Animation" id="Animation_hjvs7"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(0.533037, 0.533037, 0.533037, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("VBoxContainer/TextureRect2/ColorRect/ColorRect:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-8, 8)]
+}
+
+[sub_resource type="Animation" id="Animation_uik2a"]
+resource_name = "full_anim"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(0.851769, 0.851769, 0.851769, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("VBoxContainer/TextureRect2/ColorRect/ColorRect:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0, 0), Vector2(7, -7)]
+}
+
+[sub_resource type="Animation" id="Animation_ikpsx"]
+resource_name = "full_select"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(0.85098, 0.85098, 0.85098, 1), Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_2p1vx"]
+resource_name = "select_anim"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(0.533037, 0.533037, 0.533037, 1), Color(1, 1, 1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("VBoxContainer/TextureRect2/ColorRect/ColorRect:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-8, 8), Vector2(0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_rrqi5"]
+_data = {
+"RESET": SubResource("Animation_hjvs7"),
+"full_anim": SubResource("Animation_uik2a"),
+"full_select": SubResource("Animation_ikpsx"),
+"select_anim": SubResource("Animation_2p1vx")
+}
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_1ntlj"]
+texture = ExtResource("5_g2jhj")
+texture_margin_left = 1.0
+texture_margin_top = 1.0
+texture_margin_right = 1.0
+texture_margin_bottom = 1.0
+expand_margin_left = 5.0
+expand_margin_top = 5.0
+expand_margin_right = 5.0
+expand_margin_bottom = 5.0
+region_rect = Rect2(44, 12, 8, 8)
+
+[sub_resource type="Theme" id="Theme_hrsvu"]
+PanelContainer/styles/panel = SubResource("StyleBoxTexture_1ntlj")
+
+[node name="gamemode_type" type="PanelContainer"]
+modulate = Color(0.533037, 0.533037, 0.533037, 1)
+custom_minimum_size = Vector2(45, 68)
+theme = SubResource("Theme_aonsi")
+script = ExtResource("1_n6tyh")
+gamemode_card = ExtResource("2_c45oc")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0.0646965, 0.0646965, 0.0646965, 1)
+theme_override_colors/font_outline_color = Color(0.0627451, 0.0627451, 0.0627451, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 4
+theme_override_fonts/font = ExtResource("1_t6rmu")
+theme_override_font_sizes/font_size = 9
+text = "Blitzkrieg"
+horizontal_alignment = 1
+
+[node name="TextureRect" type="TextureRect" parent="VBoxContainer"]
+layout_mode = 2
+texture = ExtResource("2_ffacl")
+stretch_mode = 3
+
+[node name="TextureRect2" type="TextureRect" parent="VBoxContainer"]
+layout_mode = 2
+texture = SubResource("GradientTexture2D_8jwlv")
+stretch_mode = 3
+
+[node name="ColorRect" type="ColorRect" parent="VBoxContainer/TextureRect2"]
+clip_children = 1
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+offset_left = 12.0
+offset_top = 2.0
+offset_right = 26.0
+offset_bottom = 16.0
+mouse_filter = 2
+color = Color(0.815686, 0.701961, 0.0235294, 1)
+
+[node name="ColorRect" type="ColorRect" parent="VBoxContainer/TextureRect2/ColorRect"]
+layout_mode = 0
+offset_left = -8.0
+offset_top = 8.0
+offset_right = 12.0
+offset_bottom = 28.0
+rotation = 0.785398
+mouse_filter = 2
+color = Color(0.815686, 0.701961, 0.0235294, 1)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_rrqi5")
+}
+
+[node name="Text" type="Node2D" parent="."]
+visible = false
+top_level = true
+z_index = 1
+scale = Vector2(0.6, 0.6)
+
+[node name="PanelContainer" type="PanelContainer" parent="Text"]
+custom_minimum_size = Vector2(150, 0)
+offset_left = 10.0
+offset_top = -63.0
+offset_right = 160.0
+offset_bottom = -15.0
+mouse_filter = 2
+theme = SubResource("Theme_hrsvu")
+
+[node name="ItemText" type="Label" parent="Text/PanelContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 4
+theme_override_constants/shadow_outline_size = 0
+theme_override_fonts/font = ExtResource("6_y0v7g")
+theme_override_font_sizes/font_size = 12
+text = "每回合时间减少50%，金币获取提高至200%。"
+autowrap_mode = 1

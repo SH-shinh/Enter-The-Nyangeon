@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PlayerCard" load_steps=4 format=3 uid="uid://ddy7rl6bu4ifu"]
+
+[ext_resource type="Texture2D" uid="uid://ddusq8tf23um1" path="res://sprites/player/shiroko/shiroko_picture_halo.png" id="1_f1q1y"]
+[ext_resource type="Script" path="res://resources/player/player.gd" id="2_7m1oc"]
+[ext_resource type="Texture2D" uid="uid://i5c47f4x4k7v" path="res://sprites/player/shiroko/shiroko_picture.png" id="3_a1r51"]
+
+[resource]
+script = ExtResource("2_7m1oc")
+name = "SUNAOOKAMI SHIROKO"
+weapon = "WHITE FANG 465"
+sprite = ExtResource("3_a1r51")
+halo = ExtResource("1_f1q1y")
+color = Color(0.511315, 0.877785, 0.996798, 1)
+description = ""
+voice_name = "shiroko"
+id = "shiroko"

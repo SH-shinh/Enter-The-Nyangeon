@@ -1,0 +1,46 @@
+[gd_scene load_steps=5 format=3 uid="uid://8ycqggrgg1x5"]
+
+[ext_resource type="Theme" uid="uid://igkipbye612g" path="res://empty_theme.tres" id="1_ho0wa"]
+[ext_resource type="Script" path="res://ui/menu_box_button.gd" id="2_uxd2f"]
+[ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="2_wmkai"]
+[ext_resource type="Texture2D" uid="uid://bqdyikqbnp6h" path="res://sprites/player/hina/hina_picture.png" id="3_737m3"]
+
+[node name="menu_box_button" type="PanelContainer"]
+custom_minimum_size = Vector2(60, 10)
+mouse_filter = 1
+theme = ExtResource("1_ho0wa")
+script = ExtResource("2_uxd2f")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+clip_children = 2
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.0941176, 0.0941176, 0.0941176, 1)
+
+[node name="Sprite2D" type="Sprite2D" parent="ColorRect"]
+texture_filter = 2
+position = Vector2(43, 69)
+scale = Vector2(0.2, 0.2)
+texture = ExtResource("3_737m3")
+hframes = 4
+
+[node name="ColorRect" type="ColorRect" parent="ColorRect"]
+clip_children = 2
+custom_minimum_size = Vector2(80, 11)
+offset_right = 60.0
+offset_bottom = 10.0
+mouse_filter = 2
+color = Color(0.094, 0.094, 0.094, 0.9)
+
+[node name="button_name" type="Label" parent="."]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 0
+theme_override_constants/shadow_outline_size = 0
+theme_override_fonts/font = ExtResource("2_wmkai")
+theme_override_font_sizes/font_size = 10
+text = "momoi"
+horizontal_alignment = 1
+clip_text = true
+uppercase = true

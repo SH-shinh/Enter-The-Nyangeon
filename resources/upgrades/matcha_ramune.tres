@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://cci8ag1ex0ee2"]
+
+[ext_resource type="Texture2D" uid="uid://d2jdtoxn6atya" path="res://sprites/update_item/matcha_ramune.png" id="1_bx2nu"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_3h4a8"]
+
+[resource]
+script = ExtResource("2_3h4a8")
+id = "matcha_ramune"
+icon = ExtResource("1_bx2nu")
+name = "抹茶汽水"
+rare = 2
+order_num = 1
+special_rules = 0
+description = "独特风味让人欲罢不能的抹茶味碳酸饮料。
+对受到燃烧影响的敌人施加毒异常会引发一次爆炸。"
+forward = "独特
+引发的爆炸受异常伤害加成"
+negative = ""
+item_tags = 98
+tags = Array[String](["爆炸", "燃烧", "中毒"])
+weight = 1.0

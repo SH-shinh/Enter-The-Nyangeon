@@ -1,0 +1,69 @@
+[gd_scene load_steps=8 format=3 uid="uid://ba3ultm28ofey"]
+
+[ext_resource type="Script" path="res://ui/ark_of_Shittim/clothes_shop_card.gd" id="1_jm8u5"]
+[ext_resource type="Texture2D" uid="uid://byy5gjbkl1vr" path="res://ui/ark_of_Shittim/arona_icon_2.png" id="1_sc50u"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8wf60"]
+
+[sub_resource type="Theme" id="Theme_cojqu"]
+PanelContainer/styles/panel = SubResource("StyleBoxEmpty_8wf60")
+
+[sub_resource type="Animation" id="Animation_lx8lm"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node2D/ItemIcon:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 0.5)]
+}
+
+[sub_resource type="Animation" id="Animation_gpfa0"]
+resource_name = "select_anim"
+length = 0.05
+step = 0.05
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node2D/ItemIcon:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.05),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0.5), Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_5avfs"]
+_data = {
+"RESET": SubResource("Animation_lx8lm"),
+"select_anim": SubResource("Animation_gpfa0")
+}
+
+[node name="ClothesShopCard" type="PanelContainer"]
+custom_minimum_size = Vector2(25, 25)
+theme = SubResource("Theme_cojqu")
+script = ExtResource("1_jm8u5")
+
+[node name="Node2D" type="Node2D" parent="."]
+
+[node name="ItemIcon" type="TextureRect" parent="Node2D"]
+modulate = Color(1, 1, 1, 0.5)
+offset_left = -1.0
+offset_top = -1.0
+offset_right = 26.0
+offset_bottom = 26.0
+mouse_filter = 2
+texture = ExtResource("1_sc50u")
+expand_mode = 5
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_5avfs")
+}

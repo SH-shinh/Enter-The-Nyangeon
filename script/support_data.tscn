@@ -1,0 +1,20 @@
+[gd_scene load_steps=8 format=3 uid="uid://yfaddapkqykn"]
+
+[ext_resource type="Script" path="res://script/support_data.gd" id="1_ik77y"]
+[ext_resource type="Script" path="res://resources/support/support_card.gd" id="2_cwn7f"]
+[ext_resource type="Resource" uid="uid://co6lsyyeqxcbe" path="res://resources/support/kei.tres" id="3_rma0u"]
+[ext_resource type="Resource" uid="uid://cx6hnjoq3ucid" path="res://resources/support/ayane.tres" id="4_rgkxm"]
+[ext_resource type="PackedScene" uid="uid://dqh12dynptucj" path="res://ui/support_card.tscn" id="5_1wy43"]
+[ext_resource type="Resource" uid="uid://c6x6fhqakh5v2" path="res://resources/support/null_support.tres" id="6_83imh"]
+
+[sub_resource type="Curve" id="Curve_p586o"]
+max_value = 50.0
+_data = [Vector2(0, 0), 0.0, 19.2308, 0, 0, Vector2(1, 50), 106.101, 0.0, 0, 0]
+point_count = 2
+
+[node name="SupportData" type="Node"]
+script = ExtResource("1_ik77y")
+exp_curve = SubResource("Curve_p586o")
+support_pool = Array[ExtResource("2_cwn7f")]([ExtResource("3_rma0u"), ExtResource("4_rgkxm")])
+support_ui = ExtResource("5_1wy43")
+null_support = ExtResource("6_83imh")

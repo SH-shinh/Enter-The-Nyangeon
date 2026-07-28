@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://8av54ngod5tr"]
+
+[ext_resource type="Texture2D" uid="uid://bl1d4t4fhqgwq" path="res://sprites/update_item/solvent_extraction_set.png" id="1_vefe8"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_20ibv"]
+
+[resource]
+script = ExtResource("2_20ibv")
+id = "solvent_extraction_set"
+icon = ExtResource("1_vefe8")
+name = "溶液提取套装"
+rare = 2
+order_num = 1
+special_rules = 0
+description = "在市面销售的据说是任何人都能使用的溶液提取套装。"
+forward = "独特
+近战攻击按照敌人当前生命值造成额外伤害（最高400%）"
+negative = ""
+item_tags = 4096
+tags = Array[String](["近战"])
+weight = 1.0

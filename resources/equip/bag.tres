@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="Equip" load_steps=13 format=3 uid="uid://dwd3umrlg3tbs"]
+
+[ext_resource type="Texture2D" uid="uid://b0vhck4unhuia" path="res://sprites/update_item/school_bag.png" id="1_4ojys"]
+[ext_resource type="Texture2D" uid="uid://l8wqfdyclwax" path="res://sprites/equipment/bag/bag_t0.png" id="1_arsdx"]
+[ext_resource type="Texture2D" uid="uid://v2xj8jtksscp" path="res://sprites/equipment/bag/waterproof_sports_bag.png" id="2_th8nt"]
+[ext_resource type="Texture2D" uid="uid://c3ybdapcsjijg" path="res://sprites/update_item/tactical_satchel.png" id="2_xhd8k"]
+[ext_resource type="Script" path="res://resources/equip/equip.gd" id="3_8bu6v"]
+[ext_resource type="Texture2D" uid="uid://b52jk3mh6atfx" path="res://sprites/equipment/bag/insulated_messenger_bag.png" id="3_va6qi"]
+[ext_resource type="Texture2D" uid="uid://dyusv3ahmrj3x" path="res://sprites/equipment/bag/peroro_backpack.png" id="4_bsruj"]
+[ext_resource type="Texture2D" uid="uid://dgmw3rc0beqn" path="res://sprites/equipment/bag/devil_wing_tote_bag.png" id="7_ui40u"]
+[ext_resource type="Texture2D" uid="uid://com211o1ndgg4" path="res://sprites/equipment/bag/street_bag.png" id="8_k64ii"]
+[ext_resource type="Texture2D" uid="uid://d4m5bprhqhx3g" path="res://sprites/equipment/bag/butterfly_purse.png" id="9_lq1dc"]
+[ext_resource type="Texture2D" uid="uid://bileymlhys6ks" path="res://sprites/equipment/bag/waterproof_sling_bag.png" id="10_4vdf3"]
+[ext_resource type="Texture2D" uid="uid://dratilffu0ut4" path="res://sprites/equipment/bag/bag_t10.png" id="11_61huw"]
+
+[resource]
+script = ExtResource("3_8bu6v")
+id = "bag"
+icon = Array[Texture2D]([ExtResource("1_arsdx"), ExtResource("2_th8nt"), ExtResource("3_va6qi"), ExtResource("4_bsruj"), ExtResource("1_4ojys"), ExtResource("2_xhd8k"), ExtResource("7_ui40u"), ExtResource("8_k64ii"), ExtResource("9_lq1dc"), ExtResource("10_4vdf3"), ExtResource("11_61huw")])
+value_1_name = "player_max_hp"
+value_2_name = "player_armor"
+value_3_name = "player_damage_taken"
+value_1_id = "max_hp_add"
+value_2_id = "hurt_resis_add"
+value_3_id = "hurt_mult_mult"
+value_1 = Array[int]([0, 3, 3, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8])
+value_2 = Array[float]([0.0, 1.0, 1.0, 2.0, 0.0, 3.0, 3.0, 3.0, 0.0, 4.0, 4.0, 4.0, 0.0, 5.0, 5.0, 5.0, 0.0, 6.0, 6.0, 6.0, 0.0])
+value_3 = Array[float]([0.0, 0.0, 0.0, 0.0, -0.05, 0.0, 0.0, 0.0, -0.05, 0.0, 0.0, 0.0, -0.05, 0.0, 0.0, 0.0, -0.05, 0.0, 0.0, 0.0, -0.1])
+name = "书包"
+description = "提升生命值，护甲，降低受到伤害"

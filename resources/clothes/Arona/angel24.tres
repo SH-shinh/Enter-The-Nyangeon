@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ClothesCard" load_steps=4 format=3 uid="uid://ca2cfhnmistq2"]
+
+[ext_resource type="Texture2D" uid="uid://cmqcl3bcf52rk" path="res://ui/ark_of_Shittim/angel24_icon_2.png" id="1_daolw"]
+[ext_resource type="Script" path="res://resources/clothes/clothes_card.gd" id="2_6sqsi"]
+[ext_resource type="Texture2D" uid="uid://h62yq6g82yj8" path="res://ui/ark_of_Shittim/angel24_arona_picture.png" id="3_mrp78"]
+
+[resource]
+script = ExtResource("2_6sqsi")
+id = "angel24"
+id_name = "Arona"
+name_1 = "ANGEL's 24"
+name_2 = "天使24"
+user_name = "ARONA"
+icon_1 = ExtResource("1_daolw")
+icon_2 = ExtResource("1_daolw")
+cost = 18
+sprite = ExtResource("3_mrp78")

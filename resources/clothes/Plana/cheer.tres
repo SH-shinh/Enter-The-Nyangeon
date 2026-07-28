@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ClothesCard" load_steps=5 format=3 uid="uid://bvxokgn7862go"]
+
+[ext_resource type="Texture2D" uid="uid://qdk5lfwyqtk3" path="res://ui/ark_of_Shittim/cheer_plana_icon.png" id="1_6es5v"]
+[ext_resource type="Texture2D" uid="uid://cxd6g2fg14v76" path="res://ui/ark_of_Shittim/cheer_plana_icon_2.png" id="2_13uje"]
+[ext_resource type="Script" path="res://resources/clothes/clothes_card.gd" id="3_83pl5"]
+[ext_resource type="Texture2D" uid="uid://gtbstko1wfd1" path="res://ui/ark_of_Shittim/cheer_plana_picture.png" id="4_80b25"]
+
+[resource]
+script = ExtResource("3_83pl5")
+id = "cheer"
+id_name = "Plana"
+name_1 = "CHEER SQUAD"
+name_2 = "应援团"
+user_name = "PLANA"
+icon_1 = ExtResource("1_6es5v")
+icon_2 = ExtResource("2_13uje")
+cost = 20
+sprite = ExtResource("4_80b25")

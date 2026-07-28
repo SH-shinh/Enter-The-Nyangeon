@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://dsblwps2uxvdu"]
+
+[ext_resource type="Texture2D" uid="uid://d26ru84jvmnc2" path="res://sprites/buff_icon/poison_dot_icon.png" id="1_axqjs"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_s7rx1"]
+
+[resource]
+script = ExtResource("2_s7rx1")
+id = "poison_dot"
+icon = ExtResource("1_axqjs")
+name = "毒dot"
+description = ""

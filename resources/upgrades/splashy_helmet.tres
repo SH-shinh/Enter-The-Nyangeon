@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://dv6uinygbkhk5"]
+
+[ext_resource type="Texture2D" uid="uid://baaafl6ak5gyp" path="res://sprites/update_item/splashy_helmet.png" id="1_j2m4s"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_ld1cl"]
+
+[resource]
+script = ExtResource("2_ld1cl")
+id = "splashy_helmet"
+icon = ExtResource("1_j2m4s")
+name = "潮水头盔"
+rare = 0
+order_num = -1
+special_rules = 0
+description = "被没收的「潮水头盔团」头盔，上面有些许划痕，能够减少受到的伤害。"
+forward = "+2护甲值"
+negative = "-5%子弹伤害"
+item_tags = 16384
+tags = Array[String](["防御"])
+weight = 1.0

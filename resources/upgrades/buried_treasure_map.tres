@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://cm4bmdiumvuoq"]
+
+[ext_resource type="Texture2D" uid="uid://fb0wfyvd7151" path="res://sprites/update_item/buried_treasure_map.png" id="1_ooplq"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_7mg2k"]
+
+[resource]
+script = ExtResource("2_7mg2k")
+id = "buried_treasure_map"
+icon = ExtResource("1_ooplq")
+name = "藏宝图"
+rare = 1
+order_num = 1
+description = "去找吧！这世上的一切就在那里！"
+forward = "独特
+暴击率可受幸运值加成"
+negative = ""
+item_tags = 24
+tags = Array[String]([])

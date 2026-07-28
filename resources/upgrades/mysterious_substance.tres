@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://1d0mmo1403vc"]
+
+[ext_resource type="Texture2D" uid="uid://hedgh42xa4k8" path="res://sprites/update_item/mysterious_substance.png" id="1_fkw5r"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_dw0lv"]
+
+[resource]
+script = ExtResource("2_dw0lv")
+id = "mysterious_substance"
+icon = ExtResource("1_fkw5r")
+name = "神秘物质"
+rare = 1
+order_num = 3
+special_rules = 0
+description = "在调查现场收集的神秘物质。"
+forward = "最大持有3个
++40%爆炸伤害"
+negative = "-20%生命值"
+item_tags = 2
+tags = Array[String](["爆炸"])
+weight = 1.0

@@ -1,0 +1,567 @@
+[gd_scene load_steps=58 format=3 uid="uid://8sbw8voksac2"]
+
+[ext_resource type="Script" path="res://scenes/player/momoi/momoi.gd" id="1_ijlmw"]
+[ext_resource type="Resource" uid="uid://hycr226xmjc3" path="res://resources/player/tsurugi.tres" id="2_kr3fu"]
+[ext_resource type="Resource" uid="uid://73ijamee6r8r" path="res://resources/player/PS/tsurugi_ps.tres" id="3_8gucj"]
+[ext_resource type="PackedScene" uid="uid://b78jo1set8q45" path="res://script/follow.tscn" id="4_757w2"]
+[ext_resource type="PackedScene" uid="uid://bdo12rjvieur7" path="res://scenes/shadow/shadow.tscn" id="5_eoihd"]
+[ext_resource type="PackedScene" uid="uid://ceydnirh2w7yb" path="res://scenes/player/smoke.tscn" id="6_q04l5"]
+[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="7_ac1jr"]
+[ext_resource type="Texture2D" uid="uid://bffl33r58wwjc" path="res://sprites/player/tsurugi/tsurugi_halo.png" id="8_5fjnm"]
+[ext_resource type="Shader" path="res://shaders/screen_outline.gdshader" id="9_g1s2k"]
+[ext_resource type="Script" path="res://scenes/player/aris/Hair.gd" id="10_0nmwc"]
+[ext_resource type="Texture2D" uid="uid://cikgac1o4t8ja" path="res://sprites/player/tsurugi/tsurugi.png" id="11_6xcs5"]
+[ext_resource type="PackedScene" uid="uid://wffnchsknkba" path="res://script/hat.tscn" id="12_pfcir"]
+[ext_resource type="PackedScene" uid="uid://bd66l3hehlm5e" path="res://scenes/weapon/Blood_n_Gunpowder/blood_n_gunpowder.tscn" id="13_co322"]
+[ext_resource type="PackedScene" uid="uid://dfdk1q5mpw3mh" path="res://scenes/bullet/kasumi_bullet.tscn" id="14_ovnq1"]
+[ext_resource type="Texture2D" uid="uid://dfi144wplx4ym" path="res://sprites/player/kasumi/kasumi_controller.png" id="14_xq6ld"]
+[ext_resource type="Script" path="res://scenes/player/StateMachine.gd" id="15_vov7i"]
+[ext_resource type="Script" path="res://script/Stats.gd" id="16_2gf0y"]
+[ext_resource type="AudioStream" uid="uid://5rnyiqxeiusa" path="res://sounds/RunSounds.wav" id="17_6h0cw"]
+[ext_resource type="AudioStream" uid="uid://b6t6pjb3evtw4" path="res://sounds/jump.wav" id="18_wgyal"]
+[ext_resource type="AudioStream" uid="uid://bqqs4akeispjg" path="res://sounds/OnHit.wav" id="19_x4gc4"]
+[ext_resource type="AudioStream" uid="uid://b5fdodmk5utji" path="res://sounds/coin.wav" id="20_8fbrg"]
+[ext_resource type="PackedScene" uid="uid://1th2ey27vgac" path="res://ui/game_ui.tscn" id="21_d0qjg"]
+[ext_resource type="PackedScene" uid="uid://cb5gh3hfe077g" path="res://ui/pause_screen.tscn" id="22_pxfhw"]
+[ext_resource type="Texture2D" uid="uid://nu6i7yovali6" path="res://ui/cd_bar.png" id="23_sebj5"]
+[ext_resource type="Texture2D" uid="uid://ben34oyvgea61" path="res://ui/cd_bar_2.png" id="24_xfj8y"]
+[ext_resource type="PackedScene" uid="uid://d1gmjbadbxsjp" path="res://scenes/game_camera/gamecamera.tscn" id="25_4sit1"]
+[ext_resource type="PackedScene" uid="uid://voxip8vojin" path="res://scenes/manager/player_buff_manager.tscn" id="26_g61q5"]
+[ext_resource type="PackedScene" uid="uid://c620jv6qq2f8w" path="res://scenes/player/t_hp_count.tscn" id="27_amwji"]
+[ext_resource type="Script" path="res://scenes/player/tsurugi/second_shoot.gd" id="29_28f2p"]
+[ext_resource type="Script" path="res://scenes/player/tsurugi/tsurugi_ps.gd" id="30_s6jur"]
+[ext_resource type="Resource" uid="uid://bnwyphgx7ave4" path="res://resources/buff/player_buff/last_stand_buff.tres" id="31_3mvia"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_5lclh"]
+radius = 7.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_jlcwm"]
+shader = ExtResource("7_ac1jr")
+shader_parameter/outline_width = 1.0
+shader_parameter/outline_color = Color(45, 1, 10, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_1s7nt"]
+shader = ExtResource("9_g1s2k")
+shader_parameter/outline_width = 2.0
+shader_parameter/outline_color = Color(45, 1, 10, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_tc2a3"]
+shader = ExtResource("7_ac1jr")
+shader_parameter/outline_width = 1.0
+shader_parameter/outline_color = Color(0, 0, 0, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_i6o8k"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rgt8c"]
+atlas = ExtResource("11_6xcs5")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gfsw3"]
+atlas = ExtResource("11_6xcs5")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ik1mn"]
+atlas = ExtResource("11_6xcs5")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_veeer"]
+atlas = ExtResource("11_6xcs5")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_waqd0"]
+atlas = ExtResource("11_6xcs5")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6kbix"]
+atlas = ExtResource("11_6xcs5")
+region = Rect2(64, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nmng1"]
+atlas = ExtResource("11_6xcs5")
+region = Rect2(128, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ycuuv"]
+atlas = ExtResource("11_6xcs5")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hhbqh"]
+atlas = ExtResource("11_6xcs5")
+region = Rect2(0, 64, 64, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_7r5us"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rgt8c")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gfsw3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ik1mn")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_veeer")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 13.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_waqd0")
+}],
+"loop": true,
+"name": &"jump",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_6kbix")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_nmng1")
+}, {
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_ycuuv")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hhbqh")
+}],
+"loop": true,
+"name": &"run",
+"speed": 13.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_okpe0"]
+radius = 1.0
+height = 2.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_o5v6t"]
+radius = 35.0
+
+[sub_resource type="Environment" id="Environment_q21nm"]
+background_mode = 3
+glow_enabled = true
+glow_strength = 0.7
+
+[sub_resource type="Animation" id="Animation_quqct"]
+resource_name = "Invincible frame"
+length = 0.5
+step = 0.075
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("GraphicsHalo:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.075, 0.15, 0.225, 0.3, 0.375, 0.45),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [true, false, true, false, true, false, true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CanvasGroup:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.075, 0.15, 0.225, 0.3, 0.375, 0.45),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [true, false, true, false, true, false, true]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("GraphicsGun:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.075, 0.15, 0.225, 0.3, 0.375, 0.45),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [true, false, true, false, true, false, true]
+}
+
+[sub_resource type="Animation" id="Animation_54v52"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("GraphicsHalo:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CanvasGroup:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("GraphicsGun:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_apy7m"]
+_data = {
+"Invincible frame": SubResource("Animation_quqct"),
+"RESET": SubResource("Animation_54v52")
+}
+
+[sub_resource type="Animation" id="Animation_btd8x"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CanvasGroup/Graphics/AnimatedSprite2D:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, -17)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CanvasGroup/Graphics/AnimatedSprite2D:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+
+[sub_resource type="Animation" id="Animation_kssmf"]
+resource_name = "kick_anim"
+length = 0.1
+step = 0.01
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CanvasGroup/Graphics/AnimatedSprite2D:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.03, 0.1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0, -17), Vector2(0, -20), Vector2(0, -17)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CanvasGroup/Graphics/AnimatedSprite2D:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.03, 0.1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [0.0, -0.698132, 0.0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_y8tsq"]
+_data = {
+"RESET": SubResource("Animation_btd8x"),
+"kick_anim": SubResource("Animation_kssmf")
+}
+
+[sub_resource type="Curve" id="Curve_hi74d"]
+max_value = 8.0
+_data = [Vector2(0, 8), 0.0, -17.5824, 0, 0, Vector2(1, 0), -2.25415, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_2yduf"]
+min_value = 10.0
+max_value = 80.0
+_data = [Vector2(0, 80), 0.0, -131.054, 0, 0, Vector2(1, 10), -3.94479, 0.0, 0, 0]
+point_count = 2
+
+[node name="tsurugi" type="CharacterBody2D" node_paths=PackedStringArray("stats") groups=["Player"]]
+collision_mask = 256
+motion_mode = 1
+script = ExtResource("1_ijlmw")
+player_card = ExtResource("2_kr3fu")
+ps_card = ExtResource("3_8gucj")
+stats = NodePath("Stats")
+player_color = Color(0.905882, 0.235294, 0.298039, 1)
+long_hair = true
+hat_position = 11.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -6)
+shape = SubResource("CircleShape2D_5lclh")
+
+[node name="Follow" parent="." instance=ExtResource("4_757w2")]
+
+[node name="Shadow" parent="." instance=ExtResource("5_eoihd")]
+scale = Vector2(0.445313, 0.445313)
+
+[node name="GPUParticles2D" parent="." instance=ExtResource("6_q04l5")]
+emitting = false
+
+[node name="GraphicsHalo" type="Node2D" parent="."]
+
+[node name="Halo" type="Sprite2D" parent="GraphicsHalo"]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_jlcwm")
+position = Vector2(-10, -32)
+rotation = 0.47822
+scale = Vector2(0.254, 0.276)
+texture = ExtResource("8_5fjnm")
+
+[node name="CanvasGroup" type="CanvasGroup" parent="."]
+material = SubResource("ShaderMaterial_1s7nt")
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="CanvasGroup"]
+material = SubResource("ShaderMaterial_tc2a3")
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = -202.0
+offset_right = 320.0
+offset_bottom = 158.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(320, 180)
+
+[node name="SubViewport" type="SubViewport" parent="CanvasGroup/SubViewportContainer"]
+transparent_bg = true
+handle_input_locally = false
+size = Vector2i(640, 360)
+render_target_update_mode = 4
+
+[node name="Hair" type="Node2D" parent="CanvasGroup/SubViewportContainer/SubViewport" node_paths=PackedStringArray("player")]
+position = Vector2(320, 180)
+script = ExtResource("10_0nmwc")
+player = NodePath("../../../..")
+offset_0 = Array[Vector2]([Vector2(-0.6, 0.5), Vector2(0, 0), Vector2(0.6, 0.5)])
+offset_x = Array[Vector2]([Vector2(-0.7, 3), Vector2(0, 3), Vector2(0.7, 3)])
+k = 0.3
+col = Color(0.180392, 0.152941, 0.152941, 1)
+startRadius = 7.0
+
+[node name="Graphics" type="Node2D" parent="CanvasGroup"]
+unique_name_in_owner = true
+material = SubResource("CanvasItemMaterial_i6o8k")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="CanvasGroup/Graphics"]
+unique_name_in_owner = true
+position = Vector2(0, -17)
+sprite_frames = SubResource("SpriteFrames_7r5us")
+animation = &"idle"
+autoplay = "idle"
+frame_progress = 0.174042
+flip_h = true
+
+[node name="HaloRoot" type="Node2D" parent="CanvasGroup/Graphics/AnimatedSprite2D"]
+unique_name_in_owner = true
+position = Vector2(-9, -28)
+
+[node name="GraphicsGun" type="Node2D" parent="."]
+
+[node name="Hat" parent="GraphicsGun" instance=ExtResource("12_pfcir")]
+position = Vector2(1, -29)
+
+[node name="Gun" parent="GraphicsGun" node_paths=PackedStringArray("stats") instance=ExtResource("13_co322")]
+unique_name_in_owner = true
+position = Vector2(7, -8)
+stats = NodePath("../../Stats")
+bullet = ExtResource("14_ovnq1")
+
+[node name="Node2D" type="Node2D" parent="GraphicsGun"]
+
+[node name="Sprite2D" type="Sprite2D" parent="GraphicsGun/Node2D"]
+visible = false
+position = Vector2(-8, -14)
+texture = ExtResource("14_xq6ld")
+
+[node name="HitBox" type="Area2D" parent="." groups=["PlayerBox"]]
+collision_layer = 2048
+collision_mask = 1160
+
+[node name="HitboxShape" type="CollisionShape2D" parent="HitBox"]
+position = Vector2(0, -8)
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_okpe0")
+debug_color = Color(3.18866e-06, 0.0816588, 0.291816, 0.42)
+
+[node name="PickBox" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 64
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PickBox"]
+visible = false
+position = Vector2(0, -11)
+shape = SubResource("CircleShape2D_o5v6t")
+debug_color = Color(0.724221, 0.462988, 0.32265, 0.42)
+
+[node name="FlyTimer" type="Timer" parent="."]
+wait_time = 0.3
+one_shot = true
+
+[node name="JumpTimer" type="Timer" parent="."]
+wait_time = 0.1
+one_shot = true
+
+[node name="JumpCDTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="RunSoundsTimer" type="Timer" parent="."]
+wait_time = 0.2
+one_shot = true
+
+[node name="InvincibleFrame" type="Timer" parent="."]
+wait_time = 0.5
+one_shot = true
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("15_vov7i")
+
+[node name="Stats" type="Node" parent="."]
+script = ExtResource("16_2gf0y")
+knockback_resis = 120
+MAX_SPEED = 160
+max_hp = 82
+max_ammo = 2
+bullet_kill_time = 0.6
+bullet_shoot_time = 180
+bullet_speed = 1400
+bullet_damage = 24
+bullet_knockback = 180
+bullet_count = 5
+bullet_arc = 60.0
+shake_mult = 2.0
+hurt_resis = 4
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_q21nm")
+
+[node name="RunSounds" type="AudioStreamPlayer2D" parent="."]
+process_mode = 3
+stream = ExtResource("17_6h0cw")
+volume_db = -6.0
+bus = &"SFX"
+
+[node name="JumpSounds" type="AudioStreamPlayer2D" parent="."]
+process_mode = 3
+stream = ExtResource("18_wgyal")
+bus = &"SFX"
+
+[node name="OnHitSounds" type="AudioStreamPlayer2D" parent="."]
+process_mode = 3
+stream = ExtResource("19_x4gc4")
+volume_db = 8.0
+bus = &"SFX"
+
+[node name="CoinSounds" type="AudioStreamPlayer2D" parent="."]
+process_mode = 3
+stream = ExtResource("20_8fbrg")
+volume_db = -2.0
+bus = &"SFX"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_apy7m")
+}
+
+[node name="GameUI" parent="." node_paths=PackedStringArray("player", "stats") instance=ExtResource("21_d0qjg")]
+player = NodePath("..")
+stats = NodePath("../Stats")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+layer = 3
+
+[node name="PauseScreen" parent="CanvasLayer" instance=ExtResource("22_pxfhw")]
+visible = false
+
+[node name="JumpCDBar" type="TextureProgressBar" parent="."]
+visible = false
+z_index = 20
+offset_left = -16.0
+offset_top = 7.0
+offset_right = 16.0
+offset_bottom = 13.0
+size_flags_horizontal = 4
+max_value = 1.0
+step = 0.0
+value = 0.355
+texture_under = ExtResource("23_sebj5")
+texture_progress = ExtResource("24_xfj8y")
+
+[node name="Camera2D" parent="." instance=ExtResource("25_4sit1")]
+offset = Vector2(0, -15)
+
+[node name="AnimationPlayer2" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_y8tsq")
+}
+
+[node name="PlayerBuffManager" parent="." instance=ExtResource("26_g61q5")]
+
+[node name="T_HP_Count" parent="." node_paths=PackedStringArray("stats") instance=ExtResource("27_amwji")]
+stats = NodePath("../Stats")
+
+[node name="Kick" type="Node2D" parent="." node_paths=PackedStringArray("player", "second_gun")]
+position = Vector2(0, -5)
+script = ExtResource("29_28f2p")
+player = NodePath("..")
+second_gun = NodePath("blood_n_gunpowder")
+
+[node name="blood_n_gunpowder" parent="Kick" node_paths=PackedStringArray("stats") instance=ExtResource("13_co322")]
+position = Vector2(-4, 0)
+stats = NodePath("../../Stats")
+bullet = ExtResource("14_ovnq1")
+
+[node name="tsurugi_ps" type="Node2D" parent="." node_paths=PackedStringArray("player", "stats", "second_gun")]
+script = ExtResource("30_s6jur")
+player = NodePath("..")
+stats = NodePath("../Stats")
+second_gun = NodePath("../Kick/blood_n_gunpowder")
+player_buff = ExtResource("31_3mvia")
+buff_layer = 1
+buff_value = 10.0
+buff_erase_timer = 5.0
+damge_mult = SubResource("Curve_hi74d")
+luck_value = SubResource("Curve_2yduf")
+
+[connection signal="is_health" from="." to="." method="_on_is_health"]
+[connection signal="is_hurt" from="." to="." method="_on_is_hurt"]
+[connection signal="body_entered" from="HitBox" to="." method="_on_hit_box_body_entered"]
+[connection signal="area_entered" from="PickBox" to="." method="_on_pick_box_area_entered"]
+[connection signal="timeout" from="JumpCDTimer" to="." method="_on_jump_cd_timer_timeout"]
+[connection signal="pick_up_range_changed" from="Stats" to="." method="_on_stats_pick_up_range_changed"]
+[connection signal="update_stats" from="Stats" to="." method="_on_stats_update_stats"]

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PSCard" load_steps=3 format=3 uid="uid://ctb1y6ktsg2qa"]
+
+[ext_resource type="Script" path="res://resources/player/PS/ps_card.gd" id="1_egfrk"]
+[ext_resource type="Texture2D" uid="uid://q7bgl0806668" path="res://sprites/weapon/Supernova_The_Sword_of_Light.png" id="2_t45kg"]
+
+[resource]
+script = ExtResource("1_egfrk")
+weapon_icon = ExtResource("2_t45kg")
+t_level = Array[String](["射击不消耗弹药，持续射击会使武器过热，随过热程度提升暴击率和子弹伤害。", "过热能够提供额外的穿透值，最高+8穿透值。", "过热充能提供的暴击率提高到+18%，最高+36%。", "过热充能提供的暴击率提高到+25%最高+50%，以及每层+50%子弹伤害。"])

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://ifltgrxfa6k2"]
+
+[ext_resource type="Texture2D" uid="uid://dyu3upmwph8si" path="res://sprites/update_item/shrapnel_bullet.png" id="1_oabqx"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_k07bw"]
+
+[resource]
+script = ExtResource("2_k07bw")
+id = "shrapnel_bullet"
+icon = ExtResource("1_oabqx")
+name = "半价子弹"
+rare = 1
+order_num = -1
+special_rules = 0
+description = "便利店促销装子弹，命中时有概率分裂为四个。"
+forward = "提升触发概率"
+negative = ""
+item_tags = 11
+tags = Array[String](["弹道", "概率"])
+weight = 1.0

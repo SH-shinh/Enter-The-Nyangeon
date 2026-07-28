@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://bnwyphgx7ave4"]
+
+[ext_resource type="Texture2D" uid="uid://blc1vwlnbkllq" path="res://sprites/buff_icon/last_stand_buff_icon.png" id="1_77ll1"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_l8oj6"]
+
+[resource]
+script = ExtResource("2_l8oj6")
+id = "last_stand_buff"
+icon = ExtResource("1_77ll1")
+name = "反击/复活"
+ability = ""
+remove_by_layer = false
+description = ""

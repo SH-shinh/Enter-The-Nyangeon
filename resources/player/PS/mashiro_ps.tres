@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PSCard" load_steps=3 format=3 uid="uid://dos3mykmex0r2"]
+
+[ext_resource type="Script" path="res://resources/player/PS/ps_card.gd" id="1_dtv3j"]
+[ext_resource type="Texture2D" uid="uid://hrdynf6foj67" path="res://sprites/weapon/manifestation_of_justice.png" id="2_s31mt"]
+
+[resource]
+script = ExtResource("1_dtv3j")
+weapon_icon = ExtResource("2_s31mt")
+t_level = Array[String](["", "", "", ""])

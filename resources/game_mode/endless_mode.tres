@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="GameMode" load_steps=3 format=3 uid="uid://b0rcjdt3s42m3"]
+
+[ext_resource type="Texture2D" uid="uid://b48pejuycjvw4" path="res://sprites/item/mission_data_2.png" id="1_7se03"]
+[ext_resource type="Script" path="res://resources/game_mode/game_mode.gd" id="2_25rk0"]
+
+[resource]
+script = ExtResource("2_25rk0")
+game_mode_name = "endless"
+game_mode_id = "endless"
+game_mode_icon = ExtResource("1_7se03")
+gamemode_conflicting = Array[String](["hujiu"])

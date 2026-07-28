@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://c47ypiwlib7fu"]
+
+[ext_resource type="Texture2D" uid="uid://ovibo2sx6d6f" path="res://sprites/update_item/intact_atlantis_medal.png" id="1_hg5tv"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_8kyre"]
+
+[resource]
+script = ExtResource("2_8kyre")
+id = "intact_atlantis_medal"
+icon = ExtResource("1_hg5tv")
+name = "亚特兰蒂斯古币"
+rare = 0
+order_num = 1
+special_rules = 0
+description = "状态完好的亚特兰蒂斯古币。"
+forward = "独特
+回合结束给予50 × 当前回合数的金币"
+negative = "每次换弹-10%的金币"
+item_tags = 33792
+tags = Array[String](["通用"])
+weight = 1.0

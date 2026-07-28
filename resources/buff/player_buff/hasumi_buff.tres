@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://dkn3ax5g3pgkb"]
+
+[ext_resource type="Texture2D" uid="uid://bos40bllysbrf" path="res://sprites/buff_icon/luck_buff_icon.png" id="1_jur7a"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_ar5dn"]
+
+[resource]
+script = ExtResource("2_ar5dn")
+id = "hasumi_buff"
+icon = ExtResource("1_jur7a")
+name = "暴击buff"
+ability = ""
+remove_by_layer = false
+description = ""

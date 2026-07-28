@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://c7ehjfpbda3fh"]
+
+[ext_resource type="Texture2D" uid="uid://dla15k3fxcs7c" path="res://sprites/update_item/motivation_boost_candy.png" id="1_po242"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_7kyrh"]
+
+[resource]
+script = ExtResource("2_7kyrh")
+id = "motivation_boost_candy"
+icon = ExtResource("1_po242")
+name = "干劲提升棒棒糖"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "为失去动力的全身注入活力的棒棒糖，口味丰富多彩。"
+forward = "独特
+毒伤害的3%转化为临时生命值"
+negative = ""
+item_tags = 576
+tags = Array[String](["防御", "中毒"])
+weight = 1.0

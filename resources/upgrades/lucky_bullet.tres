@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://b8p3qtm5mxfm5"]
+
+[ext_resource type="Texture2D" uid="uid://dqpt1grr6vnxa" path="res://sprites/update_item/lucky_bullet.png" id="1_7sb6w"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_dhpd6"]
+
+[resource]
+script = ExtResource("2_dhpd6")
+id = "lucky_bullet"
+icon = ExtResource("1_7sb6w")
+name = "幸运子弹"
+rare = 1
+order_num = -1
+special_rules = 0
+description = "后勤小精灵的奇迹魔法，造成暴击时有概率装填1颗子弹。"
+forward = "提高触发概率"
+negative = ""
+item_tags = 27
+tags = Array[String](["概率", "暴击", "弹道"])
+weight = 1.0

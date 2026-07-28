@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://bm6dimclh7dhb"]
+
+[ext_resource type="Script" path="res://script/bullet_launcher.gd" id="1_0p8lb"]
+
+[node name="BulletLauncher" type="Node2D"]
+script = ExtResource("1_0p8lb")
+
+[node name="ShootPosition" type="Marker2D" parent="."]

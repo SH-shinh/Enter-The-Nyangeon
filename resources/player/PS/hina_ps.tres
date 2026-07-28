@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PSCard" load_steps=3 format=3 uid="uid://k7p3kwd8trdm"]
+
+[ext_resource type="Script" path="res://resources/player/PS/ps_card.gd" id="1_g0d04"]
+[ext_resource type="Texture2D" uid="uid://cg0hg0e0x7kmk" path="res://sprites/player/hina/destroyer_of_denouement.png" id="2_tfh7d"]
+
+[resource]
+script = ExtResource("1_g0d04")
+weapon_icon = ExtResource("2_tfh7d")
+t_level = Array[String](["", "", "", ""])

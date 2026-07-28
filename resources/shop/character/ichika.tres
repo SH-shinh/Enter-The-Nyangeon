@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CharacterCard" load_steps=5 format=3 uid="uid://6db7buah1os"]
+
+[ext_resource type="Texture2D" uid="uid://ck3p8p1m8lnru" path="res://sprites/player/ichika/ichika_picture.png" id="1_oh88m"]
+[ext_resource type="Texture2D" uid="uid://cbjlpvdao7j88" path="res://ui/school/TRINITY_icon.png" id="2_q7iy7"]
+[ext_resource type="Script" path="res://resources/shop/character/character_card.gd" id="3_gdayq"]
+[ext_resource type="Texture2D" uid="uid://csb12yhlnb4sr" path="res://ui/weapon/AR_icon.png" id="4_cpuic"]
+
+[resource]
+script = ExtResource("3_gdayq")
+cost = 6
+name_1 = "NAKAMASA"
+name_2 = "ICHIKA"
+character_sprite = ExtResource("1_oh88m")
+weapon_name = "RED DRAGON"
+weapon_type_name = "AR"
+weapon_icon = ExtResource("4_cpuic")
+school_name = "TRINITY"
+school_icon = ExtResource("2_q7iy7")
+id = "ichika"
+group = "JTF"

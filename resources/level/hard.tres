@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="Level" load_steps=2 format=3 uid="uid://bcc6dxp088o4m"]
+
+[ext_resource type="Script" path="res://resources/level/level.gd" id="1_7m230"]
+
+[resource]
+script = ExtResource("1_7m230")
+level_name = "HARD"
+level_id = "hard"
+level_name_color = Color(0.976471, 0.815686, 0.486275, 1)
+level_color = Color(0.796078, 0.764706, 0, 1)
+level_num = 1.0
+level_hp = 1.6
+level_damage = 1.0
+level_score_mult = 1.0
+level_reward = 10.0

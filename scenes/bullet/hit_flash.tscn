@@ -1,0 +1,110 @@
+[gd_scene load_steps=12 format=3 uid="uid://d10c8alkqakil"]
+
+[ext_resource type="Script" path="res://scenes/bullet/hit_flash.gd" id="1_xumq8"]
+
+[sub_resource type="Gradient" id="Gradient_580ov"]
+colors = PackedColorArray(0.574097, 0.251011, 2.88785e-07, 1, 1, 0.908449, 0.763586, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_3py4m"]
+gradient = SubResource("Gradient_580ov")
+
+[sub_resource type="Curve" id="Curve_usaqi"]
+max_value = 100.0
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 52.7473), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_dapdp"]
+curve = SubResource("Curve_usaqi")
+
+[sub_resource type="Curve" id="Curve_vj0ey"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.285714), -1.72684, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_66n55"]
+curve = SubResource("Curve_vj0ey")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_w5ntp"]
+lifetime_randomness = 0.5
+particle_flag_disable_z = true
+spread = 75.0
+initial_velocity_min = 250.0
+initial_velocity_max = 350.0
+gravity = Vector3(0, 0, 0)
+damping_min = 10.0
+damping_max = 10.0
+damping_curve = SubResource("CurveTexture_dapdp")
+scale_min = 2.0
+scale_max = 5.0
+scale_curve = SubResource("CurveTexture_66n55")
+color = Color(3.784, 1, 0.386, 1)
+color_initial_ramp = SubResource("GradientTexture1D_3py4m")
+
+[sub_resource type="Animation" id="Animation_cqqtv"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("GPUParticles2D:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_n1goc"]
+resource_name = "new_animation"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("GPUParticles2D:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.5),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"idle_state"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_u5hsb"]
+_data = {
+"RESET": SubResource("Animation_cqqtv"),
+"new_animation": SubResource("Animation_n1goc")
+}
+
+[node name="HitFlash" type="Node2D"]
+z_index = 10
+script = ExtResource("1_xumq8")
+pool_id = "hit_flash"
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+modulate = Color(5.946, 1, 1, 1)
+emitting = false
+amount = 16
+process_material = SubResource("ParticleProcessMaterial_w5ntp")
+lifetime = 0.5
+one_shot = true
+explosiveness = 1.0
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_u5hsb")
+}

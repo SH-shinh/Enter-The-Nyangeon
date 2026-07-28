@@ -1,0 +1,17 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://cyu2bteh0ms51"
+
+[deps]
+
+files=["res://ETN_localization.zh_CN.translation", "res://ETN_localization.en.translation", "res://ETN_localization.pt.translation"]
+
+source_file="res://ETN_localization.csv"
+dest_files=["res://ETN_localization.zh_CN.translation", "res://ETN_localization.en.translation", "res://ETN_localization.pt.translation"]
+
+[params]
+
+compress=true
+delimiter=0

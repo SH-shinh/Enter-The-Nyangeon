@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://bnfj5aylrkhun"]
+
+[ext_resource type="Texture2D" uid="uid://l1v05hcgbue8" path="res://sprites/update_item/capybara_bath_bomb.png" id="1_7ljpo"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_msuw8"]
+
+[resource]
+script = ExtResource("2_msuw8")
+id = "capybara_bath_bomb"
+icon = ExtResource("1_7ljpo")
+name = "水豚入浴剂"
+rare = 0
+order_num = -1
+special_rules = 0
+description = "做成了水豚外形的固态入浴剂，提升异常伤害。"
+forward = "+18%异常伤害"
+negative = ""
+item_tags = 224
+tags = Array[String](["燃烧", "中毒", "恶寒"])
+weight = 1.0

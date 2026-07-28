@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://w3w5uaccdyer"]
+
+[ext_resource type="Script" path="res://scenes/update_item/mysterious_substance.gd" id="1_lx4sy"]
+
+[node name="mysterious_substance" type="Node2D"]
+script = ExtResource("1_lx4sy")

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://cqfmpvflfecmv"]
+
+[ext_resource type="Texture2D" uid="uid://drki8uj8xdbmh" path="res://sprites/update_item/ginseng_doll.png" id="1_cctbl"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_i8qb8"]
+
+[resource]
+script = ExtResource("2_i8qb8")
+id = "ginseng_doll"
+icon = ExtResource("1_cctbl")
+name = "人形参"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "在山海经的深山中发现的人参。"
+forward = "独特
+受到伤害后在3秒内按照输出伤害的10%恢复生命值（不超过所受伤害）"
+negative = ""
+item_tags = 256
+tags = Array[String](["防御"])
+weight = 1.0

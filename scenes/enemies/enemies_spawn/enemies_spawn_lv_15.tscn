@@ -1,0 +1,38 @@
+[gd_scene load_steps=12 format=3 uid="uid://epsy1wwwesxw"]
+
+[ext_resource type="Script" path="res://script/enemies_spawn.gd" id="1_7admm"]
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_cdef6"]
+[ext_resource type="Resource" uid="uid://dx43aolfidycr" path="res://resources/enemy/mystic_sweeper.tres" id="2_tindq"]
+[ext_resource type="Resource" uid="uid://q1y8ttghyuve" path="res://resources/enemy/modded_sweeper.tres" id="3_pi02r"]
+[ext_resource type="PackedScene" uid="uid://bv4btiolwh31t" path="res://scenes/enemies/mystic_sweeper.tscn" id="4_bmrqc"]
+[ext_resource type="Resource" uid="uid://cos7wg8husrce" path="res://resources/enemy/mp_automaton.tres" id="4_dcpy4"]
+[ext_resource type="PackedScene" uid="uid://dmxgmabfb0b0p" path="res://scenes/enemies/tester_automaton_shield.tscn" id="5_itvf8"]
+[ext_resource type="Resource" uid="uid://1wrnoropoerp" path="res://resources/enemy/tester_automaton_shield.tres" id="5_jqb7r"]
+[ext_resource type="PackedScene" uid="uid://jpy0bx2qrcgo" path="res://scenes/enemies/modded_sweeper.tscn" id="7_6e1cv"]
+[ext_resource type="PackedScene" uid="uid://b7vb8yy2kwu83" path="res://scenes/enemies/mp_automaton.tscn" id="8_7a7d3"]
+[ext_resource type="PackedScene" uid="uid://co5e8236e250k" path="res://scenes/enemies/enemies_spawn/raid_spawn.tscn" id="9_mbg3j"]
+
+[node name="EnemiesSpawnLV15" type="Node2D"]
+script = ExtResource("1_7admm")
+num_mult = 2.0
+round_mult = 1.0
+hp_mult = 13.0
+damage_mult = 5.0
+enemy = Array[ExtResource("2_cdef6")]([ExtResource("2_tindq"), ExtResource("3_pi02r"), ExtResource("4_dcpy4"), ExtResource("5_jqb7r")])
+enemy_pool = Array[PackedScene]([ExtResource("4_bmrqc"), ExtResource("7_6e1cv"), ExtResource("8_7a7d3"), ExtResource("5_itvf8")])
+enemy_spawn_num = Array[int]([6, 2, 2, 1])
+enemy_spawn_time = Array[float]([30.0, 35.0, 45.0, 35.0])
+
+[node name="RoundTimer" type="Timer" parent="."]
+wait_time = 60.0
+one_shot = true
+
+[node name="EnemySpawnCDTime" type="Timer" parent="."]
+wait_time = 0.1
+
+[node name="RaidSpawn" parent="." instance=ExtResource("9_mbg3j")]
+
+[node name="RaidSpawn2" parent="." instance=ExtResource("9_mbg3j")]
+raid_spawn_time = 40.0
+
+[connection signal="timeout" from="EnemySpawnCDTime" to="." method="_on_enemy_spawn_cd_time_timeout"]

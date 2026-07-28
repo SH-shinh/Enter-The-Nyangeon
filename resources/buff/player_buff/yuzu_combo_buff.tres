@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://comb3nd35hmd8"]
+
+[ext_resource type="Texture2D" uid="uid://iiqmft6qf51x" path="res://sprites/buff_icon/yuzu_buff_icon.png" id="1_660rh"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="1_wjqiy"]
+
+[resource]
+script = ExtResource("1_wjqiy")
+id = "yuzu_combo_buff"
+icon = ExtResource("1_660rh")
+name = "柚子连击伤害"
+description = ""

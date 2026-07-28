@@ -1,0 +1,76 @@
+[gd_scene load_steps=45 format=3 uid="uid://gx06pbp42cnx"]
+
+[ext_resource type="Script" path="res://scenes/manager/enemy_manager.gd" id="1_efy17"]
+[ext_resource type="PackedScene" uid="uid://dejur0jy5v5jn" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_1.tscn" id="2_7kg51"]
+[ext_resource type="PackedScene" uid="uid://ctb6wohh80m44" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_9.tscn" id="2_fyo4g"]
+[ext_resource type="PackedScene" uid="uid://cnad11y7v8yyi" path="res://scenes/enemies/enemies_spawn/goliath_spawn.tscn" id="2_x0avi"]
+[ext_resource type="PackedScene" uid="uid://c2v3kc5pd48i6" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_2.tscn" id="3_l156e"]
+[ext_resource type="PackedScene" uid="uid://c4ejdkp7vp8i3" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_3.tscn" id="4_t3ipb"]
+[ext_resource type="PackedScene" uid="uid://bf523dc2nugxh" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_4.tscn" id="5_d7r3d"]
+[ext_resource type="PackedScene" uid="uid://dve3ychy0om3t" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_3_helmet.tscn" id="5_f8w71"]
+[ext_resource type="PackedScene" uid="uid://1ea4rpj5vnf5" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_5.tscn" id="6_agalo"]
+[ext_resource type="PackedScene" uid="uid://4oyd6btqi5ti" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_4_helmet.tscn" id="7_1qj5p"]
+[ext_resource type="PackedScene" uid="uid://bxbjk687vj3mq" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_6.tscn" id="7_7af4g"]
+[ext_resource type="PackedScene" uid="uid://bcucnj1tgli4e" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_7.tscn" id="8_v71cl"]
+[ext_resource type="PackedScene" uid="uid://kxw5lb5tr62h" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_8.tscn" id="9_7kjev"]
+[ext_resource type="PackedScene" uid="uid://bxsftrg0kcfum" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_5_helmet.tscn" id="9_fxxfw"]
+[ext_resource type="PackedScene" uid="uid://lv0e4ji0fesg" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_6_helmet.tscn" id="11_u6sry"]
+[ext_resource type="PackedScene" uid="uid://bfdj848yj83yh" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_11.tscn" id="12_s2yad"]
+[ext_resource type="PackedScene" uid="uid://bpokla7l8iamy" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_7_helmet.tscn" id="13_2nkub"]
+[ext_resource type="PackedScene" uid="uid://bl6mddkadgysr" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_12.tscn" id="13_24prh"]
+[ext_resource type="PackedScene" uid="uid://di8qg2dgjsh3m" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_13.tscn" id="14_atgs5"]
+[ext_resource type="PackedScene" uid="uid://dppbh2e7c0351" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_8_helmet.tscn" id="15_jp3u0"]
+[ext_resource type="PackedScene" uid="uid://qxgjggnkqjys" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_14.tscn" id="15_rf1eg"]
+[ext_resource type="PackedScene" uid="uid://db8wa6blmvtki" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_16.tscn" id="17_a2r1w"]
+[ext_resource type="PackedScene" uid="uid://cetcpc578idf" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_9_helmet.tscn" id="17_uacnt"]
+[ext_resource type="PackedScene" uid="uid://qc88cdx1tm4g" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_17.tscn" id="18_d6pyb"]
+[ext_resource type="PackedScene" uid="uid://bi8fowwgcag6m" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_10.tscn" id="18_p0q08"]
+[ext_resource type="PackedScene" uid="uid://b1hx2p8jqgu0o" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_18.tscn" id="19_1h4q0"]
+[ext_resource type="PackedScene" uid="uid://c32aqirvslp3e" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_10_helmet.tscn" id="19_uk6p2"]
+[ext_resource type="PackedScene" uid="uid://bol6ehvjw6w21" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_19.tscn" id="20_hfj70"]
+[ext_resource type="PackedScene" uid="uid://un1sthe1koe0" path="res://scenes/enemies/enemies_spawn/goliath_spawn_lv_20.tscn" id="21_m415r"]
+[ext_resource type="PackedScene" uid="uid://cu8ejmx0gvtov" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_11_helmet.tscn" id="21_p6lxm"]
+[ext_resource type="PackedScene" uid="uid://ck6ewn1bvrsi8" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_12_helmet.tscn" id="23_so1nu"]
+[ext_resource type="PackedScene" uid="uid://c15cpi1s7jubn" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_13_helmet.tscn" id="25_k1eui"]
+[ext_resource type="PackedScene" uid="uid://drr7tsbugh717" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_14_helmet.tscn" id="27_5t6vu"]
+[ext_resource type="PackedScene" uid="uid://c4w74uyv13qyg" path="res://scenes/enemies/enemies_spawn/tower_spawn.tscn" id="28_tu8av"]
+[ext_resource type="PackedScene" uid="uid://clsum5vifgwbq" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_16_helmet.tscn" id="30_4ljrw"]
+[ext_resource type="PackedScene" uid="uid://bjvnkfcpvxypq" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_17_helmet.tscn" id="32_ud63p"]
+[ext_resource type="PackedScene" uid="uid://75ucnkn0voqr" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_18_helmet.tscn" id="34_017m1"]
+[ext_resource type="PackedScene" uid="uid://bwc3mnj0n7cck" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_19_helmet.tscn" id="36_nqjxw"]
+[ext_resource type="PackedScene" uid="uid://b8fhf7l35us1y" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_20.tscn" id="38_d6vmm"]
+[ext_resource type="PackedScene" uid="uid://ch62rxhox0ehe" path="res://scenes/enemies/enemies_spawn/tower_spawn_lv_20.tscn" id="39_m6h6s"]
+[ext_resource type="PackedScene" uid="uid://483ubbdk1u7e" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_20_helmet.tscn" id="39_qqn15"]
+[ext_resource type="PackedScene" uid="uid://baqhkm0en7d7r" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_20_sniper.tscn" id="40_6u07s"]
+[ext_resource type="PackedScene" uid="uid://2v6jdtydno4k" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_20_sweeper.tscn" id="41_6uwvo"]
+
+[sub_resource type="Curve" id="Curve_36etd"]
+max_value = 2.0
+_data = [Vector2(0, 0), 0.0, 0.901662, 0, 0, Vector2(1, 2), 4.3956, 0.0, 0, 0]
+point_count = 2
+
+[node name="EnemyManager" type="Node"]
+script = ExtResource("1_efy17")
+lv1 = Array[PackedScene]([ExtResource("2_7kg51")])
+lv2 = Array[PackedScene]([ExtResource("3_l156e")])
+lv3 = Array[PackedScene]([ExtResource("4_t3ipb"), ExtResource("5_f8w71")])
+lv4 = Array[PackedScene]([ExtResource("5_d7r3d"), ExtResource("7_1qj5p")])
+lv5 = Array[PackedScene]([ExtResource("6_agalo"), ExtResource("9_fxxfw")])
+lv6 = Array[PackedScene]([ExtResource("7_7af4g"), ExtResource("11_u6sry")])
+lv7 = Array[PackedScene]([ExtResource("8_v71cl"), ExtResource("13_2nkub")])
+lv8 = Array[PackedScene]([ExtResource("9_7kjev"), ExtResource("15_jp3u0")])
+lv9 = Array[PackedScene]([ExtResource("2_fyo4g"), ExtResource("17_uacnt")])
+lv10 = Array[PackedScene]([ExtResource("18_p0q08"), ExtResource("19_uk6p2")])
+lv11 = Array[PackedScene]([ExtResource("12_s2yad"), ExtResource("21_p6lxm")])
+lv12 = Array[PackedScene]([ExtResource("13_24prh"), ExtResource("23_so1nu")])
+lv13 = Array[PackedScene]([ExtResource("14_atgs5"), ExtResource("25_k1eui")])
+lv14 = Array[PackedScene]([ExtResource("15_rf1eg"), ExtResource("27_5t6vu")])
+lv15 = Array[PackedScene]([ExtResource("2_x0avi"), ExtResource("28_tu8av")])
+lv16 = Array[PackedScene]([ExtResource("17_a2r1w"), ExtResource("30_4ljrw")])
+lv17 = Array[PackedScene]([ExtResource("18_d6pyb"), ExtResource("32_ud63p")])
+lv18 = Array[PackedScene]([ExtResource("19_1h4q0"), ExtResource("34_017m1")])
+lv19 = Array[PackedScene]([ExtResource("20_hfj70"), ExtResource("36_nqjxw")])
+lv20 = Array[PackedScene]([ExtResource("21_m415r"), ExtResource("39_m6h6s")])
+lv_endless = Array[PackedScene]([ExtResource("38_d6vmm"), ExtResource("39_qqn15"), ExtResource("40_6u07s"), ExtResource("41_6uwvo")])
+lv_endless_boss = Array[PackedScene]([ExtResource("21_m415r"), ExtResource("39_m6h6s")])
+endless_mult = SubResource("Curve_36etd")

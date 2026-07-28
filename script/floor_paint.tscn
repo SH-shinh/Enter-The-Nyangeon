@@ -1,0 +1,97 @@
+[gd_scene load_steps=14 format=3 uid="uid://cucjh722lywpc"]
+
+[ext_resource type="Script" path="res://script/floor_paint.gd" id="1_4d37m"]
+[ext_resource type="Texture2D" uid="uid://b5nbmcnfshgb8" path="res://sprites/particle/circular_1.png" id="1_cvsfe"]
+
+[sub_resource type="Gradient" id="Gradient_ryo4l"]
+colors = PackedColorArray(0.726858, 0.0886201, 0.499604, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_nwe0y"]
+gradient = SubResource("Gradient_ryo4l")
+
+[sub_resource type="Curve" id="Curve_k7lyk"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.02, 1), 0.0, 0.0, 0, 0, Vector2(0.34, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -4.34566, 0.0, 0, 0]
+point_count = 4
+
+[sub_resource type="CurveTexture" id="CurveTexture_qxe3m"]
+curve = SubResource("Curve_k7lyk")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_s4sk4"]
+lifetime_randomness = 0.5
+particle_flag_disable_z = true
+emission_shape = 3
+emission_box_extents = Vector3(40, 25, 1)
+gravity = Vector3(0, 0, 0)
+scale_max = 3.0
+scale_curve = SubResource("CurveTexture_qxe3m")
+color = Color(0.894118, 0.384314, 0.588235, 1)
+color_initial_ramp = SubResource("GradientTexture1D_nwe0y")
+
+[sub_resource type="Gradient" id="Gradient_6xpxi"]
+colors = PackedColorArray(0.198521, 0.479739, 0.772083, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_s4oj1"]
+gradient = SubResource("Gradient_6xpxi")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ml8xg"]
+lifetime_randomness = 0.5
+particle_flag_disable_z = true
+emission_shape = 3
+emission_box_extents = Vector3(40, 25, 1)
+gravity = Vector3(0, 0, 0)
+scale_max = 3.0
+scale_curve = SubResource("CurveTexture_qxe3m")
+color = Color(0.219608, 0.654902, 0.698039, 1)
+color_initial_ramp = SubResource("GradientTexture1D_s4oj1")
+
+[sub_resource type="Gradient" id="Gradient_6jbnh"]
+colors = PackedColorArray(0.600784, 0.484272, 0.0408812, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_1ycjq"]
+gradient = SubResource("Gradient_6jbnh")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_mqgk3"]
+lifetime_randomness = 0.5
+particle_flag_disable_z = true
+emission_shape = 3
+emission_box_extents = Vector3(40, 25, 1)
+gravity = Vector3(0, 0, 0)
+scale_max = 3.0
+scale_curve = SubResource("CurveTexture_qxe3m")
+color = Color(0.899196, 0.741214, 0.224535, 1)
+color_initial_ramp = SubResource("GradientTexture1D_1ycjq")
+
+[node name="FloorPaint" type="Node2D" groups=["Texture"]]
+script = ExtResource("1_4d37m")
+
+[node name="Pink" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 16
+process_material = SubResource("ParticleProcessMaterial_s4sk4")
+texture = ExtResource("1_cvsfe")
+lifetime = 10.0
+one_shot = true
+explosiveness = 1.0
+
+[node name="Blue" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 16
+process_material = SubResource("ParticleProcessMaterial_ml8xg")
+texture = ExtResource("1_cvsfe")
+lifetime = 10.0
+one_shot = true
+explosiveness = 1.0
+
+[node name="Yellow" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 16
+process_material = SubResource("ParticleProcessMaterial_mqgk3")
+texture = ExtResource("1_cvsfe")
+lifetime = 10.0
+one_shot = true
+explosiveness = 1.0
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 10.0
+one_shot = true
+autostart = true

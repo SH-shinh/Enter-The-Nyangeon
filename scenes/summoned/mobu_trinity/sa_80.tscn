@@ -1,0 +1,46 @@
+[gd_scene load_steps=8 format=3 uid="uid://br83qggaxog4w"]
+
+[ext_resource type="Script" path="res://scenes/player_support/kei/luminous_nova.gd" id="1_40g3c"]
+[ext_resource type="PackedScene" uid="uid://bchjylcuubq0p" path="res://scenes/bullet/normal_bullet.tscn" id="2_7sdpu"]
+[ext_resource type="PackedScene" uid="uid://dogh3pe2fynxi" path="res://scenes/weapon/shoot_flash_2.tscn" id="3_jogy5"]
+[ext_resource type="Texture2D" uid="uid://bs6r2u0nfdi7w" path="res://sprites/weapon/mobu_sa80.png" id="4_8fj8j"]
+[ext_resource type="PackedScene" uid="uid://5xnka7kne7w" path="res://script/picatinny_rail.tscn" id="5_kv27b"]
+[ext_resource type="PackedScene" uid="uid://bjvr1nuwo7ish" path="res://script/muzzle.tscn" id="6_w7tv8"]
+[ext_resource type="AudioStream" uid="uid://dnajymkl244p7" path="res://sounds/GUNAuto_Assault Rifle D Fire_06.wav" id="7_73qav"]
+
+[node name="sa80" type="Node2D"]
+script = ExtResource("1_40g3c")
+pool_id = "normal_bullet"
+sound_id = "GunSounds7"
+bullet = ExtResource("2_7sdpu")
+shoot_flash = ExtResource("3_jogy5")
+player_damage_mult = 0.6
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(8, 5.96046e-08)
+scale = Vector2(0.6, 0.6)
+texture = ExtResource("4_8fj8j")
+
+[node name="PicatinnyRail" parent="Sprite2D" instance=ExtResource("5_kv27b")]
+position = Vector2(-9, -11)
+scale = Vector2(1.429, 1.429)
+
+[node name="Muzzle" parent="Sprite2D" instance=ExtResource("6_w7tv8")]
+position = Vector2(30, -1)
+scale = Vector2(1.429, 1.429)
+
+[node name="ShootPosition" type="Marker2D" parent="."]
+position = Vector2(26, -0.58)
+
+[node name="ShootTimer" type="Timer" parent="."]
+wait_time = 0.2
+one_shot = true
+
+[node name="ReloadTimer" type="Timer" parent="."]
+wait_time = 0.1
+one_shot = true
+
+[node name="FireSounds" type="AudioStreamPlayer2D" parent="."]
+process_mode = 3
+stream = ExtResource("7_73qav")
+volume_db = 5.0

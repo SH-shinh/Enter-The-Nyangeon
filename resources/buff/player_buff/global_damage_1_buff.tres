@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://bhfy50nhnjylj"]
+
+[ext_resource type="Texture2D" uid="uid://vdmww27x0mmq" path="res://sprites/buff_icon/global_damage_buff_icon.png" id="1_uk7qh"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_odb30"]
+
+[resource]
+script = ExtResource("2_odb30")
+id = "global_damage_1_buff"
+icon = ExtResource("1_uk7qh")
+name = "全局伤害"
+description = ""

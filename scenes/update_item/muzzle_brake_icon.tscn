@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://cubb7xrup75un"]
+
+[ext_resource type="Texture2D" uid="uid://jrthjt0ij0qm" path="res://sprites/update_item/muzzle_brake_icon.png" id="1_73ruv"]
+[ext_resource type="PackedScene" uid="uid://bjvr1nuwo7ish" path="res://script/muzzle.tscn" id="2_orqru"]
+
+[node name="MuzzleBrakeIcon" type="Sprite2D"]
+position = Vector2(4, -0.5)
+texture = ExtResource("1_73ruv")
+
+[node name="Muzzle" parent="." instance=ExtResource("2_orqru")]
+position = Vector2(7, 0.5)

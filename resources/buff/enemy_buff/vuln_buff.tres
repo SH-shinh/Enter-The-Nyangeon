@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://byim7jof6jy0"]
+
+[ext_resource type="Texture2D" uid="uid://s87qekfmhnky" path="res://sprites/buff_icon/vuln_buff_icon.png" id="1_k81mn"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_jwa2n"]
+
+[resource]
+script = ExtResource("2_jwa2n")
+id = "vuln_buff"
+icon = ExtResource("1_k81mn")
+name = "易伤buff"
+ability = "global_hurt_damage_mult"
+description = "易伤buff"

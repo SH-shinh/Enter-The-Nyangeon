@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3 uid="uid://cbpbf4l8gvrde"]
+
+[ext_resource type="Script" path="res://scenes/enemies/enemies_spawn/enemy_path.gd" id="1_gkiof"]
+
+[sub_resource type="Curve2D" id="Curve2D_j3un6"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, 0, -368, 0, 0, 0, 0, 744, 0, 0, 0, 0, 0, 0, 368, 0, 0, 0, 0, -744, 0, 0, 0, 0, 0, 0, -368)
+}
+point_count = 5
+
+[node name="Path2D" type="Path2D"]
+top_level = true
+position = Vector2(704, 448)
+curve = SubResource("Curve2D_j3un6")
+script = ExtResource("1_gkiof")
+points = Array[Vector2]([Vector2(0, -368), Vector2(744, 0), Vector2(0, 368), Vector2(-744, 0)])
+
+[node name="PathFollow2D" type="PathFollow2D" parent="."]
+position = Vector2(0, -368)
+rotates = false

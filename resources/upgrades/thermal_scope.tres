@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://wsmcyajhwngt"]
+
+[ext_resource type="Texture2D" uid="uid://ciyxrm0l4vurj" path="res://sprites/update_item/thermal_scope.png" id="1_2qkno"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_v4bng"]
+
+[resource]
+script = ExtResource("2_v4bng")
+id = "thermal_scope"
+icon = ExtResource("1_2qkno")
+name = "热成像瞄准镜"
+rare = 1
+order_num = -1
+special_rules = 0
+description = "未暴击的射击叠加每层+10%暴击率（最大10层），暴击后清空。"
+forward = "+15%暴击伤害"
+negative = ""
+item_tags = 16
+tags = Array[String](["暴击", "弹道"])
+weight = 1.0

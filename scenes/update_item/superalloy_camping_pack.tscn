@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://nuks86x3lpt0"]
+
+[ext_resource type="Script" path="res://scenes/update_item/superalloy_camping_pack.gd" id="1_bdtxo"]
+
+[node name="superalloy_camping_pack" type="Node2D"]
+script = ExtResource("1_bdtxo")

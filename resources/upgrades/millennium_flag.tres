@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://dyy3f8054821h"]
+
+[ext_resource type="Texture2D" uid="uid://c4ionwy2mcghp" path="res://sprites/update_item/millennium_flag.png" id="1_oa2sb"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_qfsis"]
+
+[resource]
+script = ExtResource("2_qfsis")
+id = "millennium_flag"
+icon = ExtResource("1_oa2sb")
+name = "千年学院旗"
+rare = 1
+order_num = -1
+special_rules = 0
+description = "大运动会的发令旗，造成伤害有概率提升65%攻击速度。"
+forward = "提高触发概率"
+negative = ""
+item_tags = 11
+tags = Array[String](["弹道", "概率"])
+weight = 1.0

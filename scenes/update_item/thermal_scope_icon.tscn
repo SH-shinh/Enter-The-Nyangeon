@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://34e4xauq3rtn"]
+
+[ext_resource type="Texture2D" uid="uid://4dcduxuel64e" path="res://sprites/update_item/thermal_scope_icon.png" id="1_2y8sh"]
+[ext_resource type="PackedScene" uid="uid://5xnka7kne7w" path="res://script/picatinny_rail.tscn" id="1_qstyr"]
+
+[node name="ThermalScopeIcon" type="Sprite2D"]
+position = Vector2(0, -4)
+texture = ExtResource("1_2y8sh")
+flip_h = true
+
+[node name="PicatinnyRail" parent="." instance=ExtResource("1_qstyr")]
+position = Vector2(0, -3)

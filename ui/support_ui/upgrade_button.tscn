@@ -1,0 +1,274 @@
+[gd_scene load_steps=16 format=3 uid="uid://baierg5jhv2n3"]
+
+[ext_resource type="Theme" uid="uid://bxrwumqxp32a3" path="res://rounded_corner_theme.tres" id="1_hjbko"]
+[ext_resource type="Script" path="res://ui/support_ui/upgrade_button.gd" id="2_f1871"]
+[ext_resource type="Texture2D" uid="uid://3kojmlxs38v7" path="res://sprites/item/pyroxenes.png" id="2_vk6wj"]
+[ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="3_ldb5i"]
+[ext_resource type="Texture2D" uid="uid://jcqmwo1t8vv0" path="res://ui/ui.png" id="4_5q5ci"]
+
+[sub_resource type="Animation" id="Animation_gx7j7"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("upgrade_button/ColorRect:color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(0.775209, 0.895785, 0.997106, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("upgrade_button:size")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(76, 26)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("upgrade_button:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("upgrade_button/Node2D2:visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_7hkhl"]
+resource_name = "mouse_in"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("upgrade_button/ColorRect:color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(0.775209, 0.895785, 0.997106, 1), Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_nvbhp"]
+resource_name = "selected"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("upgrade_button/ColorRect:color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("upgrade_button:size")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(76, 26), Vector2(76, 67)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("upgrade_button:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0, 0), Vector2(0, -41)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("upgrade_button/Node2D2:visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.0333333),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_lbopp"]
+_data = {
+"RESET": SubResource("Animation_gx7j7"),
+"mouse_in": SubResource("Animation_7hkhl"),
+"selected": SubResource("Animation_nvbhp")
+}
+
+[sub_resource type="Gradient" id="Gradient_nsp16"]
+offsets = PackedFloat32Array(0)
+colors = PackedColorArray(0.2038, 0.572602, 0.932866, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_e8ib6"]
+gradient = SubResource("Gradient_nsp16")
+width = 2
+height = 12
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_kpu2a"]
+texture = ExtResource("4_5q5ci")
+texture_margin_left = 1.0
+texture_margin_top = 1.0
+texture_margin_right = 1.0
+texture_margin_bottom = 1.0
+expand_margin_top = 5.0
+expand_margin_bottom = 5.0
+region_rect = Rect2(38, 36, 21, 23)
+modulate_color = Color(0.354196, 0.654705, 0.971274, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_sxxo1"]
+texture = ExtResource("4_5q5ci")
+texture_margin_left = 1.0
+texture_margin_top = 1.0
+texture_margin_right = 1.0
+texture_margin_bottom = 1.0
+expand_margin_top = 5.0
+expand_margin_bottom = 5.0
+region_rect = Rect2(38, 36, 21, 23)
+modulate_color = Color(0.505307, 0.735211, 0.986407, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_e747f"]
+texture = ExtResource("4_5q5ci")
+texture_margin_left = 1.0
+texture_margin_top = 1.0
+texture_margin_right = 1.0
+texture_margin_bottom = 1.0
+expand_margin_top = 5.0
+expand_margin_bottom = 5.0
+region_rect = Rect2(38, 36, 21, 23)
+modulate_color = Color(0, 0, 0, 0.5)
+
+[sub_resource type="Theme" id="Theme_yq8b2"]
+HSlider/icons/grabber = SubResource("GradientTexture2D_e8ib6")
+HSlider/icons/grabber_disabled = null
+HSlider/icons/grabber_highlight = SubResource("GradientTexture2D_e8ib6")
+HSlider/styles/grabber_area = SubResource("StyleBoxTexture_kpu2a")
+HSlider/styles/grabber_area_highlight = SubResource("StyleBoxTexture_sxxo1")
+HSlider/styles/slider = SubResource("StyleBoxTexture_e747f")
+
+[node name="upgrade_button" type="PanelContainer"]
+clip_children = 2
+offset_top = -41.0
+offset_right = 76.0
+offset_bottom = 26.0
+theme = ExtResource("1_hjbko")
+script = ExtResource("2_f1871")
+
+[node name="lv_button_anim" type="AnimationPlayer" parent="."]
+root_node = NodePath("../..")
+libraries = {
+"": SubResource("AnimationLibrary_lbopp")
+}
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Node2D" type="Node2D" parent="."]
+
+[node name="Sprite2D" type="Sprite2D" parent="Node2D"]
+position = Vector2(15.8, 12.8)
+scale = Vector2(0.8, 0.8)
+texture = ExtResource("2_vk6wj")
+
+[node name="Cost" type="Label" parent="Node2D"]
+unique_name_in_owner = true
+offset_left = 27.8
+offset_top = 9.0
+offset_right = 71.8
+offset_bottom = 20.0
+theme_override_colors/font_color = Color(0.658824, 0.917647, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.216003, 0.228063, 0.334376, 1)
+theme_override_colors/font_outline_color = Color(0.415686, 0.313726, 0.776471, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 8
+theme_override_constants/shadow_outline_size = 8
+theme_override_fonts/font = ExtResource("3_ldb5i")
+theme_override_font_sizes/font_size = 10
+text = "UPGRADE"
+
+[node name="Node2D2" type="Node2D" parent="."]
+
+[node name="HSlider" type="HSlider" parent="Node2D2"]
+offset_left = 6.0
+offset_top = 30.0
+offset_right = 73.0
+offset_bottom = 46.0
+theme = SubResource("Theme_yq8b2")
+value = 44.0
+
+[node name="NowCost" type="Label" parent="Node2D2"]
+unique_name_in_owner = true
+offset_left = 65.0
+offset_top = 25.0
+offset_right = 75.0
+offset_bottom = 33.0
+theme_override_colors/font_color = Color(0.658824, 0.917647, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.216003, 0.228063, 0.334376, 1)
+theme_override_colors/font_outline_color = Color(0.415686, 0.313726, 0.776471, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 8
+theme_override_constants/shadow_outline_size = 8
+theme_override_fonts/font = ExtResource("3_ldb5i")
+theme_override_font_sizes/font_size = 8
+text = "99"
+horizontal_alignment = 1
+
+[node name="sure" type="Label" parent="Node2D2"]
+unique_name_in_owner = true
+offset_top = 50.0
+offset_right = 76.0
+offset_bottom = 61.0
+theme_override_colors/font_color = Color(0.658824, 0.917647, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.216003, 0.228063, 0.334376, 1)
+theme_override_colors/font_outline_color = Color(0.415686, 0.313726, 0.776471, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 8
+theme_override_constants/shadow_outline_size = 8
+theme_override_fonts/font = ExtResource("3_ldb5i")
+theme_override_font_sizes/font_size = 10
+text = "button_confirm"
+horizontal_alignment = 1
+
+[node name="CloseTimer" type="Timer" parent="."]
+wait_time = 3.0
+one_shot = true

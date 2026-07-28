@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="TalkFormwork" load_steps=2 format=3 uid="uid://cysx1mp8tg6wi"]
+
+[ext_resource type="Script" path="res://resources/talk/talk_formwork.gd" id="1_1nfmx"]
+
+[resource]
+script = ExtResource("1_1nfmx")
+talk_text = "arona_work_in_1"
+sprite_num = 3
+voice_name = "Arona"
+voice_num = "WorkIn1"
+voice_time = 0.0

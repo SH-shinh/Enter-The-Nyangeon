@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://b2itu877w67r0"]
+
+[ext_resource type="Texture2D" uid="uid://dlbcqibmltk0k" path="res://sprites/update_item/EXPS3-0.png" id="1_c456r"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_iydrx"]
+
+[resource]
+script = ExtResource("2_iydrx")
+id = "exps_3_0"
+icon = ExtResource("1_c456r")
+name = "全息瞄准镜"
+rare = 0
+order_num = -1
+special_rules = 0
+description = "安装后时髦感翻倍，小幅度提高暴击率，降低后坐力。"
+forward = "+5%暴击率
+-15%后坐力"
+negative = ""
+item_tags = 16
+tags = Array[String](["暴击", "弹道"])
+weight = 1.0

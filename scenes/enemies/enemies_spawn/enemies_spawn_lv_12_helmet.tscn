@@ -1,0 +1,31 @@
+[gd_scene load_steps=9 format=3 uid="uid://ck6ewn1bvrsi8"]
+
+[ext_resource type="Script" path="res://script/enemies_spawn.gd" id="1_n3whc"]
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_d0n5a"]
+[ext_resource type="Resource" uid="uid://tyefl3u2oxr" path="res://resources/enemy/sweeper.tres" id="3_yp57p"]
+[ext_resource type="Resource" uid="uid://bo5aojm81wiil" path="res://resources/enemy/enhanced_sweeper.tres" id="4_41fqk"]
+[ext_resource type="Resource" uid="uid://uwsau2i7bmiv" path="res://resources/enemy/soldier_helmet_ar.tres" id="5_htott"]
+[ext_resource type="Resource" uid="uid://cjvrr0lb3dvye" path="res://resources/enemy/soldier_redhelmet_sr.tres" id="6_iysmx"]
+[ext_resource type="Resource" uid="uid://dtv88mgk8m0i" path="res://resources/enemy/droid_helmet_smg.tres" id="7_jy72f"]
+[ext_resource type="PackedScene" uid="uid://co5e8236e250k" path="res://scenes/enemies/enemies_spawn/raid_spawn.tscn" id="8_iu051"]
+
+[node name="EnemiesSpawnLV12_helmet" type="Node2D"]
+script = ExtResource("1_n3whc")
+num_mult = 2.0
+round_mult = 1.0
+hp_mult = 6.0
+damage_mult = 1.5
+enemy = Array[ExtResource("2_d0n5a")]([ExtResource("3_yp57p"), ExtResource("4_41fqk"), ExtResource("5_htott"), ExtResource("6_iysmx"), ExtResource("7_jy72f")])
+enemy_spawn_num = Array[int]([3, 2, 3, 2, 1])
+enemy_spawn_time = Array[float]([35.0, 40.0, 40.0, 35.0, 40.0])
+
+[node name="RoundTimer" type="Timer" parent="."]
+wait_time = 60.0
+one_shot = true
+
+[node name="EnemySpawnCDTime" type="Timer" parent="."]
+wait_time = 0.1
+
+[node name="RaidSpawn" parent="." instance=ExtResource("8_iu051")]
+
+[connection signal="timeout" from="EnemySpawnCDTime" to="." method="_on_enemy_spawn_cd_time_timeout"]

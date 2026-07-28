@@ -1,0 +1,36 @@
+[gd_scene load_steps=15 format=3 uid="uid://bi8fowwgcag6m"]
+
+[ext_resource type="Script" path="res://script/enemies_spawn.gd" id="1_3ptg2"]
+[ext_resource type="Resource" uid="uid://tyefl3u2oxr" path="res://resources/enemy/sweeper.tres" id="2_gkrjn"]
+[ext_resource type="PackedScene" uid="uid://blgdeks0i23pt" path="res://scenes/enemies/sweeper.tscn" id="2_ipbo3"]
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_vnw71"]
+[ext_resource type="Resource" uid="uid://bo5aojm81wiil" path="res://resources/enemy/enhanced_sweeper.tres" id="3_7xf0f"]
+[ext_resource type="PackedScene" uid="uid://b1cfdw3ja54qj" path="res://scenes/enemies/enhanced_sweeper.tscn" id="3_xnrfh"]
+[ext_resource type="PackedScene" uid="uid://bv4btiolwh31t" path="res://scenes/enemies/mystic_sweeper.tscn" id="4_f2ted"]
+[ext_resource type="Resource" uid="uid://dx43aolfidycr" path="res://resources/enemy/mystic_sweeper.tres" id="4_msnsu"]
+[ext_resource type="Resource" uid="uid://dmixiglqom01n" path="res://resources/enemy/tester_automaton.tres" id="5_7ptnh"]
+[ext_resource type="PackedScene" uid="uid://bhyuj2aufn4nq" path="res://scenes/enemies/tester_automaton.tscn" id="5_egurf"]
+[ext_resource type="Resource" uid="uid://dwgipm2sx68ue" path="res://resources/enemy/tester_automaton_rl.tres" id="6_0s2s7"]
+[ext_resource type="PackedScene" uid="uid://bnlpg5jbpx83m" path="res://scenes/enemies/tester_automaton_rl.tscn" id="6_ikg7j"]
+[ext_resource type="Resource" uid="uid://q1y8ttghyuve" path="res://resources/enemy/modded_sweeper.tres" id="7_o53ob"]
+[ext_resource type="PackedScene" uid="uid://jpy0bx2qrcgo" path="res://scenes/enemies/modded_sweeper.tscn" id="8_vlxy5"]
+
+[node name="EnemiesSpawnLV10" type="Node2D"]
+script = ExtResource("1_3ptg2")
+num_mult = 2.2
+round_mult = 1.0
+hp_mult = 3.0
+damage_mult = 1.5
+enemy = Array[ExtResource("2_vnw71")]([ExtResource("2_gkrjn"), ExtResource("3_7xf0f"), ExtResource("4_msnsu"), ExtResource("5_7ptnh"), ExtResource("6_0s2s7"), ExtResource("7_o53ob")])
+enemy_pool = Array[PackedScene]([ExtResource("2_ipbo3"), ExtResource("3_xnrfh"), ExtResource("4_f2ted"), ExtResource("5_egurf"), ExtResource("6_ikg7j"), ExtResource("8_vlxy5")])
+enemy_spawn_num = Array[int]([8, 4, 1, 1, 1, 3])
+enemy_spawn_time = Array[float]([15.0, 30.0, 35.0, 30.0, 35.0, 35.0])
+
+[node name="RoundTimer" type="Timer" parent="."]
+wait_time = 60.0
+one_shot = true
+
+[node name="EnemySpawnCDTime" type="Timer" parent="."]
+wait_time = 0.1
+
+[connection signal="timeout" from="EnemySpawnCDTime" to="." method="_on_enemy_spawn_cd_time_timeout"]

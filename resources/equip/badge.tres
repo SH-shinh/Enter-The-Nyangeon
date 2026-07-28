@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="Equip" load_steps=13 format=3 uid="uid://b30immst04qbg"]
+
+[ext_resource type="Texture2D" uid="uid://7bxt1exxlf02" path="res://sprites/equipment/badge/badge_t0.png" id="1_8cgsf"]
+[ext_resource type="Script" path="res://resources/equip/equip.gd" id="1_hc515"]
+[ext_resource type="Texture2D" uid="uid://dp4po6cowjque" path="res://sprites/equipment/badge/serval_metal_badge.png" id="2_gsi67"]
+[ext_resource type="Texture2D" uid="uid://cfd1c0vmkmy8m" path="res://sprites/equipment/badge/manaslu_felt_badge.png" id="3_bnux1"]
+[ext_resource type="Texture2D" uid="uid://bqqkc6oym42xq" path="res://sprites/equipment/badge/angry_adelie_button.png" id="4_g71d4"]
+[ext_resource type="Texture2D" uid="uid://d0yo3em8igdo1" path="res://sprites/equipment/badge/veronica_embroidered_badge.png" id="5_gfc58"]
+[ext_resource type="Texture2D" uid="uid://da3q5l2spjhjl" path="res://sprites/equipment/badge/kazeyama_patch.png" id="6_t5cve"]
+[ext_resource type="Texture2D" uid="uid://bmuccw8hnkmnn" path="res://sprites/equipment/badge/coco_devil_silver_badge.png" id="7_v3emn"]
+[ext_resource type="Texture2D" uid="uid://b60eq4k6cta2g" path="res://sprites/equipment/badge/street_badge.png" id="8_w0cgj"]
+[ext_resource type="Texture2D" uid="uid://72i2xi71cgsn" path="res://sprites/equipment/badge/lorelei_badge.png" id="9_tfhjl"]
+[ext_resource type="Texture2D" uid="uid://whkvgl81i434" path="res://sprites/equipment/badge/harpia_rubber_patch.png" id="10_hc3ba"]
+[ext_resource type="Texture2D" uid="uid://b7fx54ntrpw30" path="res://sprites/equipment/badge/badge_t10.png" id="11_4iqgi"]
+
+[resource]
+script = ExtResource("1_hc515")
+id = "badge"
+icon = Array[Texture2D]([ExtResource("1_8cgsf"), ExtResource("2_gsi67"), ExtResource("3_bnux1"), ExtResource("4_g71d4"), ExtResource("5_gfc58"), ExtResource("6_t5cve"), ExtResource("7_v3emn"), ExtResource("8_w0cgj"), ExtResource("9_tfhjl"), ExtResource("10_hc3ba"), ExtResource("11_4iqgi")])
+value_1_name = ""
+value_2_name = "player_recoil"
+value_3_name = "player_reload_speed"
+value_1_id = ""
+value_2_id = "bullet_recoil_mult"
+value_3_id = "reload_timer_mult"
+value_1 = Array[int]([])
+value_2 = Array[float]([0.0, -0.05, -0.05, -0.05, -0.05, -0.05, -0.05, -0.06, -0.06, -0.06, -0.06, -0.06, -0.06, -0.08, -0.08, -0.08, -0.08, -0.08, -0.08, -0.1, -0.1])
+value_3 = Array[float]([1.0, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95])
+name = "徽章"
+description = "减少后坐力"

@@ -1,0 +1,41 @@
+[gd_scene load_steps=7 format=3 uid="uid://ceydnirh2w7yb"]
+
+[ext_resource type="Texture2D" uid="uid://brv03dvygp4nl" path="res://sprites/particle/smoke.png" id="1_3xjbs"]
+
+[sub_resource type="Gradient" id="Gradient_sxo5f"]
+offsets = PackedFloat32Array(0, 0.344262, 1)
+colors = PackedColorArray(0, 0, 0, 1, 0.794684, 0.794684, 0.794684, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_6ps87"]
+gradient = SubResource("Gradient_sxo5f")
+
+[sub_resource type="Curve" id="Curve_vyqum"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.7, 0.758242), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_jup8v"]
+curve = SubResource("Curve_vyqum")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ycu6d"]
+lifetime_randomness = 0.8
+particle_flag_disable_z = true
+emission_shape = 3
+emission_box_extents = Vector3(5, 1, 1)
+angle_max = 45.0
+spread = 180.0
+initial_velocity_max = 10.0
+angular_velocity_min = 100.0
+angular_velocity_max = 200.0
+gravity = Vector3(0, 0, 0)
+damping_min = 2.0
+damping_max = 5.0
+scale_min = 0.25
+scale_max = 0.75
+scale_curve = SubResource("CurveTexture_jup8v")
+color_ramp = SubResource("GradientTexture1D_6ps87")
+turbulence_noise_strength = 10.0
+
+[node name="GPUParticles2D" type="GPUParticles2D"]
+process_material = SubResource("ParticleProcessMaterial_ycu6d")
+texture = ExtResource("1_3xjbs")
+lifetime = 0.8

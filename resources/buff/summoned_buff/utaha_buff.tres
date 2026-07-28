@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://dnuvnfnopmdet"]
+
+[ext_resource type="Texture2D" uid="uid://civl56t06fjnh" path="res://sprites/buff_icon/utaha_buff_icon.png" id="1_ok68n"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_5n8om"]
+
+[resource]
+script = ExtResource("2_5n8om")
+id = "utaha_buff"
+icon = ExtResource("1_ok68n")
+name = "歌园召唤物buff"
+description = ""

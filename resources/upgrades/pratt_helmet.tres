@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://d15f8xn68lmhl"]
+
+[ext_resource type="Texture2D" uid="uid://cnc88cq1gftly" path="res://sprites/update_item/pratt_helmet.png" id="1_0tlu0"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_u16o8"]
+
+[resource]
+script = ExtResource("2_u16o8")
+id = "pratt_helmet"
+icon = ExtResource("1_0tlu0")
+name = "钢加农"
+rare = 2
+order_num = -1
+special_rules = 0
+description = "附带枪口的奇怪头盔，每射出7颗子弹可额外往准星位置射击2颗子弹。"
+forward = "+1额外射击数"
+negative = ""
+item_tags = 3
+tags = Array[String](["弹道"])
+weight = 1.0

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EnemyCard" load_steps=3 format=3 uid="uid://c6wf4vrs211lb"]
+
+[ext_resource type="PackedScene" uid="uid://mo8qflfry764" path="res://scenes/enemies/boss/goliath.tscn" id="1_37m20"]
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_4hqjo"]
+
+[resource]
+script = ExtResource("2_4hqjo")
+id = "goliath"
+body = ExtResource("1_37m20")
+description = ""

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://dcilaegm2waes"]
+
+[ext_resource type="Texture2D" uid="uid://chx2vihtpkyfa" path="res://sprites/buff_icon/shiroko_buff_icon.png" id="1_167rn"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_1oipd"]
+
+[resource]
+script = ExtResource("2_1oipd")
+id = "shiroko_buff"
+icon = ExtResource("1_167rn")
+name = "白子buff"
+ability = ""
+remove_by_layer = false
+description = ""

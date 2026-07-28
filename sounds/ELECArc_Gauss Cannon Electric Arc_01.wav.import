@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cfick73t3w2wv"
+path="res://.godot/imported/ELECArc_Gauss Cannon Electric Arc_01.wav-b3e50b4ddae47e2cad8e43dc5b178ecd.sample"
+
+[deps]
+
+source_file="res://sounds/ELECArc_Gauss Cannon Electric Arc_01.wav"
+dest_files=["res://.godot/imported/ELECArc_Gauss Cannon Electric Arc_01.wav-b3e50b4ddae47e2cad8e43dc5b178ecd.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=0

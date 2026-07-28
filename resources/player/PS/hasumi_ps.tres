@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PSCard" load_steps=3 format=3 uid="uid://utivdg4jxw05"]
+
+[ext_resource type="Script" path="res://resources/player/PS/ps_card.gd" id="1_flc24"]
+[ext_resource type="Texture2D" uid="uid://dg5e4xayf8jaq" path="res://sprites/weapon/impalement.png" id="2_nwxuh"]
+
+[resource]
+script = ExtResource("1_flc24")
+weapon_icon = ExtResource("2_nwxuh")
+t_level = Array[String](["", "", "", ""])

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PlayerCard" load_steps=4 format=3 uid="uid://c1w0eu7jam6k5"]
+
+[ext_resource type="Texture2D" uid="uid://ccwh5b20e4pfp" path="res://sprites/player/midori/midori_picture_halo.png" id="1_m5j5a"]
+[ext_resource type="Script" path="res://resources/player/player.gd" id="2_en6jh"]
+[ext_resource type="Texture2D" uid="uid://601k04580l2o" path="res://sprites/player/midori/midori_picture.png" id="3_0njlq"]
+
+[resource]
+script = ExtResource("2_en6jh")
+name = "SAIBA MIDORI"
+weapon = "FRESH INSPIRATION"
+sprite = ExtResource("3_0njlq")
+halo = ExtResource("1_m5j5a")
+color = Color(0.423529, 0.690196, 0.235294, 1)
+description = ""
+voice_name = "midori"
+id = "midori"

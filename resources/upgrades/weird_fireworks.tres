@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://bt7g6tjckl71d"]
+
+[ext_resource type="Texture2D" uid="uid://dacywmipirk20" path="res://sprites/update_item/weird_fireworks.png" id="1_pu68w"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_r7tv4"]
+
+[resource]
+script = ExtResource("2_r7tv4")
+id = "weird_fireworks"
+icon = ExtResource("1_pu68w")
+name = "迷你火箭烟花"
+rare = 0
+order_num = -1
+special_rules = 0
+description = "一个可爱的火箭型烟花，提高燃烧叠加层数。"
+forward = "+3燃烧上限"
+negative = ""
+item_tags = 32
+tags = Array[String](["燃烧"])
+weight = 1.0

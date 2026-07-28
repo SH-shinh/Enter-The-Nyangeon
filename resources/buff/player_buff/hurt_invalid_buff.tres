@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://bb1aa7v4oy4tl"]
+
+[ext_resource type="Texture2D" uid="uid://bemqwlqj3rglc" path="res://sprites/buff_icon/shield_buff_icon.png" id="1_3kukj"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_uh3um"]
+
+[resource]
+script = ExtResource("2_uh3um")
+id = "hurt_invalid_buff"
+icon = ExtResource("1_3kukj")
+name = "伤害无效"
+description = ""

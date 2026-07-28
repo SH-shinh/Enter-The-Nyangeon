@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://dv6xj8cccfjxu"]
+
+[ext_resource type="Texture2D" uid="uid://cnv1tpmwmwuej" path="res://sprites/update_item/peroro_kagami_mochi.png" id="1_x4y0c"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_dvd8a"]
+
+[resource]
+script = ExtResource("2_dvd8a")
+id = "peroro_kagami_mochi"
+icon = ExtResource("1_x4y0c")
+name = "佩洛洛镜饼"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "黑龟组贩卖的镜饼形装饰品，就是个装饰品，不能吃。"
+forward = "独特
+爆炸范围内的敌人越多，该次爆炸伤害越高"
+negative = ""
+item_tags = 2
+tags = Array[String](["爆炸"])
+weight = 1.0

@@ -1,0 +1,16 @@
+[gd_scene load_steps=8 format=3 uid="uid://co5e8236e250k"]
+
+[ext_resource type="Script" path="res://script/raid_spawn.gd" id="1_bxb36"]
+[ext_resource type="Script" path="res://resources/raid_formwork/raid_formwork.gd" id="2_8syg1"]
+[ext_resource type="Resource" uid="uid://dkw82mpidm6je" path="res://resources/raid_formwork/shield_raid.tres" id="2_fw1f4"]
+[ext_resource type="Resource" uid="uid://dhg5sk0m44bum" path="res://resources/raid_formwork/fast_sweeper_1.tres" id="3_oh81n"]
+[ext_resource type="Resource" uid="uid://bbg05xepc0qf" path="res://resources/raid_formwork/fast_sweeper_2.tres" id="4_pa0dq"]
+[ext_resource type="Resource" uid="uid://cjd4ke76xwmsk" path="res://resources/raid_formwork/shield_mpar.tres" id="5_y3046"]
+[ext_resource type="Resource" uid="uid://dfbxbxaqy3onf" path="res://resources/raid_formwork/helmet_sr.tres" id="7_nr8yy"]
+
+[node name="RaidSpawn" type="Node2D"]
+script = ExtResource("1_bxb36")
+raid_pool = Array[ExtResource("2_8syg1")]([ExtResource("2_fw1f4"), ExtResource("3_oh81n"), ExtResource("4_pa0dq"), ExtResource("5_y3046"), ExtResource("7_nr8yy")])
+raid_spawn_time = 20.0
+
+[node name="RaidSpawnTimer" type="Timer" parent="."]

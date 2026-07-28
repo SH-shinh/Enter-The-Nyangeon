@@ -1,0 +1,79 @@
+[gd_scene load_steps=12 format=3 uid="uid://5smcb2tnqdn2"]
+
+[ext_resource type="Texture2D" uid="uid://c37srcusr15uc" path="res://sprites/update_item/wind_up_music_box_icon.png" id="1_6cihu"]
+[ext_resource type="PackedScene" uid="uid://wffnchsknkba" path="res://script/hat.tscn" id="2_7gut3"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bdv7b"]
+atlas = ExtResource("1_6cihu")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qsgug"]
+atlas = ExtResource("1_6cihu")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gf0fp"]
+atlas = ExtResource("1_6cihu")
+region = Rect2(64, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_l5cmj"]
+atlas = ExtResource("1_6cihu")
+region = Rect2(96, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gonya"]
+atlas = ExtResource("1_6cihu")
+region = Rect2(128, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_b0doy"]
+atlas = ExtResource("1_6cihu")
+region = Rect2(160, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2rifl"]
+atlas = ExtResource("1_6cihu")
+region = Rect2(192, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6gna0"]
+atlas = ExtResource("1_6cihu")
+region = Rect2(224, 0, 32, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_lq151"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bdv7b")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qsgug")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gf0fp")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_l5cmj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gonya")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_b0doy")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_2rifl")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6gna0")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 12.0
+}]
+
+[node name="WindUpMusicBoxIcon" type="AnimatedSprite2D"]
+position = Vector2(-1, -2)
+sprite_frames = SubResource("SpriteFrames_lq151")
+animation = &"idle"
+autoplay = "idle"
+frame_progress = 0.866879
+flip_h = true
+
+[node name="Hat" parent="." instance=ExtResource("2_7gut3")]
+position = Vector2(1, -6)

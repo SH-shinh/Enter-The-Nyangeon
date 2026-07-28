@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://ddhg0ju6ut8ol"]
+
+[ext_resource type="Texture2D" uid="uid://c01wum1yxw8n5" path="res://sprites/update_item/antique_pocket_watch.png" id="1_4efy8"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_y0lyd"]
+
+[resource]
+script = ExtResource("2_y0lyd")
+id = "antique_pocket_watch"
+icon = ExtResource("1_4efy8")
+name = "古董怀表"
+rare = 0
+order_num = -1
+description = "和手表相比看时间有些麻烦，但作为时尚道具很受欢迎。"
+forward = "+3%暴击率
++10幸运值"
+negative = ""
+item_tags = 24
+tags = Array[String](["概率", "暴击"])
+weight = 1.0

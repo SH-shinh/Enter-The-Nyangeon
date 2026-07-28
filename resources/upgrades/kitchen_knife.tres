@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://c150s70rfbxxm"]
+
+[ext_resource type="Texture2D" uid="uid://b754k4q11mhbl" path="res://sprites/update_item/kitchen_knife.png" id="1_8rmks"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_5kefq"]
+
+[resource]
+script = ExtResource("2_5kefq")
+id = "kitchen_knife"
+icon = ExtResource("1_8rmks")
+name = "菜刀"
+rare = 1
+order_num = -1
+special_rules = 1
+description = "一把异常锋利的菜刀，好像有些眼熟。
+45基础伤害
+可斩杀生命值低于10%的敌人"
+forward = "可受近战伤害加成
++45装备基础伤害
++1%斩杀生命值"
+negative = ""
+item_tags = 4100
+tags = Array[String](["装备", "近战"])
+weight = 1.0

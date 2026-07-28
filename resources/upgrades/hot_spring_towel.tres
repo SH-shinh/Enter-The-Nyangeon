@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://b0of081d5wcib"]
+
+[ext_resource type="Texture2D" uid="uid://civxik66h8gbc" path="res://sprites/update_item/hot_spring_towel.png" id="1_uwb36"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_0e5km"]
+
+[resource]
+script = ExtResource("2_0e5km")
+id = "hot_spring_towel"
+icon = ExtResource("1_uwb36")
+name = "温泉毛巾"
+rare = 1
+order_num = 2
+special_rules = 0
+description = "227号温泉乡提供的毛巾，材质并不是很好，用于擦拭身体时请注意不要用力过度。"
+forward = "最大持有2个
++50%异常伤害"
+negative = "-25%异常持续时间"
+item_tags = 224
+tags = Array[String](["燃烧", "中毒", "恶寒"])
+weight = 1.0

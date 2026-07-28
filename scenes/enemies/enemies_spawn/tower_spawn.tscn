@@ -1,0 +1,26 @@
+[gd_scene load_steps=4 format=3 uid="uid://c4w74uyv13qyg"]
+
+[ext_resource type="Script" path="res://script/enemies_spawn.gd" id="1_grn47"]
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_hpog1"]
+[ext_resource type="Resource" uid="uid://clfthqwcs3aif" path="res://resources/enemy/erosion_tower.tres" id="3_ilmy6"]
+
+[node name="TowerSpawn" type="Node2D"]
+script = ExtResource("1_grn47")
+boss_round = true
+boss_position = Vector2(704, 448)
+num_mult = 2.0
+round_mult = 1.0
+hp_mult = 5.0
+damage_mult = 2.0
+enemy = Array[ExtResource("2_hpog1")]([ExtResource("3_ilmy6")])
+enemy_spawn_num = Array[int]([1])
+enemy_spawn_time = Array[float]([0.0])
+
+[node name="RoundTimer" type="Timer" parent="."]
+wait_time = 60.0
+one_shot = true
+
+[node name="EnemySpawnCDTime" type="Timer" parent="."]
+wait_time = 0.1
+
+[connection signal="timeout" from="EnemySpawnCDTime" to="." method="_on_enemy_spawn_cd_time_timeout"]

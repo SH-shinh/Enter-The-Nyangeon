@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://bu1dq7nadepbs"]
+
+[ext_resource type="Texture2D" uid="uid://7trhbr72u21l" path="res://sprites/update_item/macaron.png" id="1_uj5na"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_2rlh2"]
+
+[resource]
+script = ExtResource("2_2rlh2")
+id = "macaron"
+icon = ExtResource("1_uj5na")
+name = "马卡龙"
+rare = 0
+order_num = 1
+special_rules = 0
+description = "一只手就能包住的马卡龙。"
+forward = "独特
++100%生命值"
+negative = "+100%承伤率"
+item_tags = 512
+tags = Array[String](["防御"])
+weight = 1.0

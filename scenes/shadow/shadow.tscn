@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bdo12rjvieur7"]
+
+[ext_resource type="Texture2D" uid="uid://dfyj3mv4xs5m0" path="res://scenes/shadow/shadow.png" id="1_73ykh"]
+
+[node name="Sprite2D" type="Sprite2D"]
+texture = ExtResource("1_73ykh")

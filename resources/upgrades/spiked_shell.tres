@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://hd0mety8e6cs"]
+
+[ext_resource type="Texture2D" uid="uid://bi5rh4hueye36" path="res://sprites/update_item/spiked_shell.png" id="1_30cb8"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_oba0a"]
+
+[resource]
+script = ExtResource("2_oba0a")
+id = "spiked_shell"
+icon = ExtResource("1_30cb8")
+name = "尖刺龟壳"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "生活在一个水管世界的奇妙生物的壳。"
+forward = "独特
+碰撞到敌人时按照护甲值和当前速度造成的伤害
+当前速度超过300时获得击退免疫"
+negative = ""
+item_tags = 24580
+tags = Array[String](["装备", "速度"])
+weight = 1.0

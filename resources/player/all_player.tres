@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="PlayerGroup" load_steps=22 format=3 uid="uid://dudpe6an2h2d"]
+
+[ext_resource type="Script" path="res://resources/player/player.gd" id="1_s0ark"]
+[ext_resource type="Resource" uid="uid://dujfwascvjqli" path="res://resources/player/aris.tres" id="2_ldxw0"]
+[ext_resource type="Resource" uid="uid://dhvwuoq4q5114" path="res://resources/player/hasumi.tres" id="3_0r27l"]
+[ext_resource type="Resource" uid="uid://dr58vtkffgdqu" path="res://resources/player/hibiki.tres" id="4_euv0w"]
+[ext_resource type="Resource" uid="uid://dd0vndh2c4w8h" path="res://resources/player/hina.tres" id="5_urtcn"]
+[ext_resource type="Resource" uid="uid://bvhctdbf2tmid" path="res://resources/player/hoshino.tres" id="6_cquh3"]
+[ext_resource type="Resource" uid="uid://bvsdm656r7dd2" path="res://resources/player/ichika.tres" id="7_83d1b"]
+[ext_resource type="Resource" uid="uid://b3xr5xbhdonty" path="res://resources/player/iori.tres" id="8_ly4gv"]
+[ext_resource type="Resource" uid="uid://b7xuyu5df8nte" path="res://resources/player/kasumi.tres" id="9_vx070"]
+[ext_resource type="Resource" uid="uid://c4mqf18a5qd3u" path="res://resources/player/kotori.tres" id="10_b5362"]
+[ext_resource type="Resource" uid="uid://ftukm13pdwxy" path="res://resources/player/mashiro.tres" id="11_bj2hn"]
+[ext_resource type="Resource" uid="uid://cdcchien0vluj" path="res://resources/player/megu.tres" id="12_g71l4"]
+[ext_resource type="Resource" uid="uid://c1w0eu7jam6k5" path="res://resources/player/midori.tres" id="13_ah25h"]
+[ext_resource type="Resource" uid="uid://c6qtvi7orlce1" path="res://resources/player/momoi.tres" id="14_6tsb2"]
+[ext_resource type="Resource" uid="uid://dolf057662bwc" path="res://resources/player/nonomi.tres" id="15_w706i"]
+[ext_resource type="Resource" uid="uid://bug6m25bftqox" path="res://resources/player/serika.tres" id="16_x5cuw"]
+[ext_resource type="Resource" uid="uid://ddy7rl6bu4ifu" path="res://resources/player/shiroko.tres" id="17_1ne4r"]
+[ext_resource type="Resource" uid="uid://hycr226xmjc3" path="res://resources/player/tsurugi.tres" id="18_roiik"]
+[ext_resource type="Resource" uid="uid://gf25b833hrlm" path="res://resources/player/utaha.tres" id="19_axjgj"]
+[ext_resource type="Resource" uid="uid://d0v0hye82slf3" path="res://resources/player/yuzu.tres" id="20_dk8eq"]
+[ext_resource type="Script" path="res://resources/player/player_group.gd" id="21_n8j42"]
+
+[resource]
+script = ExtResource("21_n8j42")
+player_group = Array[ExtResource("1_s0ark")]([ExtResource("2_ldxw0"), ExtResource("3_0r27l"), ExtResource("4_euv0w"), ExtResource("5_urtcn"), ExtResource("6_cquh3"), ExtResource("7_83d1b"), ExtResource("8_ly4gv"), ExtResource("9_vx070"), ExtResource("10_b5362"), ExtResource("11_bj2hn"), ExtResource("12_g71l4"), ExtResource("13_ah25h"), ExtResource("14_6tsb2"), ExtResource("15_w706i"), ExtResource("16_x5cuw"), ExtResource("17_1ne4r"), ExtResource("18_roiik"), ExtResource("19_axjgj"), ExtResource("20_dk8eq")])

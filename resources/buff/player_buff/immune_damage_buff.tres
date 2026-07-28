@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://dbfj6gjnteek8"]
+
+[ext_resource type="Texture2D" uid="uid://cpddjyqulooto" path="res://sprites/buff_icon/immune_buff_icon.png" id="1_w8t6u"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_ekq0e"]
+
+[resource]
+script = ExtResource("2_ekq0e")
+id = "immune_damage_buff"
+icon = ExtResource("1_w8t6u")
+name = "免疫伤害"
+description = ""

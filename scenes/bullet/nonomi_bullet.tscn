@@ -1,0 +1,63 @@
+[gd_scene load_steps=10 format=3 uid="uid://byimyqyqflqma"]
+
+[ext_resource type="Script" path="res://scenes/bullet/momoi_bullet.gd" id="1_b314h"]
+[ext_resource type="PackedScene" uid="uid://ygvqweawmhgs" path="res://scenes/line.tscn" id="2_uy2bt"]
+[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="3_111hb"]
+[ext_resource type="Texture2D" uid="uid://cpwqdj2aobwca" path="res://sprites/bullet/nonomi_bullet.png" id="4_guxng"]
+
+[sub_resource type="Gradient" id="Gradient_nyt7i"]
+colors = PackedColorArray(0.998782, 0.973089, 0.849549, 1, 0.95666, 0.954776, 0.20707, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ua2q4"]
+shader = ExtResource("3_111hb")
+shader_parameter/outline_width = 3.0
+shader_parameter/outline_color = Color(40, 40, 1, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="Curve" id="Curve_uc1as"]
+_data = [Vector2(0, 0.527472), 0.0, 0.0, 0, 0, Vector2(1, 0.67033), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_k2cyk"]
+radius = 7.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hqkud"]
+radius = 7.0
+
+[node name="CharacterBody2D" type="CharacterBody2D" groups=["PlayerBullet"]]
+z_index = 2
+collision_layer = 4
+collision_mask = 2
+motion_mode = 1
+script = ExtResource("1_b314h")
+r_speed = 100
+
+[node name="Line" parent="." instance=ExtResource("2_uy2bt")]
+z_index = 1
+width = 12.0
+gradient = SubResource("Gradient_nyt7i")
+texture_mode = 2
+width_f = 12.0
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_ua2q4")
+scale = Vector2(0.4, 0.4)
+texture = ExtResource("4_guxng")
+
+[node name="Line2" parent="." instance=ExtResource("2_uy2bt")]
+z_index = 2
+width = 7.0
+width_curve = SubResource("Curve_uc1as")
+width_f = 7.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_k2cyk")
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 1032
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("CircleShape2D_hqkud")
+
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]

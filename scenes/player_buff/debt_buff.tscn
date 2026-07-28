@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://bmir35dclo6pm"]
+
+[ext_resource type="Script" path="res://scenes/player_buff/debt_buff.gd" id="1_37hyx"]
+[ext_resource type="Resource" uid="uid://d1h88krhem3it" path="res://resources/buff/player_buff/debt_buff.tres" id="2_ws7kx"]
+
+[node name="debt_buff" type="Node2D" groups=["PlayerBuff"]]
+script = ExtResource("1_37hyx")
+buff = ExtResource("2_ws7kx")
+buff_id = "debt_buff"
+
+[node name="BuffTimer" type="Timer" parent="."]
+
+[connection signal="timeout" from="BuffTimer" to="." method="_on_buff_timer_timeout"]

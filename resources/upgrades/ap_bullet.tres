@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://codh4lifmmdn1"]
+
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="1_be7h7"]
+[ext_resource type="Texture2D" uid="uid://dvf5yb8ywriv3" path="res://sprites/update_item/ap_bullet.png" id="1_oc0js"]
+
+[resource]
+script = ExtResource("1_be7h7")
+id = "ap_bullet"
+icon = ExtResource("1_oc0js")
+name = "贯通弹"
+rare = 0
+order_num = -1
+special_rules = 0
+description = "拥有可怕贯通能力的硬芯子弹。（由于经费原因，使用材料为图钉）"
+forward = "+1穿透值"
+negative = "-8%子弹伤害"
+item_tags = 1
+tags = Array[String](["弹道"])
+weight = 1.0

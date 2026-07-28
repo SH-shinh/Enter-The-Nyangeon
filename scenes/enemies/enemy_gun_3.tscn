@@ -1,0 +1,175 @@
+[gd_scene load_steps=17 format=3 uid="uid://cjxvhvssieke3"]
+
+[ext_resource type="Script" path="res://scenes/enemies/missile_shoot.gd" id="1_rms2c"]
+[ext_resource type="Texture2D" uid="uid://dh4183l4q8ffd" path="res://sprites/enemies/enemy_gun_3.png" id="1_ug1w2"]
+[ext_resource type="PackedScene" uid="uid://bm6dimclh7dhb" path="res://script/bullet_launcher.tscn" id="2_hmvnt"]
+[ext_resource type="PackedScene" uid="uid://duyk615kmuohs" path="res://scenes/bullet/enemy_missile_1.tscn" id="3_oav00"]
+[ext_resource type="Texture2D" uid="uid://b5nbmcnfshgb8" path="res://sprites/particle/circular_1.png" id="5_ay43o"]
+
+[sub_resource type="Gradient" id="Gradient_w5qiq"]
+offsets = PackedFloat32Array(0.409836, 1)
+colors = PackedColorArray(0.770681, 0.547414, 0, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_afe1y"]
+gradient = SubResource("Gradient_w5qiq")
+
+[sub_resource type="Curve" id="Curve_1jvo2"]
+_data = [Vector2(0, 0.10989), 0.0, 0.0, 0, 0, Vector2(1, 1), 2.43328, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_k1eid"]
+curve = SubResource("Curve_1jvo2")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_2v1el"]
+particle_flag_disable_z = true
+emission_shape = 2
+emission_sphere_radius = 15.0
+spread = 180.0
+gravity = Vector3(0, 0, 0)
+radial_accel_min = -30.0
+radial_accel_max = -30.0
+scale_min = 8.0
+scale_max = 8.0
+scale_curve = SubResource("CurveTexture_k1eid")
+color = Color(10, 10, 10, 1)
+color_ramp = SubResource("GradientTexture1D_afe1y")
+
+[sub_resource type="Curve" id="Curve_j41v3"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_f2656"]
+curve = SubResource("Curve_j41v3")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_dd8qj"]
+particle_flag_disable_z = true
+gravity = Vector3(0, 0, 0)
+scale_curve = SubResource("CurveTexture_f2656")
+
+[sub_resource type="Animation" id="Animation_idllf"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D/GPUParticles2D:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D/GPUParticles2D2:emitting")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_op31b"]
+resource_name = "shoot_anim"
+length = 1.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D/GPUParticles2D:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D/GPUParticles2D2:emitting")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/2/type = "method"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(1.5),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"shoot_bullet"
+}]
+}
+tracks/3/type = "method"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(1.5),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"emit_shoot_end"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_6dh4j"]
+_data = {
+"RESET": SubResource("Animation_idllf"),
+"shoot_anim": SubResource("Animation_op31b")
+}
+
+[node name="EnemyGun3" type="Node2D"]
+script = ExtResource("1_rms2c")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(-4, -4)
+scale = Vector2(0.8, 0.8)
+texture = ExtResource("1_ug1w2")
+
+[node name="BulletLauncher" parent="Sprite2D" instance=ExtResource("2_hmvnt")]
+position = Vector2(30, -1)
+shoot_at_once = false
+bullet_count = 1
+bullet = ExtResource("3_oav00")
+bullet_damage = 14.0
+bullet_speed = 200.0
+bullet_penetrate = 1
+kill_time = 11.0
+explosion_range = 5.0
+bullet_id = "enemy_missile_1"
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="Sprite2D"]
+position = Vector2(34, -1)
+emitting = false
+process_material = SubResource("ParticleProcessMaterial_2v1el")
+trail_lifetime = 0.8
+
+[node name="GPUParticles2D2" type="GPUParticles2D" parent="Sprite2D"]
+position = Vector2(34, -1)
+emitting = false
+amount = 3
+process_material = SubResource("ParticleProcessMaterial_dd8qj")
+texture = ExtResource("5_ay43o")
+lifetime = 0.5
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_6dh4j")
+}

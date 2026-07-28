@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c5l2xmamxjudw"]
+
+[ext_resource type="Script" path="res://scenes/update_item/relav_baton.gd" id="1_8ut1q"]
+
+[node name="relav_baton" type="Node2D"]
+script = ExtResource("1_8ut1q")

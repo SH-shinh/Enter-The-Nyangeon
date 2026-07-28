@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://lx4j26ftb0ne"]
+
+[ext_resource type="Texture2D" uid="uid://ck82785tesgah" path="res://sprites/update_item/lifebuoy.png" id="1_mi0nt"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_iaigc"]
+
+[resource]
+script = ExtResource("2_iaigc")
+id = "lifebuoy"
+icon = ExtResource("1_mi0nt")
+name = "救生圈"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "救援溺水者时使用的泳圈，受到伤害时产生冲击波清除周围的子弹。"
+forward = "独特
+受伤时清除范围子弹"
+negative = ""
+item_tags = 256
+tags = Array[String](["装备", "防御"])
+weight = 1.0

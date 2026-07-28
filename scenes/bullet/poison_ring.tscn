@@ -1,0 +1,175 @@
+[gd_scene load_steps=13 format=3 uid="uid://v0nypab6mv7a"]
+
+[ext_resource type="Script" path="res://scenes/bullet/poison_ring.gd" id="1_4bke4"]
+[ext_resource type="Shader" path="res://shaders/range_effects.gdshader" id="1_smawo"]
+[ext_resource type="Resource" uid="uid://dsblwps2uxvdu" path="res://resources/buff/enemy_buff/poison_dot.tres" id="2_4t4d6"]
+[ext_resource type="Texture2D" uid="uid://bw7w0mqpw3hm1" path="res://sprites/particle/skeleton_s.png" id="4_5twc4"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_jp654"]
+radius = 100.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_i8l8s"]
+shader = ExtResource("1_smawo")
+shader_parameter/ring_radius = 0.1
+shader_parameter/thickness_scalar = 0.0
+shader_parameter/oscillation_scalar = 0.0
+shader_parameter/speed = 0.0
+shader_parameter/main_color = Color(0.130288, 0.603383, 0.138861, 0.659)
+shader_parameter/lerp_color = Color(0, 0.788922, 0.257568, 1)
+shader_parameter/transparency = 1.0
+
+[sub_resource type="Curve" id="Curve_kw7e6"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -5.8022, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_3ksss"]
+curve = SubResource("Curve_kw7e6")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_mr7kd"]
+lifetime_randomness = 0.71
+particle_flag_disable_z = true
+emission_shape = 6
+emission_ring_axis = Vector3(0, 0, 1)
+emission_ring_height = 1.0
+emission_ring_radius = 80.0
+emission_ring_inner_radius = 40.0
+gravity = Vector3(0, -10, 0)
+scale_max = 1.5
+scale_curve = SubResource("CurveTexture_3ksss")
+color = Color(0.4, 1.8, 0.6, 1)
+
+[sub_resource type="Animation" id="Animation_y6kg4"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ColorRect:material:shader_parameter/ring_radius")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0.1, -0.2, 0, 0.2, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ColorRect:material:shader_parameter/thickness_scalar")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.2, 0, 0.2, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Area2D/CollisionShape2D:disabled")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+
+[sub_resource type="Animation" id="Animation_vj5uo"]
+resource_name = "new_animation"
+length = 0.5
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ColorRect:material:shader_parameter/ring_radius")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0.1, -0.2, 0, 0.2, 0, 0.5, -0.2, 0, 0, 0),
+"times": PackedFloat32Array(0, 0.5)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ColorRect:material:shader_parameter/thickness_scalar")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0.5, -0.2, 0, 0.2, 0, 0, -0.2, 0, 0, 0),
+"times": PackedFloat32Array(0, 0.5)
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Area2D/CollisionShape2D:disabled")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.1, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+tracks/3/type = "method"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0.1, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"values": [{
+"args": [],
+"method": &"gpu_emitting"
+}, {
+"args": [],
+"method": &"idle_state"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_wb30f"]
+_data = {
+"RESET": SubResource("Animation_y6kg4"),
+"new_animation": SubResource("Animation_vj5uo")
+}
+
+[node name="poison_ring" type="Node2D"]
+script = ExtResource("1_4bke4")
+enemy_buff = ExtResource("2_4t4d6")
+buff_layer = 1
+buff_erase_timer = 1.0
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("CircleShape2D_jp654")
+disabled = true
+
+[node name="ColorRect" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_i8l8s")
+offset_left = -100.0
+offset_top = -100.0
+offset_right = 100.0
+offset_bottom = 100.0
+mouse_filter = 2
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 12
+process_material = SubResource("ParticleProcessMaterial_mr7kd")
+texture = ExtResource("4_5twc4")
+lifetime = 0.4
+one_shot = true
+explosiveness = 1.0
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_wb30f")
+}
+
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]

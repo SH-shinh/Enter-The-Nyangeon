@@ -1,0 +1,74 @@
+[gd_scene load_steps=11 format=3 uid="uid://dyybj6wh4y6ta"]
+
+[ext_resource type="Texture2D" uid="uid://dlayrbr01wq2o" path="res://sprites/update_item/murky_hand_scythe_icon.png" id="1_64mvg"]
+[ext_resource type="Script" path="res://scenes/update_item/murky_hand_scythe_icon.gd" id="1_mxbct"]
+[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="2_y4yvi"]
+
+[sub_resource type="Gradient" id="Gradient_5c558"]
+colors = PackedColorArray(0.79279, 0.000243927, 0.726065, 1, 0.839402, 0.763322, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_y3njl"]
+gradient = SubResource("Gradient_5c558")
+
+[sub_resource type="Curve" id="Curve_666cd"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_g8jpr"]
+curve = SubResource("Curve_666cd")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_gxj5k"]
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 15.0
+angle_max = 45.0
+inherit_velocity_ratio = 0.05
+angular_velocity_min = 50.0
+angular_velocity_max = 100.0
+gravity = Vector3(0, 0, 0)
+scale_max = 5.0
+scale_curve = SubResource("CurveTexture_g8jpr")
+color = Color(2, 0.947, 2, 1)
+color_initial_ramp = SubResource("GradientTexture1D_y3njl")
+hue_variation_min = -0.05
+hue_variation_max = 0.05
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_6yl5s"]
+shader = ExtResource("2_y4yvi")
+shader_parameter/outline_width = 1.0
+shader_parameter/outline_color = Color(20, 0.066, 20, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_phlre"]
+radius = 14.0
+
+[node name="MurkyHandScytheIcon" type="CharacterBody2D"]
+scale = Vector2(1.5, 1.5)
+script = ExtResource("1_mxbct")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+amount = 5
+process_material = SubResource("ParticleProcessMaterial_gxj5k")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_6yl5s")
+texture = ExtResource("1_64mvg")
+
+[node name="Area2D" type="Area2D" parent="."]
+visible = false
+collision_layer = 0
+collision_mask = 1032
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("CircleShape2D_phlre")
+
+[node name="FlyTimer" type="Timer" parent="."]
+wait_time = 0.3
+one_shot = true
+
+[node name="SurroundTimer" type="Timer" parent="."]
+wait_time = 0.1
+one_shot = true
+
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
+[connection signal="timeout" from="FlyTimer" to="." method="_on_fly_timer_timeout"]

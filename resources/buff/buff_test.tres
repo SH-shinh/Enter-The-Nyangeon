@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://cprc4qfis508v"]
+
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="1_6bhlg"]
+[ext_resource type="Texture2D" uid="uid://cixybp5p7cfdj" path="res://sprites/buff_icon/buff_test.png" id="1_alf6x"]
+
+[resource]
+script = ExtResource("1_6bhlg")
+id = "buff_test"
+icon = ExtResource("1_alf6x")
+name = "测试buff"
+description = "测试buff"

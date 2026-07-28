@@ -1,0 +1,26 @@
+[gd_scene load_steps=5 format=3 uid="uid://bhaktofgt0o5w"]
+
+[ext_resource type="Script" path="res://scenes/bullet/enemy_bullet.gd" id="1_02qvg"]
+[ext_resource type="Texture2D" uid="uid://dibtbbvfa3crl" path="res://sprites/bullet/enemy_bullet.png" id="1_3omvl"]
+[ext_resource type="PackedScene" uid="uid://dmdae380wtosa" path="res://scenes/bullet/bullet_smoke_2.tscn" id="2_ixrxh"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ry5xl"]
+radius = 8.0
+
+[node name="EnemyBullet" type="CharacterBody2D" groups=["EnemyBullet"]]
+z_index = 3
+collision_layer = 128
+collision_mask = 2
+motion_mode = 1
+platform_floor_layers = 4294967040
+script = ExtResource("1_02qvg")
+smoke = ExtResource("2_ixrxh")
+pool_id = "enemy_bullet_1"
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(100, 1.5, 1.5, 1)
+scale = Vector2(0.8, 0.8)
+texture = ExtResource("1_3omvl")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_ry5xl")

@@ -1,0 +1,250 @@
+[gd_scene load_steps=27 format=3 uid="uid://b7vb8yy2kwu83"]
+
+[ext_resource type="Script" path="res://scenes/enemies/automaton.gd" id="1_b3qu0"]
+[ext_resource type="PackedScene" uid="uid://bdo12rjvieur7" path="res://scenes/shadow/shadow.tscn" id="2_g4jl6"]
+[ext_resource type="Texture2D" uid="uid://dxxom3vb7us6i" path="res://sprites/enemies/mp_automaton.png" id="3_3pgb4"]
+[ext_resource type="PackedScene" uid="uid://cbsxeq2w3bh8g" path="res://scenes/enemies/enemy_gun_4.tscn" id="4_u6c4y"]
+[ext_resource type="Script" path="res://script/EnemyStateMachine.gd" id="5_ptsny"]
+[ext_resource type="Script" path="res://script/EnemyStats.gd" id="6_hbhvj"]
+[ext_resource type="PackedScene" uid="uid://bwix1bf5g1mjh" path="res://script/death_anim.tscn" id="7_g0g0w"]
+[ext_resource type="PackedScene" uid="uid://dcixivms2uc75" path="res://script/enemy_hurt_floating_text.tscn" id="8_u141j"]
+[ext_resource type="PackedScene" uid="uid://btl1l8a33rp5b" path="res://scenes/manager/enemy_buff_manager.tscn" id="9_qweg4"]
+
+[sub_resource type="Shader" id="Shader_23foo"]
+code = "shader_type canvas_item;
+
+uniform float outline_width = 1.0;
+uniform vec4 outline_color :source_color = vec4(0, 0, 0, 1 );
+uniform float flash_opacity: hint_range(0.0, 1.0, 0.1) = 0.0;
+
+
+
+void fragment() {
+	
+	vec2 uv = UV;
+	
+	vec2 uv_up = uv + vec2(0, TEXTURE_PIXEL_SIZE.y) * outline_width;
+	vec2 uv_down = uv + vec2(0, -TEXTURE_PIXEL_SIZE.y) * outline_width;
+	vec2 uv_left = uv + vec2(TEXTURE_PIXEL_SIZE.x, 0) * outline_width;
+	vec2 uv_right = uv + vec2(-TEXTURE_PIXEL_SIZE.x, 0) * outline_width;
+	
+	vec4 color_up = texture(TEXTURE, uv_up);
+	vec4 color_down = texture(TEXTURE, uv_down);
+	vec4 color_left = texture(TEXTURE, uv_left);
+	vec4 color_right = texture(TEXTURE, uv_right);
+	
+	vec4 outline = color_up + color_down + color_left + color_right;
+	
+	outline.rgb = outline_color.rgb;
+	
+	outline.a = min(outline.a, 1);
+	
+	vec4 orginal_color = texture(TEXTURE, UV);
+	orginal_color.rgb = mix(orginal_color.rgb, outline_color.rgb, flash_opacity);
+	
+	COLOR = mix(outline, orginal_color, orginal_color.a);
+
+}"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_uj1lh"]
+resource_local_to_scene = true
+shader = SubResource("Shader_23foo")
+shader_parameter/outline_width = 0.0
+shader_parameter/outline_color = Color(2, 2, 2, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_33dkl"]
+atlas = ExtResource("3_3pgb4")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cmfa5"]
+atlas = ExtResource("3_3pgb4")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lmgxr"]
+atlas = ExtResource("3_3pgb4")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_svfjg"]
+atlas = ExtResource("3_3pgb4")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_45y7p"]
+atlas = ExtResource("3_3pgb4")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_baqyu"]
+atlas = ExtResource("3_3pgb4")
+region = Rect2(0, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_a00lr"]
+atlas = ExtResource("3_3pgb4")
+region = Rect2(64, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jpqk2"]
+atlas = ExtResource("3_3pgb4")
+region = Rect2(128, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hnuhu"]
+atlas = ExtResource("3_3pgb4")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3y57y"]
+atlas = ExtResource("3_3pgb4")
+region = Rect2(256, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3xeps"]
+atlas = ExtResource("3_3pgb4")
+region = Rect2(320, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2por6"]
+atlas = ExtResource("3_3pgb4")
+region = Rect2(384, 64, 64, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_qb5c7"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_33dkl")
+}],
+"loop": false,
+"name": &"die",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.2,
+"texture": SubResource("AtlasTexture_cmfa5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_lmgxr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_svfjg")
+}, {
+"duration": 1.2,
+"texture": SubResource("AtlasTexture_45y7p")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 12.0
+}, {
+"frames": [{
+"duration": 1.1,
+"texture": SubResource("AtlasTexture_baqyu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_a00lr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jpqk2")
+}, {
+"duration": 0.9,
+"texture": SubResource("AtlasTexture_hnuhu")
+}, {
+"duration": 0.9,
+"texture": SubResource("AtlasTexture_3y57y")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3xeps")
+}, {
+"duration": 1.1,
+"texture": SubResource("AtlasTexture_2por6")
+}],
+"loop": true,
+"name": &"run",
+"speed": 12.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_4b3wr"]
+radius = 12.0
+height = 36.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_nxvgv"]
+radius = 9.0
+
+[node name="MPAutomaton" type="CharacterBody2D" node_paths=PackedStringArray("stats", "sprite_2d", "graphics", "collision_shape_2d", "enemy_buff_manager") groups=["Enemy"]]
+collision_layer = 8
+collision_mask = 258
+motion_mode = 1
+script = ExtResource("1_b3qu0")
+shoot_range = 400
+back_range = 60
+aim_and_move = 0.2
+surround_tendency = 10
+surround_time = 20
+shoot_cd_time = 60
+pool_id = "mp_automaton"
+icon = "mp_automaton_icon"
+stats = NodePath("EnemyStats")
+sprite_2d = NodePath("Graphics/AnimatedSprite2D")
+graphics = NodePath("Graphics")
+collision_shape_2d = NodePath("CollisionShape2D")
+enemy_buff_manager = NodePath("EnemyBuffManager")
+
+[node name="Graphics" type="Node2D" parent="."]
+
+[node name="shadow" parent="Graphics" instance=ExtResource("2_g4jl6")]
+scale = Vector2(0.65625, 0.65625)
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Graphics"]
+material = SubResource("ShaderMaterial_uj1lh")
+position = Vector2(0, -15)
+sprite_frames = SubResource("SpriteFrames_qb5c7")
+animation = &"idle"
+autoplay = "idle"
+frame_progress = 0.751202
+flip_h = true
+
+[node name="Gun" parent="Graphics" node_paths=PackedStringArray("stats") instance=ExtResource("4_u6c4y")]
+position = Vector2(0, -16)
+gun_scale = 0.65
+stats = NodePath("../../EnemyStats")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -20)
+shape = SubResource("CapsuleShape2D_4b3wr")
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("5_ptsny")
+
+[node name="EnemyStats" type="Node" parent="."]
+script = ExtResource("6_hbhvj")
+score = 85
+max_hp = 120
+knockback_resis = 50
+penetrate_resis = 3
+Enemy_damage = 5
+Enemy_coin = 8
+MAX_SPEED = 85
+SPEED_TIME = 0.2
+
+[node name="DeathAnim" parent="." node_paths=PackedStringArray("stats") instance=ExtResource("7_g0g0w")]
+stats = NodePath("../EnemyStats")
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+position = Vector2(0, -11)
+shape = SubResource("CircleShape2D_nxvgv")
+
+[node name="EnemyHurtFloatingText" parent="." instance=ExtResource("8_u141j")]
+
+[node name="EnemyBuffManager" parent="." instance=ExtResource("9_qweg4")]
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+offset_left = -10.0
+offset_top = -55.0
+offset_right = 30.0
+offset_bottom = -29.0
+scale = Vector2(0.5, 0.5)
+
+[node name="BuffBox" type="HBoxContainer" parent="MarginContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+
+[connection signal="shoot_end" from="Graphics/Gun" to="." method="_on_gun_shoot_end"]
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
+[connection signal="body_exited" from="Area2D" to="." method="_on_area_2d_body_exited"]

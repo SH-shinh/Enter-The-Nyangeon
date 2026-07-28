@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://drptrgb6aq8hq"]
+
+[ext_resource type="Script" path="res://scenes/update_item/millennium_flag.gd" id="1_0a2c2"]
+[ext_resource type="Resource" uid="uid://cwonfqopcwqnd" path="res://resources/buff/player_buff/bullet_shoot_time_buff.tres" id="2_0rowv"]
+
+[node name="MillenniumFlag" type="Node2D"]
+script = ExtResource("1_0a2c2")
+player_buff = ExtResource("2_0rowv")
+buff_layer = 1
+buff_value = 1.65
+buff_erase_timer = 1.0

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://dt7isaedui2ia"]
+
+[ext_resource type="Texture2D" uid="uid://i5e265lo6c0j" path="res://sprites/update_item/mint_chocolate_parfait.png" id="1_uw7er"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_52bsc"]
+
+[resource]
+script = ExtResource("2_52bsc")
+id = "mint_chocolate_parfait"
+icon = ExtResource("1_uw7er")
+name = "薄荷巧克力芭菲"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "味道独特的薄荷巧克力芭菲，子弹飞行时间越久，伤害越高。"
+forward = "独特
+子弹每飞行1秒+20%子弹伤害"
+negative = ""
+item_tags = 1
+tags = Array[String](["弹道"])
+weight = 1.0

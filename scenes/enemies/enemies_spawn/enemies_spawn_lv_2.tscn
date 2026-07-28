@@ -1,0 +1,26 @@
+[gd_scene load_steps=7 format=3 uid="uid://c2v3kc5pd48i6"]
+
+[ext_resource type="Script" path="res://script/enemies_spawn.gd" id="1_ot67h"]
+[ext_resource type="Resource" uid="uid://tyefl3u2oxr" path="res://resources/enemy/sweeper.tres" id="2_5iekw"]
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_j86k3"]
+[ext_resource type="PackedScene" uid="uid://blgdeks0i23pt" path="res://scenes/enemies/sweeper.tscn" id="2_w6bnv"]
+[ext_resource type="Resource" uid="uid://q1y8ttghyuve" path="res://resources/enemy/modded_sweeper.tres" id="3_7nifx"]
+[ext_resource type="PackedScene" uid="uid://jpy0bx2qrcgo" path="res://scenes/enemies/modded_sweeper.tscn" id="3_8qpaf"]
+
+[node name="EnemiesSpawnLV2" type="Node2D"]
+script = ExtResource("1_ot67h")
+num_mult = 3.0
+round_mult = 1.0
+enemy = Array[ExtResource("2_j86k3")]([ExtResource("2_5iekw"), ExtResource("3_7nifx")])
+enemy_pool = Array[PackedScene]([ExtResource("2_w6bnv"), ExtResource("3_8qpaf")])
+enemy_spawn_num = Array[int]([1, 1])
+enemy_spawn_time = Array[float]([10.0, 80.0])
+
+[node name="RoundTimer" type="Timer" parent="."]
+wait_time = 60.0
+one_shot = true
+
+[node name="EnemySpawnCDTime" type="Timer" parent="."]
+wait_time = 0.1
+
+[connection signal="timeout" from="EnemySpawnCDTime" to="." method="_on_enemy_spawn_cd_time_timeout"]

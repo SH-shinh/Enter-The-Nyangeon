@@ -1,0 +1,37 @@
+[gd_scene load_steps=10 format=3 uid="uid://dppbh2e7c0351"]
+
+[ext_resource type="Script" path="res://script/enemies_spawn.gd" id="1_b10bf"]
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_gtcll"]
+[ext_resource type="Resource" uid="uid://tyefl3u2oxr" path="res://resources/enemy/sweeper.tres" id="3_58b3q"]
+[ext_resource type="Resource" uid="uid://bo5aojm81wiil" path="res://resources/enemy/enhanced_sweeper.tres" id="4_pxo46"]
+[ext_resource type="Resource" uid="uid://uwsau2i7bmiv" path="res://resources/enemy/soldier_helmet_ar.tres" id="5_q2okv"]
+[ext_resource type="Resource" uid="uid://cjvrr0lb3dvye" path="res://resources/enemy/soldier_redhelmet_sr.tres" id="6_mit6s"]
+[ext_resource type="PackedScene" uid="uid://c2i5ffj4785vg" path="res://scenes/enemies/enemies_spawn/path_spawn.tscn" id="8_qfpak"]
+[ext_resource type="Resource" uid="uid://doxv0u2ida458" path="res://resources/enemy/red_sweeper.tres" id="9_p34w4"]
+[ext_resource type="PackedScene" uid="uid://cbpbf4l8gvrde" path="res://scenes/enemies/enemies_spawn/enemy_path.tscn" id="10_dx24h"]
+
+[node name="EnemiesSpawnLV8_helmet" type="Node2D"]
+script = ExtResource("1_b10bf")
+num_mult = 2.2
+round_mult = 1.0
+hp_mult = 2.0
+damage_mult = 1.2
+enemy = Array[ExtResource("2_gtcll")]([ExtResource("3_58b3q"), ExtResource("4_pxo46"), ExtResource("5_q2okv"), ExtResource("6_mit6s")])
+enemy_spawn_num = Array[int]([6, 2, 2, 1])
+enemy_spawn_time = Array[float]([15.0, 55.0, 40.0, 40.0])
+
+[node name="RoundTimer" type="Timer" parent="."]
+wait_time = 60.0
+one_shot = true
+
+[node name="EnemySpawnCDTime" type="Timer" parent="."]
+wait_time = 0.1
+
+[node name="path_spawn" parent="." instance=ExtResource("8_qfpak")]
+enemy_pool = Array[ExtResource("2_gtcll")]([ExtResource("9_p34w4")])
+enemy_quantity = Array[int]([4])
+enemy_spawn_time = Array[float]([100.0])
+enemy_spawn_path = Array[PackedScene]([ExtResource("10_dx24h")])
+points = Array[Vector2]([Vector2(0, -368), Vector2(744, 0), Vector2(0, 368), Vector2(-744, 0)])
+
+[connection signal="timeout" from="EnemySpawnCDTime" to="." method="_on_enemy_spawn_cd_time_timeout"]

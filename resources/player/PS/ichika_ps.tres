@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PSCard" load_steps=3 format=3 uid="uid://dfsa1h7mu3eqa"]
+
+[ext_resource type="Script" path="res://resources/player/PS/ps_card.gd" id="1_rofam"]
+[ext_resource type="Texture2D" uid="uid://bsrixobgsnnxh" path="res://sprites/weapon/red_dragon.png" id="2_dr35x"]
+
+[resource]
+script = ExtResource("1_rofam")
+weapon_icon = ExtResource("2_dr35x")
+t_level = Array[String](["", "", "", ""])

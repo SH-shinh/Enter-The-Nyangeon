@@ -1,0 +1,44 @@
+[gd_scene load_steps=5 format=3 uid="uid://24mhbgmb20jy"]
+
+[ext_resource type="Script" path="res://scenes/bullet/enemy_explosion_damage.gd" id="1_m4h3u"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_rslq2"]
+
+[sub_resource type="Gradient" id="Gradient_xh0rg"]
+interpolation_mode = 1
+colors = PackedColorArray(0.729412, 0.0941176, 0, 0.176471, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_ayg58"]
+gradient = SubResource("Gradient_xh0rg")
+width = 22
+height = 22
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0)
+metadata/_snap_enabled = true
+
+[node name="EnemyExplosionDamage" type="Node2D" groups=["EnemyExplosion"]]
+script = ExtResource("1_m4h3u")
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 8193
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("CircleShape2D_rslq2")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+offset_left = -11.0
+offset_top = -11.0
+offset_right = 11.0
+offset_bottom = 11.0
+mouse_filter = 2
+texture = SubResource("GradientTexture2D_ayg58")
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 0.1
+one_shot = true
+
+[connection signal="area_shape_entered" from="Area2D" to="." method="_on_area_2d_area_shape_entered"]
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

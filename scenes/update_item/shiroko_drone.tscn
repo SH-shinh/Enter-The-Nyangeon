@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bum2ipf2f2mn7"]
+
+[ext_resource type="Script" path="res://scenes/update_item/shiroko_drone.gd" id="1_pvjnd"]
+
+[node name="ShirokoDrone" type="Node2D"]
+script = ExtResource("1_pvjnd")

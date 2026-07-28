@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://dxwjehtv1eq8d"]
+
+[ext_resource type="Texture2D" uid="uid://cx4jei5ckcvs4" path="res://sprites/update_item/red_ninpero.png" id="1_px16g"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_848r8"]
+
+[resource]
+script = ExtResource("2_848r8")
+id = "red_ninpero"
+icon = ExtResource("1_px16g")
+name = "红色忍佩洛"
+rare = 2
+order_num = -1
+special_rules = 0
+description = "红色忍佩洛玩偶，燃烧伤害对目标施加最大5层的10%易伤效果。"
+forward = "+5最大施加层数"
+negative = ""
+item_tags = 32
+tags = Array[String](["燃烧"])
+weight = 1.0

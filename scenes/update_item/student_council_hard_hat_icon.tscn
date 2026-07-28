@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://doitjjbicpmud"]
+
+[ext_resource type="Texture2D" uid="uid://cesi13yx6yjyv" path="res://sprites/update_item/student_council_hard_hat_icon.png" id="1_7sted"]
+[ext_resource type="PackedScene" uid="uid://wffnchsknkba" path="res://script/hat.tscn" id="2_i168o"]
+
+[node name="student_council_hard_hat_icon" type="Sprite2D"]
+position = Vector2(-1, 0)
+texture = ExtResource("1_7sted")
+flip_h = true
+
+[node name="Hat" parent="." instance=ExtResource("2_i168o")]
+position = Vector2(1, -8)

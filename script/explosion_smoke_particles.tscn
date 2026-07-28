@@ -1,0 +1,57 @@
+[gd_scene load_steps=10 format=3 uid="uid://dnlu60we1wh2l"]
+
+[ext_resource type="Script" path="res://script/explosion_particles.gd" id="1_bbrdc"]
+[ext_resource type="Texture2D" uid="uid://b5nbmcnfshgb8" path="res://sprites/particle/circular_1.png" id="2_ymdrr"]
+
+[sub_resource type="Gradient" id="Gradient_rliro"]
+colors = PackedColorArray(0, 0, 0, 1, 0.176419, 0.176419, 0.176419, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_wia27"]
+gradient = SubResource("Gradient_rliro")
+
+[sub_resource type="Gradient" id="Gradient_qs7x0"]
+colors = PackedColorArray(0, 0, 0, 1, 0.152941, 0.152941, 0.152941, 0.784314)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_kct0c"]
+gradient = SubResource("Gradient_qs7x0")
+
+[sub_resource type="Curve" id="Curve_1k20d"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.573333, 0.791209), 0.0, 0.0, 0, 0, Vector2(0.86, 0.56044), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_tybt8"]
+curve = SubResource("Curve_1k20d")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_v0a1t"]
+particle_flag_disable_z = true
+spread = 0.0
+gravity = Vector3(0, 0, 0)
+scale_min = 0.5
+scale_max = 1.5
+scale_curve = SubResource("CurveTexture_tybt8")
+color_ramp = SubResource("GradientTexture1D_kct0c")
+color_initial_ramp = SubResource("GradientTexture1D_wia27")
+sub_emitter_keep_velocity = true
+
+[node name="CharacterBody2D" type="CharacterBody2D"]
+z_index = 1
+script = ExtResource("1_bbrdc")
+body_id = "explosion_smoke_particles"
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+process_material = SubResource("ParticleProcessMaterial_v0a1t")
+texture = ExtResource("2_ymdrr")
+lifetime = 0.2
+fixed_fps = 60
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 0.7
+one_shot = true
+autostart = true
+
+[node name="Timer2" type="Timer" parent="."]
+wait_time = 0.3
+one_shot = true
+
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
+[connection signal="timeout" from="Timer2" to="." method="_on_timer_2_timeout"]

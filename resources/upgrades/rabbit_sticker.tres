@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://cicdt48ccbngn"]
+
+[ext_resource type="Texture2D" uid="uid://bevfoyyp3dhkd" path="res://sprites/update_item/rabbit_sticker.png" id="1_ihtpt"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_f86ap"]
+
+[resource]
+script = ExtResource("2_f86ap")
+id = "rabbit_sticker"
+icon = ExtResource("1_ihtpt")
+name = "兔子贴纸"
+rare = 0
+order_num = -1
+special_rules = 0
+description = "不同的学生自由地制作，自由地贴在不同的地方，贴在枪身上能提高射击速度。"
+forward = "+8%射速"
+negative = ""
+item_tags = 3
+tags = Array[String](["通用"])
+weight = 1.0

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://bj0ss24d6kpts"]
+
+[ext_resource type="Texture2D" uid="uid://3gqqwaqgmqy2" path="res://sprites/update_item/robotic_vacuum_cleaner.png" id="1_0kr71"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="1_rk3mg"]
+
+[resource]
+script = ExtResource("1_rk3mg")
+id = "robotic_vacuum_cleaner"
+icon = ExtResource("1_0kr71")
+name = "扫地机器人"
+rare = 1
+order_num = 5
+special_rules = 0
+description = "千年学院量产型扫地机器人，能够在场上自动寻找金币。"
+forward = "最大持有5个
+提升机器人移动速度"
+negative = ""
+item_tags = 33792
+tags = Array[String](["装备", "通用"])
+weight = 1.0

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://d2wkri87ihp73"]
+
+[ext_resource type="Texture2D" uid="uid://bgck00150w8af" path="res://sprites/buff_icon/charge_up_buff_icon.png" id="1_f14ng"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_vkxb3"]
+
+[resource]
+script = ExtResource("2_vkxb3")
+id = "charge_up_buff"
+icon = ExtResource("1_f14ng")
+name = "蓄力buff"
+ability = ""
+remove_by_layer = false
+description = ""

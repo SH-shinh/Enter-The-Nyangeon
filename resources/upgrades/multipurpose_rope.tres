@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://k88p4yqp7oc2"]
+
+[ext_resource type="Texture2D" uid="uid://b6vaiv3hbau5c" path="res://sprites/update_item/multipurpose_rope.png" id="1_wcv3m"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_tiadk"]
+
+[resource]
+script = ExtResource("2_tiadk")
+id = "multipurpose_rope"
+icon = ExtResource("1_wcv3m")
+name = "多功能绳索"
+rare = 0
+order_num = 5
+special_rules = 0
+description = "千年开发的新材料高弹性绳索，造成击杀时有概率直接拾取掉落的金币。"
+forward = "最大持有5个
+提高触发概率"
+negative = ""
+item_tags = 32776
+tags = Array[String](["概率"])
+weight = 1.0

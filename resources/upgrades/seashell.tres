@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://bdpuqcngv8f8x"]
+
+[ext_resource type="Texture2D" uid="uid://cokby643mghww" path="res://sprites/update_item/seashell.png" id="1_j0fyq"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_q5mpc"]
+
+[resource]
+script = ExtResource("2_q5mpc")
+id = "seashell"
+icon = ExtResource("1_j0fyq")
+name = "贝壳"
+rare = 0
+order_num = -1
+special_rules = 0
+description = "海岸上很常见的小贝壳。"
+forward = "+12%暴击伤害"
+negative = ""
+item_tags = 16
+tags = Array[String](["暴击"])
+weight = 1.0

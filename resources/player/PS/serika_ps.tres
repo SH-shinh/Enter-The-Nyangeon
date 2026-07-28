@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PSCard" load_steps=3 format=3 uid="uid://cy0j16560wgym"]
+
+[ext_resource type="Script" path="res://resources/player/PS/ps_card.gd" id="1_cq6r8"]
+[ext_resource type="Texture2D" uid="uid://da1m8jg2fohgr" path="res://sprites/weapon/sincerity.png" id="2_t23tn"]
+
+[resource]
+script = ExtResource("1_cq6r8")
+weapon_icon = ExtResource("2_t23tn")
+t_level = Array[String](["可负债花费，负债状态降低全部属性（-10%/-20%/-40%/-60%/-99%），回合开始时不负债则解除。", "处于负债状态时，硬币获取提高（20%/40%/80%/150%/300%）。", "+25%射速，每获取一个道具+3%全局伤害。", "+25%射速，每1%射速额外提供1%子弹伤害。"])

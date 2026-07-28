@@ -1,0 +1,31 @@
+[gd_scene load_steps=8 format=3 uid="uid://b1ogqqitudnhi"]
+
+[ext_resource type="Script" path="res://ui/open_save_file.gd" id="1_xu8f0"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_r6k68"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_70g4h"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_nv5ws"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_6ltea"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_43u7m"]
+
+[sub_resource type="Theme" id="Theme_uh2gy"]
+Button/styles/disabled = SubResource("StyleBoxEmpty_r6k68")
+Button/styles/focus = SubResource("StyleBoxEmpty_70g4h")
+Button/styles/hover = SubResource("StyleBoxEmpty_nv5ws")
+Button/styles/normal = SubResource("StyleBoxEmpty_6ltea")
+Button/styles/pressed = SubResource("StyleBoxEmpty_43u7m")
+
+[node name="open_save_file" type="Button"]
+custom_minimum_size = Vector2(86, 10)
+offset_right = 46.0
+offset_bottom = 7.0
+theme = SubResource("Theme_uh2gy")
+theme_override_font_sizes/font_size = 8
+text = "save_folder"
+script = ExtResource("1_xu8f0")
+
+[connection signal="pressed" from="." to="." method="_on_pressed"]

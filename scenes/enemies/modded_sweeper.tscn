@@ -1,0 +1,254 @@
+[gd_scene load_steps=33 format=3 uid="uid://jpy0bx2qrcgo"]
+
+[ext_resource type="Script" path="res://scenes/enemies/sweeper.gd" id="1_52grr"]
+[ext_resource type="Texture2D" uid="uid://dfyj3mv4xs5m0" path="res://scenes/shadow/shadow.png" id="2_qkwpn"]
+[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="3_ta5in"]
+[ext_resource type="Texture2D" uid="uid://c42cphtwvhnvk" path="res://sprites/enemies/modded_sweeper.png" id="4_gghyf"]
+[ext_resource type="Script" path="res://script/EnemyStateMachine.gd" id="5_ccltj"]
+[ext_resource type="Script" path="res://script/EnemyStats.gd" id="6_pl6a5"]
+[ext_resource type="PackedScene" uid="uid://dcixivms2uc75" path="res://script/enemy_hurt_floating_text.tscn" id="7_n6107"]
+[ext_resource type="PackedScene" uid="uid://btl1l8a33rp5b" path="res://scenes/manager/enemy_buff_manager.tscn" id="8_th42h"]
+[ext_resource type="PackedScene" uid="uid://bwix1bf5g1mjh" path="res://script/death_anim.tscn" id="9_0ub6n"]
+[ext_resource type="Script" path="res://scenes/enemies/DeadShoot.gd" id="11_7pffi"]
+[ext_resource type="PackedScene" uid="uid://bm6dimclh7dhb" path="res://script/bullet_launcher.tscn" id="11_tbr1k"]
+[ext_resource type="PackedScene" uid="uid://bhaktofgt0o5w" path="res://scenes/bullet/enemy_bullet.tscn" id="12_facr8"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4g834"]
+resource_local_to_scene = true
+shader = ExtResource("3_ta5in")
+shader_parameter/outline_width = 0.0
+shader_parameter/outline_color = Color(2, 2, 2, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ut5of"]
+atlas = ExtResource("4_gghyf")
+region = Rect2(0, 128, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5402y"]
+atlas = ExtResource("4_gghyf")
+region = Rect2(64, 128, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ufvu6"]
+atlas = ExtResource("4_gghyf")
+region = Rect2(128, 128, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pklto"]
+atlas = ExtResource("4_gghyf")
+region = Rect2(192, 128, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_w5uqe"]
+atlas = ExtResource("4_gghyf")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_un4t3"]
+atlas = ExtResource("4_gghyf")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7ykc2"]
+atlas = ExtResource("4_gghyf")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hplwn"]
+atlas = ExtResource("4_gghyf")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5prrq"]
+atlas = ExtResource("4_gghyf")
+region = Rect2(0, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_uegg4"]
+atlas = ExtResource("4_gghyf")
+region = Rect2(64, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_f4cij"]
+atlas = ExtResource("4_gghyf")
+region = Rect2(128, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_s6a0k"]
+atlas = ExtResource("4_gghyf")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lf4ag"]
+atlas = ExtResource("4_gghyf")
+region = Rect2(256, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ynbba"]
+atlas = ExtResource("4_gghyf")
+region = Rect2(320, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hlofe"]
+atlas = ExtResource("4_gghyf")
+region = Rect2(384, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ifgth"]
+atlas = ExtResource("4_gghyf")
+region = Rect2(448, 64, 64, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_p08w1"]
+animations = [{
+"frames": [{
+"duration": 1.2,
+"texture": SubResource("AtlasTexture_ut5of")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5402y")
+}, {
+"duration": 1.2,
+"texture": SubResource("AtlasTexture_ufvu6")
+}, {
+"duration": 0.5,
+"texture": SubResource("AtlasTexture_pklto")
+}],
+"loop": false,
+"name": &"die",
+"speed": 12.0
+}, {
+"frames": [{
+"duration": 1.2,
+"texture": SubResource("AtlasTexture_w5uqe")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_un4t3")
+}, {
+"duration": 1.2,
+"texture": SubResource("AtlasTexture_7ykc2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hplwn")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 12.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5prrq")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_uegg4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_f4cij")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_s6a0k")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_lf4ag")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ynbba")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hlofe")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ifgth")
+}],
+"loop": true,
+"name": &"run",
+"speed": 12.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_gvmi3"]
+radius = 9.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_mv6ug"]
+radius = 9.0
+
+[node name="ModdedSweeper" type="CharacterBody2D" node_paths=PackedStringArray("stats", "sprite_2d", "graphics", "collision_shape_2d", "enemy_buff_manager") groups=["Enemy"]]
+collision_layer = 8
+collision_mask = 258
+motion_mode = 1
+platform_floor_layers = 4294967040
+platform_wall_layers = 2
+script = ExtResource("1_52grr")
+pool_id = "modded_sweeper"
+icon = "modded_sweeper_icon"
+stats = NodePath("EnemyStats")
+sprite_2d = NodePath("Graphics/AnimatedSprite2D")
+graphics = NodePath("Graphics")
+collision_shape_2d = NodePath("CollisionShape2D")
+enemy_buff_manager = NodePath("EnemyBuffManager")
+
+[node name="Graphics" type="Node2D" parent="."]
+
+[node name="shadow" type="Sprite2D" parent="Graphics"]
+scale = Vector2(0.45, 0.45)
+texture = ExtResource("2_qkwpn")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Graphics"]
+material = SubResource("ShaderMaterial_4g834")
+position = Vector2(0, -15)
+sprite_frames = SubResource("SpriteFrames_p08w1")
+animation = &"run"
+autoplay = "idle"
+frame_progress = 0.145361
+flip_h = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -11)
+shape = SubResource("CircleShape2D_gvmi3")
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("5_ccltj")
+
+[node name="EnemyStats" type="Node" parent="."]
+script = ExtResource("6_pl6a5")
+score = 20
+max_hp = 50
+knockback_resis = 40
+Enemy_damage = 5
+Enemy_bullet_damage = 10
+Enemy_coin = 2
+MAX_SPEED = 50
+
+[node name="ShootPosition" type="Marker2D" parent="."]
+position = Vector2(1, -11)
+
+[node name="EnemyHurtFloatingText" parent="." instance=ExtResource("7_n6107")]
+
+[node name="EnemyBuffManager" parent="." instance=ExtResource("8_th42h")]
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+offset_left = -10.0
+offset_top = -37.0
+offset_right = 30.0
+offset_bottom = -11.0
+scale = Vector2(0.5, 0.5)
+
+[node name="BuffBox" type="HBoxContainer" parent="MarginContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+position = Vector2(0, -11)
+shape = SubResource("CircleShape2D_mv6ug")
+
+[node name="DeathAnim" parent="." node_paths=PackedStringArray("stats") instance=ExtResource("9_0ub6n")]
+stats = NodePath("../EnemyStats")
+
+[node name="DeadShoot" type="Node2D" parent="." node_paths=PackedStringArray("stats")]
+script = ExtResource("11_7pffi")
+stats = NodePath("../EnemyStats")
+
+[node name="BulletLauncher" parent="DeadShoot" instance=ExtResource("11_tbr1k")]
+shoot_at_once = false
+bullet_count = 8
+bullet_arc = 315.0
+bullet = ExtResource("12_facr8")
+bullet_damage = 6.0
+bullet_speed = 100.0
+bullet_penetrate = 1
+decay_time = 1.0
+decay_speed = 1
+kill_time = 2.5
+bullet_id = "enemy_bullet_1"
+
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
+[connection signal="body_exited" from="Area2D" to="." method="_on_area_2d_body_exited"]

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PSCard" load_steps=3 format=3 uid="uid://drk6vn6mamfnn"]
+
+[ext_resource type="Script" path="res://resources/player/PS/ps_card.gd" id="1_1ib73"]
+[ext_resource type="Texture2D" uid="uid://bkuxw8264thv1" path="res://sprites/player/shiroko/white_fang_465.png" id="2_be67b"]
+
+[resource]
+script = ExtResource("1_1ib73")
+weapon_icon = ExtResource("2_be67b")
+t_level = Array[String](["", "", "", ""])

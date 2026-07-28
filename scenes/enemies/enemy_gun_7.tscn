@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=3 uid="uid://bws3gval5hyhw"]
+
+[ext_resource type="Script" path="res://scenes/enemies/enemy_gun_7.gd" id="1_ovf15"]
+[ext_resource type="Texture2D" uid="uid://ddshh2nf0fmtt" path="res://sprites/enemies/enemy_gun_7.png" id="2_lrows"]
+[ext_resource type="PackedScene" uid="uid://b4iitermsly76" path="res://scenes/bullet/launcher/formation_launcher.tscn" id="5_oxk2m"]
+
+[node name="EnemyGun7" type="Node2D"]
+script = ExtResource("1_ovf15")
+gun_scale = 0.65
+type = Array[String](["hollow_rectangle", "circle", "triangle"])
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(7, 0)
+scale = Vector2(0.65, 0.65)
+texture = ExtResource("2_lrows")
+
+[node name="FormationLauncher" parent="Sprite2D" instance=ExtResource("5_oxk2m")]
+position = Vector2(30, -5)
+bullet_speed = 200.0
+rotation_speed = 3.0
+bullet_scale = 0.6
+bullet_damage = 12.0
+bullet_penetrate = 1
+kill_time = 11.0
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 0.1
+one_shot = true

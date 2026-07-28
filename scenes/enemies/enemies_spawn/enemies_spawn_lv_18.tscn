@@ -1,0 +1,30 @@
+[gd_scene load_steps=9 format=3 uid="uid://b1hx2p8jqgu0o"]
+
+[ext_resource type="Script" path="res://script/enemies_spawn.gd" id="1_5sh4h"]
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_f533g"]
+[ext_resource type="Resource" uid="uid://dx43aolfidycr" path="res://resources/enemy/mystic_sweeper.tres" id="2_wh414"]
+[ext_resource type="Resource" uid="uid://1wrnoropoerp" path="res://resources/enemy/tester_automaton_shield.tres" id="3_28e5x"]
+[ext_resource type="PackedScene" uid="uid://dmxgmabfb0b0p" path="res://scenes/enemies/tester_automaton_shield.tscn" id="3_mnyur"]
+[ext_resource type="Resource" uid="uid://domddqeo286ox" path="res://resources/enemy/menacing_automaton.tres" id="4_gk73b"]
+[ext_resource type="PackedScene" uid="uid://bv4btiolwh31t" path="res://scenes/enemies/mystic_sweeper.tscn" id="4_jftt2"]
+[ext_resource type="PackedScene" uid="uid://rheye558mxuv" path="res://scenes/enemies/menacing_automaton.tscn" id="8_jt1vp"]
+
+[node name="EnemiesSpawnLV18" type="Node2D"]
+script = ExtResource("1_5sh4h")
+num_mult = 2.0
+round_mult = 1.0
+hp_mult = 24.0
+damage_mult = 5.0
+enemy = Array[ExtResource("2_f533g")]([ExtResource("2_wh414"), ExtResource("3_28e5x"), ExtResource("4_gk73b")])
+enemy_pool = Array[PackedScene]([ExtResource("4_jftt2"), ExtResource("3_mnyur"), ExtResource("8_jt1vp")])
+enemy_spawn_num = Array[int]([5, 2, 3])
+enemy_spawn_time = Array[float]([5.0, 40.0, 35.0])
+
+[node name="RoundTimer" type="Timer" parent="."]
+wait_time = 60.0
+one_shot = true
+
+[node name="EnemySpawnCDTime" type="Timer" parent="."]
+wait_time = 0.1
+
+[connection signal="timeout" from="EnemySpawnCDTime" to="." method="_on_enemy_spawn_cd_time_timeout"]

@@ -1,0 +1,264 @@
+[gd_scene load_steps=21 format=3 uid="uid://c7nl2ikg66rdb"]
+
+[ext_resource type="Texture2D" uid="uid://dgmhl0jy3t8tg" path="res://ui/joypad.png" id="1_erftb"]
+[ext_resource type="Script" path="res://ui/Knob.gd" id="2_a63ri"]
+[ext_resource type="Script" path="res://ui/AutoButton.gd" id="2_p0kwq"]
+[ext_resource type="Script" path="res://ui/MouseKnob.gd" id="3_v5eq4"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_stppb"]
+atlas = ExtResource("1_erftb")
+region = Rect2(2106, 230, 341, 341)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cpor2"]
+atlas = ExtResource("1_erftb")
+region = Rect2(1566, 228, 345, 345)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xdsdu"]
+atlas = ExtResource("1_erftb")
+region = Rect2(1566, 228, 345, 345)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gutxx"]
+atlas = ExtResource("1_erftb")
+region = Rect2(1566, 228, 345, 345)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qfb5x"]
+
+[sub_resource type="Theme" id="Theme_x5cfd"]
+PanelContainer/styles/panel = SubResource("StyleBoxEmpty_qfb5x")
+
+[sub_resource type="Gradient" id="Gradient_nbf3w"]
+interpolation_mode = 1
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_rbocj"]
+gradient = SubResource("Gradient_nbf3w")
+width = 256
+height = 256
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0)
+metadata/_snap_enabled = true
+
+[sub_resource type="Gradient" id="Gradient_eyyme"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0, 0.87013, 1)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_fbun3"]
+gradient = SubResource("Gradient_eyyme")
+width = 256
+height = 256
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0)
+metadata/_snap_enabled = true
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5000s"]
+atlas = ExtResource("1_erftb")
+region = Rect2(843, 317, 195, 197)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_psbu5"]
+radius = 200.0
+
+[sub_resource type="Gradient" id="Gradient_w6jb1"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0.61039, 0.941558, 1)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_xph8g"]
+gradient = SubResource("Gradient_w6jb1")
+width = 120
+height = 120
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0)
+metadata/_snap_enabled = true
+
+[sub_resource type="Gradient" id="Gradient_n65dg"]
+interpolation_mode = 1
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_rklyg"]
+gradient = SubResource("Gradient_n65dg")
+width = 125
+height = 125
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0.247706)
+
+[node name="VirtualJoypad" type="Control"]
+modulate = Color(1, 1, 1, 0.0470588)
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Actions" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -124.0
+offset_top = -217.0
+offset_right = -124.0
+offset_bottom = -217.0
+grow_horizontal = 0
+grow_vertical = 0
+scale = Vector2(0.18, 0.18)
+
+[node name="TouchScreenButton" type="TouchScreenButton" parent="Actions"]
+position = Vector2(-461.111, 133.333)
+texture_normal = SubResource("AtlasTexture_stppb")
+texture_pressed = SubResource("AtlasTexture_cpor2")
+action = "move_jump"
+
+[node name="Label" type="Label" parent="Actions/TouchScreenButton"]
+offset_left = 22.0
+offset_top = 22.0
+offset_right = 322.0
+offset_bottom = 322.0
+theme_override_font_sizes/font_size = 85
+text = "JUMP"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TouchScreenButton2" type="TouchScreenButton" parent="Actions"]
+position = Vector2(16, -48)
+texture_normal = SubResource("AtlasTexture_stppb")
+texture_pressed = SubResource("AtlasTexture_xdsdu")
+action = "kick"
+
+[node name="Label" type="Label" parent="Actions/TouchScreenButton2"]
+offset_left = 22.0
+offset_top = 22.0
+offset_right = 322.0
+offset_bottom = 322.0
+theme_override_font_sizes/font_size = 85
+text = "MELEE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TouchScreenButton3" type="TouchScreenButton" parent="Actions"]
+position = Vector2(-2677.78, -55.5556)
+texture_normal = SubResource("AtlasTexture_stppb")
+texture_pressed = SubResource("AtlasTexture_gutxx")
+action = "reload"
+
+[node name="Label" type="Label" parent="Actions/TouchScreenButton3"]
+offset_left = 22.0
+offset_top = 22.0
+offset_right = 322.0
+offset_bottom = 322.0
+theme_override_font_sizes/font_size = 65
+text = "RELOAD"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TouchScreenButton4" type="TouchScreenButton" parent="Actions"]
+position = Vector2(-711.111, 683.333)
+texture_normal = SubResource("AtlasTexture_stppb")
+texture_pressed = SubResource("AtlasTexture_cpor2")
+action = "EX_skill"
+
+[node name="Label" type="Label" parent="Actions/TouchScreenButton4"]
+offset_left = 22.0
+offset_top = 22.0
+offset_right = 322.0
+offset_bottom = 322.0
+theme_override_font_sizes/font_size = 85
+text = "EX"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AutoButton" type="PanelContainer" parent="Actions"]
+layout_mode = 0
+offset_left = -1744.44
+offset_top = 727.778
+offset_right = -1488.44
+offset_bottom = 983.778
+theme = SubResource("Theme_x5cfd")
+script = ExtResource("2_p0kwq")
+
+[node name="Press" type="TextureRect" parent="Actions/AutoButton"]
+visible = false
+layout_mode = 2
+texture = SubResource("GradientTexture2D_rbocj")
+
+[node name="Release" type="TextureRect" parent="Actions/AutoButton"]
+layout_mode = 2
+texture = SubResource("GradientTexture2D_fbun3")
+
+[node name="Label" type="Label" parent="Actions/AutoButton"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 65
+text = "AUTO"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Timer" type="Timer" parent="Actions/AutoButton"]
+wait_time = 0.5
+
+[node name="Pause" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -45.0
+offset_top = 10.0
+offset_right = -45.0
+offset_bottom = 10.0
+grow_horizontal = 0
+scale = Vector2(0.1, 0.1)
+
+[node name="TouchScreenButton" type="TouchScreenButton" parent="Pause"]
+texture_normal = SubResource("AtlasTexture_5000s")
+shape = SubResource("CircleShape2D_psbu5")
+action = "pause"
+
+[node name="Stick" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 108.0
+offset_top = -121.0
+offset_right = 108.0
+offset_bottom = -121.0
+grow_vertical = 0
+
+[node name="TouchScreenButton" type="TouchScreenButton" parent="Stick"]
+position = Vector2(-84, -30)
+texture_normal = SubResource("GradientTexture2D_xph8g")
+
+[node name="Knob" type="TouchScreenButton" parent="Stick"]
+position = Vector2(-87, -32)
+texture_normal = SubResource("GradientTexture2D_rklyg")
+script = ExtResource("2_a63ri")
+
+[node name="Stick2" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 570.0
+offset_top = -121.0
+offset_right = 570.0
+offset_bottom = -121.0
+grow_vertical = 0
+
+[node name="TouchScreenButton" type="TouchScreenButton" parent="Stick2"]
+position = Vector2(-84, -30)
+texture_normal = SubResource("GradientTexture2D_xph8g")
+
+[node name="Knob" type="TouchScreenButton" parent="Stick2"]
+position = Vector2(-87, -33)
+texture_normal = SubResource("GradientTexture2D_rklyg")
+action = "fire"
+script = ExtResource("3_v5eq4")
+
+[connection signal="timeout" from="Actions/AutoButton/Timer" to="Actions/AutoButton" method="_on_timer_timeout"]

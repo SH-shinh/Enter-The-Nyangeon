@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CharacterCard" load_steps=5 format=3 uid="uid://bdqbdff8fx3ii"]
+
+[ext_resource type="Texture2D" uid="uid://b5o630ca56ks1" path="res://sprites/player/kotori/kotori_picture.png" id="1_rjcor"]
+[ext_resource type="Texture2D" uid="uid://ca7j4dmko8tds" path="res://ui/school/MILLENNIUM_icon.png" id="2_ol5sp"]
+[ext_resource type="Script" path="res://resources/shop/character/character_card.gd" id="3_i3rpt"]
+[ext_resource type="Texture2D" uid="uid://bdrbfoxum1iba" path="res://ui/weapon/MG_icon.png" id="4_p2hkg"]
+
+[resource]
+script = ExtResource("3_i3rpt")
+cost = 6
+name_1 = "TOYOMI"
+name_2 = "KOTORI"
+character_sprite = ExtResource("1_rjcor")
+weapon_name = "PROFESSOR K"
+weapon_type_name = "MG"
+weapon_icon = ExtResource("4_p2hkg")
+school_name = "MILLENNIUM"
+school_icon = ExtResource("2_ol5sp")
+id = "kotori"
+group = "ED"

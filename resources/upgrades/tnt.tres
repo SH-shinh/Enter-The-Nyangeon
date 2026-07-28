@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://ds8plf4nokxth"]
+
+[ext_resource type="Texture2D" uid="uid://bv3jj14n8hkni" path="res://sprites/update_item/tnt.png" id="1_kqqxb"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_h1kqh"]
+
+[resource]
+script = ExtResource("2_h1kqh")
+id = "tnt"
+icon = ExtResource("1_kqqxb")
+name = "TNT"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "威力极大的方块炸药，注意使用安全。"
+forward = "独特
++55%爆炸伤害
++35%爆炸范围"
+negative = "爆炸伤害会击退自己"
+item_tags = 2
+tags = Array[String](["爆炸"])
+weight = 1.0

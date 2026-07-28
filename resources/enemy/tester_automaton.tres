@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EnemyCard" load_steps=3 format=3 uid="uid://dmixiglqom01n"]
+
+[ext_resource type="PackedScene" uid="uid://bhyuj2aufn4nq" path="res://scenes/enemies/tester_automaton.tscn" id="1_i7ppx"]
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_w45k0"]
+
+[resource]
+script = ExtResource("2_w45k0")
+id = "tester_automaton"
+body = ExtResource("1_i7ppx")
+description = ""

@@ -1,0 +1,41 @@
+[gd_scene load_steps=7 format=3 uid="uid://bchjylcuubq0p"]
+
+[ext_resource type="Script" path="res://scenes/bullet/normal_bullet.gd" id="1_2f0bk"]
+[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="2_45wi6"]
+[ext_resource type="Texture2D" uid="uid://cqt82s1vv3kpu" path="res://sprites/bullet/normal_bullet.png" id="2_agfu5"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sus14"]
+shader = ExtResource("2_45wi6")
+shader_parameter/outline_width = 1.0
+shader_parameter/outline_color = Color(55, 40, 1, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_nsu2u"]
+radius = 7.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ja2rw"]
+radius = 7.0
+
+[node name="CharacterBody2D" type="CharacterBody2D"]
+z_index = 2
+collision_layer = 4
+collision_mask = 2
+motion_mode = 1
+script = ExtResource("1_2f0bk")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(55, 40, 1, 1)
+material = SubResource("ShaderMaterial_sus14")
+texture = ExtResource("2_agfu5")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_nsu2u")
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("CircleShape2D_ja2rw")
+
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]

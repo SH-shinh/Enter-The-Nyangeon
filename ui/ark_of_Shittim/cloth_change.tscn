@@ -1,0 +1,202 @@
+[gd_scene load_steps=14 format=3 uid="uid://0p71mm31g3tb"]
+
+[ext_resource type="Script" path="res://ui/ark_of_Shittim/cloth_change.gd" id="1_83rqu"]
+[ext_resource type="Texture2D" uid="uid://jcqmwo1t8vv0" path="res://ui/ui.png" id="1_aw1la"]
+[ext_resource type="Script" path="res://script/ScrollBox.gd" id="3_qngrb"]
+[ext_resource type="Texture2D" uid="uid://b0d71kvfqthr7" path="res://ui/ark_of_Shittim/cloth_icon.png" id="6_yntyt"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8wf60"]
+
+[sub_resource type="Theme" id="Theme_cojqu"]
+PanelContainer/styles/panel = SubResource("StyleBoxEmpty_8wf60")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_j1f82"]
+texture = ExtResource("1_aw1la")
+texture_margin_left = 4.0
+texture_margin_top = 5.0
+texture_margin_right = 4.0
+texture_margin_bottom = 5.0
+region_rect = Rect2(38, 35, 21, 25)
+
+[sub_resource type="Theme" id="Theme_04a48"]
+Panel/styles/panel = SubResource("StyleBoxTexture_j1f82")
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_klmki"]
+content_margin_left = 2.0
+
+[sub_resource type="Theme" id="Theme_wvi2y"]
+ScrollContainer/styles/panel = SubResource("StyleBoxEmpty_klmki")
+
+[sub_resource type="Animation" id="Animation_1dqbh"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ChangeShop/Panel/TextureRect:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(0.247059, 0.298039, 0.364706, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ChangeShop/Panel/Panel:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("ChangeShop/Node2D:scale:x")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(1, -0.05, 0, 0.05, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/3/type = "bezier"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("ChangeShop/Node2D:scale:y")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(1e-05, -0.05, 0, 0.05, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="Animation" id="Animation_n0fdu"]
+resource_name = "select_anim"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ChangeShop/Panel/TextureRect:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(0.247059, 0.298039, 0.364706, 1), Color(1, 1, 1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ChangeShop/Panel/Panel:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(0.247059, 0.298039, 0.364706, 1)]
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("ChangeShop/Node2D:scale:x")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(1, -0.05, 0, 0.05, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/3/type = "bezier"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("ChangeShop/Node2D:scale:y")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(1e-05, -0.05, 0, 0.05, 0, 1, -0.05, 0, 0.05, 0),
+"times": PackedFloat32Array(0, 0.1)
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_mwweb"]
+_data = {
+"RESET": SubResource("Animation_1dqbh"),
+"select_anim": SubResource("Animation_n0fdu")
+}
+
+[node name="ClothChange" type="Node2D"]
+script = ExtResource("1_83rqu")
+
+[node name="ChangeShop" type="PanelContainer" parent="."]
+offset_left = -104.0
+offset_top = 51.0
+offset_right = -75.0
+offset_bottom = 80.0
+theme = SubResource("Theme_cojqu")
+
+[node name="Node2D" type="Node2D" parent="ChangeShop"]
+scale = Vector2(1, 1e-05)
+
+[node name="Panel" type="Panel" parent="ChangeShop/Node2D"]
+offset_right = 29.0
+offset_bottom = 110.0
+mouse_filter = 2
+theme = SubResource("Theme_04a48")
+
+[node name="ItemList" type="ScrollContainer" parent="ChangeShop/Node2D"]
+offset_top = 29.0
+offset_right = 29.0
+offset_bottom = 108.0
+mouse_filter = 0
+theme = SubResource("Theme_wvi2y")
+horizontal_scroll_mode = 3
+vertical_scroll_mode = 3
+script = ExtResource("3_qngrb")
+
+[node name="CardBox" type="GridContainer" parent="ChangeShop/Node2D/ItemList"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/v_separation = 2
+
+[node name="ColorRect" type="ColorRect" parent="ChangeShop/Node2D"]
+offset_top = 29.0
+offset_right = 29.0
+offset_bottom = 110.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0)
+
+[node name="Panel" type="Panel" parent="ChangeShop"]
+layout_mode = 2
+mouse_filter = 2
+theme = SubResource("Theme_04a48")
+
+[node name="Panel" type="Panel" parent="ChangeShop/Panel"]
+layout_mode = 0
+offset_right = 29.0
+offset_bottom = 29.0
+mouse_filter = 2
+theme = SubResource("Theme_04a48")
+
+[node name="TextureRect" type="TextureRect" parent="ChangeShop/Panel"]
+modulate = Color(0.247059, 0.298039, 0.364706, 1)
+layout_mode = 0
+offset_left = 1.0
+offset_right = 29.0
+offset_bottom = 28.0
+mouse_filter = 2
+texture = ExtResource("6_yntyt")
+expand_mode = 5
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_mwweb")
+}

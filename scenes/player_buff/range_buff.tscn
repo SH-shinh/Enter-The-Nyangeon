@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://cbxjltijok4dp"]
+
+[ext_resource type="Script" path="res://scenes/player_buff/range_buff.gd" id="1_b442o"]
+[ext_resource type="Resource" uid="uid://kbt3h11mh0np" path="res://resources/buff/player_buff/range_buff.tres" id="2_jsetw"]
+
+[node name="range_buff" type="Node2D"]
+script = ExtResource("1_b442o")
+buff = ExtResource("2_jsetw")
+buff_id = "range_buff"
+
+[node name="BuffTimer" type="Timer" parent="."]

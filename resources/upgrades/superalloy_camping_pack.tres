@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://droe1fdsbs07a"]
+
+[ext_resource type="Texture2D" uid="uid://c1rxtmmt316s4" path="res://sprites/update_item/superalloy_camping_pack.png" id="1_k1k3x"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_tlvm0"]
+
+[resource]
+script = ExtResource("2_tlvm0")
+id = "superalloy_camping_pack"
+icon = ExtResource("1_k1k3x")
+name = "超合金地钉"
+rare = 1
+order_num = -1
+special_rules = 0
+description = "由千年设计的超合金制成，不易生锈或损坏，提升子弹的穿透能力。"
+forward = "+2穿透值"
+negative = ""
+item_tags = 1
+tags = Array[String](["弹道"])
+weight = 1.0

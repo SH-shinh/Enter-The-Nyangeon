@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c36e7i56kkxay"]
+
+[ext_resource type="Script" path="res://scenes/update_item/antique_pocket_watch.gd" id="1_sqbs8"]
+
+[node name="AntiquePocketWatch" type="Node2D"]
+script = ExtResource("1_sqbs8")

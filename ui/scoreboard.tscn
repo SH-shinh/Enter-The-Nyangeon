@@ -1,0 +1,374 @@
+[gd_scene load_steps=26 format=3 uid="uid://cwmdqbedsmp44"]
+
+[ext_resource type="Script" path="res://ui/scoreboard.gd" id="1_00hoq"]
+[ext_resource type="Script" path="res://script/ScrollBox.gd" id="1_faxak"]
+[ext_resource type="Shader" path="res://shaders/scrolling_bkgd.gdshader" id="2_1lqw2"]
+[ext_resource type="Texture2D" uid="uid://dieipwoadjxoa" path="res://ui/title_picture_2.png" id="3_scy5a"]
+[ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="4_jd8nd"]
+[ext_resource type="Texture2D" uid="uid://cj71jmy7oc1e5" path="res://ui/scoreboard_title.png" id="4_skv1x"]
+[ext_resource type="Texture2D" uid="uid://dd7vnobcamv4q" path="res://sprites/test_BG.png" id="4_t051q"]
+[ext_resource type="PackedScene" uid="uid://16ybq5tjkt1a" path="res://ui/return.tscn" id="5_6wr5y"]
+[ext_resource type="Texture2D" uid="uid://bhm8gyj1xcfnv" path="res://sprites/particle/arrow.png" id="7_pv4kn"]
+[ext_resource type="PackedScene" uid="uid://c0abd03p7kvxx" path="res://ui/menu_box.tscn" id="9_wq33p"]
+[ext_resource type="PackedScene" uid="uid://cxbdsr3k1ibig" path="res://ui/menu_box_character.tscn" id="10_84b8l"]
+[ext_resource type="PackedScene" uid="uid://cxsghyrt6cech" path="res://ui/menu_box_gamemode.tscn" id="12_k4rcd"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_lkbrc"]
+shader = ExtResource("2_1lqw2")
+shader_parameter/scroll_speed = 0.2
+shader_parameter/angle_degrees = 90.0
+shader_parameter/repeat_x = 1.0
+shader_parameter/repeat_y = 1.0
+shader_parameter/tint = Color(0.819608, 0.819608, 0.819608, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ps8qc"]
+shader = ExtResource("2_1lqw2")
+shader_parameter/scroll_speed = 0.2
+shader_parameter/angle_degrees = 90.0
+shader_parameter/repeat_x = 1.0
+shader_parameter/repeat_y = 1.0
+shader_parameter/tint = Color(0.141176, 0.141176, 0.141176, 1)
+
+[sub_resource type="Gradient" id="Gradient_684ug"]
+offsets = PackedFloat32Array(0.195122, 0.835366)
+colors = PackedColorArray(0, 0, 0, 1, 0, 0, 0, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_caubg"]
+gradient = SubResource("Gradient_684ug")
+width = 640
+height = 360
+fill_from = Vector2(1, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fj8yy"]
+shader = ExtResource("2_1lqw2")
+shader_parameter/scroll_speed = 0.2
+shader_parameter/angle_degrees = 315.0
+shader_parameter/repeat_x = 1.0
+shader_parameter/repeat_y = 1.0
+shader_parameter/tint = Color(0.885, 0.291, 0, 0.027)
+
+[sub_resource type="Gradient" id="Gradient_7tjm8"]
+offsets = PackedFloat32Array(0.103659, 0.146341)
+colors = PackedColorArray(0.1, 0.1, 0.1, 0, 0.1, 0.1, 0.1, 0.633)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_x8h4i"]
+gradient = SubResource("Gradient_7tjm8")
+width = 580
+height = 360
+fill_to = Vector2(0, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_o4q06"]
+shader = ExtResource("2_1lqw2")
+shader_parameter/scroll_speed = 0.05
+shader_parameter/angle_degrees = 0.0
+shader_parameter/repeat_x = 1.0
+shader_parameter/repeat_y = 1.0
+shader_parameter/tint = Color(1, 0.529383, 0.341543, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_43tth"]
+
+[sub_resource type="Theme" id="Theme_noed0"]
+Button/styles/focus = SubResource("StyleBoxEmpty_43tth")
+
+[sub_resource type="Animation" id="Animation_sb3rh"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(700, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Node2D/TextureRect:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-14, -33)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Node2D/ColorRect4:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-14, -25)]
+}
+
+[sub_resource type="Animation" id="Animation_htesl"]
+resource_name = "enter_anim"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.166667),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(700, 0), Vector2(0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Node2D/TextureRect:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.166667, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-14, -33), Vector2(-14, -8)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Node2D/ColorRect4:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.166667, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-14, -25), Vector2(-14, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_tfnnh"]
+_data = {
+"RESET": SubResource("Animation_sb3rh"),
+"enter_anim": SubResource("Animation_htesl")
+}
+
+[node name="scoreboard" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 700.0
+offset_right = 700.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_00hoq")
+
+[node name="Node2D" type="Node2D" parent="."]
+
+[node name="ColorRect3" type="ColorRect" parent="Node2D"]
+offset_left = -8.0
+offset_right = 640.0
+offset_bottom = 360.0
+color = Color(0.819608, 0.819608, 0.819608, 1)
+
+[node name="TextureRect3" type="TextureRect" parent="Node2D"]
+material = SubResource("ShaderMaterial_lkbrc")
+offset_left = -34.0
+offset_top = -47.0
+offset_right = 180.0
+offset_bottom = 3209.0
+scale = Vector2(0.125, 0.125)
+texture = ExtResource("3_scy5a")
+stretch_mode = 1
+flip_h = true
+
+[node name="TextureRect2" type="TextureRect" parent="Node2D"]
+material = SubResource("ShaderMaterial_ps8qc")
+offset_left = -26.0
+offset_right = 188.0
+offset_bottom = 2880.0
+scale = Vector2(0.125, 0.125)
+texture = ExtResource("3_scy5a")
+stretch_mode = 1
+flip_h = true
+
+[node name="ColorRect" type="ColorRect" parent="Node2D"]
+custom_minimum_size = Vector2(640, 360)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 640.0
+offset_bottom = 360.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.141176, 0.141176, 0.141176, 1)
+
+[node name="TextureRect5" type="TextureRect" parent="Node2D"]
+clip_children = 1
+offset_right = 632.0
+offset_bottom = 359.0
+texture = SubResource("GradientTexture2D_caubg")
+
+[node name="TextureRect4" type="TextureRect" parent="Node2D/TextureRect5"]
+material = SubResource("ShaderMaterial_fj8yy")
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 360.0
+texture = ExtResource("4_t051q")
+stretch_mode = 1
+
+[node name="ColorRect2" type="TextureRect" parent="Node2D"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 30.0
+offset_right = 610.0
+offset_bottom = 360.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("GradientTexture2D_x8h4i")
+
+[node name="ColorRect4" type="ColorRect" parent="Node2D"]
+offset_left = -14.0
+offset_top = -25.0
+offset_right = 699.0
+offset_bottom = -5.0
+mouse_filter = 2
+
+[node name="TextureRect" type="TextureRect" parent="Node2D"]
+material = SubResource("ShaderMaterial_o4q06")
+offset_left = -14.0
+offset_top = -33.0
+offset_right = 2838.0
+offset_bottom = 112.0
+scale = Vector2(0.25, 0.25)
+texture = ExtResource("4_skv1x")
+stretch_mode = 1
+
+[node name="Label" type="Label" parent="Node2D"]
+offset_left = 8.0
+offset_top = 20.0
+offset_right = 122.0
+offset_bottom = 38.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_shadow_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 4
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("4_jd8nd")
+theme_override_font_sizes/font_size = 16
+text = "scoreboard_name"
+horizontal_alignment = 1
+clip_text = true
+
+[node name="return" parent="Node2D" instance=ExtResource("5_6wr5y")]
+offset_left = 612.0
+offset_top = 22.0
+offset_right = 638.0
+offset_bottom = 48.0
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 30.0
+offset_top = 48.0
+offset_right = -30.0
+offset_bottom = 355.0
+grow_horizontal = 2
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
+script = ExtResource("1_faxak")
+
+[node name="score_box" type="VBoxContainer" parent="ScrollContainer"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Node2D2" type="Node2D" parent="."]
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Node2D2"]
+offset_left = 133.0
+offset_top = 27.0
+offset_right = 257.0
+offset_bottom = 39.0
+
+[node name="reverse_order" type="Button" parent="Node2D2/HBoxContainer"]
+custom_minimum_size = Vector2(12, 12)
+layout_mode = 2
+theme = SubResource("Theme_noed0")
+
+[node name="order_icon" type="TextureRect" parent="Node2D2/HBoxContainer/reverse_order"]
+modulate = Color(0.959813, 0.767727, 0, 1)
+layout_mode = 0
+offset_right = 12.0
+offset_bottom = 12.0
+texture = ExtResource("7_pv4kn")
+expand_mode = 1
+flip_v = true
+
+[node name="sort" type="Label" parent="Node2D2/HBoxContainer"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0.163952, 5.11389e-08, 0.0734891, 1)
+theme_override_colors/font_outline_color = Color(0.164706, 0, 0.0745098, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 5
+theme_override_fonts/font = ExtResource("4_jd8nd")
+theme_override_font_sizes/font_size = 10
+text = "normal_sort"
+horizontal_alignment = 1
+clip_text = true
+
+[node name="normal_sort" parent="Node2D2/HBoxContainer" instance=ExtResource("9_wq33p")]
+layout_mode = 2
+
+[node name="sort2" type="Label" parent="Node2D2/HBoxContainer"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0.163952, 5.11389e-08, 0.0734891, 1)
+theme_override_colors/font_outline_color = Color(0.164706, 0, 0.0745098, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 5
+theme_override_fonts/font = ExtResource("4_jd8nd")
+theme_override_font_sizes/font_size = 10
+text = "character_sort"
+horizontal_alignment = 1
+clip_text = true
+
+[node name="character_sort" parent="Node2D2/HBoxContainer" instance=ExtResource("10_84b8l")]
+layout_mode = 2
+
+[node name="sort3" type="Label" parent="Node2D2/HBoxContainer"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0.163952, 5.11389e-08, 0.0734891, 1)
+theme_override_colors/font_outline_color = Color(0.164706, 0, 0.0745098, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 5
+theme_override_fonts/font = ExtResource("4_jd8nd")
+theme_override_font_sizes/font_size = 10
+text = "gamemode_sort"
+horizontal_alignment = 1
+clip_text = true
+
+[node name="menu_box_gamemode" parent="Node2D2/HBoxContainer" instance=ExtResource("12_k4rcd")]
+layout_mode = 2
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_tfnnh")
+}
+
+[connection signal="gui_input" from="Node2D2/HBoxContainer/reverse_order" to="." method="_on_reverse_order_gui_input"]
+[connection signal="pressed" from="Node2D2/HBoxContainer/reverse_order" to="." method="_on_reverse_order_pressed"]

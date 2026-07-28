@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://dems8vpw36r6b"]
+
+[ext_resource type="Texture2D" uid="uid://11of2brwrnkr" path="res://sprites/update_item/blunderbuss_muzzle.png" id="1_35xx2"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_uwhtx"]
+
+[resource]
+script = ExtResource("2_uwhtx")
+id = "blunderbuss_muzzle"
+icon = ExtResource("1_35xx2")
+name = "喇叭形枪口"
+rare = 1
+order_num = -1
+special_rules = 0
+description = "开放型的枪口，开火时会喷出火焰造成伤害并施加1层燃烧。"
+forward = "+100%暴击伤害（首次）
++1施加的燃烧层数"
+negative = "+100%后坐力（首次）"
+item_tags = 48
+tags = Array[String](["暴击", "燃烧"])
+weight = 1.0

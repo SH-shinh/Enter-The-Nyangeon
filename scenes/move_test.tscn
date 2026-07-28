@@ -1,0 +1,163 @@
+[gd_scene load_steps=22 format=3 uid="uid://dbmhnpi62mv0a"]
+
+[ext_resource type="Script" path="res://scenes/move_test.gd" id="1_ntyaq"]
+[ext_resource type="PackedScene" uid="uid://bdo12rjvieur7" path="res://scenes/shadow/shadow.tscn" id="2_618or"]
+[ext_resource type="Shader" path="res://shaders/screen_outline.gdshader" id="3_28vwa"]
+[ext_resource type="Texture2D" uid="uid://cno11sa17icbq" path="res://sprites/enemies/lighttank_helmet_vulcan_body.png" id="4_end1o"]
+[ext_resource type="Script" path="res://scenes/enemies/tank_body.gd" id="5_k53vw"]
+[ext_resource type="Texture2D" uid="uid://dlyawwlk67umn" path="res://sprites/enemies/tester_automaton_icon.png" id="6_72vu2"]
+[ext_resource type="Texture2D" uid="uid://b5nbmcnfshgb8" path="res://sprites/particle/circular_1.png" id="6_agvye"]
+[ext_resource type="Texture2D" uid="uid://wygwemtmbdr6" path="res://sprites/enemies/lighttank_helmet_vulcan_turret.png" id="6_pqw54"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_07ral"]
+shader = ExtResource("3_28vwa")
+shader_parameter/outline_width = 2.0
+shader_parameter/outline_color = Color(0, 0, 0, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="Gradient" id="Gradient_2rxqy"]
+colors = PackedColorArray(1, 1, 1, 1, 0.497474, 0.497474, 0.497474, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_nq2qt"]
+gradient = SubResource("Gradient_2rxqy")
+
+[sub_resource type="Gradient" id="Gradient_bqu7i"]
+colors = PackedColorArray(1, 1, 1, 1, 0.67069, 0.67069, 0.67069, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_twis8"]
+gradient = SubResource("Gradient_bqu7i")
+
+[sub_resource type="Curve" id="Curve_76kpo"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.573333, 0.791209), 0.0, 0.0, 0, 0, Vector2(0.86, 0.56044), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_w7q24"]
+curve = SubResource("Curve_76kpo")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_iovgh"]
+particle_flag_disable_z = true
+spread = 0.0
+gravity = Vector3(0, 0, 0)
+scale_min = 0.2
+scale_max = 0.8
+scale_curve = SubResource("CurveTexture_w7q24")
+color_ramp = SubResource("GradientTexture1D_twis8")
+color_initial_ramp = SubResource("GradientTexture1D_nq2qt")
+sub_emitter_keep_velocity = true
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_4pafp"]
+radius = 7.33
+height = 36.6667
+
+[sub_resource type="Animation" id="Animation_e5t2m"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CanvasGroup/Sprite2D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_wcx0m"]
+resource_name = "new_animation"
+length = 0.2
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CanvasGroup/Sprite2D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(0.98, 1.02)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_q8p7j"]
+_data = {
+"RESET": SubResource("Animation_e5t2m"),
+"new_animation": SubResource("Animation_wcx0m")
+}
+
+[sub_resource type="Environment" id="Environment_wfm1e"]
+background_mode = 3
+glow_enabled = true
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource("1_ntyaq")
+
+[node name="CharacterBody2D" type="CharacterBody2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(0, -20)
+scale = Vector2(0.8, 0.8)
+
+[node name="Sprite2D" parent="CharacterBody2D" instance=ExtResource("2_618or")]
+visible = false
+position = Vector2(0, 20)
+scale = Vector2(0.7, 1.4375)
+
+[node name="CanvasGroup" type="CanvasGroup" parent="CharacterBody2D"]
+material = SubResource("ShaderMaterial_07ral")
+position = Vector2(0, 11)
+
+[node name="Sprite2D" type="Sprite2D" parent="CharacterBody2D/CanvasGroup"]
+unique_name_in_owner = true
+texture = ExtResource("4_end1o")
+hframes = 38
+script = ExtResource("5_k53vw")
+rotate_sprites = true
+rotation_velocity = 1.0
+
+[node name="Sprite2D2" type="Sprite2D" parent="CharacterBody2D/CanvasGroup"]
+unique_name_in_owner = true
+position = Vector2(0, -39)
+texture = ExtResource("6_pqw54")
+hframes = 13
+script = ExtResource("5_k53vw")
+rotate_sprites = true
+rotation_velocity = 5.0
+
+[node name="Marker2D" type="Marker2D" parent="CharacterBody2D"]
+visible = false
+position = Vector2(0, 13)
+scale = Vector2(0.6, 0.6)
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="CharacterBody2D/Marker2D"]
+position = Vector2(-28.3333, 0)
+process_material = SubResource("ParticleProcessMaterial_iovgh")
+texture = ExtResource("6_agvye")
+lifetime = 0.2
+fixed_fps = 60
+
+[node name="HitBox" type="Area2D" parent="CharacterBody2D/Marker2D"]
+position = Vector2(15, 0)
+collision_layer = 0
+collision_mask = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CharacterBody2D/Marker2D/HitBox"]
+position = Vector2(-11.6667, 4.9738e-14)
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_4pafp")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="CharacterBody2D"]
+libraries = {
+"": SubResource("AnimationLibrary_q8p7j")
+}
+autoplay = "new_animation"
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+visible = false
+position = Vector2(325, 177)
+texture = ExtResource("6_72vu2")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_wfm1e")

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CharacterCard" load_steps=5 format=3 uid="uid://chpltgvs2g3h7"]
+
+[ext_resource type="Texture2D" uid="uid://bnpm8ybpxqxwi" path="res://sprites/player/hibiki/hibiki_picture.png" id="1_m31nk"]
+[ext_resource type="Texture2D" uid="uid://ca7j4dmko8tds" path="res://ui/school/MILLENNIUM_icon.png" id="2_hc8nx"]
+[ext_resource type="Script" path="res://resources/shop/character/character_card.gd" id="3_u1hlq"]
+[ext_resource type="Texture2D" uid="uid://br021bvxti40u" path="res://ui/weapon/MT_icon.png" id="4_q41ug"]
+
+[resource]
+script = ExtResource("3_u1hlq")
+cost = 6
+name_1 = "NEKOZUKA"
+name_2 = "HIBIKI"
+character_sprite = ExtResource("1_m31nk")
+weapon_name = "FANCY LIGHT"
+weapon_type_name = "MT"
+weapon_icon = ExtResource("4_q41ug")
+school_name = "MILLENNIUM"
+school_icon = ExtResource("2_hc8nx")
+id = "hibiki"
+group = "ED"

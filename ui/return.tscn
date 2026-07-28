@@ -1,0 +1,61 @@
+[gd_scene load_steps=9 format=3 uid="uid://16ybq5tjkt1a"]
+
+[ext_resource type="Texture2D" uid="uid://jcqmwo1t8vv0" path="res://ui/ui.png" id="1_80vmq"]
+[ext_resource type="Script" path="res://ui/return.gd" id="1_bttnq"]
+[ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="2_2gwa5"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_5gap0"]
+texture = ExtResource("1_80vmq")
+texture_margin_left = 5.0
+texture_margin_top = 5.0
+texture_margin_right = 5.0
+texture_margin_bottom = 5.0
+region_rect = Rect2(37, 35, 23, 25)
+modulate_color = Color(0.282353, 0.282353, 0.282353, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_7un75"]
+texture = ExtResource("1_80vmq")
+texture_margin_left = 5.0
+texture_margin_top = 5.0
+texture_margin_right = 5.0
+texture_margin_bottom = 5.0
+region_rect = Rect2(37, 35, 23, 25)
+modulate_color = Color(0.281187, 0.281187, 0.281187, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_5xo3w"]
+texture = ExtResource("1_80vmq")
+texture_margin_left = 5.0
+texture_margin_top = 5.0
+texture_margin_right = 5.0
+texture_margin_bottom = 5.0
+region_rect = Rect2(37, 35, 23, 25)
+modulate_color = Color(0.212, 0.212, 0.212, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_opiv0"]
+texture = ExtResource("1_80vmq")
+texture_margin_left = 5.0
+texture_margin_top = 5.0
+texture_margin_right = 5.0
+texture_margin_bottom = 5.0
+region_rect = Rect2(37, 35, 23, 25)
+modulate_color = Color(0.458405, 0.458405, 0.458405, 1)
+
+[sub_resource type="Theme" id="Theme_u3m0m"]
+Button/styles/focus = SubResource("StyleBoxTexture_5gap0")
+Button/styles/hover = SubResource("StyleBoxTexture_7un75")
+Button/styles/normal = SubResource("StyleBoxTexture_5xo3w")
+Button/styles/pressed = SubResource("StyleBoxTexture_opiv0")
+
+[node name="return" type="Button"]
+offset_right = 26.0
+offset_bottom = 26.0
+theme = SubResource("Theme_u3m0m")
+theme_override_colors/font_outline_color = Color(0.136826, 0.136826, 0.136826, 1)
+theme_override_constants/outline_size = 5
+theme_override_fonts/font = ExtResource("2_2gwa5")
+theme_override_font_sizes/font_size = 16
+text = "←"
+script = ExtResource("1_bttnq")
+
+[connection signal="gui_input" from="." to="." method="_on_gui_input"]
+[connection signal="pressed" from="." to="." method="_on_pressed"]

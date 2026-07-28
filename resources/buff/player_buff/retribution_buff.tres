@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://euhp41a3m0fb"]
+
+[ext_resource type="Texture2D" uid="uid://y63eqhmxd6lf" path="res://sprites/buff_icon/retribution_buff_icon.png" id="1_upniv"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_07u3l"]
+
+[resource]
+script = ExtResource("2_07u3l")
+id = "retribution_buff"
+icon = ExtResource("1_upniv")
+name = "惩戒"
+ability = ""
+remove_by_layer = true
+description = ""

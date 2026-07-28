@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://cghmpdkums5te"]
+
+[ext_resource type="Script" path="res://scenes/player_buff/max_speed_buff.gd" id="1_n5ypq"]
+[ext_resource type="Resource" uid="uid://dq1bpjbqubwys" path="res://resources/buff/player_buff/max_speed_buff.tres" id="2_gcpm7"]
+
+[node name="max_speed_buff" type="Node2D" groups=["PlayerBuff"]]
+script = ExtResource("1_n5ypq")
+buff = ExtResource("2_gcpm7")
+buff_id = "max_speed_buff"
+
+[node name="BuffTimer" type="Timer" parent="."]
+
+[connection signal="timeout" from="BuffTimer" to="." method="_on_buff_timer_timeout"]

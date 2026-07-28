@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EnemyCard" load_steps=3 format=3 uid="uid://dx43aolfidycr"]
+
+[ext_resource type="PackedScene" uid="uid://bv4btiolwh31t" path="res://scenes/enemies/mystic_sweeper.tscn" id="1_vdaxk"]
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_jrrjy"]
+
+[resource]
+script = ExtResource("2_jrrjy")
+id = "mystic_sweeper"
+body = ExtResource("1_vdaxk")
+description = ""

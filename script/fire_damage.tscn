@@ -1,0 +1,26 @@
+[gd_scene load_steps=3 format=3 uid="uid://b8lsyxbqgl8t0"]
+
+[ext_resource type="Script" path="res://script/fire_damage.gd" id="1_hw8yn"]
+[ext_resource type="Resource" uid="uid://ddlwsbdn8hn6j" path="res://resources/buff/enemy_buff/fire_dot.tres" id="2_wpm5f"]
+
+[node name="FireDamage" type="Node2D"]
+script = ExtResource("1_hw8yn")
+enemy_buff = ExtResource("2_wpm5f")
+buff_layer = 5
+buff_value = 1.0
+buff_erase_timer = 10.0
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 8
+
+[node name="CollisionShape2D" type="CollisionPolygon2D" parent="Area2D"]
+polygon = PackedVector2Array(0, 5, 0, -5, 120, -40, 120, 40)
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 0.1
+one_shot = true
+autostart = true
+
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

@@ -1,0 +1,38 @@
+[gd_scene load_steps=6 format=3 uid="uid://dik7onf1jswp8"]
+
+[ext_resource type="Script" path="res://scenes/player/yuzu/YuzuPS.gd" id="1_7o3ml"]
+[ext_resource type="Resource" uid="uid://cv1g4f2ag5elh" path="res://resources/buff/player_buff/critical_damage_buff_1.tres" id="2_tpl3m"]
+[ext_resource type="Resource" uid="uid://dq1bpjbqubwys" path="res://resources/buff/player_buff/max_speed_buff.tres" id="3_qkcxm"]
+[ext_resource type="Resource" uid="uid://comb3nd35hmd8" path="res://resources/buff/player_buff/yuzu_combo_buff.tres" id="4_j0jp2"]
+[ext_resource type="PackedScene" uid="uid://bi3one2yej087" path="res://scenes/player/yuzu/combo_text.tscn" id="5_ugbo5"]
+
+[node name="YuzuPS" type="Node2D"]
+script = ExtResource("1_7o3ml")
+player_buff = ExtResource("2_tpl3m")
+buff_layer = 1
+buff_value = 0.5
+buff_erase_timer = 3.0
+player_buff_2 = ExtResource("3_qkcxm")
+buff_layer_2 = 1
+buff_value_2 = 0.3
+buff_erase_timer_2 = 3.0
+player_buff_3 = ExtResource("4_j0jp2")
+buff_layer_3 = 999
+buff_value_3 = 0.1
+buff_erase_timer_3 = 2.7
+
+[node name="ComboTimer" type="Timer" parent="."]
+wait_time = 2.4
+one_shot = true
+
+[node name="ShootTimer" type="Timer" parent="."]
+wait_time = 0.7
+one_shot = true
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+layer = 2
+
+[node name="combo_text" parent="CanvasLayer" instance=ExtResource("5_ugbo5")]
+visible = false
+position = Vector2(457, 107)
+scale = Vector2(1.2, 1.4)

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://bixb0s02yk21m"]
+
+[ext_resource type="Texture2D" uid="uid://dcd6m1ui4a0jo" path="res://sprites/update_item/shiroko_drone.png" id="1_3fygy"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_bbn8f"]
+
+[resource]
+script = ExtResource("2_bbn8f")
+id = "shiroko_drone"
+icon = ExtResource("1_3fygy")
+name = "白子的无人机"
+rare = 2
+order_num = -1
+special_rules = 1
+description = "每3秒发射一次火箭，子弹造成5次暴击额外发射一次火箭。
+20基础伤害"
+forward = "+20装备基础伤害
+缩短发射CD"
+negative = ""
+item_tags = 22
+tags = Array[String](["装备", "弹道", "爆炸", "暴击"])
+weight = 1.0

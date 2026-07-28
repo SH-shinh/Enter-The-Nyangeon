@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://ci8ivfnbo3tx1"]
+
+[ext_resource type="Script" path="res://scenes/update_item/machine_part.gd" id="1_xouo3"]
+
+[node name="machine_part" type="Node2D"]
+script = ExtResource("1_xouo3")

@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://c30w5sl4e0ikp"]
+
+[ext_resource type="Script" path="res://scenes/update_item/winnipesaukee_stone.gd" id="1_qlhw1"]
+
+[node name="winnipesaukee_stone" type="Node2D"]
+script = ExtResource("1_qlhw1")
+
+[node name="CDTimer" type="Timer" parent="."]
+wait_time = 0.1
+one_shot = true

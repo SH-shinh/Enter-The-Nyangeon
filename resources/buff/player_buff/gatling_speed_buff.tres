@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://dwbvsi4tms1po"]
+
+[ext_resource type="Texture2D" uid="uid://tn6yc26pfiky" path="res://sprites/buff_icon/max_speed_buff_icon.png" id="1_lvgdb"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_83v5i"]
+
+[resource]
+script = ExtResource("2_83v5i")
+id = "gatling_speed_buff"
+icon = ExtResource("1_lvgdb")
+name = "加特林射击减速buff"
+description = ""

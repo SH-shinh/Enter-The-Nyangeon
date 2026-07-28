@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://b1rsgttpnd0lx"]
+
+[ext_resource type="Texture2D" uid="uid://bcu20rb42ptv4" path="res://sprites/update_item/machine_part.png" id="1_8spin"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_pojwi"]
+
+[resource]
+script = ExtResource("2_pojwi")
+id = "machine_part"
+icon = ExtResource("1_8spin")
+name = "设备零件"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "用于修理千年废墟的设备的零件，增强防御能力。"
+forward = "独特
+每存在一个召唤物-5%承伤率"
+negative = ""
+item_tags = 2048
+tags = Array[String](["防御", "召唤"])
+weight = 1.0

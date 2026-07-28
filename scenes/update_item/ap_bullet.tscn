@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bhcp8tcm3i3qs"]
+
+[ext_resource type="Script" path="res://scenes/update_item/AP_bullet.gd" id="1_nfin1"]
+
+[node name="AP_bullet" type="Node2D"]
+script = ExtResource("1_nfin1")

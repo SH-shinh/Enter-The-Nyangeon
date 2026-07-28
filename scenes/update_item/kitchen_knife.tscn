@@ -1,0 +1,127 @@
+[gd_scene load_steps=12 format=3 uid="uid://dssf2qvxakdl"]
+
+[ext_resource type="Script" path="res://scenes/update_item/kitchen_knife.gd" id="1_b6exi"]
+[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="2_8ars5"]
+[ext_resource type="Texture2D" uid="uid://b044ma3lr6tr7" path="res://sprites/update_item/kitchen_knife_icon.png" id="2_wu51i"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_m3myx"]
+shader = ExtResource("2_8ars5")
+shader_parameter/outline_width = 1.0
+shader_parameter/outline_color = Color(5, 0, 0, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_jcqeu"]
+size = Vector2(34, 14)
+
+[sub_resource type="Curve" id="Curve_q1duy"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -2.6022, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_nfcji"]
+curve = SubResource("Curve_q1duy")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_65ho2"]
+particle_flag_disable_z = true
+emission_shape = 3
+emission_box_extents = Vector3(20, 10, 1)
+angle_min = -45.0
+angle_max = 45.0
+spread = 180.0
+initial_velocity_min = 1.0
+initial_velocity_max = 5.0
+gravity = Vector3(0, 0, 0)
+scale_max = 2.0
+scale_curve = SubResource("CurveTexture_nfcji")
+color = Color(5, 0, 0, 1)
+
+[sub_resource type="Animation" id="Animation_a2sy8"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(39, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="Animation" id="Animation_emlml"]
+resource_name = "new_animation"
+length = 2.0
+loop_mode = 1
+step = 0.1
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0),
+"points": PackedFloat32Array(42, -0.25, 0, 0.25, 0, 50, -0.25, 0, 0.25, 0, 42, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1, 2)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_5wj10"]
+_data = {
+"RESET": SubResource("Animation_a2sy8"),
+"new_animation": SubResource("Animation_emlml")
+}
+
+[node name="kitchen_knife" type="Node2D"]
+script = ExtResource("1_b6exi")
+
+[node name="knife" type="Node2D" parent="."]
+position = Vector2(0, -14)
+
+[node name="Sprite2D" type="Sprite2D" parent="knife"]
+z_index = 2
+material = SubResource("ShaderMaterial_m3myx")
+position = Vector2(39, 0)
+texture = ExtResource("2_wu51i")
+
+[node name="Area2D" type="Area2D" parent="knife/Sprite2D"]
+collision_layer = 0
+collision_mask = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="knife/Sprite2D/Area2D"]
+position = Vector2(0.228123, 0)
+shape = SubResource("RectangleShape2D_jcqeu")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="knife/Sprite2D"]
+amount = 4
+process_material = SubResource("ParticleProcessMaterial_65ho2")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="knife"]
+libraries = {
+"": SubResource("AnimationLibrary_5wj10")
+}
+autoplay = "new_animation"
+
+[connection signal="body_entered" from="knife/Sprite2D/Area2D" to="." method="_on_area_2d_body_entered"]
+[connection signal="body_exited" from="knife/Sprite2D/Area2D" to="." method="_on_area_2d_body_exited"]

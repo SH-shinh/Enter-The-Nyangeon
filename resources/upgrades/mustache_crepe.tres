@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://b0t4vrc48i1gq"]
+
+[ext_resource type="Texture2D" uid="uid://brsqrc322iuol" path="res://sprites/update_item/mustache_crepe.png" id="1_32xwh"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_51rhc"]
+
+[resource]
+script = ExtResource("2_51rhc")
+id = "mustache_crepe"
+icon = ExtResource("1_32xwh")
+name = "胡子可丽饼"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "在红冬各处有售的香甜可口可丽饼。"
+forward = "独特
+损失生命值时获得等量临时生命值"
+negative = ""
+item_tags = 512
+tags = Array[String](["防御"])
+weight = 1.0

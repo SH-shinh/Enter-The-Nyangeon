@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3 uid="uid://cbsxeq2w3bh8g"]
+
+[ext_resource type="Script" path="res://scenes/enemies/enemy_gun_4.gd" id="1_6nyw1"]
+[ext_resource type="Texture2D" uid="uid://c0a0jfr6w575t" path="res://sprites/enemies/enemy_gun_4.png" id="2_6cxhk"]
+[ext_resource type="PackedScene" uid="uid://bm6dimclh7dhb" path="res://script/bullet_launcher.tscn" id="3_57j2h"]
+[ext_resource type="PackedScene" uid="uid://d0f8cqrwnrrx3" path="res://scenes/bullet/enemy_bullet_2.tscn" id="4_bvslh"]
+
+[node name="EnemyGun4" type="Node2D"]
+script = ExtResource("1_6nyw1")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(7, 0)
+scale = Vector2(0.65, 0.65)
+texture = ExtResource("2_6cxhk")
+
+[node name="BulletLauncher" parent="Sprite2D" instance=ExtResource("3_57j2h")]
+position = Vector2(30, -1)
+shoot_at_once = false
+bullet_scale = 0.8
+bullet_count = 1
+bullet = ExtResource("4_bvslh")
+bullet_damage = 12.0
+bullet_speed = 170.0
+bullet_penetrate = 1
+decay_time = 1.5
+decay_speed = 1
+kill_time = 3.2
+bullet_id = "enemy_bullet_2"

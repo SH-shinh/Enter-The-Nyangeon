@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://cdn7sp8laq4dm"]
+
+[ext_resource type="Texture2D" uid="uid://ducwtgeotn6rb" path="res://sprites/update_item/chill_cake.png" id="1_sfwkp"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_8jjqv"]
+
+[resource]
+script = ExtResource("2_8jjqv")
+id = "chill_cake"
+icon = ExtResource("1_sfwkp")
+name = "小蛋糕"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "供应至学园祭各处的美味蛋糕。"
+forward = "独特
++5生命值
+每造成80击杀+1最大生命值"
+negative = ""
+item_tags = 1536
+tags = Array[String](["防御", "成长"])
+weight = 1.0

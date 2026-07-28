@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CharacterCard" load_steps=5 format=3 uid="uid://bt071i2s7qohe"]
+
+[ext_resource type="Script" path="res://resources/shop/character/character_card.gd" id="1_0imhj"]
+[ext_resource type="Texture2D" uid="uid://blewkmtfbtqh2" path="res://sprites/player/kasumi/kasumi_picture.png" id="1_rh2ym"]
+[ext_resource type="Texture2D" uid="uid://dhol5kko8375y" path="res://ui/school/GEHENNA_icon.png" id="2_x5jbc"]
+[ext_resource type="Texture2D" uid="uid://vkorsddirkrp" path="res://ui/weapon/HG_icon.png" id="4_gs076"]
+
+[resource]
+script = ExtResource("1_0imhj")
+cost = 6
+name_1 = "KINUGAWA"
+name_2 = "KASUMI"
+character_sprite = ExtResource("1_rh2ym")
+weapon_name = "RED RECTOR"
+weapon_type_name = "HG"
+weapon_icon = ExtResource("4_gs076")
+school_name = "GEHENNA"
+school_icon = ExtResource("2_x5jbc")
+id = "kasumi"
+group = "HSD"

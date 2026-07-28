@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://df5glmg3alkc1"]
+
+[ext_resource type="Texture2D" uid="uid://bos40bllysbrf" path="res://sprites/buff_icon/luck_buff_icon.png" id="1_spr6x"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_6y178"]
+
+[resource]
+script = ExtResource("2_6y178")
+id = "luck_buff"
+icon = ExtResource("1_spr6x")
+name = "运气值buff"
+description = "运气值buff"

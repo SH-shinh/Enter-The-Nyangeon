@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://b2axoifwlu11w"]
+
+[ext_resource type="Texture2D" uid="uid://dubgo7ug3g27d" path="res://sprites/update_item/sniper_scope.png" id="1_qf261"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_su2m4"]
+
+[resource]
+script = ExtResource("2_su2m4")
+id = "sniper_scope"
+icon = ExtResource("1_qf261")
+name = "狙击瞄准镜"
+rare = 1
+order_num = -1
+special_rules = 0
+description = "获得更加清晰的视野，提高暴击率和暴击伤害，降低射速。"
+forward = "+10%暴击率
++25%暴击伤害"
+negative = "-10%射速"
+item_tags = 16
+tags = Array[String](["暴击"])
+weight = 1.0

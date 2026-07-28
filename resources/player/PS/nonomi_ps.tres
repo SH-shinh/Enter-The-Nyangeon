@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PSCard" load_steps=3 format=3 uid="uid://clgti7rw21g3c"]
+
+[ext_resource type="Script" path="res://resources/player/PS/ps_card.gd" id="1_w6y88"]
+[ext_resource type="Texture2D" uid="uid://dipntxdqai1gq" path="res://sprites/weapon/mini_no_5.png" id="2_mootd"]
+
+[resource]
+script = ExtResource("1_w6y88")
+weapon_icon = ExtResource("2_mootd")
+t_level = Array[String](["子弹命中有概率获得1硬币，弹匣为0时仍可消耗1%硬币进行射击，子弹基础伤害只受硬币影响（50%）。", "每持续射击3秒+1弹道（最高+2），回合开始时额外获得当前10%的硬币。", "持续射击可最高+3弹道，子弹基础伤害比例提升到70%，每消耗300硬币可+1弹匣上限。", "持续射击可最高+5弹道，子弹基础伤害比例提升到100%。"])

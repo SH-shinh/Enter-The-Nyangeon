@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://dlmb0hhnbu5kx"]
+
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="1_matkt"]
+[ext_resource type="Texture2D" uid="uid://bugtqqy2ablyi" path="res://sprites/update_item/peroro_feather.png" id="1_nu3ls"]
+
+[resource]
+script = ExtResource("1_matkt")
+id = "peroro_feather"
+icon = ExtResource("1_nu3ls")
+name = "佩洛洛护符"
+rare = 0
+order_num = -1
+special_rules = 0
+description = "白色的大羽毛护身符，据说可以带来好运。"
+forward = "+12幸运值"
+negative = ""
+item_tags = 8
+tags = Array[String](["概率", "通用"])
+weight = 1.0

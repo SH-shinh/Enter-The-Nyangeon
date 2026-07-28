@@ -1,0 +1,55 @@
+[gd_scene load_steps=5 format=3 uid="uid://dfmayiqvenqr8"]
+
+[ext_resource type="Script" path="res://script/ScrollBox.gd" id="1_e0i77"]
+[ext_resource type="Script" path="res://ui/cheat_menu.gd" id="1_uwy6u"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_f8pu4"]
+content_margin_right = 8.0
+
+[sub_resource type="Theme" id="Theme_cufpq"]
+ScrollContainer/styles/panel = SubResource("StyleBoxEmpty_f8pu4")
+
+[node name="cheat_menu" type="CanvasLayer"]
+visible = false
+script = ExtResource("1_uwy6u")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+offset_left = 326.0
+offset_top = 69.0
+offset_right = 633.0
+offset_bottom = 325.0
+mouse_filter = 0
+theme = SubResource("Theme_cufpq")
+follow_focus = true
+horizontal_scroll_mode = 3
+vertical_scroll_mode = 2
+script = ExtResource("1_e0i77")
+
+[node name="GridContainer" type="GridContainer" parent="ScrollContainer"]
+layout_mode = 2
+columns = 8
+
+[node name="Button" type="Button" parent="."]
+offset_left = 259.0
+offset_top = 69.0
+offset_right = 320.0
+offset_bottom = 95.0
+text = "下回合"
+
+[node name="Button2" type="Button" parent="."]
+offset_left = 259.0
+offset_top = 100.0
+offset_right = 320.0
+offset_bottom = 126.0
+text = "金币"
+
+[node name="Button3" type="Button" parent="."]
+offset_left = 254.0
+offset_top = 132.0
+offset_right = 320.0
+offset_bottom = 158.0
+text = "回合+1"
+
+[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="Button2" to="." method="_on_button_2_pressed"]
+[connection signal="pressed" from="Button3" to="." method="_on_button_3_pressed"]

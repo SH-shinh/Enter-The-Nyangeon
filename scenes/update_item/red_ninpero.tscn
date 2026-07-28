@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://cj8ee8yesbo8y"]
+
+[ext_resource type="Script" path="res://scenes/update_item/red_ninpero.gd" id="1_y1gts"]
+[ext_resource type="Resource" uid="uid://byim7jof6jy0" path="res://resources/buff/enemy_buff/vuln_buff.tres" id="2_0cliw"]
+
+[node name="RedNinpero" type="Node2D"]
+script = ExtResource("1_y1gts")
+enemy_buff = ExtResource("2_0cliw")
+buff_layer = 5
+buff_value = 0.1
+buff_erase_timer = 3.0

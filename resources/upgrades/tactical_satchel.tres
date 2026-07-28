@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://bqsaqqhdvjj4d"]
+
+[ext_resource type="Texture2D" uid="uid://c3ybdapcsjijg" path="res://sprites/update_item/tactical_satchel.png" id="1_l646x"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_nvdea"]
+
+[resource]
+script = ExtResource("2_nvdea")
+id = "tactical_satchel"
+icon = ExtResource("1_l646x")
+name = "战斗书包"
+rare = 1
+order_num = -1
+description = "强化了功能性与收纳性的特制书包，提升生命值和抗伤害能力。"
+forward = "+24生命值
+-8%受到伤害"
+negative = ""
+item_tags = 0
+tags = Array[String](["防御"])

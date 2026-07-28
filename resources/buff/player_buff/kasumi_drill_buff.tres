@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://dmur1plvar11c"]
+
+[ext_resource type="Texture2D" uid="uid://b443gs3b8xe45" path="res://sprites/buff_icon/drill_buff_icon.png" id="1_mqiey"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_aerme"]
+
+[resource]
+script = ExtResource("2_aerme")
+id = "kasumi_drill_buff"
+icon = ExtResource("1_mqiey")
+name = "霞钻头buff"
+ability = ""
+remove_by_layer = false
+description = ""

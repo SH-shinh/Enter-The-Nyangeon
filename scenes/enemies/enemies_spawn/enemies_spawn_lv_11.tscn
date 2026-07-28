@@ -1,0 +1,38 @@
+[gd_scene load_steps=17 format=3 uid="uid://bfdj848yj83yh"]
+
+[ext_resource type="Script" path="res://script/enemies_spawn.gd" id="1_r6f03"]
+[ext_resource type="Resource" uid="uid://tyefl3u2oxr" path="res://resources/enemy/sweeper.tres" id="2_8jec0"]
+[ext_resource type="PackedScene" uid="uid://blgdeks0i23pt" path="res://scenes/enemies/sweeper.tscn" id="2_rjnfm"]
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_rpnse"]
+[ext_resource type="Resource" uid="uid://bo5aojm81wiil" path="res://resources/enemy/enhanced_sweeper.tres" id="3_75wat"]
+[ext_resource type="PackedScene" uid="uid://b1cfdw3ja54qj" path="res://scenes/enemies/enhanced_sweeper.tscn" id="3_ahex6"]
+[ext_resource type="PackedScene" uid="uid://bv4btiolwh31t" path="res://scenes/enemies/mystic_sweeper.tscn" id="4_eclok"]
+[ext_resource type="Resource" uid="uid://dx43aolfidycr" path="res://resources/enemy/mystic_sweeper.tres" id="4_kmymk"]
+[ext_resource type="PackedScene" uid="uid://bhyuj2aufn4nq" path="res://scenes/enemies/tester_automaton.tscn" id="5_7wtj8"]
+[ext_resource type="Resource" uid="uid://dmixiglqom01n" path="res://resources/enemy/tester_automaton.tres" id="5_r30sy"]
+[ext_resource type="Resource" uid="uid://dwgipm2sx68ue" path="res://resources/enemy/tester_automaton_rl.tres" id="6_lldn1"]
+[ext_resource type="PackedScene" uid="uid://bnlpg5jbpx83m" path="res://scenes/enemies/tester_automaton_rl.tscn" id="6_rauk2"]
+[ext_resource type="PackedScene" uid="uid://jpy0bx2qrcgo" path="res://scenes/enemies/modded_sweeper.tscn" id="7_070cu"]
+[ext_resource type="Resource" uid="uid://q1y8ttghyuve" path="res://resources/enemy/modded_sweeper.tres" id="7_vfua6"]
+[ext_resource type="Resource" uid="uid://1wrnoropoerp" path="res://resources/enemy/tester_automaton_shield.tres" id="8_k52ge"]
+[ext_resource type="PackedScene" uid="uid://dmxgmabfb0b0p" path="res://scenes/enemies/tester_automaton_shield.tscn" id="8_mv2h1"]
+
+[node name="EnemiesSpawnLV11" type="Node2D"]
+script = ExtResource("1_r6f03")
+num_mult = 2.2
+round_mult = 1.0
+hp_mult = 4.5
+damage_mult = 1.5
+enemy = Array[ExtResource("2_rpnse")]([ExtResource("2_8jec0"), ExtResource("3_75wat"), ExtResource("4_kmymk"), ExtResource("5_r30sy"), ExtResource("6_lldn1"), ExtResource("7_vfua6"), ExtResource("8_k52ge")])
+enemy_pool = Array[PackedScene]([ExtResource("2_rjnfm"), ExtResource("3_ahex6"), ExtResource("4_eclok"), ExtResource("5_7wtj8"), ExtResource("6_rauk2"), ExtResource("7_070cu"), ExtResource("8_mv2h1")])
+enemy_spawn_num = Array[int]([6, 6, 2, 1, 1, 3, 1])
+enemy_spawn_time = Array[float]([15.0, 25.0, 35.0, 35.0, 35.0, 35.0, 50.0])
+
+[node name="RoundTimer" type="Timer" parent="."]
+wait_time = 60.0
+one_shot = true
+
+[node name="EnemySpawnCDTime" type="Timer" parent="."]
+wait_time = 0.1
+
+[connection signal="timeout" from="EnemySpawnCDTime" to="." method="_on_enemy_spawn_cd_time_timeout"]

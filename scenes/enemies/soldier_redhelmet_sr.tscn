@@ -1,0 +1,236 @@
+[gd_scene load_steps=25 format=3 uid="uid://c77figwu5shna"]
+
+[ext_resource type="Script" path="res://scenes/enemies/automaton.gd" id="1_8h5bt"]
+[ext_resource type="PackedScene" uid="uid://bdo12rjvieur7" path="res://scenes/shadow/shadow.tscn" id="2_cjksb"]
+[ext_resource type="Texture2D" uid="uid://blbbwutm3dxa" path="res://sprites/enemies/soldier_redhelmet.png" id="3_5putj"]
+[ext_resource type="Texture2D" uid="uid://disey3ucdufd1" path="res://sprites/enemies/normal_halo.png" id="3_cs37b"]
+[ext_resource type="PackedScene" uid="uid://ienp1pc5modp" path="res://scenes/enemies/enemy_gun_8.tscn" id="4_lomm7"]
+[ext_resource type="Script" path="res://script/EnemyStateMachine.gd" id="5_puhop"]
+[ext_resource type="Script" path="res://script/EnemyStats.gd" id="6_71eyw"]
+[ext_resource type="PackedScene" uid="uid://bwix1bf5g1mjh" path="res://script/death_anim.tscn" id="7_nxt5y"]
+[ext_resource type="PackedScene" uid="uid://dcixivms2uc75" path="res://script/enemy_hurt_floating_text.tscn" id="8_m227u"]
+[ext_resource type="PackedScene" uid="uid://btl1l8a33rp5b" path="res://scenes/manager/enemy_buff_manager.tscn" id="9_m0p6k"]
+
+[sub_resource type="Shader" id="Shader_23foo"]
+code = "shader_type canvas_item;
+
+uniform float outline_width = 1.0;
+uniform vec4 outline_color :source_color = vec4(0, 0, 0, 1 );
+uniform float flash_opacity: hint_range(0.0, 1.0, 0.1) = 0.0;
+
+
+
+void fragment() {
+	
+	vec2 uv = UV;
+	
+	vec2 uv_up = uv + vec2(0, TEXTURE_PIXEL_SIZE.y) * outline_width;
+	vec2 uv_down = uv + vec2(0, -TEXTURE_PIXEL_SIZE.y) * outline_width;
+	vec2 uv_left = uv + vec2(TEXTURE_PIXEL_SIZE.x, 0) * outline_width;
+	vec2 uv_right = uv + vec2(-TEXTURE_PIXEL_SIZE.x, 0) * outline_width;
+	
+	vec4 color_up = texture(TEXTURE, uv_up);
+	vec4 color_down = texture(TEXTURE, uv_down);
+	vec4 color_left = texture(TEXTURE, uv_left);
+	vec4 color_right = texture(TEXTURE, uv_right);
+	
+	vec4 outline = color_up + color_down + color_left + color_right;
+	
+	outline.rgb = outline_color.rgb;
+	
+	outline.a = min(outline.a, 1);
+	
+	vec4 orginal_color = texture(TEXTURE, UV);
+	orginal_color.rgb = mix(orginal_color.rgb, outline_color.rgb, flash_opacity);
+	
+	COLOR = mix(outline, orginal_color, orginal_color.a);
+
+}"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_uj1lh"]
+resource_local_to_scene = true
+shader = SubResource("Shader_23foo")
+shader_parameter/outline_width = 0.0
+shader_parameter/outline_color = Color(2, 2, 2, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5g8bq"]
+atlas = ExtResource("3_5putj")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ypv57"]
+atlas = ExtResource("3_5putj")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qincf"]
+atlas = ExtResource("3_5putj")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jgps0"]
+atlas = ExtResource("3_5putj")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_j4o4b"]
+atlas = ExtResource("3_5putj")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_852jk"]
+atlas = ExtResource("3_5putj")
+region = Rect2(64, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mpjkn"]
+atlas = ExtResource("3_5putj")
+region = Rect2(128, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0ko8u"]
+atlas = ExtResource("3_5putj")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_m333h"]
+atlas = ExtResource("3_5putj")
+region = Rect2(0, 64, 64, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_uvbd1"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5g8bq")
+}],
+"loop": false,
+"name": &"die",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.2,
+"texture": SubResource("AtlasTexture_ypv57")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qincf")
+}, {
+"duration": 1.2,
+"texture": SubResource("AtlasTexture_jgps0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_j4o4b")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 12.0
+}, {
+"frames": [{
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_852jk")
+}, {
+"duration": 1.2,
+"texture": SubResource("AtlasTexture_mpjkn")
+}, {
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_0ko8u")
+}, {
+"duration": 1.2,
+"texture": SubResource("AtlasTexture_m333h")
+}],
+"loop": true,
+"name": &"run",
+"speed": 12.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_4b3wr"]
+radius = 12.0
+height = 36.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_nxvgv"]
+radius = 9.0
+
+[node name="soldier_redhelmet_sr" type="CharacterBody2D" node_paths=PackedStringArray("stats", "sprite_2d", "graphics", "collision_shape_2d", "enemy_buff_manager") groups=["Enemy"]]
+collision_layer = 8
+collision_mask = 258
+motion_mode = 1
+script = ExtResource("1_8h5bt")
+shoot_range = 650
+back_range = 40
+aim_and_move = 0.2
+surround_tendency = 15
+surround_time = 20
+sniper = true
+shoot_cd_time = 60
+aim_time = 1
+pool_id = "soldier_redhelmet_sr"
+icon = "soldier_redhelmet_icon"
+stats = NodePath("EnemyStats")
+sprite_2d = NodePath("Graphics/AnimatedSprite2D")
+graphics = NodePath("Graphics")
+collision_shape_2d = NodePath("CollisionShape2D")
+enemy_buff_manager = NodePath("EnemyBuffManager")
+
+[node name="Graphics" type="Node2D" parent="."]
+
+[node name="shadow" parent="Graphics" instance=ExtResource("2_cjksb")]
+scale = Vector2(0.65625, 0.65625)
+
+[node name="halo" type="Sprite2D" parent="Graphics"]
+position = Vector2(0, -43)
+texture = ExtResource("3_cs37b")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Graphics"]
+material = SubResource("ShaderMaterial_uj1lh")
+position = Vector2(0, -15)
+sprite_frames = SubResource("SpriteFrames_uvbd1")
+animation = &"run"
+autoplay = "idle"
+frame_progress = 0.468339
+flip_h = true
+
+[node name="Gun" parent="Graphics" node_paths=PackedStringArray("enemy_body", "stats") instance=ExtResource("4_lomm7")]
+position = Vector2(0, -12)
+enemy_body = NodePath("../..")
+stats = NodePath("../../EnemyStats")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -20)
+shape = SubResource("CapsuleShape2D_4b3wr")
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("5_puhop")
+
+[node name="EnemyStats" type="Node" parent="."]
+script = ExtResource("6_71eyw")
+score = 90
+max_hp = 120
+knockback_resis = 50
+penetrate_resis = 3
+Enemy_damage = 5
+Enemy_coin = 10
+MAX_SPEED = 90
+SPEED_TIME = 0.2
+
+[node name="DeathAnim" parent="." node_paths=PackedStringArray("stats") instance=ExtResource("7_nxt5y")]
+stats = NodePath("../EnemyStats")
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+position = Vector2(0, -11)
+shape = SubResource("CircleShape2D_nxvgv")
+
+[node name="EnemyHurtFloatingText" parent="." instance=ExtResource("8_m227u")]
+
+[node name="EnemyBuffManager" parent="." instance=ExtResource("9_m0p6k")]
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+offset_left = -10.0
+offset_top = -55.0
+offset_right = 30.0
+offset_bottom = -29.0
+scale = Vector2(0.5, 0.5)
+
+[node name="BuffBox" type="HBoxContainer" parent="MarginContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+
+[connection signal="shoot_end" from="Graphics/Gun" to="." method="_on_gun_shoot_end"]
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
+[connection signal="body_exited" from="Area2D" to="." method="_on_area_2d_body_exited"]

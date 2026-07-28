@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://bljktquauvble"]
+
+[ext_resource type="Texture2D" uid="uid://bouc8sbv7gron" path="res://sprites/update_item/EXPS3-0_icon.png" id="1_dk3ao"]
+[ext_resource type="PackedScene" uid="uid://5xnka7kne7w" path="res://script/picatinny_rail.tscn" id="2_uf3xm"]
+
+[node name="EXPS3-0" type="Sprite2D"]
+position = Vector2(1, -2)
+texture = ExtResource("1_dk3ao")
+
+[node name="PicatinnyRail" parent="." instance=ExtResource("2_uf3xm")]
+position = Vector2(-1, -4)

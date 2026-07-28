@@ -1,0 +1,87 @@
+[gd_scene load_steps=12 format=3 uid="uid://bnoialfrnubpi"]
+
+[ext_resource type="Script" path="res://scenes/update_item/spiked_shell.gd" id="1_oks34"]
+[ext_resource type="Texture2D" uid="uid://brx7nss0a3qbv" path="res://sprites/update_item/spiked_shell_icon.png" id="2_3d2i6"]
+[ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="3_fe71g"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_m3krb"]
+atlas = ExtResource("2_3d2i6")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tx5en"]
+atlas = ExtResource("2_3d2i6")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_v5tas"]
+atlas = ExtResource("2_3d2i6")
+region = Rect2(256, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gi8jg"]
+atlas = ExtResource("2_3d2i6")
+region = Rect2(384, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0uhem"]
+atlas = ExtResource("2_3d2i6")
+region = Rect2(512, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_im6oe"]
+atlas = ExtResource("2_3d2i6")
+region = Rect2(640, 0, 128, 128)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_pceto"]
+animations = [{
+"frames": [{
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_m3krb")
+}, {
+"duration": 1.2,
+"texture": SubResource("AtlasTexture_tx5en")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_v5tas")
+}, {
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_gi8jg")
+}, {
+"duration": 1.2,
+"texture": SubResource("AtlasTexture_0uhem")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_im6oe")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 8.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_4prlb"]
+radius = 37.054
+
+[node name="spiked_shell" type="Node2D"]
+script = ExtResource("1_oks34")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+modulate = Color(1, 1, 1, 0.7)
+sprite_frames = SubResource("SpriteFrames_pceto")
+animation = &"idle"
+autoplay = "idle"
+frame_progress = 0.968934
+
+[node name="Area2D" type="Area2D" parent="AnimatedSprite2D"]
+collision_layer = 0
+collision_mask = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AnimatedSprite2D/Area2D"]
+shape = SubResource("CircleShape2D_4prlb")
+
+[node name="Label" type="Label" parent="AnimatedSprite2D"]
+offset_left = 24.0
+offset_top = -33.0
+offset_right = 42.0
+offset_bottom = -21.0
+theme_override_fonts/font = ExtResource("3_fe71g")
+theme_override_font_sizes/font_size = 12
+text = "123"
+
+[connection signal="body_entered" from="AnimatedSprite2D/Area2D" to="." method="_on_area_2d_body_entered"]
+[connection signal="body_exited" from="AnimatedSprite2D/Area2D" to="." method="_on_area_2d_body_exited"]

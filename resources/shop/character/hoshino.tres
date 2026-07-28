@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CharacterCard" load_steps=5 format=3 uid="uid://jf6xxo0wwk4k"]
+
+[ext_resource type="Texture2D" uid="uid://0uipew2k26th" path="res://sprites/player/hoshino/hoshino_picture.png" id="1_1udv6"]
+[ext_resource type="Texture2D" uid="uid://fso5eoabq0er" path="res://ui/school/ABYDOS_icon.png" id="2_fvwwf"]
+[ext_resource type="Script" path="res://resources/shop/character/character_card.gd" id="3_58337"]
+[ext_resource type="Texture2D" uid="uid://cilypniv8h5eq" path="res://ui/weapon/SG_icon.png" id="4_5m6ib"]
+
+[resource]
+script = ExtResource("3_58337")
+cost = 6
+name_1 = "TAKANASHI"
+name_2 = "HOSHINO"
+character_sprite = ExtResource("1_1udv6")
+weapon_name = "EYE OF HORUS"
+weapon_type_name = "SG"
+weapon_icon = ExtResource("4_5m6ib")
+school_name = "ABYDOS"
+school_icon = ExtResource("2_fvwwf")
+id = "hoshino"
+group = "FTF"

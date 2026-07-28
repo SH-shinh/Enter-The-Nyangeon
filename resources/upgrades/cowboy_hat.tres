@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://lbvbvcwsvqnu"]
+
+[ext_resource type="Texture2D" uid="uid://0eavckb6ful" path="res://sprites/update_item/cowboy_hat.png" id="1_j3f8o"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_7r7s6"]
+
+[resource]
+script = ExtResource("2_7r7s6")
+id = "cowboy_hat"
+icon = ExtResource("1_j3f8o")
+name = "破旧牛仔帽"
+rare = 2
+order_num = 1
+special_rules = 0
+description = "某人遗失的帽子，含有不可思议的力量，弹匣内的第一发子弹必暴击。"
+forward = "独特
++25%暴击伤害
+首发子弹必暴击"
+negative = ""
+item_tags = 17
+tags = Array[String](["暴击", "弹道"])
+weight = 1.0

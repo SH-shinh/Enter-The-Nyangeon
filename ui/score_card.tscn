@@ -1,0 +1,373 @@
+[gd_scene load_steps=10 format=3 uid="uid://cfs0iwuago5d5"]
+
+[ext_resource type="Script" path="res://ui/score_card.gd" id="1_hf5mb"]
+[ext_resource type="Texture2D" uid="uid://bqdyikqbnp6h" path="res://sprites/player/hina/hina_picture.png" id="1_y6402"]
+[ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="2_yp1x4"]
+[ext_resource type="Texture2D" uid="uid://dukre71u1l6r7" path="res://sprites/player_support/kei/kei_picture.png" id="3_dsh0c"]
+[ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="4_76wn8"]
+[ext_resource type="Script" path="res://script/ScrollBox.gd" id="5_otov4"]
+[ext_resource type="Script" path="res://script/ScrollBox_x.gd" id="6_xv3qm"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_3jqii"]
+
+[sub_resource type="Theme" id="Theme_t1sts"]
+PanelContainer/styles/panel = SubResource("StyleBoxEmpty_3jqii")
+
+[node name="score_card" type="PanelContainer"]
+custom_minimum_size = Vector2(580, 40)
+theme = SubResource("Theme_t1sts")
+script = ExtResource("1_hf5mb")
+
+[node name="level_color" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+color = Color(0.733333, 0.607843, 1, 1)
+
+[node name="ColorRect2" type="ColorRect" parent="."]
+layout_mode = 2
+color = Color(0, 0, 0, 0.7)
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="ColorRect" type="ColorRect" parent="HBoxContainer"]
+clip_children = 2
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+color = Color(0.211765, 0.211765, 0.211765, 1)
+
+[node name="player_sprite" type="Sprite2D" parent="HBoxContainer/ColorRect"]
+unique_name_in_owner = true
+texture_filter = 2
+position = Vector2(37, 146)
+scale = Vector2(0.4, 0.4)
+texture = ExtResource("1_y6402")
+flip_h = true
+hframes = 4
+
+[node name="PlayerName" type="Label" parent="HBoxContainer/ColorRect"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 4.0
+offset_top = 29.0
+offset_right = 100.0
+offset_bottom = 40.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.933333, 0.392157, 0.458824, 1)
+theme_override_colors/font_outline_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 7
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("2_yp1x4")
+theme_override_font_sizes/font_size = 10
+text = "hina"
+uppercase = true
+
+[node name="Date" type="Label" parent="HBoxContainer/ColorRect"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 4.0
+offset_top = 2.0
+offset_right = 100.0
+offset_bottom = 13.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.933333, 0.392157, 0.458824, 1)
+theme_override_colors/font_outline_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 7
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("2_yp1x4")
+theme_override_font_sizes/font_size = 10
+text = "2026 6/13 21:14:26"
+
+[node name="ColorRect2" type="ColorRect" parent="HBoxContainer"]
+clip_children = 2
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+color = Color(0.211765, 0.211765, 0.211765, 1)
+
+[node name="support_sprite" type="Sprite2D" parent="HBoxContainer/ColorRect2"]
+unique_name_in_owner = true
+texture_filter = 2
+position = Vector2(9, 146)
+scale = Vector2(0.4, 0.4)
+texture = ExtResource("3_dsh0c")
+flip_h = true
+hframes = 4
+
+[node name="SupportName" type="Label" parent="HBoxContainer/ColorRect2"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 4.0
+offset_top = 29.0
+offset_right = 70.0
+offset_bottom = 40.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.933333, 0.392157, 0.458824, 1)
+theme_override_colors/font_outline_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 7
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("2_yp1x4")
+theme_override_font_sizes/font_size = 10
+text = "KEI"
+uppercase = true
+
+[node name="Node2D" type="Node2D" parent="HBoxContainer"]
+
+[node name="ScoreNum" type="Label" parent="HBoxContainer/Node2D"]
+unique_name_in_owner = true
+offset_left = 170.0
+offset_top = 24.0
+offset_right = 254.0
+offset_bottom = 40.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.262745, 0, 0.129412, 1)
+theme_override_colors/font_outline_color = Color(0.262745, 0, 0.129412, 1)
+theme_override_constants/shadow_offset_x = -1
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 9
+theme_override_constants/shadow_outline_size = 5
+theme_override_fonts/font = ExtResource("2_yp1x4")
+theme_override_font_sizes/font_size = 16
+text = "9999999"
+horizontal_alignment = 1
+clip_text = true
+
+[node name="LevelName" type="Label" parent="HBoxContainer/Node2D"]
+unique_name_in_owner = true
+offset_left = 173.0
+offset_top = 11.0
+offset_right = 226.0
+offset_bottom = 25.0
+theme_override_colors/font_color = Color(0.825657, 0.784007, 0.995993, 1)
+theme_override_colors/font_shadow_color = Color(0.261088, 3.60981e-08, 0.130492, 1)
+theme_override_colors/font_outline_color = Color(0.261088, 3.60981e-08, 0.130492, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 5
+theme_override_font_sizes/font_size = 12
+text = "INSANE"
+
+[node name="player_id" type="Label" parent="HBoxContainer/Node2D"]
+unique_name_in_owner = true
+offset_left = 170.0
+offset_top = 1.0
+offset_right = 249.0
+offset_bottom = 15.0
+theme_override_colors/font_shadow_color = Color(0.163952, 5.11389e-08, 0.0734891, 1)
+theme_override_colors/font_outline_color = Color(0.164706, 0, 0.0745098, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 5
+theme_override_fonts/font = ExtResource("4_76wn8")
+theme_override_font_sizes/font_size = 10
+text = "绝至屌王"
+clip_text = true
+
+[node name="Node2D2" type="Node2D" parent="HBoxContainer"]
+
+[node name="round" type="Label" parent="HBoxContainer/Node2D2"]
+offset_left = 257.0
+offset_top = 3.0
+offset_right = 293.0
+offset_bottom = 14.0
+theme_override_colors/font_shadow_color = Color(0.163952, 5.11389e-08, 0.0734891, 1)
+theme_override_colors/font_outline_color = Color(0.164706, 0, 0.0745098, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 5
+theme_override_fonts/font = ExtResource("4_76wn8")
+theme_override_font_sizes/font_size = 10
+text = "ROUND:"
+
+[node name="defeats" type="Label" parent="HBoxContainer/Node2D2"]
+offset_left = 257.0
+offset_top = 15.0
+offset_right = 305.0
+offset_bottom = 26.0
+theme_override_colors/font_shadow_color = Color(0.163952, 5.11389e-08, 0.0734891, 1)
+theme_override_colors/font_outline_color = Color(0.164706, 0, 0.0745098, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 5
+theme_override_fonts/font = ExtResource("4_76wn8")
+theme_override_font_sizes/font_size = 10
+text = "DEFEATS:"
+
+[node name="coins" type="Label" parent="HBoxContainer/Node2D2"]
+offset_left = 257.0
+offset_top = 27.0
+offset_right = 291.0
+offset_bottom = 38.0
+theme_override_colors/font_shadow_color = Color(0.163952, 5.11389e-08, 0.0734891, 1)
+theme_override_colors/font_outline_color = Color(0.164706, 0, 0.0745098, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 5
+theme_override_fonts/font = ExtResource("4_76wn8")
+theme_override_font_sizes/font_size = 10
+text = "COINS:"
+
+[node name="RoundNum" type="Label" parent="HBoxContainer/Node2D2"]
+unique_name_in_owner = true
+offset_left = 307.0
+offset_top = 3.0
+offset_right = 343.0
+offset_bottom = 14.0
+theme_override_colors/font_shadow_color = Color(0.163952, 5.11389e-08, 0.0734891, 1)
+theme_override_colors/font_outline_color = Color(0.164706, 0, 0.0745098, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 5
+theme_override_fonts/font = ExtResource("4_76wn8")
+theme_override_font_sizes/font_size = 10
+text = "20"
+
+[node name="DefeatsNum" type="Label" parent="HBoxContainer/Node2D2"]
+unique_name_in_owner = true
+offset_left = 307.0
+offset_top = 17.0
+offset_right = 342.0
+offset_bottom = 28.0
+theme_override_colors/font_color = Color(0.936022, 0.20196, 0.277633, 1)
+theme_override_colors/font_shadow_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 1
+theme_override_fonts/font = ExtResource("2_yp1x4")
+theme_override_font_sizes/font_size = 10
+text = "9999999"
+
+[node name="CoinsNum" type="Label" parent="HBoxContainer/Node2D2"]
+unique_name_in_owner = true
+offset_left = 307.0
+offset_top = 29.0
+offset_right = 342.0
+offset_bottom = 40.0
+theme_override_colors/font_color = Color(1, 0.557843, 0.107489, 1)
+theme_override_colors/font_shadow_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 1
+theme_override_fonts/font = ExtResource("2_yp1x4")
+theme_override_font_sizes/font_size = 10
+text = "9999999"
+
+[node name="Node2D3" type="Node2D" parent="HBoxContainer"]
+
+[node name="time" type="Label" parent="HBoxContainer/Node2D3"]
+offset_left = 363.0
+offset_top = 3.0
+offset_right = 399.0
+offset_bottom = 14.0
+theme_override_colors/font_shadow_color = Color(0.163952, 5.11389e-08, 0.0734891, 1)
+theme_override_colors/font_outline_color = Color(0.164706, 0, 0.0745098, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 5
+theme_override_fonts/font = ExtResource("4_76wn8")
+theme_override_font_sizes/font_size = 10
+text = "TIME:"
+
+[node name="gamemode" type="Label" parent="HBoxContainer/Node2D3"]
+offset_left = 363.0
+offset_top = 13.0
+offset_right = 437.0
+offset_bottom = 24.0
+theme_override_colors/font_shadow_color = Color(0.163952, 5.11389e-08, 0.0734891, 1)
+theme_override_colors/font_outline_color = Color(0.164706, 0, 0.0745098, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 5
+theme_override_fonts/font = ExtResource("4_76wn8")
+theme_override_font_sizes/font_size = 10
+text = "MISSION DATA:"
+
+[node name="TimeNum" type="Label" parent="HBoxContainer/Node2D3"]
+unique_name_in_owner = true
+offset_left = 405.0
+offset_top = 3.0
+offset_right = 453.0
+offset_bottom = 14.0
+theme_override_colors/font_shadow_color = Color(0.163952, 5.11389e-08, 0.0734891, 1)
+theme_override_colors/font_outline_color = Color(0.164706, 0, 0.0745098, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 5
+theme_override_fonts/font = ExtResource("4_76wn8")
+theme_override_font_sizes/font_size = 10
+text = "99:99:99"
+
+[node name="mission_data" type="ScrollContainer" parent="HBoxContainer/Node2D3"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 363.0
+offset_top = 25.0
+offset_right = 538.0
+offset_bottom = 50.0
+grow_vertical = 0
+scale = Vector2(0.6, 0.6)
+horizontal_scroll_mode = 3
+vertical_scroll_mode = 3
+script = ExtResource("6_xv3qm")
+
+[node name="gamemode_box" type="HBoxContainer" parent="HBoxContainer/Node2D3/mission_data"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Node2D4" type="Node2D" parent="HBoxContainer"]
+
+[node name="ColorRect4" type="ColorRect" parent="HBoxContainer/Node2D4"]
+offset_left = 472.0
+offset_right = 580.0
+offset_bottom = 40.0
+color = Color(0.14902, 0.14902, 0.14902, 1)
+
+[node name="equipment" type="ScrollContainer" parent="HBoxContainer/Node2D4"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 475.0
+offset_top = 7.0
+offset_right = 648.0
+offset_bottom = 60.0
+grow_vertical = 0
+scale = Vector2(0.6, 0.6)
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
+script = ExtResource("5_otov4")
+
+[node name="equip_box" type="GridContainer" parent="HBoxContainer/Node2D4/equipment"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = -4
+theme_override_constants/v_separation = -2
+columns = 8
+
+[node name="Label" type="Label" parent="HBoxContainer/Node2D4"]
+offset_left = 475.0
+offset_top = 1.0
+offset_right = 520.0
+offset_bottom = 9.0
+theme_override_fonts/font = ExtResource("2_yp1x4")
+theme_override_font_sizes/font_size = 8
+text = "EQUIPMENT"

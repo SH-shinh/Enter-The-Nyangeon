@@ -1,0 +1,33 @@
+[gd_scene load_steps=5 format=3 uid="uid://cepkmg6axb2lu"]
+
+[ext_resource type="Texture2D" uid="uid://bpn1yxpsoq5hi" path="res://sprites/update_item/shiroko_drone_5_10.png" id="1_0ox16"]
+[ext_resource type="Script" path="res://scenes/update_item/shiroko_drone_icon.gd" id="2_jxxox"]
+[ext_resource type="Texture2D" uid="uid://f6odunq7fpxm" path="res://sprites/update_item/shiroko_drone_propeller_4.png" id="3_iqphl"]
+[ext_resource type="Script" path="res://script/render_sprites.gd" id="4_l20wv"]
+
+[node name="ShirokoDrone" type="Sprite2D"]
+texture = ExtResource("1_0ox16")
+hframes = 10
+frame = 9
+script = ExtResource("2_jxxox")
+rotate_sprites = true
+
+[node name="Marker2D" type="Marker2D" parent="."]
+position = Vector2(0, -15)
+
+[node name="Sprite2D" type="Sprite2D" parent="Marker2D"]
+texture = ExtResource("3_iqphl")
+hframes = 4
+script = ExtResource("4_l20wv")
+rotate_sprites = true
+v = 20.0
+
+[node name="Marker2D2" type="Marker2D" parent="."]
+position = Vector2(0, 3)
+
+[node name="Sprite2D" type="Sprite2D" parent="Marker2D2"]
+texture = ExtResource("3_iqphl")
+hframes = 4
+script = ExtResource("4_l20wv")
+rotate_sprites = true
+v = 20.0

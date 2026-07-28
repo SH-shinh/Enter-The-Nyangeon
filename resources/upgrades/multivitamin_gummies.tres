@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://bxsfmi00vdt8c"]
+
+[ext_resource type="Texture2D" uid="uid://b2cqm7hoxllnd" path="res://sprites/update_item/multivitamin_gummies.png" id="1_y0lwp"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_ukyt6"]
+
+[resource]
+script = ExtResource("2_ukyt6")
+id = "multivitamin_gummies"
+icon = ExtResource("1_y0lwp")
+name = "维生素软糖"
+rare = 0
+order_num = -1
+special_rules = 0
+description = "含有多种维生素的营养软糖。拥有多种水果口味，吃起来别有一番滋味。不过需要注意别吃着吃着罐子空了！"
+forward = "+15%临时生命值上限"
+negative = ""
+item_tags = 512
+tags = Array[String](["防御"])
+weight = 1.0

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://b71qgg62orgs2"]
+
+[ext_resource type="Texture2D" uid="uid://c57l35qcln0a6" path="res://sprites/buff_icon/fire_dot_icon.png" id="1_be2ur"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_epotc"]
+
+[resource]
+script = ExtResource("2_epotc")
+id = "player_fire_dot"
+icon = ExtResource("1_be2ur")
+name = "玩家火dot伤害"
+ability = ""
+remove_by_layer = false
+description = ""

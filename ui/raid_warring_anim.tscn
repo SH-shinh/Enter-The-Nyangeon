@@ -1,0 +1,31 @@
+[gd_scene load_steps=5 format=3 uid="uid://cei1imond8kyc"]
+
+[ext_resource type="Shader" path="res://shaders/scrolling_bkgd.gdshader" id="1_5pxni"]
+[ext_resource type="Script" path="res://ui/raid_warring_anim.gd" id="1_ca146"]
+[ext_resource type="Texture2D" uid="uid://m54grm4ymrn8" path="res://ui/line_point.png" id="2_r0a3r"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ley8u"]
+shader = ExtResource("1_5pxni")
+shader_parameter/scroll_speed = 2.0
+shader_parameter/angle_degrees = 0.0
+shader_parameter/repeat_x = 1.0
+shader_parameter/repeat_y = 1.0
+shader_parameter/tint = Color(0.990643, 0, 0.213207, 0.764706)
+
+[node name="RaidWarringAnim" type="Node2D"]
+z_index = -2
+script = ExtResource("1_ca146")
+
+[node name="Line2D" type="Line2D" parent="."]
+material = SubResource("ShaderMaterial_ley8u")
+position = Vector2(-704, -145)
+points = PackedVector2Array(494, 144, 704, 248, 914, 144, 704, 39)
+closed = true
+width = 6.0
+texture = ExtResource("2_r0a3r")
+texture_mode = 1
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="Target" type="Marker2D" parent="."]

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://cwgl2gcea4u38"]
+
+[ext_resource type="Texture2D" uid="uid://ve72cf5s3gya" path="res://sprites/update_item/beanbag.png" id="1_6bqpw"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_64cbd"]
+
+[resource]
+script = ExtResource("2_64cbd")
+id = "beanbag"
+icon = ExtResource("1_6bqpw")
+name = "沙包"
+rare = 0
+order_num = -1
+special_rules = 0
+description = "用柔软的布料把豆和沙子之类的东西包起来制成的沙包，偶尔有会爆炸的混入其中。"
+forward = "+15%爆炸伤害"
+negative = ""
+item_tags = 2
+tags = Array[String](["爆炸"])
+weight = 1.0

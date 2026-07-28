@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://y7dp1pc57fk5"]
+
+[ext_resource type="Texture2D" uid="uid://c8virjsbge7wa" path="res://sprites/update_item/fuel_tank_icon.png" id="1_24nd2"]
+[ext_resource type="PackedScene" uid="uid://bjvr1nuwo7ish" path="res://script/muzzle.tscn" id="2_vdor1"]
+
+[node name="FuelTankIcon" type="Sprite2D"]
+position = Vector2(3, 1)
+texture = ExtResource("1_24nd2")
+
+[node name="Muzzle" parent="." instance=ExtResource("2_vdor1")]
+position = Vector2(5, -1)

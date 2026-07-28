@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://bexr8gdhsisqj"]
+
+[ext_resource type="Texture2D" uid="uid://b2w1dy8wvi2xh" path="res://sprites/update_item/puzzle_cube.png" id="1_8rqxb"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_hp7od"]
+
+[resource]
+script = ExtResource("2_hp7od")
+id = "puzzle_cube"
+icon = ExtResource("1_8rqxb")
+name = "智力魔方"
+rare = 1
+order_num = 1
+description = "千年科学学园公认的高手向魔方。"
+forward = "独特
+造成击杀后溢出的伤害随机转移给场上的敌人。"
+negative = ""
+item_tags = 4103
+tags = Array[String]([])
+weight = 1.0

@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://lbtqkv3vj25d"]
+
+[ext_resource type="Script" path="res://scenes/update_item/computational_unit.gd" id="1_3cdpw"]
+[ext_resource type="Resource" uid="uid://bqw8nnsxk7vb7" path="res://resources/buff/player_buff/bullet_damage_mult_2_buff.tres" id="2_f5ufn"]
+
+[node name="computational_unit" type="Node2D"]
+script = ExtResource("1_3cdpw")
+player_buff = ExtResource("2_f5ufn")
+buff_layer = 99
+buff_value = 0.03
+buff_erase_timer = 99.0

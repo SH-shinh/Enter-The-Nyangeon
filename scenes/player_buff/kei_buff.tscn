@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://x5k5d4173ojj"]
+
+[ext_resource type="Script" path="res://scenes/player_buff/kei_buff.gd" id="1_ikhvf"]
+[ext_resource type="Resource" uid="uid://dc4dj2kyyk4rx" path="res://resources/buff/player_buff/kei_buff.tres" id="2_sqsn8"]
+
+[node name="kei_buff" type="Node2D"]
+script = ExtResource("1_ikhvf")
+buff = ExtResource("2_sqsn8")
+buff_id = "kei_buff"
+buff_layer = 1
+buff_value = 1.2
+buff_erase_timer = 999.0
+
+[node name="BuffTimer" type="Timer" parent="."]
+
+[connection signal="timeout" from="BuffTimer" to="." method="_on_buff_timer_timeout"]

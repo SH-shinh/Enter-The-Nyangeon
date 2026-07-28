@@ -1,0 +1,32 @@
+[gd_scene load_steps=4 format=3 uid="uid://bsynkg62t24yo"]
+
+[ext_resource type="Script" path="res://scenes/enemies/enemy_gun_5.gd" id="1_1fr2j"]
+[ext_resource type="Texture2D" uid="uid://cnbrvnti6y7ai" path="res://sprites/enemies/enemy_gun_5.png" id="2_51ao5"]
+[ext_resource type="PackedScene" uid="uid://c4aems0h8mmt8" path="res://script/bullet_launcher_2.tscn" id="3_gluxm"]
+
+[node name="EnemyGun5" type="Node2D"]
+script = ExtResource("1_1fr2j")
+
+[node name="BulletLauncher2" parent="." instance=ExtResource("3_gluxm")]
+scale = Vector2(0.65, 0.65)
+bullet_scale = 0.6
+bullet_count = 12
+bullet_arc = 330.0
+bullet_damage = 12.0
+bullet_speed = 240.0
+bullet_penetrate = 1
+kill_time = 11.0
+offset = 20.0
+offset_x = 40.0
+bullet_id = "enemy_bullet_1"
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(7, 0)
+scale = Vector2(0.65, 0.65)
+texture = ExtResource("2_51ao5")
+
+[node name="Marker2D" type="Marker2D" parent="Sprite2D"]
+position = Vector2(30, -1)
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 0.1

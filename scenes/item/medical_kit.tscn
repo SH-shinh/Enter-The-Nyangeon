@@ -1,0 +1,306 @@
+[gd_scene load_steps=22 format=3 uid="uid://bn1f8nr3qe3s7"]
+
+[ext_resource type="Shader" path="res://shaders/screen_outline.gdshader" id="1_fa8gc"]
+[ext_resource type="Script" path="res://scenes/item/medical_kit.gd" id="1_gho2d"]
+[ext_resource type="Texture2D" uid="uid://ck3v22o1gyhir" path="res://sprites/item/medical_kit_25.png" id="1_ivj56"]
+[ext_resource type="Script" path="res://scenes/item/MedicalKit.gd" id="2_1d733"]
+[ext_resource type="Texture2D" uid="uid://b5nbmcnfshgb8" path="res://sprites/particle/circular_1.png" id="5_2lws0"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_b4ni0"]
+blend_mode = 1
+
+[sub_resource type="Gradient" id="Gradient_dyh0c"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0, 0.852113, 0.971831)
+colors = PackedColorArray(0, 0, 0, 0, 1, 1, 1, 0.270588, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_n7jmx"]
+gradient = SubResource("Gradient_dyh0c")
+width = 256
+height = 256
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0)
+metadata/_snap_enabled = true
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_q85ap"]
+shader = ExtResource("1_fa8gc")
+shader_parameter/outline_width = 2.0
+shader_parameter/outline_color = Color(1, 15, 5, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="Animation" id="Animation_61l3c"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CharacterBody2D:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, -9)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CharacterBody2D:scale")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("CharacterBody2D:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("GPUParticles2D:emitting")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath(".:scale")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_lbvvm"]
+resource_name = "pick_anim"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("GPUParticles2D:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:scale")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(1.5, 1.5), Vector2(0, 0)]
+}
+tracks/2/type = "method"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.5),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"queue_free"
+}]
+}
+
+[sub_resource type="Animation" id="Animation_3a8j4"]
+resource_name = "new_animation"
+length = 0.3
+step = 0.01
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CharacterBody2D:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.28),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0, -300), Vector2(0, 7), Vector2(0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CharacterBody2D:scale")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.18, 0.2, 0.28),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(1, 1), Vector2(1, 0.5), Vector2(1, 1)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("CharacterBody2D:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/3/type = "method"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0.2),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"emit_can_pick"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_cscq5"]
+_data = {
+"RESET": SubResource("Animation_61l3c"),
+"pick_anim": SubResource("Animation_lbvvm"),
+"spawn_anim": SubResource("Animation_3a8j4")
+}
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_3tlmv"]
+radius = 35.0
+
+[sub_resource type="Gradient" id="Gradient_5rw4p"]
+colors = PackedColorArray(0.544974, 0.544974, 0.544974, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_pwdsm"]
+gradient = SubResource("Gradient_5rw4p")
+
+[sub_resource type="Gradient" id="Gradient_20j8f"]
+offsets = PackedFloat32Array(0.393443, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0.439049, 0.439049, 0.439049, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_ypsq5"]
+gradient = SubResource("Gradient_20j8f")
+
+[sub_resource type="Curve" id="Curve_w1xmq"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.686667, 1), -0.966276, -0.966276, 0, 0, Vector2(1, 0), -4.67033, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_nyjfh"]
+curve = SubResource("Curve_w1xmq")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_x64l0"]
+lifetime_randomness = 0.5
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 10.0
+spread = 180.0
+initial_velocity_min = 40.0
+initial_velocity_max = 60.0
+gravity = Vector3(0, 0, 0)
+scale_min = 0.5
+scale_max = 2.0
+scale_curve = SubResource("CurveTexture_nyjfh")
+color_ramp = SubResource("GradientTexture1D_ypsq5")
+color_initial_ramp = SubResource("GradientTexture1D_pwdsm")
+
+[node name="MedicalKit" type="Node2D" groups=["HealthItem"]]
+script = ExtResource("1_gho2d")
+time_wait = 8
+
+[node name="CanvasGroup" type="CanvasGroup" parent="."]
+
+[node name="TextureProgressBar" type="TextureProgressBar" parent="CanvasGroup"]
+visible = false
+material = SubResource("CanvasItemMaterial_b4ni0")
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -128.0
+offset_top = -128.0
+offset_right = 128.0
+offset_bottom = 128.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.3, 0.3)
+pivot_offset = Vector2(128, 128)
+max_value = 1.0
+step = 0.0
+value = 0.945
+fill_mode = 4
+texture_progress = SubResource("GradientTexture2D_n7jmx")
+
+[node name="CharacterBody2D" type="CharacterBody2D" parent="."]
+position = Vector2(0, -9)
+
+[node name="CanvasGroup" type="CanvasGroup" parent="CharacterBody2D"]
+material = SubResource("ShaderMaterial_q85ap")
+
+[node name="MedicalKit" type="Sprite2D" parent="CharacterBody2D/CanvasGroup"]
+scale = Vector2(0.6, 0.6)
+texture = ExtResource("1_ivj56")
+hframes = 25
+script = ExtResource("2_1d733")
+rotate_sprites = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_cscq5")
+}
+autoplay = "spawn_anim"
+
+[node name="PickTimer" type="Timer" parent="."]
+wait_time = 0.05
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_layer = 0
+monitoring = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+visible = false
+shape = SubResource("CircleShape2D_3tlmv")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 6
+process_material = SubResource("ParticleProcessMaterial_x64l0")
+texture = ExtResource("5_2lws0")
+lifetime = 0.5
+one_shot = true
+explosiveness = 1.0
+
+[connection signal="timeout" from="PickTimer" to="." method="_on_pick_timer_timeout"]
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
+[connection signal="body_exited" from="Area2D" to="." method="_on_area_2d_body_exited"]

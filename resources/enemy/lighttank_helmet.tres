@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EnemyCard" load_steps=3 format=3 uid="uid://d2gcqwn6rb7cc"]
+
+[ext_resource type="PackedScene" uid="uid://bjqdmupa58lfc" path="res://scenes/enemies/lighttank_helmet.tscn" id="1_j7o0b"]
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_amd52"]
+
+[resource]
+script = ExtResource("2_amd52")
+id = "lighttank_helmet"
+body = ExtResource("1_j7o0b")
+description = ""

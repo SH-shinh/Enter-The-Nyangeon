@@ -1,0 +1,549 @@
+[gd_scene load_steps=63 format=3 uid="uid://midmfbllng1n"]
+
+[ext_resource type="Script" path="res://scenes/player/momoi/momoi.gd" id="1_e0uyb"]
+[ext_resource type="Resource" uid="uid://ftukm13pdwxy" path="res://resources/player/mashiro.tres" id="2_0knwh"]
+[ext_resource type="Resource" uid="uid://dos3mykmex0r2" path="res://resources/player/PS/mashiro_ps.tres" id="3_hmlc8"]
+[ext_resource type="PackedScene" uid="uid://b78jo1set8q45" path="res://script/follow.tscn" id="4_ugtxo"]
+[ext_resource type="PackedScene" uid="uid://bdo12rjvieur7" path="res://scenes/shadow/shadow.tscn" id="5_j3m3s"]
+[ext_resource type="PackedScene" uid="uid://ceydnirh2w7yb" path="res://scenes/player/smoke.tscn" id="6_564nc"]
+[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="7_3fe4a"]
+[ext_resource type="Texture2D" uid="uid://bcw3y5t1t7bhk" path="res://sprites/player/mashiro/mashiro_halo.png" id="8_370ca"]
+[ext_resource type="Texture2D" uid="uid://bfhwtbfjqifyr" path="res://sprites/player/mashiro/mashiro.png" id="9_4h7c8"]
+[ext_resource type="PackedScene" uid="uid://wffnchsknkba" path="res://script/hat.tscn" id="10_uovkr"]
+[ext_resource type="PackedScene" uid="uid://d0cq1vh58rknj" path="res://scenes/weapon/manifestation_of_justice/manifestation_of_justice.tscn" id="11_uk1t4"]
+[ext_resource type="PackedScene" uid="uid://dfdk1q5mpw3mh" path="res://scenes/bullet/kasumi_bullet.tscn" id="12_4sq1c"]
+[ext_resource type="Texture2D" uid="uid://b5nbmcnfshgb8" path="res://sprites/particle/circular_1.png" id="13_8y7sw"]
+[ext_resource type="Script" path="res://scenes/player/StateMachine.gd" id="13_o6jn1"]
+[ext_resource type="Script" path="res://script/Stats.gd" id="14_4mv8h"]
+[ext_resource type="AudioStream" uid="uid://5rnyiqxeiusa" path="res://sounds/RunSounds.wav" id="15_xrrbw"]
+[ext_resource type="AudioStream" uid="uid://b6t6pjb3evtw4" path="res://sounds/jump.wav" id="16_13efp"]
+[ext_resource type="AudioStream" uid="uid://bqqs4akeispjg" path="res://sounds/OnHit.wav" id="17_5ep4f"]
+[ext_resource type="AudioStream" uid="uid://b5fdodmk5utji" path="res://sounds/coin.wav" id="18_6gdqo"]
+[ext_resource type="PackedScene" uid="uid://1th2ey27vgac" path="res://ui/game_ui.tscn" id="19_86hhk"]
+[ext_resource type="PackedScene" uid="uid://cb5gh3hfe077g" path="res://ui/pause_screen.tscn" id="20_n8u0i"]
+[ext_resource type="Texture2D" uid="uid://nu6i7yovali6" path="res://ui/cd_bar.png" id="21_k10pe"]
+[ext_resource type="Texture2D" uid="uid://ben34oyvgea61" path="res://ui/cd_bar_2.png" id="22_vu05e"]
+[ext_resource type="PackedScene" uid="uid://d1gmjbadbxsjp" path="res://scenes/game_camera/gamecamera.tscn" id="23_y1hqx"]
+[ext_resource type="PackedScene" uid="uid://ccbfmsfn7ay8r" path="res://script/kick.tscn" id="24_k344f"]
+[ext_resource type="PackedScene" uid="uid://voxip8vojin" path="res://scenes/manager/player_buff_manager.tscn" id="25_cxpqu"]
+[ext_resource type="Script" path="res://scenes/player/mashiro/mashiro_ps.gd" id="25_ktttd"]
+[ext_resource type="PackedScene" uid="uid://c620jv6qq2f8w" path="res://scenes/player/t_hp_count.tscn" id="26_ipxhr"]
+[ext_resource type="PackedScene" uid="uid://cj4iw28dlmh7j" path="res://scenes/bullet/mashiro_sniper_bullet.tscn" id="26_sew1t"]
+[ext_resource type="AudioStream" uid="uid://dojwsbwhfwme6" path="res://sounds/87043__runnerpack__weapappear.wav" id="28_pr0kb"]
+[ext_resource type="Resource" uid="uid://d2wkri87ihp73" path="res://resources/buff/player_buff/charge_up_buff.tres" id="28_xajts"]
+[ext_resource type="PackedScene" uid="uid://ctwk5mjht6otl" path="res://scenes/player/mashiro/cross_bullet.tscn" id="29_pnkv6"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_l238d"]
+radius = 7.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_5mtds"]
+shader = ExtResource("7_3fe4a")
+shader_parameter/outline_width = 1.0
+shader_parameter/outline_color = Color(45, 1, 15, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_dunnt"]
+shader = ExtResource("7_3fe4a")
+shader_parameter/outline_width = 1.0
+shader_parameter/outline_color = Color(45, 1, 15, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_y3gqh"]
+atlas = ExtResource("9_4h7c8")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hp7tj"]
+atlas = ExtResource("9_4h7c8")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_t72ca"]
+atlas = ExtResource("9_4h7c8")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_laq4o"]
+atlas = ExtResource("9_4h7c8")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4cr4e"]
+atlas = ExtResource("9_4h7c8")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xwt0x"]
+atlas = ExtResource("9_4h7c8")
+region = Rect2(64, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xti0o"]
+atlas = ExtResource("9_4h7c8")
+region = Rect2(128, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_u2bo0"]
+atlas = ExtResource("9_4h7c8")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_37vqr"]
+atlas = ExtResource("9_4h7c8")
+region = Rect2(0, 64, 64, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_fhgc8"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_y3gqh")
+}, {
+"duration": 1.2,
+"texture": SubResource("AtlasTexture_hp7tj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_t72ca")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_laq4o")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 13.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4cr4e")
+}],
+"loop": true,
+"name": &"jump",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_xwt0x")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xti0o")
+}, {
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_u2bo0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_37vqr")
+}],
+"loop": true,
+"name": &"run",
+"speed": 13.0
+}]
+
+[sub_resource type="Gradient" id="Gradient_0slga"]
+colors = PackedColorArray(0.856938, 0.604261, 1, 1, 1, 0.900046, 0.777326, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_kyf3n"]
+gradient = SubResource("Gradient_0slga")
+
+[sub_resource type="Curve" id="Curve_6mk50"]
+_data = [Vector2(0, 0), 0.0, 5.54522, 0, 0, Vector2(0.48125, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -2.29336, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_0prkv"]
+curve = SubResource("Curve_6mk50")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_iic7p"]
+particle_flag_disable_z = true
+emission_shape = 6
+emission_ring_axis = Vector3(0, 0, 1)
+emission_ring_height = 0.0
+emission_ring_radius = 20.0
+emission_ring_inner_radius = 20.0
+angle_min = -45.0
+angle_max = 45.0
+inherit_velocity_ratio = 0.16
+gravity = Vector3(0, 0, 0)
+radial_accel_min = -150.0
+radial_accel_max = -150.0
+tangential_accel_min = 4.0
+tangential_accel_max = 5.0
+scale_min = 4.0
+scale_max = 5.0
+scale_curve = SubResource("CurveTexture_0prkv")
+color_initial_ramp = SubResource("GradientTexture1D_kyf3n")
+
+[sub_resource type="Curve" id="Curve_4jx2l"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -2.88854, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_70wo2"]
+curve = SubResource("Curve_4jx2l")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_um5wh"]
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 2.0
+angle_min = -45.0
+angle_max = 45.0
+inherit_velocity_ratio = 0.5
+gravity = Vector3(0, 0, 0)
+scale_min = 0.2
+scale_max = 0.5
+scale_curve = SubResource("CurveTexture_70wo2")
+color = Color(5, 5, 5, 1)
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_dqk1k"]
+radius = 1.0
+height = 2.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_4tsyc"]
+radius = 35.0
+
+[sub_resource type="Environment" id="Environment_64vlg"]
+background_mode = 3
+glow_enabled = true
+glow_strength = 0.7
+
+[sub_resource type="Animation" id="Animation_quqct"]
+resource_name = "Invincible frame"
+length = 0.5
+step = 0.075
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.075, 0.15, 0.225, 0.3, 0.375, 0.45),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [true, false, true, false, true, false, true]
+}
+
+[sub_resource type="Animation" id="Animation_54v52"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Graphics:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Graphics:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_apy7m"]
+_data = {
+"Invincible frame": SubResource("Animation_quqct"),
+"RESET": SubResource("Animation_54v52")
+}
+
+[sub_resource type="Animation" id="Animation_btd8x"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics/AnimatedSprite2D:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Graphics/AnimatedSprite2D:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, -17)]
+}
+
+[sub_resource type="Animation" id="Animation_kssmf"]
+resource_name = "kick_anim"
+length = 0.1
+step = 0.01
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics/AnimatedSprite2D:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.03, 0.1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [0.0, -0.698132, 0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Graphics/AnimatedSprite2D:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.03, 0.1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0, -17), Vector2(5, -20), Vector2(0, -17)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_y8tsq"]
+_data = {
+"RESET": SubResource("Animation_btd8x"),
+"kick_anim": SubResource("Animation_kssmf")
+}
+
+[node name="mashiro" type="CharacterBody2D" node_paths=PackedStringArray("stats") groups=["Player"]]
+collision_mask = 256
+motion_mode = 1
+platform_floor_layers = 4294967040
+script = ExtResource("1_e0uyb")
+player_card = ExtResource("2_0knwh")
+ps_card = ExtResource("3_hmlc8")
+stats = NodePath("Stats")
+player_color = Color(0.897987, 0.242636, 0.314446, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -6)
+shape = SubResource("CircleShape2D_l238d")
+
+[node name="Follow" parent="." instance=ExtResource("4_ugtxo")]
+
+[node name="Shadow" parent="." instance=ExtResource("5_j3m3s")]
+scale = Vector2(0.445313, 0.445313)
+
+[node name="GPUParticles2D" parent="." instance=ExtResource("6_564nc")]
+emitting = false
+
+[node name="Graphics" type="Node2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Halo" type="Sprite2D" parent="Graphics"]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_5mtds")
+position = Vector2(-10, -32)
+rotation = 0.47822
+scale = Vector2(0.254, 0.276)
+texture = ExtResource("8_370ca")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Graphics"]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_dunnt")
+position = Vector2(0, -17)
+sprite_frames = SubResource("SpriteFrames_fhgc8")
+animation = &"idle"
+autoplay = "idle"
+frame_progress = 0.565153
+flip_h = true
+
+[node name="HaloRoot" type="Node2D" parent="Graphics/AnimatedSprite2D"]
+unique_name_in_owner = true
+position = Vector2(-9, -28)
+
+[node name="Hat" parent="Graphics/AnimatedSprite2D" instance=ExtResource("10_uovkr")]
+position = Vector2(1, -12)
+
+[node name="Gun" parent="Graphics" node_paths=PackedStringArray("stats") instance=ExtResource("11_uk1t4")]
+unique_name_in_owner = true
+position = Vector2(0, -8)
+stats = NodePath("../../Stats")
+bullet = ExtResource("12_4sq1c")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="Graphics/Gun"]
+position = Vector2(31.71, -0.705)
+emitting = false
+amount = 32
+process_material = SubResource("ParticleProcessMaterial_iic7p")
+lifetime = 0.5
+trail_enabled = true
+trail_lifetime = 0.1
+
+[node name="GPUParticles2D2" type="GPUParticles2D" parent="Graphics/Gun"]
+position = Vector2(31.7, -0.71)
+emitting = false
+process_material = SubResource("ParticleProcessMaterial_um5wh")
+texture = ExtResource("13_8y7sw")
+lifetime = 0.05
+
+[node name="HitBox" type="Area2D" parent="." groups=["PlayerBox"]]
+collision_layer = 2048
+collision_mask = 1160
+
+[node name="HitboxShape" type="CollisionShape2D" parent="HitBox"]
+position = Vector2(0, -8)
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_dqk1k")
+debug_color = Color(3.18866e-06, 0.0816588, 0.291816, 0.42)
+
+[node name="PickBox" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 64
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PickBox"]
+position = Vector2(0, -11)
+shape = SubResource("CircleShape2D_4tsyc")
+debug_color = Color(0.724221, 0.462988, 0.32265, 0.42)
+
+[node name="FlyTimer" type="Timer" parent="."]
+wait_time = 0.3
+one_shot = true
+
+[node name="JumpTimer" type="Timer" parent="."]
+wait_time = 0.1
+one_shot = true
+
+[node name="JumpCDTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="RunSoundsTimer" type="Timer" parent="."]
+wait_time = 0.2
+one_shot = true
+
+[node name="InvincibleFrame" type="Timer" parent="."]
+wait_time = 0.5
+one_shot = true
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("13_o6jn1")
+
+[node name="Stats" type="Node" parent="."]
+script = ExtResource("14_4mv8h")
+MAX_SPEED = 135
+max_hp = 43
+max_ammo = 3
+bullet_shoot_time = 240
+bullet_speed = 1200
+bullet_damage = 64
+bullet_recoil = 240
+bullet_knockback = 240
+reload_timer = 1.8
+critical_damage = 2.0
+shake_mult = 3.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_64vlg")
+
+[node name="RunSounds" type="AudioStreamPlayer2D" parent="."]
+process_mode = 3
+stream = ExtResource("15_xrrbw")
+volume_db = -6.0
+bus = &"SFX"
+
+[node name="JumpSounds" type="AudioStreamPlayer2D" parent="."]
+process_mode = 3
+stream = ExtResource("16_13efp")
+bus = &"SFX"
+
+[node name="OnHitSounds" type="AudioStreamPlayer2D" parent="."]
+process_mode = 3
+stream = ExtResource("17_5ep4f")
+volume_db = 8.0
+bus = &"SFX"
+
+[node name="CoinSounds" type="AudioStreamPlayer2D" parent="."]
+process_mode = 3
+stream = ExtResource("18_6gdqo")
+volume_db = -2.0
+bus = &"SFX"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_apy7m")
+}
+
+[node name="GameUI" parent="." node_paths=PackedStringArray("player", "stats") instance=ExtResource("19_86hhk")]
+player = NodePath("..")
+stats = NodePath("../Stats")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+layer = 3
+
+[node name="PauseScreen" parent="CanvasLayer" instance=ExtResource("20_n8u0i")]
+visible = false
+
+[node name="JumpCDBar" type="TextureProgressBar" parent="."]
+visible = false
+z_index = 20
+offset_left = -16.0
+offset_top = 7.0
+offset_right = 16.0
+offset_bottom = 13.0
+size_flags_horizontal = 4
+max_value = 1.0
+step = 0.0
+value = 0.355
+texture_under = ExtResource("21_k10pe")
+texture_progress = ExtResource("22_vu05e")
+
+[node name="Camera2D" parent="." instance=ExtResource("23_y1hqx")]
+offset = Vector2(0, -15)
+
+[node name="Kick" parent="." node_paths=PackedStringArray("player") instance=ExtResource("24_k344f")]
+position = Vector2(0, -16)
+player = NodePath("..")
+
+[node name="mashiro_ps" type="Node2D" parent="." node_paths=PackedStringArray("player", "stats", "gun")]
+script = ExtResource("25_ktttd")
+player = NodePath("..")
+stats = NodePath("../Stats")
+gun = NodePath("../Graphics/Gun")
+sniper_bullet = ExtResource("26_sew1t")
+player_buff = ExtResource("28_xajts")
+buff_layer = 10
+buff_value = 0.35
+buff_erase_timer = 999.0
+cross_bullet = ExtResource("29_pnkv6")
+
+[node name="ChargeUP" type="Timer" parent="mashiro_ps"]
+wait_time = 0.5
+one_shot = true
+
+[node name="HoldTimer" type="Timer" parent="mashiro_ps"]
+wait_time = 0.2
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="mashiro_ps"]
+stream = ExtResource("28_pr0kb")
+pitch_scale = 1.5
+bus = &"SFX"
+
+[node name="AnimationPlayer2" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_y8tsq")
+}
+
+[node name="PlayerBuffManager" parent="." instance=ExtResource("25_cxpqu")]
+
+[node name="T_HP_Count" parent="." node_paths=PackedStringArray("stats") instance=ExtResource("26_ipxhr")]
+stats = NodePath("../Stats")
+
+[connection signal="is_health" from="." to="." method="_on_is_health"]
+[connection signal="is_hurt" from="." to="." method="_on_is_hurt"]
+[connection signal="body_entered" from="HitBox" to="." method="_on_hit_box_body_entered"]
+[connection signal="area_entered" from="PickBox" to="." method="_on_pick_box_area_entered"]
+[connection signal="timeout" from="JumpCDTimer" to="." method="_on_jump_cd_timer_timeout"]
+[connection signal="pick_up_range_changed" from="Stats" to="." method="_on_stats_pick_up_range_changed"]

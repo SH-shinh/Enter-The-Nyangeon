@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://doqhf0jdx4t7h"]
+
+[ext_resource type="Texture2D" uid="uid://vm5dmyy8ydpx" path="res://sprites/update_item/sniper_scope_icon.png" id="1_wybp2"]
+[ext_resource type="PackedScene" uid="uid://5xnka7kne7w" path="res://script/picatinny_rail.tscn" id="2_65emw"]
+
+[node name="SniperScopeIcon" type="Sprite2D"]
+position = Vector2(0, -4)
+texture = ExtResource("1_wybp2")
+
+[node name="PicatinnyRail" parent="." instance=ExtResource("2_65emw")]
+position = Vector2(0, -2)

@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://c620jv6qq2f8w"]
+
+[ext_resource type="Script" path="res://scenes/player/t_hp_count.gd" id="1_1cq3s"]
+
+[node name="T_HP_Count" type="Node"]
+script = ExtResource("1_1cq3s")
+
+[node name="CountTimer" type="Timer" parent="."]
+wait_time = 2.0

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bo42knxo47wfj"]
+
+[ext_resource type="Script" path="res://scenes/update_item/roller_skates.gd" id="1_s18rw"]
+
+[node name="roller_skates" type="Node2D"]
+script = ExtResource("1_s18rw")

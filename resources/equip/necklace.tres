@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="Equip" load_steps=13 format=3 uid="uid://c1ftsfevawdyn"]
+
+[ext_resource type="Texture2D" uid="uid://dfsfah58nw0kq" path="res://sprites/equipment/necklace/necklace_t0.png" id="1_cfv5g"]
+[ext_resource type="Script" path="res://resources/equip/equip.gd" id="1_o8h0a"]
+[ext_resource type="Texture2D" uid="uid://2stor1h2a4rl" path="res://sprites/equipment/necklace/bluetooth_necklace.png" id="2_vcqlp"]
+[ext_resource type="Texture2D" uid="uid://iooids36trhm" path="res://sprites/equipment/necklace/snowflake_pendant.png" id="3_v2pug"]
+[ext_resource type="Texture2D" uid="uid://dvbyrhvwfw03a" path="res://sprites/equipment/necklace/nicholai_locket.png" id="4_n5jd3"]
+[ext_resource type="Texture2D" uid="uid://bw4okkhvue8ai" path="res://sprites/equipment/necklace/cross_choker.png" id="5_v2ooq"]
+[ext_resource type="Texture2D" uid="uid://dg4ixufhy0ahg" path="res://sprites/equipment/necklace/dog_tag.png" id="6_w5kgn"]
+[ext_resource type="Texture2D" uid="uid://bo21dk3bx0ef4" path="res://sprites/equipment/necklace/punk_choker.png" id="7_3nqwg"]
+[ext_resource type="Texture2D" uid="uid://t0p6rvvpop6j" path="res://sprites/equipment/necklace/chain_necklace.png" id="8_nm4b2"]
+[ext_resource type="Texture2D" uid="uid://dvakr7poif3r0" path="res://sprites/equipment/necklace/green_leaf_necklace.png" id="9_6lib5"]
+[ext_resource type="Texture2D" uid="uid://3xigmj4i8hyg" path="res://sprites/equipment/necklace/octopus_holder.png" id="10_vdwn5"]
+[ext_resource type="Texture2D" uid="uid://dbauyajpcuedn" path="res://sprites/equipment/necklace/necklace_t10.png" id="11_oxehp"]
+
+[resource]
+script = ExtResource("1_o8h0a")
+id = "necklace"
+icon = Array[Texture2D]([ExtResource("1_cfv5g"), ExtResource("2_vcqlp"), ExtResource("3_v2pug"), ExtResource("4_n5jd3"), ExtResource("5_v2ooq"), ExtResource("6_w5kgn"), ExtResource("7_3nqwg"), ExtResource("8_nm4b2"), ExtResource("9_6lib5"), ExtResource("10_vdwn5"), ExtResource("11_oxehp")])
+value_1_name = ""
+value_2_name = "player_pickup_range"
+value_3_name = "player_coin_refund"
+value_1_id = ""
+value_2_id = "pick_up_range_mult"
+value_3_id = "coin_return_add"
+value_1 = Array[int]([])
+value_2 = Array[float]([0.0, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.12, 0.12, 0.12, 0.12, 0.12, 0.12, 0.15, 0.15])
+value_3 = Array[float]([0.0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.04, 0.04, 0.04, 0.04, 0.04, 0.02, 0.02, 0.02, 0.02, 0.02])
+name = "项链"
+description = "增加拾取范围"

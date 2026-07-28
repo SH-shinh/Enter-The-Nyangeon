@@ -1,0 +1,208 @@
+[gd_scene load_steps=19 format=3 uid="uid://b7getwqn8om1u"]
+
+[ext_resource type="Script" path="res://script/spawn_anim.gd" id="1_clohk"]
+[ext_resource type="Texture2D" uid="uid://b5nbmcnfshgb8" path="res://sprites/particle/circular_1.png" id="2_sfknh"]
+
+[sub_resource type="Curve" id="Curve_wrm2a"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.746667, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -65.9341, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_que7w"]
+curve = SubResource("Curve_wrm2a")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_rmwc5"]
+particle_flag_disable_z = true
+gravity = Vector3(0, 0, 0)
+scale_min = 2.0
+scale_max = 2.0
+scale_curve = SubResource("CurveTexture_que7w")
+color = Color(1, 0.231557, 0.283764, 1)
+
+[sub_resource type="Gradient" id="Gradient_1r8kq"]
+offsets = PackedFloat32Array(0.885246, 1)
+colors = PackedColorArray(0.0758085, 0.106379, 0.216808, 1, 0.453018, 0.440657, 0.687553, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_42ulm"]
+gradient = SubResource("Gradient_1r8kq")
+
+[sub_resource type="Curve" id="Curve_esvec"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.76, 0.230769), 0.0, 0.0, 0, 0, Vector2(1, 0), -69.2308, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_jsxnr"]
+curve = SubResource("Curve_esvec")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_edxfc"]
+particle_flag_disable_z = true
+gravity = Vector3(0, 0, 0)
+scale_min = 1.8
+scale_max = 1.8
+scale_curve = SubResource("CurveTexture_jsxnr")
+color = Color(0.458405, 0.458405, 0.458405, 1)
+color_ramp = SubResource("GradientTexture1D_42ulm")
+
+[sub_resource type="Curve" id="Curve_nluid"]
+max_value = 100.0
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(1, 21.978), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_tvy33"]
+curve = SubResource("Curve_nluid")
+
+[sub_resource type="Curve" id="Curve_84yls"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -3.03297, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_5y06j"]
+curve = SubResource("Curve_84yls")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_04ab0"]
+particle_flag_disable_z = true
+direction = Vector3(0, -1, 0)
+spread = 60.0
+initial_velocity_min = 50.0
+initial_velocity_max = 120.0
+angular_velocity_min = -60.0
+angular_velocity_max = 60.0
+gravity = Vector3(0, 100, 0)
+damping_min = 5.0
+damping_max = 5.0
+damping_curve = SubResource("CurveTexture_tvy33")
+scale_min = 2.0
+scale_max = 3.0
+scale_curve = SubResource("CurveTexture_5y06j")
+color = Color(0.893204, 0.178868, 0.148961, 1)
+
+[sub_resource type="Animation" id="Animation_8kicd"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("GPUParticles2D:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("GPUParticles2D2:emitting")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("GPUParticles2D3:emitting")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_hpbjk"]
+resource_name = "new_animation"
+length = 2.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("GPUParticles2D:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("GPUParticles2D2:emitting")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("GPUParticles2D3:emitting")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.8),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/3/type = "method"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0.8, 2),
+"transitions": PackedFloat32Array(1, 1),
+"values": [{
+"args": [],
+"method": &"emit_spawn"
+}, {
+"args": [],
+"method": &"idle_state"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_rhh8d"]
+_data = {
+"RESET": SubResource("Animation_8kicd"),
+"new_animation": SubResource("Animation_hpbjk")
+}
+
+[node name="SpawnAnim" type="Node2D"]
+script = ExtResource("1_clohk")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+modulate = Color(30, 1, 1, 1)
+emitting = false
+amount = 1
+process_material = SubResource("ParticleProcessMaterial_rmwc5")
+texture = ExtResource("2_sfknh")
+one_shot = true
+
+[node name="GPUParticles2D2" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 1
+process_material = SubResource("ParticleProcessMaterial_edxfc")
+texture = ExtResource("2_sfknh")
+one_shot = true
+
+[node name="GPUParticles2D3" type="GPUParticles2D" parent="."]
+modulate = Color(30, 1, 1, 1)
+emitting = false
+amount = 6
+process_material = SubResource("ParticleProcessMaterial_04ab0")
+lifetime = 0.7
+one_shot = true
+explosiveness = 1.0
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_rhh8d")
+}

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CharacterCard" load_steps=5 format=3 uid="uid://cxtmt1ht6xu6y"]
+
+[ext_resource type="Texture2D" uid="uid://dit7u53gx57jo" path="res://sprites/player/megu/megu_picture.png" id="1_npnfs"]
+[ext_resource type="Texture2D" uid="uid://dhol5kko8375y" path="res://ui/school/GEHENNA_icon.png" id="2_ppqo8"]
+[ext_resource type="Script" path="res://resources/shop/character/character_card.gd" id="3_b5u2s"]
+[ext_resource type="Texture2D" uid="uid://edjiolqvbmt4" path="res://ui/weapon/FT_icon.png" id="4_pnqfb"]
+
+[resource]
+script = ExtResource("3_b5u2s")
+cost = 6
+name_1 = "SHIMOKURA"
+name_2 = "MEGU"
+character_sprite = ExtResource("1_npnfs")
+weapon_name = "MOLTEN MEG-MA!"
+weapon_type_name = "FT"
+weapon_icon = ExtResource("4_pnqfb")
+school_name = "GEHENNA"
+school_icon = ExtResource("2_ppqo8")
+id = "megu"
+group = "HSD"

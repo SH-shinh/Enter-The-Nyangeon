@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://bg031l7gs3sej"]
+
+[ext_resource type="Texture2D" uid="uid://dm1yvduu2yhvg" path="res://sprites/update_item/jellies_cushion.png" id="1_cuyue"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_tefga"]
+
+[resource]
+script = ExtResource("2_tefga")
+id = "jellies_cushion"
+icon = ExtResource("1_cuyue")
+name = "果冻抱枕"
+rare = 0
+order_num = 3
+special_rules = 0
+description = "「水果果冻」系列的主人公抱枕。"
+forward = "最大持有3个
++10%子弹伤害"
+negative = "-15%子弹飞行速度"
+item_tags = 1
+tags = Array[String](["弹道"])
+weight = 1.0

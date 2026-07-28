@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://bd1pacox2ur6w"]
+
+[ext_resource type="Texture2D" uid="uid://gbolq1yqe1mx" path="res://sprites/update_item/kurokame_gang_ema.png" id="1_nspff"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_8ru7a"]
+
+[resource]
+script = ExtResource("2_8ru7a")
+id = "kurokame_gang_ema"
+icon = ExtResource("1_nspff")
+name = "黑龟组绘马"
+rare = 1
+order_num = 3
+special_rules = 0
+description = "黑龟组贩卖的绘马。"
+forward = "最大持有3个
++30%子弹伤害"
+negative = "-12%生命值"
+item_tags = 3
+tags = Array[String](["弹道"])
+weight = 1.0

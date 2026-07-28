@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RaidFormwork" load_steps=5 format=3 uid="uid://dfbxbxaqy3onf"]
+
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="1_vbotf"]
+[ext_resource type="Resource" uid="uid://1wrnoropoerp" path="res://resources/enemy/tester_automaton_shield.tres" id="2_mql3h"]
+[ext_resource type="Resource" uid="uid://cjvrr0lb3dvye" path="res://resources/enemy/soldier_redhelmet_sr.tres" id="3_ga4mn"]
+[ext_resource type="Script" path="res://resources/raid_formwork/raid_formwork.gd" id="4_jjtft"]
+
+[resource]
+script = ExtResource("4_jjtft")
+enemy = Array[ExtResource("1_vbotf")]([ExtResource("2_mql3h"), ExtResource("3_ga4mn")])
+enemy_id = Array[String](["tester_automaton_shield", "soldier_redhelmet_sr"])
+enemy_num = Array[int]([2, 2])
+spawn_position = {
+"soldier_redhelmet_sr": [true, true, true, true],
+"tester_automaton_shield": [true, true, true, true]
+}

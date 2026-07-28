@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bd3b5sss4gatn"]
+
+[ext_resource type="Script" path="res://scenes/update_item/shrapnel_bullet.gd" id="1_2exlh"]
+
+[node name="ShrapnelBullet" type="Node2D"]
+script = ExtResource("1_2exlh")

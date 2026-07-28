@@ -1,0 +1,66 @@
+﻿,zh_CN,en,pt
+option_full_screen,全屏,Full Screen,Tela Cheia
+option_resolution,分辨率,Resolution,Resolução
+option_screen_shake,屏幕震动,Screen Shake,Tremor de Tela
+option_v_sync,垂直同步,V-Sync,V-Sync
+sounds_master_volume,主音量,Master Volume,Volume Principal
+sounds_sfx,音效,SFX,SFX
+sounds_bgm,背景音乐,BGM,BGM
+sounds_voice,语音,Voice,Voz
+controls_move,移动,Move,Mover
+controls_jump,跳跃,Jump,Pular
+controls_shoot,射击,Shoot,Atirar
+controls_melee,近战,Melee,Corpo a C.
+controls_reload,换弹,Reload,Recarregar
+controls_ex,EX技能,EX Skill,Hab. EX
+player_max_hp,生命值,HP,HP
+player_armor,护甲值,Armor,Armadura
+player_damage_taken,承伤率,DMG Taken,Dano Recebido
+player_luck,幸运值,Luck,Sorte
+player_knockback,击退力,Knockback,Repulsão
+player_max_ammo,弹匣,Max Ammo,Munição Máx.
+player_speed,速度,Speed,Velocidade
+player_melee,近战伤害,Melee,Dano Corpo a C.
+player_critical,暴击率,Crit,Taxa Crítica
+player_critical_damage,暴击伤害,Crit DMG,Dano Crítico
+player_global_damage,全局伤害,Global DMG,Dano Global
+player_bullet_damage,子弹伤害,Bullet DMG,Dano de Bala
+player_penetration,穿透值,Pen.,Perfuração
+player_reload_time,换弹时间,Reload Time,Tempo de Recarga
+player_fire_rate,射速,Fire Rate,Cadência de Tiro
+player_equip_damage,装备伤害,Equip DMG,Dano de Equipamento
+player_explosion_damage,爆炸伤害,Explosion DMG,Dano de Explosão
+player_explosion_radius,爆炸范围,Explosion Radius,Raio de Explosão
+player_anomaly_damage,异常伤害,Anomaly Damage,Dano de Anomalia
+player_summon_damage,召唤伤害,Summon DMG,Dano de Invocação
+player_recoil,后坐力,Recoil,Recuo
+player_reload_speed,换弹速度,Reload Speed,Veloc. de Recarga
+player_pickup_range,拾取范围,Pickup Range,Alcance de Coleta
+player_coin_refund,硬币返还,Coin Refund,Reembolso de Moedas
+dot_spread,扩散,Spread,Dispersão
+testmenu_item,道具选择,SELECTION,SELEÇÃO
+testmenu_player,角色选择,SELECTION,SELEÇÃO
+blitzkrieg_id,闪击芯片,BLITZKRIEG,BLITZKRIEG
+button_unlock,>> 解锁 <<,>> UNLOCK <<,>> DESBLOQUEAR <<
+button_confirm,确定,CONFIRM,CONFIRMAR
+button_cancel,取消,CANCEL,CANCELAR
+button_character,角色解锁,Character,Personagem
+button_clothes,时装,Skin,Skin
+support_pa,支援光环,Support Aura,Aura de Suporte
+blitzkrieg_description,每回合时间减少25%，最大回合数为15，金币获取提高至150%。,"Round time reduced by 25%, max rounds set to 15, and coin gain increased to 150%.","O tempo da rodada é reduzido em 25%, o máximo de rodadas é 15, e o ganho de moedas é 150%."
+endless_id,无尽芯片,ENDLESS,MODO INFINITO
+endless_description,20回合后进入无尽模式，每5回合遭遇一次BOSS战。,"After 20 rounds, enter endless mode. Encounter a boss battle every 5 rounds.","Após 20 rodadas, entra no modo infinito. Batalha contra o chefe é a cada 5 rodadas."
+hujiu_id,虎纠芯片,HUJIU,HUJIU
+hujiu_description,追求极致的试炼，最大回合数为5，金币获取提高至400%。,A trial of ultimate challenge. Max rounds set to 5. Coin gain increased to 400%.,"Um desafio extremo. O máximo de rodadas é 5, e o ganho de moedas é 400%."
+save_folder,存档文件夹,SAVE FOLDER,PASTA DE SAVES
+score_enter_id,请输入ID,Please enter ID,Insira o ID
+scoreboard_name,记分板,SCOREBOARD,PLACAR
+button_date,日期,Date,Data
+button_score,分数,Score,Pontuação
+button_level,难度,Level,Dificuldade
+button_round,回合数,Round,Rodada
+button_defeats,击败数,Defeats,Abates
+button_coins,硬币数,Coins,Moedas
+normal_sort,排序,Sort,Ordenar
+character_sort,筛选角色,Character,Personagem
+gamemode_sort,筛选模式,GameMode,Modo de Jogo

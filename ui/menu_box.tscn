@@ -1,0 +1,154 @@
+[gd_scene load_steps=9 format=3 uid="uid://c0abd03p7kvxx"]
+
+[ext_resource type="Theme" uid="uid://igkipbye612g" path="res://empty_theme.tres" id="1_87dtv"]
+[ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="2_7hmsc"]
+[ext_resource type="Script" path="res://ui/menu_box.gd" id="2_tc3gt"]
+[ext_resource type="Script" path="res://script/ScrollBox.gd" id="3_mw0tl"]
+[ext_resource type="PackedScene" uid="uid://8ycqggrgg1x5" path="res://ui/menu_box_button.tscn" id="4_g1fkc"]
+
+[sub_resource type="Animation" id="Animation_bdmgs"]
+resource_name = "box_open"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node2D:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.0333333),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Node2D:scale")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.0333333, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(1, 1e-05), Vector2(1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_eyr5l"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node2D:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Node2D:scale")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1e-05)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_k654h"]
+_data = {
+"RESET": SubResource("Animation_eyr5l"),
+"box_open": SubResource("Animation_bdmgs")
+}
+
+[node name="menu_box" type="PanelContainer"]
+custom_minimum_size = Vector2(60, 12)
+theme = ExtResource("1_87dtv")
+script = ExtResource("2_tc3gt")
+self_type_name = "normal_sort"
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.0941176, 0.0941176, 0.0941176, 1)
+
+[node name="select_name" type="Label" parent="."]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 0
+theme_override_constants/shadow_outline_size = 0
+theme_override_fonts/font = ExtResource("2_7hmsc")
+theme_override_font_sizes/font_size = 10
+text = "button_date"
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+
+[node name="Node2D" type="Node2D" parent="."]
+visible = false
+position = Vector2(0, 12)
+scale = Vector2(1, 1e-05)
+
+[node name="ColorRect" type="ColorRect" parent="Node2D"]
+custom_minimum_size = Vector2(60, 50)
+offset_right = 60.0
+offset_bottom = 50.0
+mouse_filter = 2
+color = Color(0.0705882, 0.0705882, 0.0705882, 1)
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Node2D"]
+custom_minimum_size = Vector2(60, 50)
+offset_right = 60.0
+offset_bottom = 50.0
+mouse_filter = 0
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
+script = ExtResource("3_mw0tl")
+
+[node name="button_box" type="VBoxContainer" parent="Node2D/ScrollContainer"]
+layout_mode = 2
+theme_override_constants/separation = 1
+
+[node name="menu_box_button" parent="Node2D/ScrollContainer/button_box" instance=ExtResource("4_g1fkc")]
+layout_mode = 2
+button_name = "date"
+button_type = "normal_sort"
+
+[node name="menu_box_button2" parent="Node2D/ScrollContainer/button_box" instance=ExtResource("4_g1fkc")]
+layout_mode = 2
+button_name = "score"
+button_type = "normal_sort"
+
+[node name="menu_box_button3" parent="Node2D/ScrollContainer/button_box" instance=ExtResource("4_g1fkc")]
+layout_mode = 2
+button_name = "level"
+button_type = "normal_sort"
+
+[node name="menu_box_button6" parent="Node2D/ScrollContainer/button_box" instance=ExtResource("4_g1fkc")]
+layout_mode = 2
+button_name = "round"
+button_type = "normal_sort"
+
+[node name="menu_box_button4" parent="Node2D/ScrollContainer/button_box" instance=ExtResource("4_g1fkc")]
+layout_mode = 2
+button_name = "defeats"
+button_type = "normal_sort"
+
+[node name="menu_box_button5" parent="Node2D/ScrollContainer/button_box" instance=ExtResource("4_g1fkc")]
+layout_mode = 2
+button_name = "coins"
+button_type = "normal_sort"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_k654h")
+}
+
+[node name="Timer" type="Timer" parent="."]

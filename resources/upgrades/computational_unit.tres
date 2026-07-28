@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://cqfemnfm72n3n"]
+
+[ext_resource type="Texture2D" uid="uid://bs1w0mxwbrusp" path="res://sprites/update_item/computational_unit.png" id="1_xj34g"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_5h6co"]
+
+[resource]
+script = ExtResource("2_5h6co")
+id = "computational_unit"
+icon = ExtResource("1_xj34g")
+name = "多维演算电路"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "从阿特拉哈西斯方舟上拆下来的演算设备的碎片。"
+forward = "独特
+每次射击叠加3%子弹伤害"
+negative = "换弹后清空"
+item_tags = 1
+tags = Array[String](["弹道"])
+weight = 1.0

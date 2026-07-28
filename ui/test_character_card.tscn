@@ -1,0 +1,86 @@
+[gd_scene load_steps=9 format=3 uid="uid://bdq6bbg18vl86"]
+
+[ext_resource type="Script" path="res://ui/test_character_card.gd" id="1_vbwj4"]
+[ext_resource type="Texture2D" uid="uid://30jjllwalay0" path="res://sprites/player/aris/aris_picture.png" id="1_xs0n5"]
+[ext_resource type="Texture2D" uid="uid://jcqmwo1t8vv0" path="res://ui/ui.png" id="2_6jcqt"]
+[ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="3_8de66"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_f3ha2"]
+
+[sub_resource type="Theme" id="Theme_jyrc3"]
+PanelContainer/styles/panel = SubResource("StyleBoxEmpty_f3ha2")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_1ntlj"]
+texture = ExtResource("2_6jcqt")
+texture_margin_left = 1.0
+texture_margin_top = 1.0
+texture_margin_right = 1.0
+texture_margin_bottom = 1.0
+expand_margin_left = 5.0
+expand_margin_top = 5.0
+expand_margin_right = 5.0
+expand_margin_bottom = 5.0
+region_rect = Rect2(44, 12, 8, 8)
+
+[sub_resource type="Theme" id="Theme_3pjxh"]
+PanelContainer/styles/panel = SubResource("StyleBoxTexture_1ntlj")
+
+[node name="test_character_card" type="PanelContainer"]
+custom_minimum_size = Vector2(65, 65)
+offset_right = 60.0
+offset_bottom = 60.0
+mouse_filter = 1
+theme = SubResource("Theme_jyrc3")
+script = ExtResource("1_vbwj4")
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 2
+mouse_filter = 1
+theme_override_colors/icon_pressed_color = Color(0, 0, 0, 1)
+
+[node name="ColorRect" type="ColorRect" parent="."]
+clip_children = 1
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Sprite2D" type="Sprite2D" parent="ColorRect"]
+texture_filter = 2
+position = Vector2(39, 133)
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("1_xs0n5")
+hframes = 4
+
+[node name="Text" type="Node2D" parent="."]
+visible = false
+top_level = true
+z_index = 1
+scale = Vector2(0.6, 0.6)
+
+[node name="PanelContainer" type="PanelContainer" parent="Text"]
+custom_minimum_size = Vector2(180, 0)
+offset_left = -48.3333
+offset_top = -133.333
+offset_right = 131.667
+offset_bottom = -117.333
+mouse_filter = 2
+theme = SubResource("Theme_3pjxh")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Text/PanelContainer"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="PSText" type="Label" parent="Text/PanelContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 4
+theme_override_constants/shadow_outline_size = 0
+theme_override_fonts/font = ExtResource("3_8de66")
+theme_override_font_sizes/font_size = 12
+text = "ps_0"
+autowrap_mode = 1
+
+[connection signal="gui_input" from="Button" to="." method="_on_button_gui_input"]
+[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]

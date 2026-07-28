@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://caw07pp6tyl3x"]
+
+[ext_resource type="Texture2D" uid="uid://g1wpfa7bih4w" path="res://sprites/update_item/summer_ninjutsu_codex_scroll.png" id="1_n40bb"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_u3ugk"]
+
+[resource]
+script = ExtResource("2_u3ugk")
+id = "summer_ninjutsu_codex_scroll"
+icon = ExtResource("1_n40bb")
+name = "忍法图鉴卷轴"
+rare = 1
+order_num = -1
+description = "写有各种忍法（瞎编的）的卷轴。"
+forward = "+28幸运值"
+negative = "-5%子弹伤害"
+item_tags = 8
+tags = Array[String]([])

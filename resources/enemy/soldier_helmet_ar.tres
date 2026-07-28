@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EnemyCard" load_steps=3 format=3 uid="uid://uwsau2i7bmiv"]
+
+[ext_resource type="PackedScene" uid="uid://b8yqy0k0f1maa" path="res://scenes/enemies/soldier_helmet_ar.tscn" id="1_fmu4e"]
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_bqxen"]
+
+[resource]
+script = ExtResource("2_bqxen")
+id = "soldier_helmet_ar"
+body = ExtResource("1_fmu4e")
+description = ""

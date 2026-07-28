@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://w5t7c7lnat5c"]
+
+[ext_resource type="Script" path="res://scenes/enemy_buff/vuln_buff_2.gd" id="1_2t6c1"]
+[ext_resource type="Resource" uid="uid://dkiajvvqe064e" path="res://resources/buff/enemy_buff/vuln_buff_2.tres" id="2_wjiyu"]
+
+[node name="VulnBuff2" type="Node2D"]
+script = ExtResource("1_2t6c1")
+buff = ExtResource("2_wjiyu")
+buff_id = "vuln_buff_2"
+
+[node name="BuffTimer" type="Timer" parent="."]
+
+[connection signal="timeout" from="BuffTimer" to="." method="_on_buff_timer_timeout"]

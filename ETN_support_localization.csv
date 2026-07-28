@@ -1,0 +1,5 @@
+﻿,zh_CN,en,pt
+kei_ps,作为召唤物登场协助作战，继承玩家50%子弹伤害。,Appears as a summon to assist in battle. Inherits 50% of the player's Bullet Damage.,Surge como uma invocação para auxiliar na batalha. Herda 50% do Dano da Bala do jogador.
+kei_ex,使用后8s内继承玩家射速，并在KEI周围一定范围提升子弹伤害。（玩家提升120%，召唤物提升25%）,"After using the EX skill, for 8 seconds, inherits the player's fire rate and increases bullet damage within a certain radius around KEI. (Player: +120%, Summons: +25%)","Após o uso, por 8 segundos, herda a cadência de tiro do jogador e aumenta o dano da bala dentro de um certo raio ao redor da KEI. (Jogador: +120%, Invocações: +25%)"
+ayane_ps,拾取医疗包后立刻随机刷新一个医疗包。,"After picking up a medkit, immediately respawn a medkit at a random location.","Após coletar um kit médico, gera imediatamente um novo kit médico em um local aleatório."
+ayane_ex,使用后，雨云号将在场上进行一次全图轰炸支援（每发轰炸造成基础500爆炸伤害）。,"After use, the Water Cloud will conduct a full-map bombing support strike on the field (each bombing strike deals a base 500 explosion damage).","Após o uso, a Water Cloud executará um ataque de suporte com bombardeio em todo o mapa (cada bomba causa 500 de dano base de explosão)."

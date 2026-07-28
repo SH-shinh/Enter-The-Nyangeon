@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://chewqqjh1mbth"]
+
+[ext_resource type="Texture2D" uid="uid://bhdhwepn34dkf" path="res://sprites/update_item/banana_magazine.png" id="1_hdx0m"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_20p8g"]
+
+[resource]
+script = ExtResource("2_20p8g")
+id = "banana_magazine"
+icon = ExtResource("1_hdx0m")
+name = "加长弹匣"
+rare = 1
+order_num = -1
+special_rules = 0
+description = "能够装填更多的弹药，涂装具有一定迷惑性，请勿食用。"
+forward = "+8弹匣容量"
+negative = ""
+item_tags = 3
+tags = Array[String](["通用", "弹道"])
+weight = 1.0

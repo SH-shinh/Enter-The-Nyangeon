@@ -1,0 +1,40 @@
+[gd_scene load_steps=5 format=3 uid="uid://mtusmj2be5ae"]
+
+[ext_resource type="PackedScene" uid="uid://bm6dimclh7dhb" path="res://script/bullet_launcher.tscn" id="1_5gybc"]
+[ext_resource type="Script" path="res://scenes/bullet/launcher/static_bullet_1.gd" id="1_aym8m"]
+[ext_resource type="PackedScene" uid="uid://bhaktofgt0o5w" path="res://scenes/bullet/enemy_bullet.tscn" id="3_r1rhb"]
+[ext_resource type="PackedScene" uid="uid://btv16sfw3hyx" path="res://scenes/bullet/enemy_bullet_3.tscn" id="4_urx6i"]
+
+[node name="StaticBullet1" type="Node2D"]
+script = ExtResource("1_aym8m")
+
+[node name="BulletLauncher" parent="." instance=ExtResource("1_5gybc")]
+shoot_at_once = false
+bullet_scale = 0.6
+bullet_count = 30
+bullet_arc = 348.0
+bullet = ExtResource("3_r1rhb")
+bullet_damage = 8.0
+bullet_speed = 180.0
+bullet_penetrate = 1
+kill_time = 11.0
+bullet_id = "enemy_bullet_1"
+
+[node name="BulletLauncher2" parent="." instance=ExtResource("1_5gybc")]
+shoot_at_once = false
+bullet_scale = 0.6
+bullet_count = 30
+bullet_arc = 348.0
+bullet = ExtResource("4_urx6i")
+bullet_damage = 8.0
+bullet_speed = 120.0
+bullet_penetrate = 1
+kill_time = 11.0
+bullet_id = "enemy_bullet_3"
+
+[node name="BulletTimer1" type="Timer" parent="."]
+
+[node name="BulletTimer2" type="Timer" parent="."]
+wait_time = 0.15
+
+[connection signal="timeout" from="BulletTimer1" to="." method="_on_bullet_timer_1_timeout"]

@@ -1,0 +1,335 @@
+[gd_scene load_steps=19 format=3 uid="uid://d2hf3wuvurjg7"]
+
+[ext_resource type="Script" path="res://scenes/update_item/life_jacket.gd" id="1_o8h5c"]
+[ext_resource type="Shader" path="res://shaders/shock_wave_2.gdshader" id="2_i5vj1"]
+[ext_resource type="Resource" uid="uid://bb1aa7v4oy4tl" path="res://resources/buff/player_buff/hurt_invalid_buff.tres" id="2_o13gg"]
+[ext_resource type="Shader" path="res://shaders/ripple.gdshader" id="3_jeurq"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_v056o"]
+resource_local_to_scene = true
+shader = ExtResource("2_i5vj1")
+shader_parameter/center = Vector2(0.5, 0.5)
+shader_parameter/size = 0.0
+shader_parameter/thickness = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fvf7b"]
+resource_local_to_scene = true
+shader = ExtResource("2_i5vj1")
+shader_parameter/center = Vector2(0.5, 0.5)
+shader_parameter/size = 0.0
+shader_parameter/thickness = 0.0
+
+[sub_resource type="Animation" id="Animation_uktvl"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node2D/ColorRect:material:shader_parameter/size")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Node2D/ColorRect:material:shader_parameter/thickness")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Node2D/ColorRect2:material:shader_parameter/size")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/3/type = "bezier"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Node2D/ColorRect2:material:shader_parameter/thickness")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Node2D:visible")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("Node2D/Area2D:monitoring")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_usajf"]
+resource_name = "new_animation"
+length = 0.25
+step = 0.01
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node2D/ColorRect:material:shader_parameter/size")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, 0.5, 0, 0, 0, 0, 0.35, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 0.08, 0.25)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Node2D/ColorRect:material:shader_parameter/thickness")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0.5, -0.25, 0, 0.25, 0, 0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 0.25)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Node2D/ColorRect2:material:shader_parameter/size")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, 0.45, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0.02, 0.25)
+}
+tracks/3/type = "bezier"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Node2D/ColorRect2:material:shader_parameter/thickness")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0.1, -0.25, 0, 0.25, 0, 0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0.03, 0.25)
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Node2D:visible")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 0.25),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("Node2D/Area2D:monitoring")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0, 0.25),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_wigv8"]
+_data = {
+"RESET": SubResource("Animation_uktvl"),
+"new_animation": SubResource("Animation_usajf")
+}
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_qox38"]
+radius = 72.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_onldf"]
+shader = ExtResource("3_jeurq")
+shader_parameter/color = Color(0, 0, 0, 1)
+shader_parameter/num_cells = 15.0
+shader_parameter/speed = 1.2
+shader_parameter/smoothness = 1.0
+shader_parameter/angle = 45.0
+shader_parameter/size = 0.255
+
+[sub_resource type="Gradient" id="Gradient_rtmso"]
+offsets = PackedFloat32Array(0.0649351, 0.707792, 1)
+colors = PackedColorArray(1, 1, 10, 1, 0.6, 0.7, 2, 1, 0, 0, 0, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_dgxpb"]
+gradient = SubResource("Gradient_rtmso")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0.1)
+metadata/_snap_enabled = true
+
+[sub_resource type="Animation" id="Animation_4ju6u"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:scale:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:scale:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="Animation" id="Animation_41c4v"]
+resource_name = "new_animation"
+length = 0.2
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:scale:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, 1.2, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 0.2)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:scale:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, 1.2, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 0.2)
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_yc4vb"]
+_data = {
+"RESET": SubResource("Animation_4ju6u"),
+"new_animation": SubResource("Animation_41c4v")
+}
+
+[sub_resource type="Gradient" id="Gradient_vq72d"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0, 0.961039, 1)
+colors = PackedColorArray(1, 1, 1, 0, 0.6, 0.7, 25, 0.676, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_vexhp"]
+gradient = SubResource("Gradient_vq72d")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0.123853)
+
+[node name="life_jacket" type="Node2D"]
+script = ExtResource("1_o8h5c")
+player_buff = ExtResource("2_o13gg")
+buff_layer = 1
+buff_value = 1.0
+buff_erase_timer = 999.0
+
+[node name="CDTimer" type="Timer" parent="."]
+wait_time = 5.0
+one_shot = true
+
+[node name="Node2D" type="Node2D" parent="."]
+visible = false
+z_index = -1
+position = Vector2(0, -17)
+
+[node name="ColorRect" type="ColorRect" parent="Node2D"]
+material = SubResource("ShaderMaterial_v056o")
+offset_left = -103.0
+offset_top = -103.0
+offset_right = 103.0
+offset_bottom = 103.0
+mouse_filter = 2
+
+[node name="ColorRect2" type="ColorRect" parent="Node2D"]
+material = SubResource("ShaderMaterial_fvf7b")
+offset_left = -103.0
+offset_top = -103.0
+offset_right = 103.0
+offset_bottom = 103.0
+mouse_filter = 2
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Node2D"]
+root_node = NodePath("../..")
+libraries = {
+"": SubResource("AnimationLibrary_wigv8")
+}
+
+[node name="Area2D" type="Area2D" parent="Node2D"]
+collision_layer = 0
+collision_mask = 8
+monitoring = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Node2D/Area2D"]
+shape = SubResource("CircleShape2D_qox38")
+
+[node name="Node2D2" type="Node2D" parent="."]
+position = Vector2(0, -17)
+scale = Vector2(1e-05, 1e-05)
+
+[node name="TextureRect" type="TextureRect" parent="Node2D2"]
+material = SubResource("ShaderMaterial_onldf")
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+mouse_filter = 2
+texture = SubResource("GradientTexture2D_dgxpb")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Node2D2"]
+libraries = {
+"": SubResource("AnimationLibrary_yc4vb")
+}
+
+[node name="TextureRect2" type="TextureRect" parent="Node2D2"]
+offset_left = -31.6667
+offset_top = -31.6667
+offset_right = 32.3333
+offset_bottom = 32.3333
+mouse_filter = 2
+texture = SubResource("GradientTexture2D_vexhp")
+
+[connection signal="body_entered" from="Node2D/Area2D" to="." method="_on_area_2d_body_entered"]

@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://d143cybi7yjw7"
+path="res://.godot/imported/GUNAuto_Plasmid Machinegun Single_01.wav-ba754285d0fa1e992cadd9d77f632ddf.sample"
+
+[deps]
+
+source_file="res://sounds/GUNAuto_Plasmid Machinegun Single_01.wav"
+dest_files=["res://.godot/imported/GUNAuto_Plasmid Machinegun Single_01.wav-ba754285d0fa1e992cadd9d77f632ddf.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=0

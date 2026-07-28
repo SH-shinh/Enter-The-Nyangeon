@@ -1,0 +1,106 @@
+[gd_scene load_steps=12 format=3 uid="uid://1ekdkkqtlree"]
+
+[ext_resource type="Texture2D" uid="uid://b5nbmcnfshgb8" path="res://sprites/particle/circular_1.png" id="1_ma2qf"]
+
+[sub_resource type="Gradient" id="Gradient_w4vos"]
+colors = PackedColorArray(0.544974, 0.544974, 0.544974, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_pwdsm"]
+gradient = SubResource("Gradient_w4vos")
+
+[sub_resource type="Gradient" id="Gradient_p832d"]
+offsets = PackedFloat32Array(0.393443, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0.439049, 0.439049, 0.439049, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_ypsq5"]
+gradient = SubResource("Gradient_p832d")
+
+[sub_resource type="Curve" id="Curve_jxim6"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.686667, 1), -0.966276, -0.966276, 0, 0, Vector2(1, 0), -4.67033, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_nyjfh"]
+curve = SubResource("Curve_jxim6")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_dv6qs"]
+lifetime_randomness = 0.5
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 10.0
+spread = 180.0
+initial_velocity_min = 40.0
+initial_velocity_max = 60.0
+gravity = Vector3(0, 0, 0)
+scale_min = 0.5
+scale_max = 2.0
+scale_curve = SubResource("CurveTexture_nyjfh")
+color_ramp = SubResource("GradientTexture1D_ypsq5")
+color_initial_ramp = SubResource("GradientTexture1D_pwdsm")
+
+[sub_resource type="Animation" id="Animation_c3i6c"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("GPUParticles2D:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_w3xh1"]
+resource_name = "new_animation"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("GPUParticles2D:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.5),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"queue_free"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_f3e0w"]
+_data = {
+"RESET": SubResource("Animation_c3i6c"),
+"new_animation": SubResource("Animation_w3xh1")
+}
+
+[node name="spread_smoke" type="Node2D"]
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 12
+process_material = SubResource("ParticleProcessMaterial_dv6qs")
+texture = ExtResource("1_ma2qf")
+lifetime = 0.5
+one_shot = true
+explosiveness = 1.0
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_f3e0w")
+}
+autoplay = "new_animation"

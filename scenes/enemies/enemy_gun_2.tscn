@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3 uid="uid://dhdel2yi5tfon"]
+
+[ext_resource type="Texture2D" uid="uid://e0kcsam6myb2" path="res://sprites/enemies/enemy_gun_2.png" id="1_1x7iq"]
+[ext_resource type="Script" path="res://scenes/enemies/strafe_shoot.gd" id="1_hu656"]
+[ext_resource type="PackedScene" uid="uid://bm6dimclh7dhb" path="res://script/bullet_launcher.tscn" id="2_yqnh0"]
+[ext_resource type="PackedScene" uid="uid://bhaktofgt0o5w" path="res://scenes/bullet/enemy_bullet.tscn" id="4_5tbxp"]
+
+[node name="EnemyGun2" type="Node2D"]
+script = ExtResource("1_hu656")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(14, 0)
+texture = ExtResource("1_1x7iq")
+
+[node name="BulletLauncher" parent="Sprite2D" instance=ExtResource("2_yqnh0")]
+position = Vector2(18, -3)
+shoot_at_once = false
+bullet_scale = 0.6
+bullet_count = 1
+bullet = ExtResource("4_5tbxp")
+bullet_damage = 12.0
+bullet_speed = 240.0
+bullet_penetrate = 1
+kill_time = 11.0
+bullet_id = "enemy_bullet_1"
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 0.05
+one_shot = true

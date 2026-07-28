@@ -1,0 +1,88 @@
+[gd_scene load_steps=12 format=3 uid="uid://ccbfmsfn7ay8r"]
+
+[ext_resource type="Script" path="res://script/kick.gd" id="1_j3txk"]
+[ext_resource type="Texture2D" uid="uid://bktvrhtntrcqa" path="res://sprites/particle/bullet_smoke.png" id="2_qgbuc"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_3k4hk"]
+radius = 17.0
+height = 52.0
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_o4lbv"]
+particles_animation = true
+particles_anim_h_frames = 4
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="Gradient" id="Gradient_mmdf3"]
+colors = PackedColorArray(1, 1, 1, 1, 0.752113, 0.51758, 0, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_ihuyg"]
+gradient = SubResource("Gradient_mmdf3")
+
+[sub_resource type="Gradient" id="Gradient_fdoju"]
+offsets = PackedFloat32Array(0, 0.745902, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0.606557, 0.606557, 0.606557, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_qymq3"]
+gradient = SubResource("Gradient_fdoju")
+
+[sub_resource type="Curve" id="Curve_s43ic"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.706667, 0.824176), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_2mf5o"]
+curve = SubResource("Curve_s43ic")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_p1jb4"]
+particle_flag_disable_z = true
+angle_max = 40.0
+spread = 121.348
+initial_velocity_min = 50.0
+initial_velocity_max = 100.0
+angular_velocity_min = 50.0
+angular_velocity_max = 300.0
+gravity = Vector3(0, 0, 0)
+linear_accel_min = -80.0
+linear_accel_max = -10.0
+scale_min = 0.8
+scale_curve = SubResource("CurveTexture_2mf5o")
+color_ramp = SubResource("GradientTexture1D_qymq3")
+color_initial_ramp = SubResource("GradientTexture1D_ihuyg")
+hue_variation_max = 0.01
+anim_speed_min = 2.0
+anim_speed_max = 3.0
+
+[node name="Kick" type="Node2D"]
+script = ExtResource("1_j3txk")
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 520
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+position = Vector2(16, 0)
+shape = SubResource("CapsuleShape2D_3k4hk")
+disabled = true
+one_way_collision_margin = 0.0
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 0.2
+one_shot = true
+
+[node name="Timer2" type="Timer" parent="."]
+wait_time = 0.1
+one_shot = true
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+material = SubResource("CanvasItemMaterial_o4lbv")
+position = Vector2(16, 0)
+emitting = false
+process_material = SubResource("ParticleProcessMaterial_p1jb4")
+texture = ExtResource("2_qgbuc")
+lifetime = 0.2
+one_shot = true
+explosiveness = 0.9
+
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
+[connection signal="timeout" from="Timer2" to="." method="_on_timer_2_timeout"]

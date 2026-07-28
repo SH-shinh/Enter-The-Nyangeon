@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EnemyCard" load_steps=3 format=3 uid="uid://tyefl3u2oxr"]
+
+[ext_resource type="PackedScene" uid="uid://blgdeks0i23pt" path="res://scenes/enemies/sweeper.tscn" id="1_5ygcp"]
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_arrik"]
+
+[resource]
+script = ExtResource("2_arrik")
+id = "sweeper"
+body = ExtResource("1_5ygcp")
+description = ""

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c6jets7aomakb"]
+
+[ext_resource type="Script" path="res://scenes/update_item/weird_fireworks.gd" id="1_8sjre"]
+
+[node name="weird_fireworks" type="Node2D"]
+script = ExtResource("1_8sjre")

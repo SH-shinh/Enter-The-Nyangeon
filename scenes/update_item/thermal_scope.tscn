@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://dp1hqc47moaoj"]
+
+[ext_resource type="Script" path="res://scenes/update_item/thermal_scope.gd" id="1_xj1q3"]
+[ext_resource type="Resource" uid="uid://df5glmg3alkc1" path="res://resources/buff/player_buff/luck_buff.tres" id="2_qhplb"]
+
+[node name="ThermalScope" type="Node2D"]
+script = ExtResource("1_xj1q3")
+player_buff = ExtResource("2_qhplb")
+buff_layer = 10
+buff_value = 10.0
+buff_erase_timer = 3.0

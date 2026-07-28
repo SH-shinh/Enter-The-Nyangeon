@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://bc817prh2tnxg"]
+
+[ext_resource type="Texture2D" uid="uid://cn3swkhfqvpc8" path="res://sprites/update_item/winged_hairpin.png" id="1_7vbby"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_ufkww"]
+
+[resource]
+script = ExtResource("2_ufkww")
+id = "winged_hairpin"
+icon = ExtResource("1_7vbby")
+name = "白翼发卡"
+rare = 0
+order_num = -1
+special_rules = 0
+description = "以天使的翅膀为主题制作的发卡，提升射速。"
+forward = "+15%射速"
+negative = "-5%子弹伤害"
+item_tags = 3
+tags = Array[String](["通用"])
+weight = 1.0

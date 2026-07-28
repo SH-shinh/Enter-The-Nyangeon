@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://dw4j27vn1xwhw"]
+
+[ext_resource type="Texture2D" uid="uid://dhn5h2b67msrk" path="res://sprites/update_item/energy_supplement.png" id="1_u7y07"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_q7ogv"]
+
+[resource]
+script = ExtResource("2_q7ogv")
+id = "energy_supplement"
+icon = ExtResource("1_u7y07")
+name = "特制营养剂"
+rare = 2
+order_num = 1
+special_rules = 0
+description = "炼丹术研究会为了节日的成功，特地炮制的营养剂。"
+forward = "独特
+满生命值时受到致命伤害保留1点生命值"
+negative = "最大生命值为1时不生效"
+item_tags = 256
+tags = Array[String](["防御"])
+weight = 1.0

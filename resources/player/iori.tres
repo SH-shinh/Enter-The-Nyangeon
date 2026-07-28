@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PlayerCard" load_steps=4 format=3 uid="uid://b3xr5xbhdonty"]
+
+[ext_resource type="Texture2D" uid="uid://dg0r1oa262t2y" path="res://sprites/player/iori/iori_picture_halo.png" id="1_85ig4"]
+[ext_resource type="Script" path="res://resources/player/player.gd" id="2_wgm1w"]
+[ext_resource type="Texture2D" uid="uid://bsxafv54hf5ug" path="res://sprites/player/iori/iori_picture.png" id="3_bi312"]
+
+[resource]
+script = ExtResource("2_wgm1w")
+name = "SHIROMI IORI"
+weapon = "CRACK SHOT"
+sprite = ExtResource("3_bi312")
+halo = ExtResource("1_85ig4")
+color = Color(1, 0.458824, 0.419608, 1)
+description = ""
+voice_name = "iori"
+id = "iori"

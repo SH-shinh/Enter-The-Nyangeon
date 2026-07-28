@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://pxu1rgyrulrb"
+path="res://.godot/imported/Goal Wo Nerae! loop.wav-8d038e1fce29e094e9b4ed5118461c60.sample"
+
+[deps]
+
+source_file="res://sounds/BGM/Goal Wo Nerae! loop.wav"
+dest_files=["res://.godot/imported/Goal Wo Nerae! loop.wav-8d038e1fce29e094e9b4ed5118461c60.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=2
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=0

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://csil3bjtg8d4o"]
+
+[ext_resource type="Texture2D" uid="uid://cs137eb1nyxql" path="res://sprites/update_item/drum_magazine.png" id="1_8xabv"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_deskp"]
+
+[resource]
+script = ExtResource("2_deskp")
+id = "drum_magazine"
+icon = ExtResource("1_8xabv")
+name = "弹鼓"
+rare = 0
+order_num = -1
+special_rules = 0
+description = "提供更多的弹匣容量，但是会降低一些子弹伤害。"
+forward = "+15弹匣容量"
+negative = "-5%子弹伤害"
+item_tags = 3
+tags = Array[String](["通用", "弹道"])
+weight = 1.0

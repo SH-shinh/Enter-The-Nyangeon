@@ -1,0 +1,30 @@
+[gd_scene load_steps=10 format=3 uid="uid://cu8ejmx0gvtov"]
+
+[ext_resource type="Script" path="res://script/enemies_spawn.gd" id="1_bbsg1"]
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_48nyc"]
+[ext_resource type="Resource" uid="uid://tyefl3u2oxr" path="res://resources/enemy/sweeper.tres" id="3_u2wtr"]
+[ext_resource type="Resource" uid="uid://bo5aojm81wiil" path="res://resources/enemy/enhanced_sweeper.tres" id="4_cewnb"]
+[ext_resource type="Resource" uid="uid://dx43aolfidycr" path="res://resources/enemy/mystic_sweeper.tres" id="5_tixsl"]
+[ext_resource type="Resource" uid="uid://uwsau2i7bmiv" path="res://resources/enemy/soldier_helmet_ar.tres" id="6_u35qr"]
+[ext_resource type="Resource" uid="uid://c5bt5jjpbifb8" path="res://resources/enemy/soldier_helmet_sg.tres" id="7_3ttdm"]
+[ext_resource type="Resource" uid="uid://cjvrr0lb3dvye" path="res://resources/enemy/soldier_redhelmet_sr.tres" id="8_lyuac"]
+[ext_resource type="Resource" uid="uid://d2gcqwn6rb7cc" path="res://resources/enemy/lighttank_helmet.tres" id="9_oe66l"]
+
+[node name="EnemiesSpawnLV11_helmet" type="Node2D"]
+script = ExtResource("1_bbsg1")
+num_mult = 2.2
+round_mult = 1.0
+hp_mult = 4.5
+damage_mult = 1.5
+enemy = Array[ExtResource("2_48nyc")]([ExtResource("3_u2wtr"), ExtResource("4_cewnb"), ExtResource("5_tixsl"), ExtResource("6_u35qr"), ExtResource("7_3ttdm"), ExtResource("8_lyuac"), ExtResource("9_oe66l")])
+enemy_spawn_num = Array[int]([5, 4, 2, 3, 1, 2, 1])
+enemy_spawn_time = Array[float]([15.0, 25.0, 35.0, 35.0, 60.0, 70.0, 120.0])
+
+[node name="RoundTimer" type="Timer" parent="."]
+wait_time = 60.0
+one_shot = true
+
+[node name="EnemySpawnCDTime" type="Timer" parent="."]
+wait_time = 0.1
+
+[connection signal="timeout" from="EnemySpawnCDTime" to="." method="_on_enemy_spawn_cd_time_timeout"]

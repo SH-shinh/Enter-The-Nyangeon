@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="Equip" load_steps=13 format=3 uid="uid://d0644tgwdy4pk"]
+
+[ext_resource type="Texture2D" uid="uid://dnyhq3v4xsjsu" path="res://sprites/equipment/gloves/gloves_t0.png" id="1_15d7a"]
+[ext_resource type="Script" path="res://resources/equip/equip.gd" id="1_x80tu"]
+[ext_resource type="Texture2D" uid="uid://bktmtxwhwi2gg" path="res://sprites/equipment/gloves/sports_gloves.png" id="2_21uyd"]
+[ext_resource type="Texture2D" uid="uid://bkf3s7uhqhbcb" path="res://sprites/equipment/gloves/knitted_mittens.png" id="3_cebp6"]
+[ext_resource type="Texture2D" uid="uid://w5xgcft5l7w6" path="res://sprites/equipment/gloves/peroro_oven_mitts.png" id="4_lpp8m"]
+[ext_resource type="Texture2D" uid="uid://dsijq6c1tb27v" path="res://sprites/equipment/gloves/leather_gloves.png" id="5_vjgpm"]
+[ext_resource type="Texture2D" uid="uid://b2th16jcds861" path="res://sprites/equipment/gloves/tactical_gloves.png" id="6_346c2"]
+[ext_resource type="Texture2D" uid="uid://p576q7t4r0v7" path="res://sprites/equipment/gloves/lace_gloves.png" id="7_ggq6i"]
+[ext_resource type="Texture2D" uid="uid://bgdc3t05g3gpg" path="res://sprites/equipment/gloves/arm_warmers.png" id="8_lpi7x"]
+[ext_resource type="Texture2D" uid="uid://b78o8jogbj5fg" path="res://sprites/equipment/gloves/knit_fingerless_gloves.png" id="9_7qpgd"]
+[ext_resource type="Texture2D" uid="uid://c2sxifdgmhiq6" path="res://sprites/equipment/gloves/sailing_gloves.png" id="10_q6mp2"]
+[ext_resource type="Texture2D" uid="uid://np1244mdrrtt" path="res://sprites/equipment/gloves/gloves_t10.png" id="11_c47uv"]
+
+[resource]
+script = ExtResource("1_x80tu")
+id = "glove"
+icon = Array[Texture2D]([ExtResource("1_15d7a"), ExtResource("2_21uyd"), ExtResource("3_cebp6"), ExtResource("4_lpp8m"), ExtResource("5_vjgpm"), ExtResource("6_346c2"), ExtResource("7_ggq6i"), ExtResource("8_lpi7x"), ExtResource("9_7qpgd"), ExtResource("10_q6mp2"), ExtResource("11_c47uv")])
+value_1_name = "player_bullet_damage"
+value_2_name = ""
+value_3_name = ""
+value_1_id = "bullet_damage_add"
+value_2_id = ""
+value_3_id = ""
+value_1 = Array[int]([0, 2, 2, 3, 3, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8])
+value_2 = Array[float]([])
+value_3 = Array[float]([])
+name = "手套"
+description = "增加子弹伤害"

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://byjo7njqeag7k"]
+
+[ext_resource type="Texture2D" uid="uid://bkbas50830h2n" path="res://sprites/update_item/fuel_tank.png" id="1_on61i"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_fjkls"]
+
+[resource]
+script = ExtResource("2_fjkls")
+id = "fuel_tank"
+icon = ExtResource("1_on61i")
+name = "便携燃料罐"
+rare = 1
+order_num = -1
+special_rules = 0
+description = "便携小罐装的燃料，造成子弹伤害时可点燃敌人。"
+forward = "+1施加的燃烧层数
++2燃烧上限"
+negative = ""
+item_tags = 33
+tags = Array[String](["异常", "燃烧"])
+weight = 1.0

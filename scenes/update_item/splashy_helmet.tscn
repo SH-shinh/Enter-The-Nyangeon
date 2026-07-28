@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://jjo7k2of8qpc"]
+
+[ext_resource type="Script" path="res://scenes/update_item/splashy_helmet.gd" id="1_41r4j"]
+
+[node name="splashy_helmet" type="Node2D"]
+script = ExtResource("1_41r4j")

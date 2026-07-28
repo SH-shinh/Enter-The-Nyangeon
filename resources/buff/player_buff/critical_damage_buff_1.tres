@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://cv1g4f2ag5elh"]
+
+[ext_resource type="Texture2D" uid="uid://wxc67bea2r6w" path="res://sprites/buff_icon/critical_damage_buff_icon.png" id="1_xtffo"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_dknnh"]
+
+[resource]
+script = ExtResource("2_dknnh")
+id = "critical_damage_buff_1"
+icon = ExtResource("1_xtffo")
+name = "暴击伤害"
+description = ""

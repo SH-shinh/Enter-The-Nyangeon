@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://cg3b46x2dvugx"]
+
+[ext_resource type="Texture2D" uid="uid://jxrxnwot24tx" path="res://sprites/update_item/whistle.png" id="1_ileam"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_2o7ae"]
+
+[resource]
+script = ExtResource("2_2o7ae")
+id = "whistle"
+icon = ExtResource("1_ileam")
+name = "哨子"
+rare = 0
+order_num = -1
+special_rules = 0
+description = "使用工程部的尖端技术制成的特制哨子，提升子弹速度。"
+forward = "+15%子弹速度"
+negative = ""
+item_tags = 3
+tags = Array[String](["弹道"])
+weight = 1.0

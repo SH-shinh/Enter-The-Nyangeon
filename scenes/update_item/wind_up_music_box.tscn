@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://cpdn3oyx2l6g0"]
+
+[ext_resource type="Script" path="res://scenes/update_item/wind_up_music_box.gd" id="1_4xmlw"]
+[ext_resource type="Resource" uid="uid://bhfy50nhnjylj" path="res://resources/buff/player_buff/global_damage_1_buff.tres" id="2_8qpqt"]
+
+[node name="WindUpMusicBox" type="Node2D"]
+script = ExtResource("1_4xmlw")
+player_buff = ExtResource("2_8qpqt")
+buff_layer = 10
+buff_value = 0.1
+buff_erase_timer = 5.0
+
+[node name="AddBuffTimer" type="Timer" parent="."]
+wait_time = 2.0

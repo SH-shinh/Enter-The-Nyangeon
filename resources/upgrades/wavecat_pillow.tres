@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://ey8p57sknjnh"]
+
+[ext_resource type="Texture2D" uid="uid://dal8isonxc3jn" path="res://sprites/update_item/wavecat_pillow.png" id="1_3y5nf"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_dletw"]
+
+[resource]
+script = ExtResource("2_dletw")
+id = "wavecat_pillow"
+icon = ExtResource("1_3y5nf")
+name = "波浪猫枕"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "热门Momo好友联名商品，第7弹！"
+forward = "独特
+暴击后2秒内提升35%近战伤害（可叠加）"
+negative = ""
+item_tags = 4112
+tags = Array[String](["近战", "暴击"])
+weight = 1.0

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://ddm30tegcac50"]
+
+[ext_resource type="Texture2D" uid="uid://cjv8fhuj32pkf" path="res://sprites/update_item/ink_cartridge.png" id="1_1k3a1"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_a1njl"]
+
+[resource]
+script = ExtResource("2_a1njl")
+id = "ink_cartridge"
+icon = ExtResource("1_1k3a1")
+name = "墨水瓶"
+rare = 1
+order_num = -1
+special_rules = 1
+description = "给弹药填充颜料，子弹造成伤害时有概率产生小范围爆炸。
+20基础伤害"
+forward = "可受子弹伤害加成
+提升触发概率
++20装备基础伤害"
+negative = ""
+item_tags = 12
+tags = Array[String](["爆炸", "概率", "装备"])
+weight = 1.0

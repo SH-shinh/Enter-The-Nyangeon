@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://btlkxsbjoaeab"]
+
+[ext_resource type="Texture2D" uid="uid://cr30xctb4x370" path="res://sprites/update_item/sakura_daifuku.png" id="1_ga727"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_od6cr"]
+
+[resource]
+script = ExtResource("2_od6cr")
+id = "sakura_daifuku"
+icon = ExtResource("1_ga727")
+name = "樱花大福饼"
+rare = 1
+order_num = -1
+special_rules = 0
+description = "百鬼夜行传统茶馆「百夜堂」的常备点心。"
+forward = "+28%暴击伤害"
+negative = "-5%子弹伤害"
+item_tags = 16
+tags = Array[String](["暴击", "弹道"])
+weight = 1.0

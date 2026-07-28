@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="GameMode" load_steps=3 format=3 uid="uid://cwvyflq4fpd83"]
+
+[ext_resource type="Texture2D" uid="uid://c1rawvvpiqgix" path="res://sprites/item/mission_data_1.png" id="1_5fl8e"]
+[ext_resource type="Script" path="res://resources/game_mode/game_mode.gd" id="1_t5bfh"]
+
+[resource]
+script = ExtResource("1_t5bfh")
+game_mode_name = "blitzkrieg"
+game_mode_id = "blitzkrieg"
+game_mode_icon = ExtResource("1_5fl8e")
+gamemode_conflicting = Array[String](["hujiu"])

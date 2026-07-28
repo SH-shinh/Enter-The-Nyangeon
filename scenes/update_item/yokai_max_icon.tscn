@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://dmv43h3m6rdqg"]
+
+[ext_resource type="Texture2D" uid="uid://bx3jxbndq0i66" path="res://sprites/update_item/yokai_max_icon.png" id="1_w5urk"]
+[ext_resource type="PackedScene" uid="uid://wffnchsknkba" path="res://script/hat.tscn" id="2_tv2e3"]
+
+[node name="YokaiMAXIcon" type="Sprite2D"]
+texture = ExtResource("1_w5urk")
+
+[node name="Hat" parent="." instance=ExtResource("2_tv2e3")]
+position = Vector2(0, -8)

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bcngepbiut31y"]
+
+[ext_resource type="Script" path="res://scenes/update_item/circle_glasses.gd" id="1_0iyv7"]
+
+[node name="CircleGlasses" type="Node2D"]
+script = ExtResource("1_0iyv7")

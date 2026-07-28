@@ -1,0 +1,98 @@
+[gd_scene load_steps=11 format=3 uid="uid://dh38f2ulpgbvr"]
+
+[ext_resource type="Script" path="res://script/death_gpu.gd" id="1_py47m"]
+[ext_resource type="Texture2D" uid="uid://b08u1we6bchqr" path="res://sprites/enemies/sweeper_icon.png" id="1_tqqwj"]
+
+[sub_resource type="Gradient" id="Gradient_vddey"]
+offsets = PackedFloat32Array(0.614754, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_jeqad"]
+gradient = SubResource("Gradient_vddey")
+
+[sub_resource type="Curve" id="Curve_xbpad"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.86, 0.912088), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_8212u"]
+curve = SubResource("Curve_xbpad")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_soaac"]
+particle_flag_disable_z = true
+direction = Vector3(0, -1, 0)
+spread = 20.0
+initial_velocity_min = 280.0
+initial_velocity_max = 350.0
+angular_velocity_min = 300.0
+angular_velocity_max = 550.0
+gravity = Vector3(0, 800, 0)
+scale_curve = SubResource("CurveTexture_8212u")
+color_ramp = SubResource("GradientTexture1D_jeqad")
+
+[sub_resource type="Animation" id="Animation_pus05"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("GPUParticles2D:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_4v7bv"]
+resource_name = "new_animation"
+length = 0.6
+tracks/0/type = "method"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.6),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"queue_free"
+}]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("GPUParticles2D:emitting")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_ifibg"]
+_data = {
+"RESET": SubResource("Animation_pus05"),
+"death": SubResource("Animation_4v7bv")
+}
+
+[node name="death_gpu" type="Node2D"]
+script = ExtResource("1_py47m")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 1
+process_material = SubResource("ParticleProcessMaterial_soaac")
+texture = ExtResource("1_tqqwj")
+lifetime = 0.6
+one_shot = true
+fixed_fps = 60
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_ifibg")
+}

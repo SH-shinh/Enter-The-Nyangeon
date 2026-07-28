@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PSCard" load_steps=3 format=3 uid="uid://bl1gnho1ule0g"]
+
+[ext_resource type="Script" path="res://resources/player/PS/ps_card.gd" id="1_0782f"]
+[ext_resource type="Texture2D" uid="uid://cf0jpy1qxt55c" path="res://sprites/weapon/Nyans_Dash.png" id="2_1bl86"]
+
+[resource]
+script = ExtResource("1_0782f")
+weapon_icon = ExtResource("2_1bl86")
+t_level = Array[String](["子弹造成范围爆炸伤害，连续造成命中可叠加提高2%子弹伤害，中断时清空。", "+25%暴击伤害，每提升1%暴击伤害额外提升1%射速。", "+25%暴击伤害，换弹后3秒内提升50%暴击伤害。", "+25%暴击伤害，连击还可提高5%暴击伤害。"])

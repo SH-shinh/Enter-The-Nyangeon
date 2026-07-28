@@ -1,0 +1,32 @@
+[gd_scene load_steps=5 format=3 uid="uid://ct873c3rdt7ss"]
+
+[ext_resource type="Script" path="res://script/enemies_spawn.gd" id="1_ypp43"]
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_hmbd0"]
+[ext_resource type="Resource" uid="uid://c6wf4vrs211lb" path="res://resources/enemy/goliath.tres" id="3_jyery"]
+[ext_resource type="PackedScene" uid="uid://co5e8236e250k" path="res://scenes/enemies/enemies_spawn/raid_spawn.tscn" id="4_hsjtl"]
+
+[node name="GoliathSpawn_lv_10" type="Node2D"]
+script = ExtResource("1_ypp43")
+boss_round = true
+boss_position = Vector2(704, 323)
+num_mult = 2.0
+round_mult = 1.0
+hp_mult = 1.5
+damage_mult = 1.2
+enemy = Array[ExtResource("2_hmbd0")]([ExtResource("3_jyery")])
+enemy_spawn_num = Array[int]([1])
+enemy_spawn_time = Array[float]([0.0])
+
+[node name="RoundTimer" type="Timer" parent="."]
+wait_time = 60.0
+one_shot = true
+
+[node name="EnemySpawnCDTime" type="Timer" parent="."]
+wait_time = 0.1
+
+[node name="RaidSpawn" parent="." instance=ExtResource("4_hsjtl")]
+
+[node name="RaidSpawn2" parent="." instance=ExtResource("4_hsjtl")]
+raid_spawn_time = 40.0
+
+[connection signal="timeout" from="EnemySpawnCDTime" to="." method="_on_enemy_spawn_cd_time_timeout"]

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ClothesCard" load_steps=4 format=3 uid="uid://baeefcohebfqg"]
+
+[ext_resource type="Texture2D" uid="uid://cgwcd51g0u4ny" path="res://ui/ark_of_Shittim/mahou_plana_icon_2.png" id="1_l53fx"]
+[ext_resource type="Script" path="res://resources/clothes/clothes_card.gd" id="2_2gib7"]
+[ext_resource type="Texture2D" uid="uid://c5pkpw4upela1" path="res://ui/ark_of_Shittim/mahou_plana_picture.png" id="3_d1rhe"]
+
+[resource]
+script = ExtResource("2_2gib7")
+id = "mahou"
+id_name = "Plana"
+name_1 = "MAHOU SHOUJYO"
+name_2 = "魔法少女"
+user_name = "PLANA"
+icon_1 = ExtResource("1_l53fx")
+icon_2 = ExtResource("1_l53fx")
+cost = 60
+sprite = ExtResource("3_d1rhe")

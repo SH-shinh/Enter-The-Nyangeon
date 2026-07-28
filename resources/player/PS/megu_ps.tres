@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PSCard" load_steps=3 format=3 uid="uid://8twh1hvi3pnh"]
+
+[ext_resource type="Script" path="res://resources/player/PS/ps_card.gd" id="1_3jqdb"]
+[ext_resource type="Texture2D" uid="uid://bsj5wv4jy1hfp" path="res://sprites/weapon/molten_meg_ma.png" id="2_03gjp"]
+
+[resource]
+script = ExtResource("1_3jqdb")
+weapon_icon = ExtResource("2_03gjp")
+t_level = Array[String](["按扇形射击，子弹可受异常伤害加成并造成火焰伤害，命中时点燃敌人。", "火焰子弹消失时有概率留下一个燃烧场每造成8次伤害对敌人造成5%（BOSS为1%）最大生命值的持续伤害。", "燃烧场伤害提升为10%（BOSS为1%）最大生命值，燃烧上限+6。", "不可阻挡的热火！火焰子弹可以穿透所有敌人。"])

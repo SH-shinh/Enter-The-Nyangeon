@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cjhmbiqdnjp03"]
+
+[ext_resource type="Script" path="res://scenes/update_item/tnt.gd" id="1_l6jg1"]
+
+[node name="tnt" type="Node2D"]
+script = ExtResource("1_l6jg1")

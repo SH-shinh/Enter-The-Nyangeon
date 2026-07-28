@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CharacterCard" load_steps=5 format=3 uid="uid://bjekddh05xaja"]
+
+[ext_resource type="Texture2D" uid="uid://bsxafv54hf5ug" path="res://sprites/player/iori/iori_picture.png" id="1_cp1p0"]
+[ext_resource type="Texture2D" uid="uid://dhol5kko8375y" path="res://ui/school/GEHENNA_icon.png" id="2_6ggxs"]
+[ext_resource type="Script" path="res://resources/shop/character/character_card.gd" id="3_xwd4r"]
+[ext_resource type="Texture2D" uid="uid://cx8itc7xr021t" path="res://ui/weapon/SR_icon.png" id="4_l0um5"]
+
+[resource]
+script = ExtResource("3_xwd4r")
+cost = 6
+name_1 = "SHIROMI"
+name_2 = "IORI"
+character_sprite = ExtResource("1_cp1p0")
+weapon_name = "CRACK SHOT"
+weapon_type_name = "SR"
+weapon_icon = ExtResource("4_l0um5")
+school_name = "GEHENNA"
+school_icon = ExtResource("2_6ggxs")
+id = "iori"
+group = "DC"

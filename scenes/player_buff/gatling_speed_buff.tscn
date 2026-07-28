@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://p62gft6eqjlg"]
+
+[ext_resource type="Script" path="res://scenes/player_buff/gatling_speed_buff.gd" id="1_fet35"]
+[ext_resource type="Resource" uid="uid://dwbvsi4tms1po" path="res://resources/buff/player_buff/gatling_speed_buff.tres" id="2_h64cu"]
+
+[node name="gatling_speed_buff" type="Node2D" groups=["PlayerBuff"]]
+script = ExtResource("1_fet35")
+buff = ExtResource("2_h64cu")
+buff_id = "gatling_speed_buff"
+
+[node name="BuffTimer" type="Timer" parent="."]
+
+[connection signal="timeout" from="BuffTimer" to="." method="_on_buff_timer_timeout"]

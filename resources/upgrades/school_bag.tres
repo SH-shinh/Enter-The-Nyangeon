@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://c3rwj7yqdv6nt"]
+
+[ext_resource type="Texture2D" uid="uid://b0vhck4unhuia" path="res://sprites/update_item/school_bag.png" id="1_yj7fq"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_wy8t7"]
+
+[resource]
+script = ExtResource("2_wy8t7")
+id = "school_bag"
+icon = ExtResource("1_yj7fq")
+name = "藏蓝书包"
+rare = 0
+order_num = -1
+description = "根据三一综合学园的校规制作的书包，提升最大生命值。"
+forward = "+20生命值"
+negative = ""
+item_tags = 0
+tags = Array[String](["防御"])

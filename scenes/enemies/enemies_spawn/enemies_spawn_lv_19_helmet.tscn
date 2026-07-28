@@ -1,0 +1,35 @@
+[gd_scene load_steps=10 format=3 uid="uid://bwc3mnj0n7cck"]
+
+[ext_resource type="Script" path="res://script/enemies_spawn.gd" id="1_e7v15"]
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_hao2k"]
+[ext_resource type="Resource" uid="uid://dx43aolfidycr" path="res://resources/enemy/mystic_sweeper.tres" id="3_f47q7"]
+[ext_resource type="Resource" uid="uid://uwsau2i7bmiv" path="res://resources/enemy/soldier_helmet_ar.tres" id="4_p2nxq"]
+[ext_resource type="Resource" uid="uid://c5bt5jjpbifb8" path="res://resources/enemy/soldier_helmet_sg.tres" id="5_uiwo2"]
+[ext_resource type="Resource" uid="uid://cjvrr0lb3dvye" path="res://resources/enemy/soldier_redhelmet_sr.tres" id="6_70cho"]
+[ext_resource type="Resource" uid="uid://dtv88mgk8m0i" path="res://resources/enemy/droid_helmet_smg.tres" id="7_in87k"]
+[ext_resource type="Resource" uid="uid://d2gcqwn6rb7cc" path="res://resources/enemy/lighttank_helmet.tres" id="8_s2fye"]
+[ext_resource type="PackedScene" uid="uid://co5e8236e250k" path="res://scenes/enemies/enemies_spawn/raid_spawn.tscn" id="9_2ol1y"]
+
+[node name="EnemiesSpawnLV19_helmet" type="Node2D"]
+script = ExtResource("1_e7v15")
+num_mult = 2.0
+round_mult = 1.0
+hp_mult = 28.0
+damage_mult = 6.0
+enemy = Array[ExtResource("2_hao2k")]([ExtResource("3_f47q7"), ExtResource("4_p2nxq"), ExtResource("5_uiwo2"), ExtResource("6_70cho"), ExtResource("7_in87k"), ExtResource("8_s2fye")])
+enemy_spawn_num = Array[int]([2, 2, 1, 3, 2, 1])
+enemy_spawn_time = Array[float]([5.0, 25.0, 20.0, 45.0, 35.0, 120.0])
+
+[node name="RoundTimer" type="Timer" parent="."]
+wait_time = 60.0
+one_shot = true
+
+[node name="EnemySpawnCDTime" type="Timer" parent="."]
+wait_time = 0.1
+
+[node name="RaidSpawn" parent="." instance=ExtResource("9_2ol1y")]
+
+[node name="RaidSpawn2" parent="." instance=ExtResource("9_2ol1y")]
+raid_spawn_time = 40.0
+
+[connection signal="timeout" from="EnemySpawnCDTime" to="." method="_on_enemy_spawn_cd_time_timeout"]

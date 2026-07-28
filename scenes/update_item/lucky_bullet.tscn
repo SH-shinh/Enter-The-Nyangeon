@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://g1b60bqqthmk"]
+
+[ext_resource type="Script" path="res://scenes/update_item/lucky_bullet.gd" id="1_5b77c"]
+
+[node name="LuckyBullet" type="Node2D"]
+script = ExtResource("1_5b77c")

@@ -1,0 +1,96 @@
+[gd_scene load_steps=8 format=3 uid="uid://ch4rexhqn3q7q"]
+
+[ext_resource type="PackedScene" uid="uid://dehu7mvw1ir6b" path="res://scenes/enemies/boss/erosion_tower.tscn" id="1_8cror"]
+[ext_resource type="Script" path="res://scenes/enemies/boss/erosion_tower_group.gd" id="1_bok2w"]
+[ext_resource type="PackedScene" uid="uid://27vgyy58ukpo" path="res://scenes/enemies/boss/boss_hp.tscn" id="3_x8mmi"]
+[ext_resource type="Script" path="res://script/EnemyStats.gd" id="4_vug33"]
+
+[sub_resource type="Animation" id="Animation_pttj3"]
+resource_name = "death_anim"
+length = 3.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(3, 3.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(3),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"_coin_drops"
+}]
+}
+
+[sub_resource type="Animation" id="Animation_utgb1"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_vbxny"]
+_data = {
+"RESET": SubResource("Animation_utgb1"),
+"death_anim": SubResource("Animation_pttj3")
+}
+
+[node name="Node2D" type="Node2D" node_paths=PackedStringArray("stats", "tower_1", "tower_2", "tower_3")]
+visible = false
+y_sort_enabled = true
+script = ExtResource("1_bok2w")
+stats = NodePath("EnemyStats")
+tower_1 = NodePath("ErosionTower_1")
+tower_2 = NodePath("ErosionTower_2")
+tower_3 = NodePath("ErosionTower_3")
+
+[node name="ErosionTower_1" parent="." instance=ExtResource("1_8cror")]
+position = Vector2(0, -128)
+
+[node name="ErosionTower_2" parent="." instance=ExtResource("1_8cror")]
+position = Vector2(-192, 128)
+tower_type = 2
+
+[node name="ErosionTower_3" parent="." instance=ExtResource("1_8cror")]
+position = Vector2(192, 128)
+tower_type = 3
+
+[node name="boss_enter" type="Node2D" parent="."]
+
+[node name="CameraMarker" type="Marker2D" parent="boss_enter"]
+position = Vector2(0, -192)
+
+[node name="BossHP" parent="." node_paths=PackedStringArray("stats") instance=ExtResource("3_x8mmi")]
+stats = NodePath("../EnemyStats")
+boss_name = "-EROSION TOWERS-"
+
+[node name="EnemyStats" type="Node" parent="."]
+script = ExtResource("4_vug33")
+Enemy_coin = 600
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+process_mode = 3
+libraries = {
+"": SubResource("AnimationLibrary_vbxny")
+}

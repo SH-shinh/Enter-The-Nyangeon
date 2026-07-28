@@ -1,0 +1,287 @@
+[gd_scene load_steps=12 format=3 uid="uid://l3f4bjcsqj4j"]
+
+[ext_resource type="Shader" path="res://shaders/scrolling_bkgd.gdshader" id="1_465r2"]
+[ext_resource type="Script" path="res://ui/level_button.gd" id="1_rwnou"]
+[ext_resource type="Texture2D" uid="uid://dd7vnobcamv4q" path="res://sprites/test_BG.png" id="2_hvmdr"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_yhe6q"]
+
+[sub_resource type="Theme" id="Theme_yvtkn"]
+PanelContainer/styles/panel = SubResource("StyleBoxEmpty_yhe6q")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_l72im"]
+resource_local_to_scene = true
+shader = ExtResource("1_465r2")
+shader_parameter/scroll_speed = 0.25
+shader_parameter/angle_degrees = 45.0
+shader_parameter/repeat_x = 1.0
+shader_parameter/repeat_y = 1.0
+shader_parameter/tint = Color(1, 1, 1, 0)
+
+[sub_resource type="Animation" id="Animation_r60mc"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node2D/LevelColor/TextureRect:material:shader_parameter/tint")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Node2D/LevelColor:custom_minimum_size")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(196, 40)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Node2D/LevelColor/BlackColor:color")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(0, 0, 0, 0.627451)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Node2D/LevelColor/LevelName:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(8, 8)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Node2D/LevelColor/Label2:position")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(8, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_d6mlo"]
+resource_name = "mouse_in"
+length = 0.1
+step = 0.01
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node2D/LevelColor/TextureRect:material:shader_parameter/tint")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0.403922)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Node2D/LevelColor:custom_minimum_size")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(196, 40), Vector2(208, 40)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Node2D/LevelColor/BlackColor:color")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(0, 0, 0, 0.627451), Color(0, 0, 0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_1bdap"]
+resource_name = "mouse_out"
+length = 0.1
+step = 0.01
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node2D/LevelColor/TextureRect:material:shader_parameter/tint")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0.403922), Color(1, 1, 1, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Node2D/LevelColor/BlackColor:color")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(0, 0, 0, 0), Color(0, 0, 0, 0.627451)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Node2D/LevelColor:custom_minimum_size")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(208, 40), Vector2(196, 40)]
+}
+
+[sub_resource type="Animation" id="Animation_rffl1"]
+resource_name = "selected"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node2D/LevelColor/LevelName:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(8, 8), Vector2(8, 14), Vector2(8, 8)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Node2D/LevelColor/Label2:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(8, 0), Vector2(8, 6), Vector2(8, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_u85jd"]
+_data = {
+"RESET": SubResource("Animation_r60mc"),
+"mouse_in": SubResource("Animation_d6mlo"),
+"mouse_out": SubResource("Animation_1bdap"),
+"selected": SubResource("Animation_rffl1")
+}
+
+[node name="LevelButton" type="PanelContainer"]
+custom_minimum_size = Vector2(208, 40)
+mouse_filter = 2
+theme = SubResource("Theme_yvtkn")
+script = ExtResource("1_rwnou")
+path = "res://scenes/main/main.tscn"
+
+[node name="Node2D" type="Node2D" parent="."]
+
+[node name="LevelColor" type="ColorRect" parent="Node2D"]
+unique_name_in_owner = true
+clip_children = 2
+custom_minimum_size = Vector2(196, 40)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 6.0
+offset_right = 202.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(98, 20)
+mouse_filter = 2
+color = Color(0.734917, 0.609439, 1, 1)
+
+[node name="TextureRect" type="TextureRect" parent="Node2D/LevelColor"]
+material = SubResource("ShaderMaterial_l72im")
+layout_mode = 0
+offset_right = 234.0
+offset_bottom = 64.0
+mouse_filter = 2
+texture = ExtResource("2_hvmdr")
+stretch_mode = 1
+
+[node name="Label2" type="Label" parent="Node2D/LevelColor"]
+layout_mode = 0
+offset_left = 8.0
+offset_right = 65.0
+offset_bottom = 11.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.261088, 3.60981e-08, 0.130492, 1)
+theme_override_colors/font_outline_color = Color(0.261088, 3.60981e-08, 0.130492, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 1
+theme_override_constants/shadow_outline_size = 6
+theme_override_font_sizes/font_size = 9
+text = "LEVEL"
+
+[node name="LevelName" type="Label" parent="Node2D/LevelColor"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 96.0
+offset_bottom = 30.0
+theme_override_colors/font_color = Color(0.825657, 0.784007, 0.995993, 1)
+theme_override_colors/font_shadow_color = Color(0.261088, 3.60981e-08, 0.130492, 1)
+theme_override_colors/font_outline_color = Color(0.261088, 3.60981e-08, 0.130492, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 8
+theme_override_constants/shadow_outline_size = 7
+theme_override_font_sizes/font_size = 20
+text = "NORMAL"
+
+[node name="BlackColor" type="ColorRect" parent="Node2D/LevelColor"]
+layout_mode = 0
+offset_right = 208.0
+offset_bottom = 40.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.627451)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_u85jd")
+}
+
+[node name="Timer" type="Timer" parent="."]
+process_mode = 3
+wait_time = 0.5
+one_shot = true
+
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

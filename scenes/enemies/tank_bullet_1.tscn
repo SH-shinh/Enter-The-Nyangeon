@@ -1,0 +1,204 @@
+[gd_scene load_steps=14 format=3 uid="uid://bhyw00fayomdu"]
+
+[ext_resource type="Script" path="res://scenes/enemies/cannon_bullet.gd" id="1_0r786"]
+[ext_resource type="Shader" path="res://shaders/range_effects.gdshader" id="2_turbs"]
+[ext_resource type="PackedScene" uid="uid://bm6dimclh7dhb" path="res://script/bullet_launcher.tscn" id="3_0lyj6"]
+[ext_resource type="PackedScene" uid="uid://bhaktofgt0o5w" path="res://scenes/bullet/enemy_bullet.tscn" id="4_7a8t2"]
+[ext_resource type="Texture2D" uid="uid://ccv20w8histyb" path="res://sprites/particle/explosion_0001.png" id="5_pf5fw"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_hkcgp"]
+resource_local_to_scene = true
+shader = ExtResource("2_turbs")
+shader_parameter/ring_radius = 0.5
+shader_parameter/thickness_scalar = 0.0
+shader_parameter/oscillation_scalar = 0.0
+shader_parameter/speed = 6.0
+shader_parameter/main_color = Color(1, 0, 0, 1)
+shader_parameter/lerp_color = Color(0.94, 0.240483, 0.047, 1)
+shader_parameter/transparency = 0.4
+
+[sub_resource type="Gradient" id="Gradient_lybuj"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0, 0.96, 1)
+colors = PackedColorArray(0.79, 0, 0.0526666, 0, 0.79, 0, 0.0526666, 0.411765, 0, 0, 0, 0)
+metadata/_snap_enabled = true
+metadata/_snap_count = 25
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_5r4t3"]
+gradient = SubResource("Gradient_lybuj")
+width = 100
+height = 100
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0)
+metadata/_snap_enabled = true
+
+[sub_resource type="Animation" id="Animation_4kl6k"]
+resource_name = "new_animation"
+length = 2.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("TextureRect:material:shader_parameter/thickness_scalar")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, 0.99]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("TextureRect:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("GPUParticles2D:emitting")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.566667),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/3/type = "method"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0.566667, 0.666667, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"values": [{
+"args": [],
+"method": &"add_explosion"
+}, {
+"args": [],
+"method": &"shoot_bullet"
+}, {
+"args": [],
+"method": &"idle_state"
+}]
+}
+
+[sub_resource type="Animation" id="Animation_aa5er"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("TextureRect:material:shader_parameter/thickness_scalar")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("TextureRect:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("GPUParticles2D:emitting")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_8bpb6"]
+_data = {
+"RESET": SubResource("Animation_aa5er"),
+"new_animation": SubResource("Animation_4kl6k")
+}
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_nyq85"]
+particles_animation = true
+particles_anim_h_frames = 4
+particles_anim_v_frames = 3
+particles_anim_loop = false
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_md44x"]
+lifetime_randomness = 0.5
+particle_flag_disable_z = true
+emission_shape = 6
+emission_ring_axis = Vector3(0, 0, 1)
+emission_ring_height = 1.0
+emission_ring_radius = 40.0
+emission_ring_inner_radius = 20.0
+angle_min = -45.0
+angle_max = 45.0
+gravity = Vector3(0, 10, 0)
+scale_min = 0.5
+color = Color(4.5, 2, 1.2, 1)
+anim_speed_min = 1.0
+anim_speed_max = 1.0
+
+[node name="tank_bullet_1" type="Node2D"]
+script = ExtResource("1_0r786")
+bullet_id = "tank_bullet_1"
+
+[node name="TextureRect" type="TextureRect" parent="."]
+z_index = -1
+material = SubResource("ShaderMaterial_hkcgp")
+offset_left = -50.0
+offset_top = -50.0
+offset_right = 50.0
+offset_bottom = 50.0
+mouse_filter = 2
+texture = SubResource("GradientTexture2D_5r4t3")
+
+[node name="BulletLauncher" parent="TextureRect" instance=ExtResource("3_0lyj6")]
+position = Vector2(50, 50)
+shoot_at_once = false
+bullet_scale = 0.6
+bullet_count = 12
+bullet_arc = 330.0
+bullet = ExtResource("4_7a8t2")
+bullet_damage = 6.0
+bullet_speed = 170.0
+bullet_penetrate = 1
+decay_time = 0.5
+decay_speed = 2
+kill_time = 1.5
+bullet_id = "enemy_bullet_1"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_8bpb6")
+}
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+material = SubResource("CanvasItemMaterial_nyq85")
+emitting = false
+amount = 12
+process_material = SubResource("ParticleProcessMaterial_md44x")
+texture = ExtResource("5_pf5fw")
+one_shot = true
+explosiveness = 1.0

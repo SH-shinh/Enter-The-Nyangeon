@@ -1,0 +1,351 @@
+[gd_scene load_steps=39 format=3 uid="uid://c0lw16gu1j0y4"]
+
+[ext_resource type="Texture2D" uid="uid://1wa2vvyr81kq" path="res://ui/ark_of_Shittim/arona_halo.png" id="1_4x0qi"]
+[ext_resource type="Texture2D" uid="uid://su6g33ylu4y6" path="res://ui/ark_of_Shittim/arona_picture.png" id="1_j4j3j"]
+[ext_resource type="Script" path="res://ui/ark_of_Shittim/arona.gd" id="1_khnfb"]
+[ext_resource type="Script" path="res://resources/talk/talk_formwork.gd" id="2_0xmg4"]
+[ext_resource type="Resource" uid="uid://cysx1mp8tg6wi" path="res://resources/talk/arona/arona_work_in_1.tres" id="3_1jjy3"]
+[ext_resource type="Resource" uid="uid://cff2fpl7iq3qx" path="res://resources/talk/arona/arona_work_in_2.tres" id="4_7atix"]
+[ext_resource type="Resource" uid="uid://bfllc5ief2tx4" path="res://resources/talk/arona/arona_work_in_3.tres" id="5_lpdsb"]
+[ext_resource type="Resource" uid="uid://chvroteok0e3t" path="res://resources/talk/arona/arona_work_in_4.tres" id="6_8byre"]
+[ext_resource type="Resource" uid="uid://cmnxv1t5tgwxs" path="res://resources/talk/arona/arona_work_talk_1.tres" id="7_c5qw2"]
+[ext_resource type="Resource" uid="uid://b8hgtoiiefygk" path="res://resources/talk/arona/arona_work_talk_2.tres" id="8_qdmyn"]
+[ext_resource type="Resource" uid="uid://dfjlube5dkmjg" path="res://resources/talk/arona/arona_work_talk_3.tres" id="9_4ejfj"]
+[ext_resource type="Resource" uid="uid://coyoioqwnrq8x" path="res://resources/talk/arona/arona_work_talk_4.tres" id="10_prbwi"]
+[ext_resource type="Resource" uid="uid://dakjdlpfw06s1" path="res://resources/talk/arona/arona_work_talk_5.tres" id="11_c68bh"]
+[ext_resource type="Resource" uid="uid://glga34qo3qn7" path="res://resources/talk/arona/arona_work_talk_6.tres" id="12_p0poy"]
+[ext_resource type="Resource" uid="uid://buvfm5lp8rtfy" path="res://resources/talk/arona/arona_work_talk_7.tres" id="13_vvujf"]
+[ext_resource type="Resource" uid="uid://diuclb0v4yddo" path="res://resources/talk/arona/arona_surprise_1.tres" id="14_6jajw"]
+[ext_resource type="Resource" uid="uid://b87a2yaf43nic" path="res://resources/talk/arona/arona_surprise_2.tres" id="15_5tlk4"]
+[ext_resource type="Resource" uid="uid://b1ce7hgnwuuh6" path="res://resources/talk/arona/arona_surprise_3.tres" id="16_c4nnp"]
+[ext_resource type="Resource" uid="uid://fmcng42buier" path="res://resources/talk/arona/arona_surprise_4.tres" id="17_5cd4l"]
+[ext_resource type="Resource" uid="uid://dfkf8g4tybuw3" path="res://resources/talk/arona/arona_head_1.tres" id="18_e6mn7"]
+[ext_resource type="Resource" uid="uid://d20t2l8k15p0a" path="res://resources/talk/arona/arona_head_2.tres" id="19_onhb3"]
+[ext_resource type="Resource" uid="uid://dss1nv8aepix0" path="res://resources/talk/arona/arona_head_3.tres" id="20_rl2t1"]
+[ext_resource type="Resource" uid="uid://dslpmaov1hblq" path="res://resources/talk/arona/arona_head_4.tres" id="21_sxmgx"]
+[ext_resource type="Resource" uid="uid://c7fy207fyvkvt" path="res://resources/talk/arona/arona_lack_1.tres" id="22_pmcie"]
+[ext_resource type="Resource" uid="uid://dy6th2jm5cg4f" path="res://resources/talk/arona/arona_lack_2.tres" id="23_yev8g"]
+[ext_resource type="PackedScene" uid="uid://0p71mm31g3tb" path="res://ui/ark_of_Shittim/cloth_change.tscn" id="26_ib57c"]
+
+[sub_resource type="Animation" id="Animation_ipikd"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Halo:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(29, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Halo:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(-6, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="Animation" id="Animation_y7viv"]
+resource_name = "new_animation"
+length = 3.0
+loop_mode = 1
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Halo:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(29, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Halo:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0),
+"points": PackedFloat32Array(-6, -1, 0, 1, 0, -12, -1, 0, 1, 0, -6, -1, 0, 1, 0),
+"times": PackedFloat32Array(0, 1.5, 3)
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_0714j"]
+_data = {
+"RESET": SubResource("Animation_ipikd"),
+"new_animation": SubResource("Animation_y7viv")
+}
+
+[sub_resource type="Animation" id="Animation_10vt4"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 220)]
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite:position:x")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Sprite:position:y")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(220, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="Animation" id="Animation_k0i8n"]
+resource_name = "nod_anim"
+length = 0.6
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0),
+"points": PackedFloat32Array(220, -0.25, 0, 0.25, 0, 230, -0.25, 0, 0.25, 0, 220, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 0.3, 0.6)
+}
+
+[sub_resource type="Animation" id="Animation_h41sg"]
+resource_name = "Surprise_anim"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.0666667, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0, 220), Vector2(0, 200), Vector2(0, 220)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_jwoi1"]
+_data = {
+"RESET": SubResource("Animation_10vt4"),
+"nod_anim": SubResource("Animation_k0i8n"),
+"surprise_anim": SubResource("Animation_h41sg")
+}
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_axxdv"]
+
+[sub_resource type="Theme" id="Theme_28ywa"]
+Panel/styles/panel = SubResource("StyleBoxEmpty_axxdv")
+
+[sub_resource type="Animation" id="Animation_6wkvj"]
+resource_name = "change_anim"
+length = 0.5
+step = 0.02
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0),
+"points": PackedFloat32Array(220, -0.1, 0, 0.1, 0, 600, -0.1, 0, 0.1, 0, 220, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0, 0.26, 0.5)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Halo:position:x")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(29, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/3/type = "bezier"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Halo:position:y")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0),
+"points": PackedFloat32Array(-6, -0.1, 0, 0.1, 0, 380, -0.1, 0, 0.1, 0, -6, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0.04, 0.28, 0.5)
+}
+
+[sub_resource type="Animation" id="Animation_6y6qa"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(220, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Halo:position:x")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(29, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/3/type = "bezier"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Halo:position:y")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(-6, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_pswde"]
+_data = {
+"RESET": SubResource("Animation_6y6qa"),
+"change_anim": SubResource("Animation_6wkvj")
+}
+
+[node name="Arona" type="Node2D"]
+script = ExtResource("1_khnfb")
+talk_work_in = Array[ExtResource("2_0xmg4")]([ExtResource("3_1jjy3"), ExtResource("4_7atix"), ExtResource("5_lpdsb"), ExtResource("6_8byre")])
+talk_normal = Array[ExtResource("2_0xmg4")]([ExtResource("7_c5qw2"), ExtResource("8_qdmyn"), ExtResource("9_4ejfj"), ExtResource("10_prbwi"), ExtResource("11_c68bh"), ExtResource("12_p0poy"), ExtResource("13_vvujf")])
+talk_surprise = Array[ExtResource("2_0xmg4")]([ExtResource("14_6jajw"), ExtResource("15_5tlk4"), ExtResource("16_c4nnp"), ExtResource("17_5cd4l")])
+talk_head = Array[ExtResource("2_0xmg4")]([ExtResource("18_e6mn7"), ExtResource("19_onhb3"), ExtResource("20_rl2t1"), ExtResource("21_sxmgx")])
+talk_lack = Array[ExtResource("2_0xmg4")]([ExtResource("22_pmcie"), ExtResource("23_yev8g")])
+text_color = Color(0.215686, 0.290196, 0.407843, 1)
+outline_color = Color(0.654902, 0.784314, 0.976471, 1)
+voice_name = "Arona"
+
+[node name="Halo" type="Sprite2D" parent="."]
+texture_filter = 2
+position = Vector2(29, -6)
+scale = Vector2(0.46, 0.46)
+texture = ExtResource("1_4x0qi")
+flip_h = true
+
+[node name="Sprite" type="Sprite2D" parent="."]
+texture_filter = 2
+position = Vector2(0, 220)
+scale = Vector2(0.46, 0.46)
+texture = ExtResource("1_j4j3j")
+hframes = 4
+vframes = 4
+
+[node name="HaloAnim" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_0714j")
+}
+autoplay = "new_animation"
+
+[node name="TalkAnim" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_jwoi1")
+}
+
+[node name="TextRoot" type="Node2D" parent="."]
+position = Vector2(0, 251)
+
+[node name="TouchArea" type="Node2D" parent="."]
+
+[node name="TalkTouch" type="Panel" parent="TouchArea"]
+offset_left = -81.0
+offset_top = -33.0
+offset_right = 60.0
+offset_bottom = 482.0
+theme = SubResource("Theme_28ywa")
+
+[node name="HeadTouch" type="Panel" parent="TouchArea"]
+offset_left = -51.0
+offset_top = 22.0
+offset_right = 34.0
+offset_bottom = 60.0
+theme = SubResource("Theme_28ywa")
+
+[node name="BreastTouch" type="Panel" parent="TouchArea"]
+offset_left = -26.0
+offset_top = 148.0
+offset_right = 21.0
+offset_bottom = 168.0
+theme = SubResource("Theme_28ywa")
+
+[node name="ClothChange" parent="." node_paths=PackedStringArray("sprite_node") instance=ExtResource("26_ib57c")]
+id_name = "Arona"
+sprite_node = NodePath("..")
+
+[node name="ChangeAnim" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_pswde")
+}

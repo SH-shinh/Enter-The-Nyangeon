@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://c32x5swmgogao"]
+
+[ext_resource type="Script" path="res://scenes/player_buff/fly_damage_bullet.gd" id="1_p1sl4"]
+
+[node name="fly_damage_bullet" type="Node2D"]
+script = ExtResource("1_p1sl4")
+
+[node name="Timer" type="Timer" parent="."]
+autostart = true

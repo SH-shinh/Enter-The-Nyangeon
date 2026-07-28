@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://icsua61ir4su"]
+
+[ext_resource type="Script" path="res://scenes/update_item/murky_hand_scythe.gd" id="1_y4un2"]
+
+[node name="MurkyHandScythe" type="Node2D"]
+script = ExtResource("1_y4un2")
+
+[node name="ShootPosition" type="Marker2D" parent="."]

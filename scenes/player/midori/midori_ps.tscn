@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://3fj0ks2ph6pn"]
+
+[ext_resource type="Script" path="res://scenes/player/midori/MidoriPS.gd" id="1_r5a3w"]
+
+[node name="MidoriPS" type="Node2D"]
+script = ExtResource("1_r5a3w")

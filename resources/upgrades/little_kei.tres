@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://de5kkpvt6sfru"]
+
+[ext_resource type="Texture2D" uid="uid://bu1kgc4w3owsw" path="res://sprites/update_item/little_kei.png" id="1_dseuy"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_kvcjx"]
+
+[resource]
+script = ExtResource("2_kvcjx")
+id = "little_kei"
+icon = ExtResource("1_dseuy")
+name = "小小凯伊"
+rare = 2
+order_num = -1
+special_rules = 0
+description = "一只小小的凯伊，能够环绕在周围替持有者承受子弹伤害。"
+forward = "+10%阻挡范围"
+negative = ""
+item_tags = 256
+tags = Array[String](["装备", "防御"])
+weight = 1.0

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bm857g7n1qadm"]
+
+[ext_resource type="Script" path="res://scenes/update_item/kurokame_gang_ema.gd" id="1_sksqx"]
+
+[node name="kurokame_gang_ema" type="Node2D"]
+script = ExtResource("1_sksqx")

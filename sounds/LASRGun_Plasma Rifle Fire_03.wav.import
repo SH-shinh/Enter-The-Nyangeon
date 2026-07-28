@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://h4kqlwjbl7dc"
+path="res://.godot/imported/LASRGun_Plasma Rifle Fire_03.wav-737fff87609d0743f377a7137487175b.sample"
+
+[deps]
+
+source_file="res://sounds/LASRGun_Plasma Rifle Fire_03.wav"
+dest_files=["res://.godot/imported/LASRGun_Plasma Rifle Fire_03.wav-737fff87609d0743f377a7137487175b.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=0

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://d1magm45e3x5t"]
+
+[ext_resource type="Texture2D" uid="uid://dm1c7n0yy5in6" path="res://sprites/update_item/muzzle_brake.png" id="1_e602h"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_byofu"]
+
+[resource]
+script = ExtResource("2_byofu")
+id = "muzzle_brake"
+icon = ExtResource("1_e602h")
+name = "枪口制退器"
+rare = 1
+order_num = -1
+special_rules = 0
+description = "减少射击时的后坐冲量，大幅降低后坐力。"
+forward = "-40%后坐力"
+negative = ""
+item_tags = 3
+tags = Array[String](["防御", "弹道"])
+weight = 1.0

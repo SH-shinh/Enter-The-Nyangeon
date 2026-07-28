@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dmwcm5encehdl"]
+
+[ext_resource type="Script" path="res://scenes/update_item/aether_piece.gd" id="1_0qrj5"]
+
+[node name="aether_piece" type="Node2D"]
+script = ExtResource("1_0qrj5")

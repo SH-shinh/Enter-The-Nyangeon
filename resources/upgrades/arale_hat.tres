@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://ddu1hcnw5ii50"]
+
+[ext_resource type="Texture2D" uid="uid://86mqt1dyeaqb" path="res://sprites/update_item/arale_hat.png" id="1_d4v6e"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_fmloe"]
+
+[resource]
+script = ExtResource("2_fmloe")
+id = "arale_hat"
+icon = ExtResource("1_d4v6e")
+name = "翅膀帽子"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "能够像搞笑漫画的机器娃娃一样极速狂奔，但毕竟不是机器人，受伤风险也大幅提高了。"
+forward = "独特
++50%移动速度"
+negative = "+20%承伤率"
+item_tags = 8192
+tags = Array[String](["通用", "速度"])
+weight = 1.0

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PSCard" load_steps=3 format=3 uid="uid://dqbr36mp6jcg7"]
+
+[ext_resource type="Script" path="res://resources/player/PS/ps_card.gd" id="1_oxuqg"]
+[ext_resource type="Texture2D" uid="uid://cds6ep3ct561y" path="res://scenes/weapon/Red_Rector/red_rector.png" id="2_p85ct"]
+
+[resource]
+script = ExtResource("1_oxuqg")
+weapon_icon = ExtResource("2_p85ct")
+t_level = Array[String](["近战使用钻头攻击可受装备伤害加成，每发射1颗子弹可提高1层充能（最高30层）。", "提高钻头的伤害频率，钻头每次造成伤害获得1%充能（暴击为2%）并提升1%暴击伤害，钻头每充能100%造成一次最高充能的爆炸，回合结束清空。", "射速+15%，最大充能层数提高到60层，提高钻头的伤害频率。", "换弹速度+30%，最大充能层数提高到99层。"])

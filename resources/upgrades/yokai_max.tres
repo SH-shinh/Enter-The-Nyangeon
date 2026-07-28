@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://dlc2j240ms2du"]
+
+[ext_resource type="Texture2D" uid="uid://u5xkod7e6x13" path="res://sprites/update_item/yokai_max.png" id="1_tq6sy"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_ovsfa"]
+
+[resource]
+script = ExtResource("2_ovsfa")
+id = "yokai_max"
+icon = ExtResource("1_tq6sy")
+name = "妖怪MAX"
+rare = 1
+order_num = -1
+special_rules = 0
+description = "千年学院饮料畅销榜常年榜首，增加移速和子弹速度。"
+forward = "+20%射速"
+negative = ""
+item_tags = 3
+tags = Array[String](["通用"])
+weight = 1.0

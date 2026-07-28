@@ -1,0 +1,281 @@
+[gd_scene load_steps=19 format=3 uid="uid://dbinwcloqxfbu"]
+
+[ext_resource type="Script" path="res://scenes/player/kasumi/kasumi_drill.gd" id="1_blbim"]
+[ext_resource type="Texture2D" uid="uid://c4uywnbhriosv" path="res://sprites/player/kasumi/kasumi_drill.png" id="1_r7fcx"]
+[ext_resource type="Resource" uid="uid://dmur1plvar11c" path="res://resources/buff/player_buff/kasumi_drill_buff.tres" id="2_c8cn5"]
+[ext_resource type="Texture2D" uid="uid://b5nbmcnfshgb8" path="res://sprites/particle/circular_1.png" id="2_vmq0f"]
+[ext_resource type="AudioStream" uid="uid://o6drbfokgm3m" path="res://sounds/drill.wav" id="4_mr1in"]
+[ext_resource type="Texture2D" uid="uid://ccv20w8histyb" path="res://sprites/particle/explosion_0001.png" id="6_c0a7q"]
+[ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="7_8q2js"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_2p5c2"]
+radius = 40.0
+
+[sub_resource type="Gradient" id="Gradient_abthk"]
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_qba2u"]
+gradient = SubResource("Gradient_abthk")
+
+[sub_resource type="Curve" id="Curve_l4put"]
+_data = [Vector2(0.6625, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -3.22344, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_rwnvh"]
+curve = SubResource("Curve_l4put")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_my6fk"]
+lifetime_randomness = 0.3
+particle_flag_disable_z = true
+spread = 0.0
+initial_velocity_min = -70.0
+initial_velocity_max = 70.0
+gravity = Vector3(0, 0, 0)
+damping_min = 50.0
+damping_max = 50.0
+scale_min = 0.5
+scale_curve = SubResource("CurveTexture_rwnvh")
+color = Color(0.241, 0.241, 0.241, 0.8)
+color_initial_ramp = SubResource("GradientTexture1D_qba2u")
+
+[sub_resource type="Animation" id="Animation_f25c4"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ColorRect2/Sprite2D2:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(33, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ColorRect2/Sprite2D2:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(39, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("ColorRect2:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Area2D2/CollisionShape2D:disabled")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("LVNum:modulate")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_1s4hh"]
+resource_name = "drill_anim"
+length = 0.6
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ColorRect2/Sprite2D2:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0, 0),
+"points": PackedFloat32Array(10, -0.25, 0, 0.25, 0, 33, -0.25, 0, 0.25, 0, 33, -0.25, 0, 0.25, 0, 0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 0.233333, 0.333333, 0.6)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ColorRect2/Sprite2D2:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0, 0),
+"points": PackedFloat32Array(70, -0.25, 0, 0.25, 0, 39, -0.25, 0, 0.25, 0, 39, -0.25, 0, 0.25, 0, 80, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 0.233333, 0.333333, 0.6)
+}
+tracks/2/type = "method"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.1, 0.2, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1),
+"values": [{
+"args": [],
+"method": &"particles_shoot"
+}, {
+"args": [],
+"method": &"add_explosion"
+}, {
+"args": [],
+"method": &"idle_state"
+}]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("ColorRect2:visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.6),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Area2D2/CollisionShape2D:disabled")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.466667),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [true, false, true]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("LVNum:modulate")
+tracks/5/interp = 2
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0, 0.0666667, 0.533333, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1), Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_n6hlh"]
+_data = {
+"RESET": SubResource("Animation_f25c4"),
+"drill_anim": SubResource("Animation_1s4hh")
+}
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_o8ae1"]
+particles_animation = true
+particles_anim_h_frames = 4
+particles_anim_v_frames = 3
+particles_anim_loop = false
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_yqip2"]
+lifetime_randomness = 0.5
+particle_flag_disable_z = true
+emission_shape = 3
+emission_box_extents = Vector3(50, 30, 1)
+angle_min = -45.0
+angle_max = 45.0
+gravity = Vector3(0, 10, 0)
+scale_min = 0.5
+scale_max = 0.8
+anim_speed_min = 1.0
+anim_speed_max = 1.0
+
+[node name="kasumi_drill" type="Node2D"]
+script = ExtResource("1_blbim")
+player_buff = ExtResource("2_c8cn5")
+
+[node name="ColorRect2" type="ColorRect" parent="."]
+visible = false
+clip_children = 1
+offset_left = -27.0
+offset_top = -53.0
+offset_right = 33.0
+mouse_filter = 2
+
+[node name="Sprite2D2" type="Sprite2D" parent="ColorRect2"]
+position = Vector2(33, 39)
+rotation = 0.577096
+scale = Vector2(1.4, 1.4)
+texture = ExtResource("1_r7fcx")
+flip_h = true
+
+[node name="Area2D2" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D2"]
+shape = SubResource("CircleShape2D_2p5c2")
+disabled = true
+
+[node name="GPUParticles2D2" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 16
+process_material = SubResource("ParticleProcessMaterial_my6fk")
+texture = ExtResource("2_vmq0f")
+lifetime = 0.5
+one_shot = true
+explosiveness = 1.0
+
+[node name="AnimationPlayer2" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_n6hlh")
+}
+
+[node name="DrillSounds" type="AudioStreamPlayer2D" parent="."]
+process_mode = 3
+stream = ExtResource("4_mr1in")
+volume_db = 6.0
+bus = &"SFX"
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+z_index = 1
+material = SubResource("CanvasItemMaterial_o8ae1")
+emitting = false
+process_material = SubResource("ParticleProcessMaterial_yqip2")
+texture = ExtResource("6_c0a7q")
+lifetime = 0.4
+one_shot = true
+explosiveness = 1.0
+
+[node name="LVNum" type="Label" parent="."]
+modulate = Color(1, 1, 1, 0)
+offset_left = -27.0
+offset_top = -12.0
+offset_right = 27.0
+offset_bottom = -4.0
+pivot_offset = Vector2(27, 0)
+theme_override_colors/font_color = Color(0.991107, 0.979946, 0.873468, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+theme_override_fonts/font = ExtResource("7_8q2js")
+theme_override_font_sizes/font_size = 8
+text = "999%"
+horizontal_alignment = 1
+
+[connection signal="body_entered" from="Area2D2" to="." method="_on_area_2d_2_body_entered"]
+[connection signal="body_exited" from="Area2D2" to="." method="_on_area_2d_2_body_exited"]

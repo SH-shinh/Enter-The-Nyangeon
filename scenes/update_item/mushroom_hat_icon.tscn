@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://63bwb751wkqn"]
+
+[ext_resource type="Texture2D" uid="uid://bj6ytwfllr50m" path="res://sprites/update_item/mushroom_hat_icon.png" id="1_dywfo"]
+[ext_resource type="PackedScene" uid="uid://wffnchsknkba" path="res://script/hat.tscn" id="2_uxejm"]
+
+[node name="MushroomHatIcon" type="Sprite2D"]
+position = Vector2(0, -3)
+texture = ExtResource("1_dywfo")
+
+[node name="Hat" parent="." instance=ExtResource("2_uxejm")]
+position = Vector2(0, -8)

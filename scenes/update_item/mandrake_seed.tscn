@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://dwyhai3lnae8t"]
+
+[ext_resource type="Script" path="res://scenes/update_item/mandrake_seed.gd" id="1_ovs72"]
+
+[node name="MandrakeSeed" type="Node2D"]
+script = ExtResource("1_ovs72")
+
+[node name="HealthCDTimer" type="Timer" parent="."]
+one_shot = true

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://dv10niqyvyjbf"]
+
+[ext_resource type="Texture2D" uid="uid://c7n18ilm02eoe" path="res://sprites/update_item/kikyou_doll.png" id="1_bj34j"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_mv2vv"]
+
+[resource]
+script = ExtResource("2_mv2vv")
+id = "kikyou_doll"
+icon = ExtResource("1_bj34j")
+name = "桔梗人偶"
+rare = 1
+order_num = 5
+special_rules = 0
+description = "桔梗做的自己的木雕人偶。
+以人偶为中心发射一个范围脉冲，对波及的敌人施加40%子弹伤害的毒异常。"
+forward = "最大持有5个
++15%毒异常的子弹伤害比例"
+negative = ""
+item_tags = 68
+tags = Array[String](["装备", "中毒"])
+weight = 1.0

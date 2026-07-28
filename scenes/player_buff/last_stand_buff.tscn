@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3 uid="uid://c4vt67oko7lt5"]
+
+[ext_resource type="Script" path="res://scenes/player_buff/last_stand_buff.gd" id="1_xribd"]
+[ext_resource type="Resource" uid="uid://bnwyphgx7ave4" path="res://resources/buff/player_buff/last_stand_buff.tres" id="2_51dni"]
+
+[node name="bullet_damage_mult_1_buff" type="Node2D" groups=["PlayerBuff"]]
+script = ExtResource("1_xribd")
+buff = ExtResource("2_51dni")
+buff_id = "last_stand_buff"
+
+[node name="BuffTimer" type="Timer" parent="."]
+
+[node name="CheckTimer" type="Timer" parent="."]
+wait_time = 0.1
+one_shot = true
+
+[connection signal="timeout" from="BuffTimer" to="." method="_on_buff_timer_timeout"]

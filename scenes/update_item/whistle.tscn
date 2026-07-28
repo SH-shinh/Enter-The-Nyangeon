@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cl3qq0hby4n24"]
+
+[ext_resource type="Script" path="res://scenes/update_item/whistle.gd" id="1_evpum"]
+
+[node name="whistle" type="Node2D"]
+script = ExtResource("1_evpum")

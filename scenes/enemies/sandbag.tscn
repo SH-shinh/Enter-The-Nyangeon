@@ -1,0 +1,307 @@
+[gd_scene load_steps=27 format=3 uid="uid://d1kkwxq6qwf4u"]
+
+[ext_resource type="Script" path="res://scenes/enemies/sandbag.gd" id="1_ukibj"]
+[ext_resource type="Texture2D" uid="uid://dfyj3mv4xs5m0" path="res://scenes/shadow/shadow.png" id="2_krn4y"]
+[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="3_pm3g5"]
+[ext_resource type="Texture2D" uid="uid://buqj8nx812gjt" path="res://sprites/enemies/sandbag.png" id="4_md65v"]
+[ext_resource type="Script" path="res://script/EnemyStateMachine.gd" id="5_j1kq3"]
+[ext_resource type="Script" path="res://script/EnemyStats.gd" id="6_yyw2h"]
+[ext_resource type="PackedScene" uid="uid://dcixivms2uc75" path="res://script/enemy_hurt_floating_text.tscn" id="8_p0kjc"]
+[ext_resource type="Script" path="res://scenes/enemies/dps_count.gd" id="9_aiumr"]
+[ext_resource type="PackedScene" uid="uid://btl1l8a33rp5b" path="res://scenes/manager/enemy_buff_manager.tscn" id="9_wtq54"]
+[ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="10_g8mb8"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4g834"]
+resource_local_to_scene = true
+shader = ExtResource("3_pm3g5")
+shader_parameter/outline_width = 0.0
+shader_parameter/outline_color = Color(2, 2, 2, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8ks7v"]
+atlas = ExtResource("4_md65v")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dhrx7"]
+atlas = ExtResource("4_md65v")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0cy0q"]
+atlas = ExtResource("4_md65v")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_if3vh"]
+atlas = ExtResource("4_md65v")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yqsf2"]
+atlas = ExtResource("4_md65v")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xvrfe"]
+atlas = ExtResource("4_md65v")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_mfwo5"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8ks7v")
+}],
+"loop": true,
+"name": &"hurt",
+"speed": 12.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_dhrx7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0cy0q")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_if3vh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yqsf2")
+}],
+"loop": true,
+"name": &"hurt_after",
+"speed": 6.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xvrfe")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 2.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_gvmi3"]
+radius = 12.0
+
+[sub_resource type="Gradient" id="Gradient_fjv38"]
+offsets = PackedFloat32Array(0)
+colors = PackedColorArray(0, 0, 0, 0.6)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_5ug2k"]
+gradient = SubResource("Gradient_fjv38")
+width = 18
+height = 5
+
+[sub_resource type="Gradient" id="Gradient_82va1"]
+offsets = PackedFloat32Array(1)
+colors = PackedColorArray(0.928282, 0.206369, 0.11972, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_tqdgw"]
+gradient = SubResource("Gradient_82va1")
+width = 16
+height = 3
+
+[sub_resource type="Animation" id="Animation_lbl53"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Label:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(-38, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Label:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(-52, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Label:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Label:modulate")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_scig3"]
+resource_name = "new_animation"
+length = 0.2
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Label:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(-38, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Label:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(-20, -0.1, 0, 0.1, 0, -65, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0, 0.2)
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Label:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Label:modulate")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_kr5yj"]
+_data = {
+"RESET": SubResource("Animation_lbl53"),
+"new_animation": SubResource("Animation_scig3")
+}
+
+[node name="sandbag" type="CharacterBody2D" node_paths=PackedStringArray("stats") groups=["Enemy"]]
+collision_layer = 8
+collision_mask = 256
+motion_mode = 1
+platform_floor_layers = 4294967040
+platform_wall_layers = 2
+script = ExtResource("1_ukibj")
+pool_id = "sandbag"
+stats = NodePath("EnemyStats")
+
+[node name="Graphics" type="Node2D" parent="."]
+
+[node name="shadow" type="Sprite2D" parent="Graphics"]
+scale = Vector2(0.45, 0.45)
+texture = ExtResource("2_krn4y")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Graphics"]
+material = SubResource("ShaderMaterial_4g834")
+position = Vector2(-0.5, -16)
+sprite_frames = SubResource("SpriteFrames_mfwo5")
+animation = &"hurt_after"
+autoplay = "idle"
+flip_h = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -20)
+shape = SubResource("CircleShape2D_gvmi3")
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("5_j1kq3")
+
+[node name="EnemyStats" type="Node" parent="."]
+script = ExtResource("6_yyw2h")
+score = 0
+max_hp = 35
+knockback_resis = 60
+Enemy_Knockback = 0
+Enemy_damage = 0
+Enemy_bullet_damage = 0
+Enemy_coin = 0
+MAX_SPEED = 60
+SPEED_TIME = 0.2
+
+[node name="EnemyHurtFloatingText" parent="." instance=ExtResource("8_p0kjc")]
+
+[node name="EnemyBuffManager" parent="." instance=ExtResource("9_wtq54")]
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+offset_left = -10.0
+offset_top = -57.0
+offset_right = 30.0
+offset_bottom = -31.0
+scale = Vector2(0.5, 0.5)
+
+[node name="BuffBox" type="HBoxContainer" parent="MarginContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+
+[node name="HPBar" type="TextureProgressBar" parent="."]
+offset_left = -9.0
+offset_top = -42.0
+offset_right = 9.0
+offset_bottom = -37.0
+max_value = 1.0
+step = 0.0
+value = 0.835
+texture_under = SubResource("GradientTexture2D_5ug2k")
+texture_progress = SubResource("GradientTexture2D_tqdgw")
+texture_progress_offset = Vector2(1, 1)
+
+[node name="DPS_count" type="Node2D" parent="." node_paths=PackedStringArray("body")]
+script = ExtResource("9_aiumr")
+body = NodePath("..")
+
+[node name="Label" type="Label" parent="DPS_count"]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -38.0
+offset_top = -52.0
+offset_right = 38.0
+offset_bottom = -44.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("10_g8mb8")
+theme_override_font_sizes/font_size = 8
+text = "DPS:0"
+horizontal_alignment = 1
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="DPS_count"]
+libraries = {
+"": SubResource("AnimationLibrary_kr5yj")
+}
+
+[connection signal="is_dead" from="." to="." method="_on_is_dead"]
+[connection signal="is_hurt" from="." to="." method="_on_is_hurt"]
+[connection signal="is_dead" from="EnemyStats" to="." method="_on_enemy_stats_is_dead"]

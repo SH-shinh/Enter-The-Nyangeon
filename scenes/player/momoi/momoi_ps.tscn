@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://jysnxyx5g1oh"]
+
+[ext_resource type="Script" path="res://scenes/player/momoi/MomoiPS.gd" id="1_xkk72"]
+[ext_resource type="Resource" uid="uid://ddlwsbdn8hn6j" path="res://resources/buff/enemy_buff/fire_dot.tres" id="2_h2alw"]
+
+[node name="MomoiPS" type="Node2D"]
+script = ExtResource("1_xkk72")
+enemy_buff = ExtResource("2_h2alw")
+buff_layer = 5
+buff_value = 1.0
+buff_erase_timer = 10.0

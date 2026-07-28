@@ -1,0 +1,138 @@
+[gd_scene load_steps=8 format=3 uid="uid://cj4iw28dlmh7j"]
+
+[ext_resource type="Script" path="res://scenes/bullet/mashiro_sniper_bullet.gd" id="1_adv8f"]
+
+[sub_resource type="Gradient" id="Gradient_4j0eq"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0, 0.1, 1)
+colors = PackedColorArray(20, 0.4, 0.5, 1, 20, 4, 5, 1, 20, 0.4, 0.5, 1)
+metadata/_snap_enabled = true
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_wkjwk"]
+gradient = SubResource("Gradient_4j0eq")
+height = 6
+fill_to = Vector2(0, 1)
+metadata/_snap_enabled = true
+
+[sub_resource type="Animation" id="Animation_qfnto"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Line2D:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Line2D:width")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [6.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Area2D/CollisionShape2D:disabled")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+
+[sub_resource type="Animation" id="Animation_f5rih"]
+resource_name = "shoot"
+length = 0.11
+step = 0.01
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Line2D:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Line2D:width")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.01, 0.1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [0.0, 8.0, 0.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Area2D/CollisionShape2D:disabled")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_px4hp"]
+_data = {
+"RESET": SubResource("Animation_qfnto"),
+"shoot": SubResource("Animation_f5rih")
+}
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ub200"]
+size = Vector2(1800, 15)
+
+[node name="player_sniper_bullet" type="RayCast2D"]
+target_position = Vector2(1800, 0)
+collision_mask = 2
+script = ExtResource("1_adv8f")
+pool_id = "player_sniper_bullet"
+
+[node name="Line2D" type="Line2D" parent="."]
+visible = false
+z_index = 1
+points = PackedVector2Array(0, 0, 640, 0)
+width = 6.0
+texture = SubResource("GradientTexture2D_wkjwk")
+texture_mode = 1
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_px4hp")
+}
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 1032
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+position = Vector2(900, 0)
+shape = SubResource("RectangleShape2D_ub200")
+disabled = true
+
+[connection signal="animation_finished" from="AnimationPlayer" to="." method="_on_animation_player_animation_finished"]
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
+[connection signal="body_exited" from="Area2D" to="." method="_on_area_2d_body_exited"]

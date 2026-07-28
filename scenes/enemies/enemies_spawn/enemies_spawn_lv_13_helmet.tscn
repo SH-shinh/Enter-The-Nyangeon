@@ -1,0 +1,38 @@
+[gd_scene load_steps=11 format=3 uid="uid://c15cpi1s7jubn"]
+
+[ext_resource type="Script" path="res://script/enemies_spawn.gd" id="1_25qkm"]
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_o2gf3"]
+[ext_resource type="Resource" uid="uid://bo5aojm81wiil" path="res://resources/enemy/enhanced_sweeper.tres" id="3_2hph0"]
+[ext_resource type="Resource" uid="uid://dx43aolfidycr" path="res://resources/enemy/mystic_sweeper.tres" id="4_rkpwq"]
+[ext_resource type="Resource" uid="uid://uwsau2i7bmiv" path="res://resources/enemy/soldier_helmet_ar.tres" id="5_0av8i"]
+[ext_resource type="Resource" uid="uid://c5bt5jjpbifb8" path="res://resources/enemy/soldier_helmet_sg.tres" id="6_gw5tq"]
+[ext_resource type="Resource" uid="uid://d2gcqwn6rb7cc" path="res://resources/enemy/lighttank_helmet.tres" id="7_5l44g"]
+[ext_resource type="PackedScene" uid="uid://c2i5ffj4785vg" path="res://scenes/enemies/enemies_spawn/path_spawn.tscn" id="8_au14y"]
+[ext_resource type="Resource" uid="uid://doxv0u2ida458" path="res://resources/enemy/red_sweeper.tres" id="9_ytcug"]
+[ext_resource type="PackedScene" uid="uid://cbpbf4l8gvrde" path="res://scenes/enemies/enemies_spawn/enemy_path.tscn" id="10_8jw4o"]
+
+[node name="EnemiesSpawnLV13_helmet" type="Node2D"]
+script = ExtResource("1_25qkm")
+num_mult = 2.0
+round_mult = 1.0
+hp_mult = 8.0
+damage_mult = 2.0
+enemy = Array[ExtResource("2_o2gf3")]([ExtResource("3_2hph0"), ExtResource("4_rkpwq"), ExtResource("5_0av8i"), ExtResource("6_gw5tq"), ExtResource("7_5l44g")])
+enemy_spawn_num = Array[int]([5, 4, 3, 1, 1])
+enemy_spawn_time = Array[float]([25.0, 30.0, 40.0, 35.0, 120.0])
+
+[node name="RoundTimer" type="Timer" parent="."]
+wait_time = 60.0
+one_shot = true
+
+[node name="EnemySpawnCDTime" type="Timer" parent="."]
+wait_time = 0.1
+
+[node name="path_spawn" parent="." instance=ExtResource("8_au14y")]
+enemy_pool = Array[ExtResource("2_o2gf3")]([ExtResource("9_ytcug")])
+enemy_quantity = Array[int]([4])
+enemy_spawn_time = Array[float]([80.0])
+enemy_spawn_path = Array[PackedScene]([ExtResource("10_8jw4o")])
+points = Array[Vector2]([Vector2(0, -368), Vector2(744, 0), Vector2(0, 368), Vector2(-744, 0)])
+
+[connection signal="timeout" from="EnemySpawnCDTime" to="." method="_on_enemy_spawn_cd_time_timeout"]

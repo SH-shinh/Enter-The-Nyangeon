@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cfwop6piyaay4"]
+
+[ext_resource type="Script" path="res://scenes/update_item/mustache_crepe.gd" id="1_bw74c"]
+
+[node name="mustache_crepe" type="Node2D"]
+script = ExtResource("1_bw74c")

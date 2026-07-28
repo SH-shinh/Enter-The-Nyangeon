@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://d0036xruig4s3"]
+
+[ext_resource type="Texture2D" uid="uid://r5mxynmtrnxm" path="res://sprites/update_item/boom_classic_edition.png" id="1_1r42t"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_1b4ti"]
+
+[resource]
+script = ExtResource("2_1b4ti")
+id = "boom_classic_edition"
+icon = ExtResource("1_1r42t")
+name = "BOOM：经典版"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "能够安装在任何机器上的杰作游戏。"
+forward = "独特
+近战击杀获得最大生命值10%的临时生命值"
+negative = ""
+item_tags = 4352
+tags = Array[String](["防御", "近战"])
+weight = 1.0

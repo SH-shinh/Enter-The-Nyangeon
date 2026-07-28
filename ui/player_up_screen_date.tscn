@@ -1,0 +1,631 @@
+[gd_scene load_steps=31 format=3 uid="uid://c15ofans4cfib"]
+
+[ext_resource type="Texture2D" uid="uid://qxdl6g1po36p" path="res://sprites/item/coin.png" id="1_q1fgk"]
+[ext_resource type="Script" path="res://ui/player_up_screen_date.gd" id="1_st26a"]
+[ext_resource type="PackedScene" uid="uid://duos8282oyoo6" path="res://ui/ability_box.tscn" id="2_5d34j"]
+[ext_resource type="PackedScene" uid="uid://y8iidmw3064q" path="res://ui/upgrade_item_card.tscn" id="3_n6rfs"]
+[ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="3_vj0jy"]
+[ext_resource type="Script" path="res://script/ScrollBox.gd" id="5_nm2fy"]
+[ext_resource type="Shader" path="res://shaders/scrolling_bkgd.gdshader" id="7_cm1qm"]
+[ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="7_pdobm"]
+[ext_resource type="Texture2D" uid="uid://dieipwoadjxoa" path="res://ui/title_picture_2.png" id="8_36brh"]
+[ext_resource type="Texture2D" uid="uid://bnlu4jwaqrj7e" path="res://ui/upgrade_icon.png" id="9_613xp"]
+[ext_resource type="PackedScene" uid="uid://cm48dykln4nx1" path="res://ui/ability_shop.tscn" id="11_ctm8r"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wjtd7"]
+shader = ExtResource("7_cm1qm")
+shader_parameter/scroll_speed = 0.5
+shader_parameter/angle_degrees = 90.0
+shader_parameter/repeat_x = 1.0
+shader_parameter/repeat_y = 1.0
+shader_parameter/tint = Color(1, 1, 1, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ikjmq"]
+atlas = ExtResource("1_q1fgk")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ft6wj"]
+atlas = ExtResource("1_q1fgk")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gbu0t"]
+atlas = ExtResource("1_q1fgk")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_w5sh3"]
+atlas = ExtResource("1_q1fgk")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_s6d1d"]
+atlas = ExtResource("1_q1fgk")
+region = Rect2(256, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wstiu"]
+atlas = ExtResource("1_q1fgk")
+region = Rect2(320, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_n072r"]
+atlas = ExtResource("1_q1fgk")
+region = Rect2(0, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_n3xnn"]
+atlas = ExtResource("1_q1fgk")
+region = Rect2(64, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_uhmxh"]
+atlas = ExtResource("1_q1fgk")
+region = Rect2(128, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3k17o"]
+atlas = ExtResource("1_q1fgk")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8atde"]
+atlas = ExtResource("1_q1fgk")
+region = Rect2(256, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jt7q3"]
+atlas = ExtResource("1_q1fgk")
+region = Rect2(320, 64, 64, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_6pipk"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ikjmq")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ft6wj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gbu0t")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_w5sh3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_s6d1d")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wstiu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_n072r")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_n3xnn")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_uhmxh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3k17o")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8atde")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jt7q3")
+}],
+"loop": true,
+"name": &"default",
+"speed": 16.0
+}]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_2qyqt"]
+shader = ExtResource("7_cm1qm")
+shader_parameter/scroll_speed = 0.1
+shader_parameter/angle_degrees = 0.0
+shader_parameter/repeat_x = 1.0
+shader_parameter/repeat_y = 1.0
+shader_parameter/tint = Color(0.2, 0.341176, 0.568627, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_73e8h"]
+shader = ExtResource("7_cm1qm")
+shader_parameter/scroll_speed = 0.1
+shader_parameter/angle_degrees = 180.0
+shader_parameter/repeat_x = 1.0
+shader_parameter/repeat_y = 1.0
+shader_parameter/tint = Color(0.91, 0.91, 0.91, 1)
+
+[sub_resource type="Animation" id="Animation_fmx7e"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node2D:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Node2D:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Node2D:rotation")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Node2D2:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Node2D2/TextureRect2:position")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-14, 424)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("Node2D2/TextureRect2:rotation")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("TextureRect2:position")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(812, 24)]
+}
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("TextureRect2:rotation")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [1.5708]
+}
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("Node2D/AbilityShop:scale")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_tgq1u"]
+resource_name = "date_in_anim"
+length = 0.8
+step = 0.01
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node2D:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0),
+"points": PackedFloat32Array(-1500, -0.25, 0, 0.25, 0, 5, -0.25, 0, 0.25, 0, 0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 0.6, 0.8)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Node2D:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0.8)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Node2D:rotation")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0.8)
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Node2D2:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.3, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0, -500), Vector2(0, 20), Vector2(0, 0)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Node2D2/TextureRect2:position")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 0.3, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(-14, 1500), Vector2(-14, 400), Vector2(-14, 424)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("Node2D2/TextureRect2:rotation")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0.5),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("TextureRect2:position")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(812, -800), Vector2(812, 24)]
+}
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("TextureRect2:rotation")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"times": PackedFloat32Array(0.5),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [1.5708]
+}
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("Node2D/AbilityShop:scale")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0.68, 0.75, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0, 1), Vector2(1.1, 1), Vector2(1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_sc3i0"]
+_data = {
+"RESET": SubResource("Animation_fmx7e"),
+"date_in_anim": SubResource("Animation_tgq1u")
+}
+
+[node name="PlayerUpScreenDate" type="CanvasLayer"]
+process_mode = 3
+layer = 2
+scale = Vector2(0.8, 0.8)
+transform = Transform2D(0.8, 0, 0, 0.8, 0, 0)
+script = ExtResource("1_st26a")
+up_item_card = ExtResource("3_n6rfs")
+
+[node name="TextureRect2" type="TextureRect" parent="."]
+material = SubResource("ShaderMaterial_wjtd7")
+offset_left = 812.0
+offset_top = 24.0
+offset_right = 1026.0
+offset_bottom = 16558.0
+rotation = 1.5708
+scale = Vector2(0.05, 0.05)
+texture = ExtResource("8_36brh")
+stretch_mode = 1
+
+[node name="Node2D" type="Node2D" parent="."]
+
+[node name="ColorRect" type="ColorRect" parent="Node2D"]
+show_behind_parent = true
+offset_left = 8.0
+offset_right = 204.0
+offset_bottom = 424.0
+mouse_filter = 2
+
+[node name="ColorRect" type="ColorRect" parent="Node2D/ColorRect"]
+layout_mode = 0
+offset_left = 3.0
+offset_right = 193.0
+offset_bottom = 424.0
+mouse_filter = 2
+color = Color(0.0575493, 0.605277, 0.81601, 1)
+
+[node name="Node2D3" type="Node2D" parent="Node2D"]
+
+[node name="ColorRect4" type="ColorRect" parent="Node2D/Node2D3"]
+offset_left = 11.0
+offset_top = 305.0
+offset_right = 201.0
+offset_bottom = 415.0
+color = Color(0.103744, 0.103744, 0.103744, 1)
+
+[node name="ColorRect" type="ColorRect" parent="Node2D/Node2D3"]
+offset_left = 13.0
+offset_top = 321.0
+offset_right = 200.0
+offset_bottom = 411.0
+color = Color(0.0601231, 0.163906, 0.277013, 0.698039)
+
+[node name="ColorRect2" type="ColorRect" parent="Node2D/Node2D3"]
+visible = false
+offset_left = 139.0
+offset_top = 322.0
+offset_right = 316.0
+offset_bottom = 324.0
+
+[node name="Label" type="Label" parent="Node2D/Node2D3"]
+offset_left = 13.0
+offset_top = 309.0
+offset_right = 125.0
+offset_bottom = 323.0
+theme_override_fonts/font = ExtResource("3_vj0jy")
+theme_override_font_sizes/font_size = 13
+text = "EQUIPMENT"
+
+[node name="MarginContainer" type="ScrollContainer" parent="Node2D/Node2D3"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 322.0
+offset_right = 200.0
+offset_bottom = 411.0
+grow_vertical = 0
+horizontal_scroll_mode = 3
+vertical_scroll_mode = 3
+script = ExtResource("5_nm2fy")
+
+[node name="CardBox" type="GridContainer" parent="Node2D/Node2D3/MarginContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = -3
+theme_override_constants/v_separation = -2
+columns = 8
+
+[node name="ColorRect4" type="ColorRect" parent="Node2D"]
+offset_left = 13.0
+offset_top = 26.0
+offset_right = 198.0
+offset_bottom = 71.0
+
+[node name="ColorRect4" type="ColorRect" parent="Node2D/ColorRect4"]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 183.0
+offset_bottom = 43.0
+color = Color(0.121654, 0.252518, 0.434675, 1)
+
+[node name="ColorRect3" type="ColorRect" parent="Node2D"]
+offset_left = 11.0
+offset_top = 75.0
+offset_right = 201.0
+offset_bottom = 98.0
+color = Color(0.14902, 0.14902, 0.14902, 1)
+
+[node name="ColorRect2" type="ColorRect" parent="Node2D"]
+offset_left = 21.0
+offset_top = 98.0
+offset_right = 192.0
+offset_bottom = 299.0
+color = Color(0.330219, 0.718505, 0.914702, 1)
+
+[node name="Node2D" type="Node2D" parent="Node2D"]
+
+[node name="ColorRect" type="ColorRect" parent="Node2D/Node2D"]
+offset_left = 21.0
+offset_top = 113.0
+offset_right = 192.0
+offset_bottom = 126.0
+color = Color(0.177642, 0.497536, 0.710311, 1)
+
+[node name="ColorRect2" type="ColorRect" parent="Node2D/Node2D"]
+offset_left = 21.0
+offset_top = 138.75
+offset_right = 192.0
+offset_bottom = 151.75
+color = Color(0.177642, 0.497536, 0.710311, 1)
+
+[node name="ColorRect3" type="ColorRect" parent="Node2D/Node2D"]
+offset_left = 21.0
+offset_top = 165.0
+offset_right = 192.0
+offset_bottom = 178.0
+color = Color(0.177642, 0.497536, 0.710311, 1)
+
+[node name="ColorRect4" type="ColorRect" parent="Node2D/Node2D"]
+offset_left = 21.0
+offset_top = 190.75
+offset_right = 192.0
+offset_bottom = 203.75
+color = Color(0.177642, 0.497536, 0.710311, 1)
+
+[node name="ColorRect5" type="ColorRect" parent="Node2D/Node2D"]
+offset_left = 21.25
+offset_top = 216.25
+offset_right = 192.25
+offset_bottom = 229.25
+color = Color(0.177642, 0.497536, 0.710311, 1)
+
+[node name="ColorRect6" type="ColorRect" parent="Node2D/Node2D"]
+offset_left = 21.25
+offset_top = 242.0
+offset_right = 192.25
+offset_bottom = 255.0
+color = Color(0.177642, 0.497536, 0.710311, 1)
+
+[node name="ColorRect7" type="ColorRect" parent="Node2D/Node2D"]
+offset_left = 21.25
+offset_top = 268.25
+offset_right = 192.25
+offset_bottom = 281.25
+color = Color(0.177642, 0.497536, 0.710311, 1)
+
+[node name="Label" type="Label" parent="Node2D"]
+offset_left = 58.0
+offset_top = 36.0
+offset_right = 113.0
+offset_bottom = 57.0
+theme_override_colors/font_color = Color(0.14902, 0.14902, 0.14902, 1)
+theme_override_colors/font_shadow_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 5
+theme_override_fonts/font = ExtResource("7_pdobm")
+theme_override_font_sizes/font_size = 18
+text = "ROUND"
+
+[node name="RoundNum" type="Label" parent="Node2D"]
+unique_name_in_owner = true
+offset_left = 117.5
+offset_top = 36.25
+offset_right = 159.5
+offset_bottom = 62.25
+theme_override_colors/font_color = Color(0.14902, 0.14902, 0.14902, 1)
+theme_override_colors/font_shadow_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 8
+theme_override_constants/shadow_outline_size = 7
+theme_override_fonts/font = ExtResource("3_vj0jy")
+theme_override_font_sizes/font_size = 25
+text = "99"
+horizontal_alignment = 1
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Node2D"]
+position = Vector2(27.5, 86.25)
+scale = Vector2(1.25, 1.25)
+sprite_frames = SubResource("SpriteFrames_6pipk")
+autoplay = "default"
+frame_progress = 0.834804
+
+[node name="Label2" type="Label" parent="Node2D"]
+offset_left = 38.75
+offset_top = 77.5
+offset_right = 78.75
+offset_bottom = 95.5
+text = "COIN"
+
+[node name="Coin" type="Label" parent="Node2D"]
+unique_name_in_owner = true
+offset_left = 78.0
+offset_top = 79.0
+offset_right = 189.0
+offset_bottom = 99.0
+theme_override_colors/font_color = Color(1, 0.556863, 0.105882, 1)
+theme_override_colors/font_shadow_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("3_vj0jy")
+theme_override_font_sizes/font_size = 19
+text = "123456789"
+horizontal_alignment = 2
+
+[node name="AbilityBox" parent="Node2D" instance=ExtResource("2_5d34j")]
+offset_left = 27.5
+offset_top = 101.25
+offset_right = 186.5
+offset_bottom = 295.25
+
+[node name="AbilityShop" parent="Node2D" instance=ExtResource("11_ctm8r")]
+position = Vector2(203.75, 352.5)
+
+[node name="Node2D2" type="Node2D" parent="."]
+
+[node name="ColorRect2" type="ColorRect" parent="Node2D2"]
+offset_left = -15.0
+offset_top = -71.0
+offset_right = 674.0
+offset_bottom = 9.0
+scale = Vector2(1.2, 1.2)
+mouse_filter = 2
+
+[node name="TextureRect" type="TextureRect" parent="Node2D2"]
+material = SubResource("ShaderMaterial_2qyqt")
+offset_left = -12.0
+offset_top = -9.0
+offset_right = 2722.0
+offset_bottom = 136.0
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("9_613xp")
+stretch_mode = 1
+
+[node name="TextureRect2" type="TextureRect" parent="Node2D2"]
+z_index = -1
+material = SubResource("ShaderMaterial_73e8h")
+offset_left = -14.0
+offset_top = 424.0
+offset_right = 3125.0
+offset_bottom = 569.001
+scale = Vector2(0.2, 0.2)
+texture = ExtResource("9_613xp")
+stretch_mode = 1
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_sc3i0")
+}

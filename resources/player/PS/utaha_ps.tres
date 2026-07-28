@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PSCard" load_steps=3 format=3 uid="uid://byv3vp8jiel4u"]
+
+[ext_resource type="Script" path="res://resources/player/PS/ps_card.gd" id="1_m7q5u"]
+[ext_resource type="Texture2D" uid="uid://csj5p6d0qhwgl" path="res://sprites/weapon/meister_zero.png" id="2_4rnwc"]
+
+[resource]
+script = ExtResource("1_m7q5u")
+weapon_icon = ExtResource("2_4rnwc")
+t_level = Array[String](["初始召唤一台雷酱MK-III，近战使用扳手敲击，敲击召唤物可升级其4点基础攻击力。", "召唤一台雷酱MK-II，召唤物每次升级可获得额外6点基础攻击力。", "召唤一台雷酱MK-II，在自身一定范围内的召唤物提升25%攻击力和50%攻击速度。", "射击可叠加标记（最大3层），召唤物攻击标记敌人可造成每层额外15%伤害。"])

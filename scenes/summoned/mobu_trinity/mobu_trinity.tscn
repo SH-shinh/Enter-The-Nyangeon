@@ -1,0 +1,393 @@
+[gd_scene load_steps=39 format=3 uid="uid://djhkgpmi2q703"]
+
+[ext_resource type="Script" path="res://scenes/summoned/mobu_trinity/mobu.gd" id="1_3i5hy"]
+[ext_resource type="PackedScene" uid="uid://bdo12rjvieur7" path="res://scenes/shadow/shadow.tscn" id="2_jti30"]
+[ext_resource type="PackedScene" uid="uid://ceydnirh2w7yb" path="res://scenes/player/smoke.tscn" id="3_qcig7"]
+[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="4_a865m"]
+[ext_resource type="Texture2D" uid="uid://dyp36l0cgojwh" path="res://sprites/summoned/mobu/mobu_halo.png" id="5_7hjx5"]
+[ext_resource type="PackedScene" uid="uid://br83qggaxog4w" path="res://scenes/summoned/mobu_trinity/sa_80.tscn" id="7_tevvo"]
+[ext_resource type="Script" path="res://scenes/summoned/mobu_trinity/soft_collision.gd" id="9_evc77"]
+[ext_resource type="Script" path="res://scenes/summoned/summoned_hit_box.gd" id="9_vj7lc"]
+[ext_resource type="Texture2D" uid="uid://c56ti1fu4e7bv" path="res://sprites/summoned/mobu/mobuchan_trinity.png" id="10_uhrhi"]
+[ext_resource type="Script" path="res://scenes/player/StateMachine.gd" id="12_w550c"]
+[ext_resource type="Script" path="res://script/SummonedStats.gd" id="13_6f18q"]
+[ext_resource type="Script" path="res://scenes/summoned/mobu_trinity/idle_anim.gd" id="13_ianx1"]
+[ext_resource type="PackedScene" uid="uid://qh7xxgcqcqi" path="res://scenes/manager/summoned_buff_manager.tscn" id="14_dpfhn"]
+[ext_resource type="Texture2D" uid="uid://3xe8y1lrgbpc" path="res://sprites/summoned/mobu/mobuchan_trinity_icon.png" id="14_xexah"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_wxrt8"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ds0by"]
+shader = ExtResource("4_a865m")
+shader_parameter/outline_width = 2.0
+shader_parameter/outline_color = Color(10, 1, 3, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_m58lq"]
+resource_local_to_scene = true
+shader = ExtResource("4_a865m")
+shader_parameter/outline_width = 1.0
+shader_parameter/outline_color = Color(10, 1, 3, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ygmx3"]
+atlas = ExtResource("10_uhrhi")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cw6ra"]
+atlas = ExtResource("10_uhrhi")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_eheyc"]
+atlas = ExtResource("10_uhrhi")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_631w7"]
+atlas = ExtResource("10_uhrhi")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_iqdob"]
+atlas = ExtResource("10_uhrhi")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cuk13"]
+atlas = ExtResource("10_uhrhi")
+region = Rect2(64, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gih7j"]
+atlas = ExtResource("10_uhrhi")
+region = Rect2(128, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_v03p4"]
+atlas = ExtResource("10_uhrhi")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fgyai"]
+atlas = ExtResource("10_uhrhi")
+region = Rect2(0, 64, 64, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_1jvlo"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ygmx3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cw6ra")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_eheyc")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_631w7")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 13.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_iqdob")
+}],
+"loop": true,
+"name": &"jump",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_cuk13")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gih7j")
+}, {
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_v03p4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fgyai")
+}],
+"loop": true,
+"name": &"run",
+"speed": 13.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_0dgpw"]
+radius = 8.42105
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_kcjmu"]
+radius = 1.0
+height = 2.0
+
+[sub_resource type="Animation" id="Animation_26x8s"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("%AnimatedSprite2D:material:shader_parameter/flash_opacity")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+
+[sub_resource type="Animation" id="Animation_kfvbk"]
+resource_name = "hurt_anim"
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("%AnimatedSprite2D:material:shader_parameter/flash_opacity")
+tracks/0/interp = 0
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(1),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"on_hit_end"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_ecgxf"]
+_data = {
+"RESET": SubResource("Animation_26x8s"),
+"hurt_anim": SubResource("Animation_kfvbk")
+}
+
+[sub_resource type="Animation" id="Animation_wdkw6"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_n63ti"]
+resource_name = "spawn_anim"
+length = 0.3
+step = 0.01
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.06, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_cqq10"]
+_data = {
+"RESET": SubResource("Animation_wdkw6"),
+"spawn_anim": SubResource("Animation_n63ti")
+}
+
+[sub_resource type="Animation" id="Animation_cmfqj"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics/AnimatedSprite2D:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, -17)]
+}
+
+[sub_resource type="Animation" id="Animation_uqvdw"]
+resource_name = "jump_anim"
+length = 0.6
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics/AnimatedSprite2D:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(0, -17), Vector2(0, -73), Vector2(0, -70), Vector2(0, -17)]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.6),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"jump_end"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_hiw78"]
+_data = {
+"RESET": SubResource("Animation_cmfqj"),
+"jump_anim": SubResource("Animation_uqvdw")
+}
+
+[node name="mobu_trinity" type="CharacterBody2D" node_paths=PackedStringArray("stats", "gun") groups=["Summoned"]]
+scale = Vector2(0.95, 0.95)
+collision_layer = 512
+collision_mask = 256
+motion_mode = 1
+script = ExtResource("1_3i5hy")
+stats = NodePath("Stats")
+gun = NodePath("Graphics/Gun")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -10)
+shape = SubResource("CircleShape2D_wxrt8")
+
+[node name="Shadow" parent="." instance=ExtResource("2_jti30")]
+scale = Vector2(0.445313, 0.445313)
+
+[node name="GPUParticles2D" parent="." instance=ExtResource("3_qcig7")]
+emitting = false
+
+[node name="Graphics" type="Node2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Halo" type="Sprite2D" parent="Graphics"]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_ds0by")
+position = Vector2(-10, -32)
+rotation = 0.47822
+scale = Vector2(0.254, 0.276)
+texture = ExtResource("5_7hjx5")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Graphics"]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_m58lq")
+position = Vector2(0, -17)
+sprite_frames = SubResource("SpriteFrames_1jvlo")
+animation = &"idle"
+autoplay = "idle"
+frame = 2
+frame_progress = 0.651972
+flip_h = true
+
+[node name="HaloRoot" type="Node2D" parent="Graphics/AnimatedSprite2D"]
+unique_name_in_owner = true
+position = Vector2(-9, -28)
+
+[node name="Gun" parent="Graphics" node_paths=PackedStringArray("stats") instance=ExtResource("7_tevvo")]
+unique_name_in_owner = true
+position = Vector2(0, -6)
+stats = NodePath("../../Stats")
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("12_w550c")
+
+[node name="soft_collision" type="Area2D" parent="." node_paths=PackedStringArray("self_body")]
+position = Vector2(0, -10.5263)
+collision_layer = 0
+collision_mask = 512
+script = ExtResource("9_evc77")
+self_body = NodePath("..")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="soft_collision"]
+shape = SubResource("CircleShape2D_0dgpw")
+
+[node name="HitBox" type="Area2D" parent="." node_paths=PackedStringArray("self_body") groups=["SummonedBox"]]
+collision_layer = 8192
+collision_mask = 1160
+script = ExtResource("9_vj7lc")
+self_body = NodePath("..")
+
+[node name="HitboxShape" type="CollisionShape2D" parent="HitBox"]
+position = Vector2(0, -8)
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_kcjmu")
+debug_color = Color(3.18866e-06, 0.0816588, 0.291816, 0.42)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="HitBox"]
+libraries = {
+"": SubResource("AnimationLibrary_ecgxf")
+}
+
+[node name="ShootTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="IdleTimer" type="Timer" parent="."]
+wait_time = 2.5
+one_shot = true
+
+[node name="Stats" type="Node" parent="."]
+script = ExtResource("13_6f18q")
+summoned_damage = 8
+summoned_max_ammo = 20
+summoned_speed = 160
+SPEED_TIME = 0.2
+summoned_shoot_time = 240
+summoned_bullet_speed = 950
+summoned_knockback_resis = 100
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_cqq10")
+}
+autoplay = "spawn_anim"
+
+[node name="jump_anim" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_hiw78")
+}
+
+[node name="SummonedBuffManager" parent="." instance=ExtResource("14_dpfhn")]
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+offset_left = -10.0
+offset_top = -57.0
+offset_right = 30.0
+offset_bottom = -31.0
+scale = Vector2(0.5, 0.5)
+
+[node name="BuffBox" type="HBoxContainer" parent="MarginContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+
+[node name="jump_dely" type="Timer" parent="."]
+one_shot = true
+
+[node name="idle_anim" type="Node2D" parent="." node_paths=PackedStringArray("self_body")]
+script = ExtResource("13_ianx1")
+self_body = NodePath("..")
+texture = ExtResource("14_xexah")
+
+[connection signal="body_entered" from="soft_collision" to="soft_collision" method="_on_body_entered"]
+[connection signal="body_exited" from="soft_collision" to="soft_collision" method="_on_body_exited"]

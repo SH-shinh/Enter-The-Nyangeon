@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dcixivms2uc75"]
+
+[ext_resource type="Script" path="res://script/enemy_hurt_floating_text.gd" id="1_2r0eh"]
+
+[node name="EnemyHurtFloatingText" type="Node2D"]
+script = ExtResource("1_2r0eh")

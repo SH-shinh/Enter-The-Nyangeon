@@ -1,0 +1,45 @@
+[gd_scene load_steps=8 format=3 uid="uid://mbskkmxmp1c0"]
+
+[ext_resource type="Texture2D" uid="uid://cj8og3c8hrv1j" path="res://sprites/player_support/kei/luminous_nova.png" id="1_6ibj1"]
+[ext_resource type="Script" path="res://scenes/player_support/kei/luminous_nova.gd" id="1_mib7t"]
+[ext_resource type="PackedScene" uid="uid://5xnka7kne7w" path="res://script/picatinny_rail.tscn" id="2_f037n"]
+[ext_resource type="PackedScene" uid="uid://dc24nwj07d4cw" path="res://scenes/bullet/kei_bullet.tscn" id="2_qdm2n"]
+[ext_resource type="PackedScene" uid="uid://dogh3pe2fynxi" path="res://scenes/weapon/shoot_flash_2.tscn" id="3_filcn"]
+[ext_resource type="PackedScene" uid="uid://bjvr1nuwo7ish" path="res://script/muzzle.tscn" id="3_keoth"]
+[ext_resource type="AudioStream" uid="uid://cfick73t3w2wv" path="res://sounds/ELECArc_Gauss Cannon Electric Arc_01.wav" id="4_ubrg7"]
+
+[node name="luminous_nova" type="Node2D"]
+script = ExtResource("1_mib7t")
+pool_id = "support_bullet"
+bullet = ExtResource("2_qdm2n")
+shoot_flash = ExtResource("3_filcn")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(6.4001, 0.400099)
+scale = Vector2(0.7, 0.7)
+texture = ExtResource("1_6ibj1")
+
+[node name="PicatinnyRail" parent="Sprite2D" instance=ExtResource("2_f037n")]
+position = Vector2(0, -9)
+scale = Vector2(1.429, 1.429)
+
+[node name="Muzzle" parent="Sprite2D" instance=ExtResource("3_keoth")]
+position = Vector2(29.993, -0.572)
+scale = Vector2(1.429, 1.429)
+
+[node name="ShootPosition" type="Marker2D" parent="."]
+position = Vector2(27.395, 0)
+
+[node name="ShootTimer" type="Timer" parent="."]
+wait_time = 0.2
+one_shot = true
+
+[node name="ReloadTimer" type="Timer" parent="."]
+wait_time = 0.1
+one_shot = true
+
+[node name="FireSounds" type="AudioStreamPlayer2D" parent="."]
+process_mode = 3
+stream = ExtResource("4_ubrg7")
+volume_db = 5.0
+pitch_scale = 0.6

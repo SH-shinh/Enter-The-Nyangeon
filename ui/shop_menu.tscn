@@ -1,0 +1,3350 @@
+[gd_scene load_steps=115 format=3 uid="uid://crgfgi38hikd2"]
+
+[ext_resource type="Script" path="res://ui/shop_menu.gd" id="1_d2ib0"]
+[ext_resource type="Shader" path="res://shaders/motion_screen.gdshader" id="1_qldek"]
+[ext_resource type="Script" path="res://resources/shop/character/character_card.gd" id="2_h024o"]
+[ext_resource type="Shader" path="res://shaders/circle.gdshader" id="2_pvl3u"]
+[ext_resource type="Texture2D" uid="uid://d0chhyrg34ili" path="res://ui/ark_of_Shittim/ark_of_Shittim_icon2.png" id="3_2ucyp"]
+[ext_resource type="Texture2D" uid="uid://uuvc35m6jvxy" path="res://ui/ark_of_Shittim/ark_of_Shittim_icon.png" id="4_q7scs"]
+[ext_resource type="Texture2D" uid="uid://3kojmlxs38v7" path="res://sprites/item/pyroxenes.png" id="5_pcwuw"]
+[ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="6_imrhj"]
+[ext_resource type="Shader" path="res://shaders/moving_circles.gdshader" id="7_jxfl6"]
+[ext_resource type="Script" path="res://resources/clothes/clothes_card.gd" id="8_8bwha"]
+[ext_resource type="Resource" uid="uid://jf6xxo0wwk4k" path="res://resources/shop/character/hoshino.tres" id="8_dla8c"]
+[ext_resource type="Shader" path="res://shaders/scrolling_bkgd.gdshader" id="8_sui0y"]
+[ext_resource type="Resource" uid="uid://b4esgf785f6d4" path="res://resources/clothes/Arona/sport.tres" id="9_3er8o"]
+[ext_resource type="Resource" uid="uid://so0xpklkpndt" path="res://resources/shop/character/nonomi.tres" id="9_8k4v4"]
+[ext_resource type="Shader" path="res://shaders/diamond_based_screen_transition.gdshader" id="9_r75fs"]
+[ext_resource type="Resource" uid="uid://b1pscv21e6m0a" path="res://resources/clothes/Arona/maid.tres" id="10_et1q5"]
+[ext_resource type="Resource" uid="uid://cfxfo581r7f1w" path="res://resources/shop/character/serika.tres" id="10_hay7x"]
+[ext_resource type="Resource" uid="uid://3ntrpebn18hr" path="res://resources/clothes/Arona/cheer.tres" id="11_b54nf"]
+[ext_resource type="Resource" uid="uid://wdjl06vsbs5c" path="res://resources/shop/character/shiroko.tres" id="11_k6nqj"]
+[ext_resource type="Resource" uid="uid://cnllww8n0l2i0" path="res://resources/shop/character/utaha.tres" id="11_ysb2t"]
+[ext_resource type="Resource" uid="uid://6db7buah1os" path="res://resources/shop/character/ichika.tres" id="12_6le7t"]
+[ext_resource type="Resource" uid="uid://dhwhi6ppldfe4" path="res://resources/clothes/Arona/microbikini.tres" id="12_rth1c"]
+[ext_resource type="Resource" uid="uid://bdqbdff8fx3ii" path="res://resources/shop/character/kotori.tres" id="12_uw1ws"]
+[ext_resource type="Resource" uid="uid://chpltgvs2g3h7" path="res://resources/shop/character/hibiki.tres" id="13_10tbx"]
+[ext_resource type="Resource" uid="uid://capwr2qoi7au" path="res://resources/clothes/Plana/sport.tres" id="13_kxh12"]
+[ext_resource type="Resource" uid="uid://dtuaortogcvoi" path="res://resources/shop/character/tsurugi.tres" id="13_smosc"]
+[ext_resource type="Resource" uid="uid://ctsf2y2ljvv30" path="res://resources/clothes/Plana/maid.tres" id="14_61471"]
+[ext_resource type="Resource" uid="uid://qmlghvpdgb55" path="res://resources/shop/character/mashiro.tres" id="14_f4laa"]
+[ext_resource type="Resource" uid="uid://bt071i2s7qohe" path="res://resources/shop/character/kasumi.tres" id="14_imcjv"]
+[ext_resource type="Resource" uid="uid://dlnu1vbup6xo5" path="res://resources/shop/character/hasumi.tres" id="15_0mvhp"]
+[ext_resource type="Resource" uid="uid://cxtmt1ht6xu6y" path="res://resources/shop/character/megu.tres" id="15_2jkwd"]
+[ext_resource type="Resource" uid="uid://bvxokgn7862go" path="res://resources/clothes/Plana/cheer.tres" id="15_vp58u"]
+[ext_resource type="Resource" uid="uid://cta46gtt31sh3" path="res://resources/clothes/Plana/microbikini.tres" id="16_af6j8"]
+[ext_resource type="PackedScene" uid="uid://c0lw16gu1j0y4" path="res://ui/ark_of_Shittim/arona.tscn" id="16_gjpoo"]
+[ext_resource type="Resource" uid="uid://dsl8b1bn0jr5s" path="res://resources/shop/character/hina.tres" id="16_vpr4p"]
+[ext_resource type="Resource" uid="uid://bjekddh05xaja" path="res://resources/shop/character/iori.tres" id="17_a4d41"]
+[ext_resource type="Script" path="res://script/ScrollBox.gd" id="17_hmhom"]
+[ext_resource type="Texture2D" uid="uid://dale8s5npno2i" path="res://ui/ark_of_Shittim/arona_text.png" id="17_t36k7"]
+[ext_resource type="PackedScene" uid="uid://cr17wqlu5i7ph" path="res://ui/ark_of_Shittim/plana.tscn" id="19_mro3f"]
+[ext_resource type="PackedScene" uid="uid://cto3sq8qr0l55" path="res://ui/ark_of_Shittim/shop_tag_button.tscn" id="19_qi3im"]
+[ext_resource type="Texture2D" uid="uid://jcqmwo1t8vv0" path="res://ui/ui.png" id="20_j23kh"]
+[ext_resource type="Texture2D" uid="uid://0aydqfgsbnma" path="res://ui/ark_of_Shittim/plana_text.png" id="21_22x4y"]
+[ext_resource type="Texture2D" uid="uid://owtvqmd3tfd2" path="res://sprites/update_item/refresh.png" id="21_ie7rl"]
+[ext_resource type="Resource" uid="uid://ca2cfhnmistq2" path="res://resources/clothes/Arona/angel24.tres" id="23_tqe4p"]
+[ext_resource type="Resource" uid="uid://dhpvhscbcsif7" path="res://resources/clothes/Plana/angel24.tres" id="24_mcwt0"]
+[ext_resource type="Resource" uid="uid://c7xkjbxhtprev" path="res://resources/clothes/Arona/mahou.tres" id="25_dn1mp"]
+[ext_resource type="Resource" uid="uid://baeefcohebfqg" path="res://resources/clothes/Plana/mahou.tres" id="26_ehjgb"]
+[ext_resource type="PackedScene" uid="uid://16ybq5tjkt1a" path="res://ui/return.tscn" id="27_8ggo4"]
+[ext_resource type="Script" path="res://ui/support_shop.gd" id="32_dass8"]
+[ext_resource type="PackedScene" uid="uid://bmgdyaumkmynv" path="res://ui/support_ui/support_shop_card.tscn" id="33_6twyr"]
+[ext_resource type="Texture2D" uid="uid://cmeqcei7xbnk7" path="res://sprites/player_support/kei/kei_picture_halo.png" id="33_gsib4"]
+[ext_resource type="Texture2D" uid="uid://dukre71u1l6r7" path="res://sprites/player_support/kei/kei_picture.png" id="34_dde4k"]
+[ext_resource type="Script" path="res://script/ScrollBox_x.gd" id="34_vtflg"]
+[ext_resource type="Theme" uid="uid://bxrwumqxp32a3" path="res://rounded_corner_theme.tres" id="35_jofky"]
+[ext_resource type="Texture2D" uid="uid://dnpwbduwig0ak" path="res://ui/support_text.png" id="35_w2w4j"]
+[ext_resource type="Texture2D" uid="uid://cj8og3c8hrv1j" path="res://sprites/player_support/kei/luminous_nova.png" id="36_gdyli"]
+[ext_resource type="PackedScene" uid="uid://baierg5jhv2n3" path="res://ui/support_ui/upgrade_button.tscn" id="41_xiemr"]
+[ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="43_4eamn"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_s7brc"]
+shader = ExtResource("1_qldek")
+shader_parameter/f = 2.0
+shader_parameter/v = null
+shader_parameter/grayscale = null
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_mw07t"]
+
+[sub_resource type="Theme" id="Theme_wh3c3"]
+PanelContainer/styles/panel = SubResource("StyleBoxEmpty_mw07t")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_gm8kk"]
+shader = ExtResource("2_pvl3u")
+shader_parameter/ring_radius = 0.0083
+shader_parameter/thickness_scalar = 0.99
+shader_parameter/oscillation_scalar = 0.0
+shader_parameter/speed = 2.35
+shader_parameter/main_color = Color(1, 1, 1, 1)
+shader_parameter/lerp_color = Color(1, 1, 1, 1)
+shader_parameter/transparency = 1.0
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_kmyt1"]
+content_margin_top = 1.0
+
+[sub_resource type="Theme" id="Theme_y22qa"]
+Label/styles/normal = SubResource("StyleBoxEmpty_kmyt1")
+
+[sub_resource type="Gradient" id="Gradient_hlwqj"]
+offsets = PackedFloat32Array(0, 0.954545)
+colors = PackedColorArray(0, 0, 0, 1, 0.762404, 0.762404, 0.762404, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_8vd2q"]
+gradient = SubResource("Gradient_hlwqj")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_52hik"]
+shader = ExtResource("7_jxfl6")
+shader_parameter/circle_color = Color(1, 1, 1, 1)
+shader_parameter/circle_multiplier = 30.0
+shader_parameter/speed = 0.7
+shader_parameter/direction = Vector2(1, -1)
+shader_parameter/rotation = Transform2D(1, -1, 1, 1, 0, 0)
+shader_parameter/gradient = SubResource("GradientTexture2D_8vd2q")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ejv5o"]
+shader = ExtResource("9_r75fs")
+shader_parameter/progress = 0.0
+shader_parameter/diamondPixelSize = 40.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0mfb5"]
+shader = ExtResource("8_sui0y")
+shader_parameter/scroll_speed = 0.3
+shader_parameter/angle_degrees = 45.0
+shader_parameter/repeat_x = 1.0
+shader_parameter/repeat_y = 1.0
+shader_parameter/tint = Color(1, 1, 1, 0.579)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_6bixh"]
+content_margin_left = 6.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
+
+[sub_resource type="Theme" id="Theme_uhl17"]
+ScrollContainer/styles/panel = SubResource("StyleBoxEmpty_6bixh")
+
+[sub_resource type="Animation" id="Animation_qnt53"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ItemList1:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(640, -0.05, 0, 0.05, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ItemList1:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(47, -0.05, 0, 0.05, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="Animation" id="Animation_en17r"]
+resource_name = "select_anim"
+length = 0.1
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ItemList1:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(640, -0.05, 0, 0.05, 0, 214, -0.05, 0, 0.05, 0),
+"times": PackedFloat32Array(0, 0.1)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ItemList1:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(47, -0.05, 0, 0.05, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_7sxju"]
+_data = {
+"RESET": SubResource("Animation_qnt53"),
+"select_anim": SubResource("Animation_en17r")
+}
+
+[sub_resource type="Gradient" id="Gradient_va1bh"]
+colors = PackedColorArray(0.0509804, 0.12549, 0.345098, 0, 0.0509804, 0.12549, 0.345098, 0.317647)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_j4k8h"]
+gradient = SubResource("Gradient_va1bh")
+width = 70
+height = 310
+
+[sub_resource type="Gradient" id="Gradient_fko2g"]
+offsets = PackedFloat32Array(0, 0.1, 0.9, 1)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0)
+metadata/_snap_enabled = true
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_k2awv"]
+gradient = SubResource("Gradient_fko2g")
+width = 2
+height = 310
+fill_from = Vector2(1, 1)
+metadata/_snap_enabled = true
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_lee8d"]
+content_margin_left = 6.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
+
+[sub_resource type="Theme" id="Theme_x6pph"]
+ScrollContainer/styles/panel = SubResource("StyleBoxEmpty_lee8d")
+
+[sub_resource type="Animation" id="Animation_3xe1g"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node2D/Node2D2/Shop/ItemList2:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(640, -0.05, 0, 0.05, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Node2D/Node2D2/Shop/ItemList2:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(47, -0.05, 0, 0.05, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="Animation" id="Animation_sxwcd"]
+resource_name = "select_anim"
+length = 0.1
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node2D/Node2D2/Shop/ItemList2:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(640, -0.05, 0, 0.05, 0, 214, -0.05, 0, 0.05, 0),
+"times": PackedFloat32Array(0, 0.1)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Node2D/Node2D2/Shop/ItemList2:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(47, -0.05, 0, 0.05, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_wb8mx"]
+_data = {
+"RESET": SubResource("Animation_3xe1g"),
+"select_anim": SubResource("Animation_sxwcd")
+}
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_6uv11"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+texture = ExtResource("20_j23kh")
+texture_margin_left = 6.0
+texture_margin_top = 6.0
+texture_margin_right = 6.0
+texture_margin_bottom = 6.0
+region_rect = Rect2(36, 34, 25, 27)
+
+[sub_resource type="Theme" id="Theme_k55hh"]
+PanelContainer/styles/panel = SubResource("StyleBoxTexture_6uv11")
+
+[sub_resource type="Gradient" id="Gradient_71gc4"]
+offsets = PackedFloat32Array(0.871951, 1)
+colors = PackedColorArray(0.145, 0.145, 0.145, 0.9, 0.145, 0.145, 0.145, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_4uh3k"]
+gradient = SubResource("Gradient_71gc4")
+width = 119
+height = 344
+fill_from = Vector2(0, 1)
+fill_to = Vector2(0, 0)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cytk1"]
+shader = ExtResource("8_sui0y")
+shader_parameter/scroll_speed = 0.2
+shader_parameter/angle_degrees = 0.0
+shader_parameter/repeat_x = 1.0
+shader_parameter/repeat_y = 1.0
+shader_parameter/tint = Color(1, 1, 1, 1)
+
+[sub_resource type="Animation" id="Animation_db1ot"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("support_main/ColorRect/ColorRect2/ColorRect:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-1, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("support_main/ColorRect/ColorRect2/ColorRect:scale")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("support_main/ColorRect/ColorRect5:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-39, 8)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("support_main/ColorRect/ColorRect4:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-87, 277)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("support_main/ColorRect/ColorRect3:position")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-87, 292)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("support_main/ColorRect/ColorRect2/TextureRect2:position")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-14, 8.99997)]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("%MainName:position")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(5, 212)]
+}
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("support_main:position")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(10, 56)]
+}
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("%ps:scale")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("%ex_skill:scale")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+tracks/10/type = "value"
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/path = NodePath("skill/Node2D2/ps_name:position")
+tracks/10/interp = 1
+tracks/10/loop_wrap = true
+tracks/10/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+tracks/11/type = "value"
+tracks/11/imported = false
+tracks/11/enabled = true
+tracks/11/path = NodePath("skill/Node2D/ex:position")
+tracks/11/interp = 1
+tracks/11/loop_wrap = true
+tracks/11/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+tracks/12/type = "value"
+tracks/12/imported = false
+tracks/12/enabled = true
+tracks/12/path = NodePath("%weapon_name:position")
+tracks/12/interp = 1
+tracks/12/loop_wrap = true
+tracks/12/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-21.7882, -26)]
+}
+tracks/13/type = "value"
+tracks/13/imported = false
+tracks/13/enabled = true
+tracks/13/path = NodePath("%weapon_name:scale")
+tracks/13/interp = 1
+tracks/13/loop_wrap = true
+tracks/13/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+tracks/14/type = "value"
+tracks/14/imported = false
+tracks/14/enabled = true
+tracks/14/path = NodePath("%support_name:position")
+tracks/14/interp = 1
+tracks/14/loop_wrap = true
+tracks/14/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-22, -16.9471)]
+}
+tracks/15/type = "value"
+tracks/15/imported = false
+tracks/15/enabled = true
+tracks/15/path = NodePath("%support_name:scale")
+tracks/15/interp = 1
+tracks/15/loop_wrap = true
+tracks/15/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+tracks/16/type = "value"
+tracks/16/imported = false
+tracks/16/enabled = true
+tracks/16/path = NodePath("exp/EXP:position")
+tracks/16/interp = 1
+tracks/16/loop_wrap = true
+tracks/16/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-8, 10)]
+}
+tracks/17/type = "value"
+tracks/17/imported = false
+tracks/17/enabled = true
+tracks/17/path = NodePath("exp/lv_icon/PanelContainer/ColorRect2:color")
+tracks/17/interp = 1
+tracks/17/loop_wrap = true
+tracks/17/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(0, 0, 0, 0)]
+}
+tracks/18/type = "value"
+tracks/18/imported = false
+tracks/18/enabled = true
+tracks/18/path = NodePath("exp/lv_icon/PanelContainer:position")
+tracks/18/interp = 1
+tracks/18/loop_wrap = true
+tracks/18/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-2, 0)]
+}
+tracks/19/type = "value"
+tracks/19/imported = false
+tracks/19/enabled = true
+tracks/19/path = NodePath("Node2D:position")
+tracks/19/interp = 1
+tracks/19/loop_wrap = true
+tracks/19/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+tracks/20/type = "value"
+tracks/20/imported = false
+tracks/20/enabled = true
+tracks/20/path = NodePath("exp/ColorRect:position")
+tracks/20/interp = 1
+tracks/20/loop_wrap = true
+tracks/20/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-18, -7)]
+}
+tracks/21/type = "value"
+tracks/21/imported = false
+tracks/21/enabled = true
+tracks/21/path = NodePath("exp/exp_bar:position")
+tracks/21/interp = 1
+tracks/21/loop_wrap = true
+tracks/21/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+tracks/22/type = "value"
+tracks/22/imported = false
+tracks/22/enabled = true
+tracks/22/path = NodePath("%exp_value:scale")
+tracks/22/interp = 1
+tracks/22/loop_wrap = true
+tracks/22/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+tracks/23/type = "value"
+tracks/23/imported = false
+tracks/23/enabled = true
+tracks/23/path = NodePath("exp/lv_up:position")
+tracks/23/interp = 1
+tracks/23/loop_wrap = true
+tracks/23/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(162, 61)]
+}
+tracks/24/type = "value"
+tracks/24/imported = false
+tracks/24/enabled = true
+tracks/24/path = NodePath("support_main/ColorRect/lock_texture/lock2:visible")
+tracks/24/interp = 1
+tracks/24/loop_wrap = true
+tracks/24/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/25/type = "value"
+tracks/25/imported = false
+tracks/25/enabled = true
+tracks/25/path = NodePath("support_main/ColorRect/lock_texture/lock2:modulate")
+tracks/25/interp = 1
+tracks/25/loop_wrap = true
+tracks/25/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 0)]
+}
+tracks/26/type = "value"
+tracks/26/imported = false
+tracks/26/enabled = true
+tracks/26/path = NodePath("support_main/ColorRect/lock_texture/unlock_cost:position")
+tracks/26/interp = 1
+tracks/26/loop_wrap = true
+tracks/26/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 210)]
+}
+tracks/27/type = "value"
+tracks/27/imported = false
+tracks/27/enabled = true
+tracks/27/path = NodePath("support_main/ColorRect/lock_texture/lock2:position")
+tracks/27/interp = 1
+tracks/27/loop_wrap = true
+tracks/27/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 200)]
+}
+tracks/28/type = "value"
+tracks/28/imported = false
+tracks/28/enabled = true
+tracks/28/path = NodePath("support_main/ColorRect/lock_texture:position")
+tracks/28/interp = 1
+tracks/28/loop_wrap = true
+tracks/28/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-1, -54)]
+}
+
+[sub_resource type="Animation" id="Animation_2bong"]
+resource_name = "change_card"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("support_main/ColorRect/ColorRect2/ColorRect:position")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.0333333, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-1, 0), Vector2(-1, -240)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("support_main/ColorRect/ColorRect2/ColorRect:scale")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.0333333, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(1, 10)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("support_main/ColorRect/ColorRect5:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.0666667),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-39, 8), Vector2(-39, -70)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("support_main/ColorRect/ColorRect4:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.0666667),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-87, 277), Vector2(-87, 500)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("support_main/ColorRect/ColorRect3:position")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 0.0666667),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-87, 292), Vector2(-87, 500)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("support_main/ColorRect/ColorRect2/TextureRect2:position")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0, 0.0333333, 0.1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(-14, 8.99997), Vector2(-14, 0), Vector2(-14, 40)]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("%MainName:position")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0, 0.0333333, 0.1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(5, 212), Vector2(5, 220), Vector2(5, -10)]
+}
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("support_main:position")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(10, 56), Vector2(0, 56)]
+}
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("%ps:scale")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0.0333333, 0.133333),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(0, 1.2)]
+}
+tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("%ex_skill:scale")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"times": PackedFloat32Array(0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(0, 1.2)]
+}
+tracks/10/type = "value"
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/path = NodePath("skill/Node2D2/ps_name:position")
+tracks/10/interp = 1
+tracks/10/loop_wrap = true
+tracks/10/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0, 0), Vector2(-5, 0)]
+}
+tracks/11/type = "value"
+tracks/11/imported = false
+tracks/11/enabled = true
+tracks/11/path = NodePath("skill/Node2D/ex:position")
+tracks/11/interp = 1
+tracks/11/loop_wrap = true
+tracks/11/keys = {
+"times": PackedFloat32Array(0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0, 0), Vector2(-5, 0)]
+}
+tracks/12/type = "value"
+tracks/12/imported = false
+tracks/12/enabled = true
+tracks/12/path = NodePath("%weapon_name:position")
+tracks/12/interp = 1
+tracks/12/loop_wrap = true
+tracks/12/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-21.7882, -26), Vector2(0, -26)]
+}
+tracks/13/type = "value"
+tracks/13/imported = false
+tracks/13/enabled = true
+tracks/13/path = NodePath("%weapon_name:scale")
+tracks/13/interp = 1
+tracks/13/loop_wrap = true
+tracks/13/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(0, 1)]
+}
+tracks/14/type = "value"
+tracks/14/imported = false
+tracks/14/enabled = true
+tracks/14/path = NodePath("%support_name:position")
+tracks/14/interp = 1
+tracks/14/loop_wrap = true
+tracks/14/keys = {
+"times": PackedFloat32Array(0.0333333, 0.133333),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-22, -16.9471), Vector2(-28, -16.947)]
+}
+tracks/15/type = "value"
+tracks/15/imported = false
+tracks/15/enabled = true
+tracks/15/path = NodePath("%support_name:scale")
+tracks/15/interp = 1
+tracks/15/loop_wrap = true
+tracks/15/keys = {
+"times": PackedFloat32Array(0.0333333, 0.133333),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(0, 1)]
+}
+tracks/16/type = "value"
+tracks/16/imported = false
+tracks/16/enabled = true
+tracks/16/path = NodePath("exp/EXP:position")
+tracks/16/interp = 1
+tracks/16/loop_wrap = true
+tracks/16/keys = {
+"times": PackedFloat32Array(0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-8, 10), Vector2(-18, 10)]
+}
+tracks/17/type = "value"
+tracks/17/imported = false
+tracks/17/enabled = true
+tracks/17/path = NodePath("exp/lv_icon/PanelContainer/ColorRect2:color")
+tracks/17/interp = 2
+tracks/17/loop_wrap = true
+tracks/17/keys = {
+"times": PackedFloat32Array(0, 0.0333333, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(0, 0, 0, 0), Color(0, 0, 0, 1), Color(1, 1, 1, 1)]
+}
+tracks/18/type = "value"
+tracks/18/imported = false
+tracks/18/enabled = true
+tracks/18/path = NodePath("exp/lv_icon/PanelContainer:position")
+tracks/18/interp = 1
+tracks/18/loop_wrap = true
+tracks/18/keys = {
+"times": PackedFloat32Array(0.0333333, 0.166667),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-2, 0), Vector2(-10, 0)]
+}
+tracks/19/type = "value"
+tracks/19/imported = false
+tracks/19/enabled = true
+tracks/19/path = NodePath("Node2D:position")
+tracks/19/interp = 1
+tracks/19/loop_wrap = true
+tracks/19/keys = {
+"times": PackedFloat32Array(0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0, 0), Vector2(0, 5)]
+}
+tracks/20/type = "value"
+tracks/20/imported = false
+tracks/20/enabled = true
+tracks/20/path = NodePath("exp/ColorRect:position")
+tracks/20/interp = 1
+tracks/20/loop_wrap = true
+tracks/20/keys = {
+"times": PackedFloat32Array(0.0666667, 0.133333),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-18, -7), Vector2(-18, 0)]
+}
+tracks/21/type = "value"
+tracks/21/imported = false
+tracks/21/enabled = true
+tracks/21/path = NodePath("exp/exp_bar:position")
+tracks/21/interp = 1
+tracks/21/loop_wrap = true
+tracks/21/keys = {
+"times": PackedFloat32Array(0.0333333, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0, 0), Vector2(0, 5)]
+}
+tracks/22/type = "value"
+tracks/22/imported = false
+tracks/22/enabled = true
+tracks/22/path = NodePath("%exp_value:scale")
+tracks/22/interp = 1
+tracks/22/loop_wrap = true
+tracks/22/keys = {
+"times": PackedFloat32Array(0.1, 0.166667),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(1, 0)]
+}
+tracks/23/type = "value"
+tracks/23/imported = false
+tracks/23/enabled = true
+tracks/23/path = NodePath("exp/lv_up:position")
+tracks/23/interp = 1
+tracks/23/loop_wrap = true
+tracks/23/keys = {
+"times": PackedFloat32Array(0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(162, 61), Vector2(152, 61)]
+}
+
+[sub_resource type="Animation" id="Animation_qor3k"]
+resource_name = "lock_select"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("support_main/ColorRect/lock_texture/lock2:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.0333333),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("support_main/ColorRect/lock_texture/lock2:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.0333333, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("support_main/ColorRect/lock_texture/unlock_cost:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(1, 210), Vector2(1, 190)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("support_main/ColorRect/lock_texture/lock2:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0.0333333, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(1, 200), Vector2(1, 205)]
+}
+
+[sub_resource type="Animation" id="Animation_g7oth"]
+resource_name = "loop_anim"
+length = 2.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("support_main/ColorRect/ColorRect5:position")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(-39, 8), Vector2(-39, 5), Vector2(-39, 8)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("support_main/ColorRect/ColorRect4:position")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(-87, 277), Vector2(-87, 279), Vector2(-87, 277)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("support_main/ColorRect/ColorRect3:position")
+tracks/2/interp = 2
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 1, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(-87, 292), Vector2(-87, 298), Vector2(-87, 292)]
+}
+
+[sub_resource type="Animation" id="Animation_rxjci"]
+resource_name = "unlock_anim"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("support_main/ColorRect/lock_texture:position")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-1, -54), Vector2(-1, 290)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_40dgq"]
+_data = {
+"RESET": SubResource("Animation_db1ot"),
+"change_card": SubResource("Animation_2bong"),
+"lock_select": SubResource("Animation_qor3k"),
+"loop_anim": SubResource("Animation_g7oth"),
+"unlock_anim": SubResource("Animation_rxjci")
+}
+
+[sub_resource type="Gradient" id="Gradient_iapfh"]
+offsets = PackedFloat32Array(0)
+colors = PackedColorArray(0, 0, 0, 0.5)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_pgrqc"]
+gradient = SubResource("Gradient_iapfh")
+width = 230
+height = 8
+
+[sub_resource type="Gradient" id="Gradient_ypmrg"]
+offsets = PackedFloat32Array(0)
+colors = PackedColorArray(0.933333, 0.392157, 0.458824, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_il0qv"]
+gradient = SubResource("Gradient_ypmrg")
+width = 230
+height = 8
+
+[sub_resource type="Animation" id="Animation_aj8mw"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("../EXP2:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("../EXP2:position:x")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(46, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("../EXP2:position:y")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(16, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("../EXP2:modulate")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_n0fjt"]
+resource_name = "lv_up"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("../EXP2:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("../EXP2:position:x")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(46, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("../EXP2:position:y")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0),
+"points": PackedFloat32Array(16, -0.1, 0, 0.1, 0, -1, -0.1, 0, 0.1, 0, -3, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 0.233333, 0.5)
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("../EXP2:modulate")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.0333333, 0.4, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1), Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_uek0j"]
+_data = {
+"RESET": SubResource("Animation_aj8mw"),
+"lv_up": SubResource("Animation_n0fjt")
+}
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_04ppo"]
+
+[sub_resource type="Theme" id="Theme_ka67v"]
+PanelContainer/styles/panel = SubResource("StyleBoxEmpty_04ppo")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_opruh"]
+texture = ExtResource("20_j23kh")
+texture_margin_left = 4.0
+texture_margin_top = 5.0
+texture_margin_right = 4.0
+texture_margin_bottom = 5.0
+region_rect = Rect2(38, 35, 21, 25)
+
+[sub_resource type="Theme" id="Theme_m4udm"]
+Panel/styles/panel = SubResource("StyleBoxTexture_opruh")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_kd0hi"]
+shader = ExtResource("8_sui0y")
+shader_parameter/scroll_speed = 0.05
+shader_parameter/angle_degrees = 0.0
+shader_parameter/repeat_x = 1.0
+shader_parameter/repeat_y = 1.0
+shader_parameter/tint = Color(1, 1, 1, 1)
+
+[sub_resource type="Animation" id="Animation_bki60"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ColorRect/ColorRect2:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(-1.2, -0.11665, 0, 0.11665, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ColorRect/ColorRect:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(-1.2, -0.11665, 0, 0.11665, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("../Node2D/ColorRect/Arona:position:x")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(-138, -0.15, 0, 0.15, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/3/type = "bezier"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("../Node2D/ColorRect/Arona:position:y")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.15, 0, 0.15, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/4/type = "bezier"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Shop:position:x")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(640, -0.15, 0, 0.15, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/5/type = "bezier"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("Shop:position:y")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.15, 0, 0.15, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/6/type = "bezier"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("../ColorRect3/TextureRect:position:x")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.15, 0, 0.15, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/7/type = "bezier"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("../ColorRect3/TextureRect:position:y")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(-35, -0.15, 0, 0.15, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/8/type = "bezier"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("../Node2D/ColorRect/Plana:position:x")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(780, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/9/type = "bezier"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("../Node2D/ColorRect/Plana:position:y")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/10/type = "bezier"
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/path = NodePath("ColorRect/ColorRect4:rotation")
+tracks/10/interp = 1
+tracks/10/loop_wrap = true
+tracks/10/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(-0.414, -0.15, 0, 0.15, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/11/type = "bezier"
+tracks/11/imported = false
+tracks/11/enabled = true
+tracks/11/path = NodePath("ColorRect/ColorRect5:rotation")
+tracks/11/interp = 1
+tracks/11/loop_wrap = true
+tracks/11/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(-0.414, -0.15, 0, 0.15, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/12/type = "value"
+tracks/12/imported = false
+tracks/12/enabled = true
+tracks/12/path = NodePath("ColorRect/ColorRect6:material:shader_parameter/progress")
+tracks/12/interp = 1
+tracks/12/loop_wrap = true
+tracks/12/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/13/type = "value"
+tracks/13/imported = false
+tracks/13/enabled = true
+tracks/13/path = NodePath("../ColorRect2:color")
+tracks/13/interp = 1
+tracks/13/loop_wrap = true
+tracks/13/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(0.354196, 0.654705, 0.971274, 1)]
+}
+tracks/14/type = "bezier"
+tracks/14/imported = false
+tracks/14/enabled = true
+tracks/14/path = NodePath("../ColorRect3/TextureRect2:position:x")
+tracks/14/interp = 1
+tracks/14/loop_wrap = true
+tracks/14/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.15, 0, 0.15, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/15/type = "bezier"
+tracks/15/imported = false
+tracks/15/enabled = true
+tracks/15/path = NodePath("../ColorRect3/TextureRect2:position:y")
+tracks/15/interp = 1
+tracks/15/loop_wrap = true
+tracks/15/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(-35, -0.15, 0, 0.15, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/16/type = "value"
+tracks/16/imported = false
+tracks/16/enabled = true
+tracks/16/path = NodePath("support_shop:position")
+tracks/16/interp = 1
+tracks/16/loop_wrap = true
+tracks/16/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 360)]
+}
+tracks/17/type = "value"
+tracks/17/imported = false
+tracks/17/enabled = true
+tracks/17/path = NodePath("support_shop:visible")
+tracks/17/interp = 1
+tracks/17/loop_wrap = true
+tracks/17/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_74w24"]
+resource_name = "arona_shop"
+length = 0.3
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ColorRect/ColorRect2:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(-1.2, -0.11665, 0, 0.11665, 0, 0.414, -0.15, 0, 0.15, 0),
+"times": PackedFloat32Array(0, 0.3)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ColorRect/ColorRect:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(-1.2, -0.11665, 0, 0.11665, 0, 0.414, -0.15, 0, 0.15, 0),
+"times": PackedFloat32Array(0.0666667, 0.3)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("../Node2D/ColorRect/Arona:position:x")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(-138, -0.15, 0, 0.15, 0, 110, -0.15, 0, 0.15, 0),
+"times": PackedFloat32Array(0.133333, 0.3)
+}
+tracks/3/type = "bezier"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("../Node2D/ColorRect/Arona:position:y")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.15, 0, 0.15, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/4/type = "bezier"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Shop:position:x")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(640, -0.15, 0, 0.15, 0, 0, -0.15, 0, 0.15, 0),
+"times": PackedFloat32Array(0.133333, 0.3)
+}
+tracks/5/type = "bezier"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("Shop:position:y")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.15, 0, 0.15, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/6/type = "bezier"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("../ColorRect3/TextureRect:position:x")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.15, 0, 0.15, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/7/type = "bezier"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("../ColorRect3/TextureRect:position:y")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(-35, -0.15, 0, 0.15, 0, -8, -0.15, 0, 0.15, 0),
+"times": PackedFloat32Array(0, 0.2)
+}
+
+[sub_resource type="Animation" id="Animation_1wf2m"]
+resource_name = "plana_shop"
+length = 0.3
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("../Node2D/ColorRect/Plana:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(780, -0.15, 0, 0.15, 0, 555, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0.133333, 0.3)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("../Node2D/ColorRect/Plana:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("ColorRect/ColorRect4:rotation")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(-0.414, -0.15, 0, 0.15, 0, 1.199, -0.15, 0, 0.15, 0),
+"times": PackedFloat32Array(0, 0.3)
+}
+tracks/3/type = "bezier"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("ColorRect/ColorRect5:rotation")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(-0.414, -0.15, 0, 0.15, 0, 1.199, -0.15, 0, 0.15, 0),
+"times": PackedFloat32Array(0.0666667, 0.3)
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("ColorRect/ColorRect6:material:shader_parameter/progress")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, 1.0]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("../ColorRect2:color")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(0.354196, 0.654705, 0.971274, 1), Color(1, 0.537984, 0.753016, 1)]
+}
+tracks/6/type = "bezier"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("../ColorRect3/TextureRect2:position:x")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.15, 0, 0.15, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/7/type = "bezier"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("../ColorRect3/TextureRect2:position:y")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(-35, -0.15, 0, 0.15, 0, -8, -0.15, 0, 0.15, 0),
+"times": PackedFloat32Array(0, 0.2)
+}
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("support_shop:position")
+tracks/8/interp = 2
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0.2, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0, 360), Vector2(0, 0)]
+}
+tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("support_shop:visible")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_7lx7h"]
+_data = {
+"RESET": SubResource("Animation_bki60"),
+"arona_shop": SubResource("Animation_74w24"),
+"plana_shop": SubResource("Animation_1wf2m")
+}
+
+[sub_resource type="Animation" id="Animation_wk87q"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ShopButton/Node2D/Node2D/Node2D3:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ShopButton/Node2D/Node2D/Node2D3:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("ShopButton/Node2D/Node2D/ColorRect:scale:x")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/3/type = "bezier"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("ShopButton/Node2D/Node2D/ColorRect:scale:y")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(1, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/4/type = "bezier"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D/TextureRect:modulate:r")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0.463367, -0.2, 0, 0.2, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/5/type = "bezier"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D/TextureRect:modulate:g")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0.849894, -0.2, 0, 0.2, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/6/type = "bezier"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D/TextureRect:modulate:b")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0.970008, -0.2, 0, 0.2, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/7/type = "bezier"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D/TextureRect:modulate:a")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(1, -0.2, 0, 0.2, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/8/type = "bezier"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D/TextureRect2:modulate:r")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(1, -0.2, 0, 0.2, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/9/type = "bezier"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D/TextureRect2:modulate:g")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(1, -0.2, 0, 0.2, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/10/type = "bezier"
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D/TextureRect2:modulate:b")
+tracks/10/interp = 1
+tracks/10/loop_wrap = true
+tracks/10/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(1, -0.2, 0, 0.2, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/11/type = "bezier"
+tracks/11/imported = false
+tracks/11/enabled = true
+tracks/11/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D/TextureRect2:modulate:a")
+tracks/11/interp = 1
+tracks/11/loop_wrap = true
+tracks/11/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(1, -0.2, 0, 0.2, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/12/type = "bezier"
+tracks/12/imported = false
+tracks/12/enabled = true
+tracks/12/path = NodePath("ShopButton/Node2D/Node2D/ColorRect3:scale:x")
+tracks/12/interp = 1
+tracks/12/loop_wrap = true
+tracks/12/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/13/type = "bezier"
+tracks/13/imported = false
+tracks/13/enabled = true
+tracks/13/path = NodePath("ShopButton/Node2D/Node2D/ColorRect3:scale:y")
+tracks/13/interp = 1
+tracks/13/loop_wrap = true
+tracks/13/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(1, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/14/type = "bezier"
+tracks/14/imported = false
+tracks/14/enabled = true
+tracks/14/path = NodePath("ShopButton/Node2D/ColorRect4/ColorRect2:position:x")
+tracks/14/interp = 1
+tracks/14/loop_wrap = true
+tracks/14/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(-644, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/15/type = "bezier"
+tracks/15/imported = false
+tracks/15/enabled = true
+tracks/15/path = NodePath("ShopButton/Node2D/ColorRect4/ColorRect2:position:y")
+tracks/15/interp = 1
+tracks/15/loop_wrap = true
+tracks/15/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(-592, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/16/type = "bezier"
+tracks/16/imported = false
+tracks/16/enabled = true
+tracks/16/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D2/ColorRect:size:x")
+tracks/16/interp = 1
+tracks/16/loop_wrap = true
+tracks/16/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/17/type = "bezier"
+tracks/17/imported = false
+tracks/17/enabled = true
+tracks/17/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D2/ColorRect:size:y")
+tracks/17/interp = 1
+tracks/17/loop_wrap = true
+tracks/17/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(17, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/18/type = "bezier"
+tracks/18/imported = false
+tracks/18/enabled = true
+tracks/18/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D2/ColorRect2/TextureRect:position:x")
+tracks/18/interp = 1
+tracks/18/loop_wrap = true
+tracks/18/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(-20, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/19/type = "bezier"
+tracks/19/imported = false
+tracks/19/enabled = true
+tracks/19/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D2/ColorRect2/TextureRect:position:y")
+tracks/19/interp = 1
+tracks/19/loop_wrap = true
+tracks/19/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(2, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/20/type = "bezier"
+tracks/20/imported = false
+tracks/20/enabled = true
+tracks/20/path = NodePath("ShopButton/Node2D/ColorRect4/ColorRect2:material:shader_parameter/ring_radius")
+tracks/20/interp = 1
+tracks/20/loop_wrap = true
+tracks/20/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0.0083, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/21/type = "bezier"
+tracks/21/imported = false
+tracks/21/enabled = true
+tracks/21/path = NodePath("ShopButton/Node2D:position:x")
+tracks/21/interp = 1
+tracks/21/loop_wrap = true
+tracks/21/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/22/type = "bezier"
+tracks/22/imported = false
+tracks/22/enabled = true
+tracks/22/path = NodePath("ShopButton/Node2D:position:y")
+tracks/22/interp = 1
+tracks/22/loop_wrap = true
+tracks/22/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/23/type = "bezier"
+tracks/23/imported = false
+tracks/23/enabled = true
+tracks/23/path = NodePath("ShopButton/Node2D/Node2D:position:x")
+tracks/23/interp = 1
+tracks/23/loop_wrap = true
+tracks/23/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/24/type = "bezier"
+tracks/24/imported = false
+tracks/24/enabled = true
+tracks/24/path = NodePath("ShopButton/Node2D/Node2D:position:y")
+tracks/24/interp = 1
+tracks/24/loop_wrap = true
+tracks/24/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/25/type = "value"
+tracks/25/imported = false
+tracks/25/enabled = true
+tracks/25/path = NodePath("ColorRect:modulate")
+tracks/25/interp = 1
+tracks/25/loop_wrap = true
+tracks/25/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 0)]
+}
+tracks/26/type = "value"
+tracks/26/imported = false
+tracks/26/enabled = true
+tracks/26/path = NodePath("ColorRect2:modulate")
+tracks/26/interp = 1
+tracks/26/loop_wrap = true
+tracks/26/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 0)]
+}
+tracks/27/type = "value"
+tracks/27/imported = false
+tracks/27/enabled = true
+tracks/27/path = NodePath("Node2D/ColorRect:size")
+tracks/27/interp = 1
+tracks/27/loop_wrap = true
+tracks/27/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(36, 360)]
+}
+tracks/28/type = "value"
+tracks/28/imported = false
+tracks/28/enabled = true
+tracks/28/path = NodePath("Node2D/ColorRect2:position")
+tracks/28/interp = 1
+tracks/28/loop_wrap = true
+tracks/28/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(640, 0)]
+}
+tracks/29/type = "value"
+tracks/29/imported = false
+tracks/29/enabled = true
+tracks/29/path = NodePath("Node2D/ColorRect3:position")
+tracks/29/interp = 1
+tracks/29/loop_wrap = true
+tracks/29/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, -21)]
+}
+tracks/30/type = "value"
+tracks/30/imported = false
+tracks/30/enabled = true
+tracks/30/path = NodePath("Node2D/Node2D2/ColorRect:scale")
+tracks/30/interp = 1
+tracks/30/loop_wrap = true
+tracks/30/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 0)]
+}
+tracks/31/type = "value"
+tracks/31/imported = false
+tracks/31/enabled = true
+tracks/31/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/return:visible")
+tracks/31/interp = 1
+tracks/31/loop_wrap = true
+tracks/31/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_s7x8y"]
+resource_name = "select_anim"
+length = 0.2
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ShopButton/Node2D/Node2D/Node2D3:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, 10, -0.2, 0, 0.2, 0),
+"times": PackedFloat32Array(0, 0.2)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ShopButton/Node2D/Node2D/Node2D3:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("ShopButton/Node2D/Node2D/ColorRect:scale:x")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, 1, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 0.2)
+}
+tracks/3/type = "bezier"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("ShopButton/Node2D/Node2D/ColorRect:scale:y")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(1, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/4/type = "bezier"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D/TextureRect:modulate:r")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0.463367, -0.2, 0, 0.2, 0, 1, -0.2, 0, 0.2, 0),
+"times": PackedFloat32Array(0, 0.2)
+}
+tracks/5/type = "bezier"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D/TextureRect:modulate:g")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0.849894, -0.2, 0, 0.2, 0, 1, -0.2, 0, 0.2, 0),
+"times": PackedFloat32Array(0, 0.2)
+}
+tracks/6/type = "bezier"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D/TextureRect:modulate:b")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0.970008, -0.2, 0, 0.2, 0, 1, -0.2, 0, 0.2, 0),
+"times": PackedFloat32Array(0, 0.2)
+}
+tracks/7/type = "bezier"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D/TextureRect:modulate:a")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(1, -0.2, 0, 0.2, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/8/type = "bezier"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D/TextureRect2:modulate:r")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(1, -0.2, 0, 0.2, 0, 0.463, -0.2, 0, 0.2, 0),
+"times": PackedFloat32Array(0, 0.2)
+}
+tracks/9/type = "bezier"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D/TextureRect2:modulate:g")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(1, -0.2, 0, 0.2, 0, 0.85, -0.2, 0, 0.2, 0),
+"times": PackedFloat32Array(0, 0.2)
+}
+tracks/10/type = "bezier"
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D/TextureRect2:modulate:b")
+tracks/10/interp = 1
+tracks/10/loop_wrap = true
+tracks/10/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(1, -0.2, 0, 0.2, 0, 0.97, -0.2, 0, 0.2, 0),
+"times": PackedFloat32Array(0, 0.2)
+}
+tracks/11/type = "bezier"
+tracks/11/imported = false
+tracks/11/enabled = true
+tracks/11/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D/TextureRect2:modulate:a")
+tracks/11/interp = 1
+tracks/11/loop_wrap = true
+tracks/11/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(1, -0.2, 0, 0.2, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/12/type = "bezier"
+tracks/12/imported = false
+tracks/12/enabled = true
+tracks/12/path = NodePath("ShopButton/Node2D/Node2D/ColorRect3:scale:x")
+tracks/12/interp = 1
+tracks/12/loop_wrap = true
+tracks/12/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, -0.1, 0, 0.1, 0, 1, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0, 0.2)
+}
+tracks/13/type = "bezier"
+tracks/13/imported = false
+tracks/13/enabled = true
+tracks/13/path = NodePath("ShopButton/Node2D/Node2D/ColorRect3:scale:y")
+tracks/13/interp = 1
+tracks/13/loop_wrap = true
+tracks/13/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(1, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/14/type = "bezier"
+tracks/14/imported = false
+tracks/14/enabled = true
+tracks/14/path = NodePath("ShopButton/Node2D/ColorRect4/ColorRect2:position:x")
+tracks/14/interp = 1
+tracks/14/loop_wrap = true
+tracks/14/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(-644, -0.1, 0, 0.1, 0, -565, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0, 0.2)
+}
+tracks/15/type = "bezier"
+tracks/15/imported = false
+tracks/15/enabled = true
+tracks/15/path = NodePath("ShopButton/Node2D/ColorRect4/ColorRect2:position:y")
+tracks/15/interp = 1
+tracks/15/loop_wrap = true
+tracks/15/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(-397, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/16/type = "bezier"
+tracks/16/imported = false
+tracks/16/enabled = true
+tracks/16/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D2/ColorRect:size:x")
+tracks/16/interp = 1
+tracks/16/loop_wrap = true
+tracks/16/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, -0.1, 0, 0.1, 0, 39, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0.0333333, 0.2)
+}
+tracks/17/type = "bezier"
+tracks/17/imported = false
+tracks/17/enabled = true
+tracks/17/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D2/ColorRect:size:y")
+tracks/17/interp = 1
+tracks/17/loop_wrap = true
+tracks/17/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(17, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/18/type = "bezier"
+tracks/18/imported = false
+tracks/18/enabled = true
+tracks/18/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D2/ColorRect2/TextureRect:position:x")
+tracks/18/interp = 1
+tracks/18/loop_wrap = true
+tracks/18/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(-20, -0.1, 0, 0.1, 0, 0, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0, 0.2)
+}
+tracks/19/type = "bezier"
+tracks/19/imported = false
+tracks/19/enabled = true
+tracks/19/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/Node2D2/ColorRect2/TextureRect:position:y")
+tracks/19/interp = 1
+tracks/19/loop_wrap = true
+tracks/19/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(2, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/20/type = "method"
+tracks/20/imported = false
+tracks/20/enabled = true
+tracks/20/path = NodePath(".")
+tracks/20/interp = 1
+tracks/20/loop_wrap = true
+tracks/20/keys = {
+"times": PackedFloat32Array(0.2),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"shop_is_show"
+}]
+}
+
+[sub_resource type="Animation" id="Animation_w57nl"]
+resource_name = "shop_open"
+length = 0.5
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ShopButton/Node2D/ColorRect4/ColorRect2:material:shader_parameter/ring_radius")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0.0083, -0.25, 0, 0.25, 0, 0.49, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 0.3)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ShopButton/Node2D:position:x")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, -28, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 0.3)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("ShopButton/Node2D:position:y")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/3/type = "bezier"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("ShopButton/Node2D/Node2D:position:x")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/4/type = "bezier"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("ShopButton/Node2D/Node2D:position:y")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, -174, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 0.3)
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("ColorRect:modulate")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0.992471)]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("ColorRect2:modulate")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0, 0.0666667),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("Node2D/ColorRect:size")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"times": PackedFloat32Array(0.3, 0.4),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(36, 360), Vector2(227, 360)]
+}
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("Node2D/ColorRect2:position")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0.3, 0.4),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(640, 0), Vector2(449, 0)]
+}
+tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("Node2D/ColorRect3:position")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"times": PackedFloat32Array(0.3, 0.333333),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0, -21), Vector2(0, 0)]
+}
+tracks/10/type = "value"
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/path = NodePath("Node2D/Node2D2/ColorRect:scale")
+tracks/10/interp = 1
+tracks/10/loop_wrap = true
+tracks/10/keys = {
+"times": PackedFloat32Array(0.233333, 0.333333),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(1, 0), Vector2(1, 1)]
+}
+tracks/11/type = "value"
+tracks/11/imported = false
+tracks/11/enabled = true
+tracks/11/path = NodePath("ShopButton/Node2D/Node2D/Node2D3/return:visible")
+tracks/11/interp = 1
+tracks/11/loop_wrap = true
+tracks/11/keys = {
+"times": PackedFloat32Array(0.233333, 0.333333),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+tracks/12/type = "method"
+tracks/12/imported = false
+tracks/12/enabled = true
+tracks/12/path = NodePath(".")
+tracks/12/interp = 1
+tracks/12/loop_wrap = true
+tracks/12/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"emit_shop_open"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_wp415"]
+_data = {
+"RESET": SubResource("Animation_wk87q"),
+"select_anim": SubResource("Animation_s7x8y"),
+"shop_open": SubResource("Animation_w57nl")
+}
+
+[node name="ShopMenu" type="Node2D"]
+script = ExtResource("1_d2ib0")
+shop_card_group = Array[ExtResource("2_h024o")]([ExtResource("11_ysb2t"), ExtResource("12_uw1ws"), ExtResource("13_10tbx"), ExtResource("14_imcjv"), ExtResource("15_2jkwd"), ExtResource("8_dla8c"), ExtResource("9_8k4v4"), ExtResource("10_hay7x"), ExtResource("11_k6nqj"), ExtResource("12_6le7t"), ExtResource("13_smosc"), ExtResource("14_f4laa"), ExtResource("15_0mvhp"), ExtResource("16_vpr4p"), ExtResource("17_a4d41")])
+shop_item_group = Array[ExtResource("8_8bwha")]([ExtResource("9_3er8o"), ExtResource("10_et1q5"), ExtResource("11_b54nf"), ExtResource("13_kxh12"), ExtResource("14_61471"), ExtResource("15_vp58u"), ExtResource("23_tqe4p"), ExtResource("24_mcwt0"), ExtResource("25_dn1mp"), ExtResource("26_ehjgb"), ExtResource("12_rth1c"), ExtResource("16_af6j8")])
+
+[node name="ColorRect" type="ColorRect" parent="."]
+modulate = Color(1, 1, 1, 0)
+material = SubResource("ShaderMaterial_s7brc")
+offset_right = 640.0
+offset_bottom = 360.0
+mouse_filter = 2
+
+[node name="ColorRect2" type="ColorRect" parent="."]
+modulate = Color(1, 1, 1, 0)
+offset_right = 640.0
+offset_bottom = 360.0
+mouse_filter = 2
+color = Color(0.149, 0.149, 0.149, 0.864)
+
+[node name="ShopButton" type="PanelContainer" parent="."]
+offset_left = 28.0
+offset_top = 195.0
+offset_right = 103.0
+offset_bottom = 215.0
+theme = SubResource("Theme_wh3c3")
+
+[node name="Node2D" type="Node2D" parent="ShopButton"]
+
+[node name="Label" type="Label" parent="ShopButton/Node2D"]
+offset_left = 22.0
+offset_top = 3.0
+offset_right = 54.0
+offset_bottom = 20.0
+theme_override_colors/font_color = Color(0.463367, 0.849894, 0.970008, 1)
+theme_override_colors/font_shadow_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/shadow_offset_x = -2
+theme_override_constants/shadow_offset_y = -1
+theme_override_constants/outline_size = 4
+theme_override_constants/shadow_outline_size = 2
+theme_override_font_sizes/font_size = 15
+text = "HOP"
+
+[node name="ColorRect4" type="ColorRect" parent="ShopButton/Node2D"]
+clip_children = 1
+offset_top = -195.0
+offset_right = 640.0
+offset_bottom = 165.0
+mouse_filter = 2
+
+[node name="ColorRect2" type="ColorRect" parent="ShopButton/Node2D/ColorRect4"]
+material = SubResource("ShaderMaterial_gm8kk")
+layout_mode = 0
+offset_left = -644.0
+offset_top = -592.0
+offset_right = 620.0
+offset_bottom = 612.0
+mouse_filter = 2
+
+[node name="Node2D" type="Node2D" parent="ShopButton/Node2D"]
+
+[node name="ColorRect3" type="ColorRect" parent="ShopButton/Node2D/Node2D"]
+offset_right = 67.0
+offset_bottom = 20.0
+scale = Vector2(1e-05, 1)
+mouse_filter = 2
+
+[node name="ColorRect" type="ColorRect" parent="ShopButton/Node2D/Node2D"]
+offset_right = 31.0
+offset_bottom = 20.0
+scale = Vector2(1e-05, 1)
+mouse_filter = 2
+color = Color(0.203922, 0.572549, 0.933333, 1)
+
+[node name="Node2D3" type="Node2D" parent="ShopButton/Node2D/Node2D"]
+
+[node name="Node2D" type="Node2D" parent="ShopButton/Node2D/Node2D/Node2D3"]
+position = Vector2(4, 2)
+
+[node name="TextureRect2" type="TextureRect" parent="ShopButton/Node2D/Node2D/Node2D3/Node2D"]
+offset_left = 1.0
+offset_right = 41.0
+offset_bottom = 40.0
+scale = Vector2(0.4, 0.4)
+mouse_filter = 2
+texture = ExtResource("3_2ucyp")
+
+[node name="TextureRect" type="TextureRect" parent="ShopButton/Node2D/Node2D/Node2D3/Node2D"]
+modulate = Color(0.463367, 0.849894, 0.970008, 1)
+offset_right = 40.0
+offset_bottom = 40.0
+scale = Vector2(0.4, 0.4)
+mouse_filter = 2
+texture = ExtResource("4_q7scs")
+
+[node name="Node2D2" type="Node2D" parent="ShopButton/Node2D/Node2D/Node2D3"]
+position = Vector2(23, 2)
+
+[node name="ColorRect2" type="ColorRect" parent="ShopButton/Node2D/Node2D/Node2D3/Node2D2"]
+clip_children = 1
+offset_left = -2.0
+offset_right = 14.0
+offset_bottom = 16.0
+mouse_filter = 2
+
+[node name="TextureRect" type="TextureRect" parent="ShopButton/Node2D/Node2D/Node2D3/Node2D2/ColorRect2"]
+layout_mode = 0
+offset_left = -20.0
+offset_top = 2.0
+offset_right = 20.0
+offset_bottom = 42.0
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("5_pcwuw")
+
+[node name="ColorRect" type="ColorRect" parent="ShopButton/Node2D/Node2D/Node2D3/Node2D2"]
+clip_children = 1
+offset_bottom = 17.0
+mouse_filter = 2
+
+[node name="Wealth" type="Label" parent="ShopButton/Node2D/Node2D/Node2D3/Node2D2/ColorRect"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 13.0
+offset_top = 3.0
+offset_right = 38.0
+offset_bottom = 16.0
+theme = SubResource("Theme_y22qa")
+theme_override_colors/font_color = Color(0.660262, 0.916408, 0.998488, 1)
+theme_override_colors/font_shadow_color = Color(0.415686, 0.313726, 0.776471, 1)
+theme_override_colors/font_outline_color = Color(0.414096, 0.313596, 0.77561, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 0
+theme_override_constants/outline_size = 6
+theme_override_fonts/font = ExtResource("6_imrhj")
+theme_override_font_sizes/font_size = 12
+text = "9999"
+horizontal_alignment = 2
+clip_text = true
+
+[node name="return" parent="ShopButton/Node2D/Node2D/Node2D3" instance=ExtResource("27_8ggo4")]
+visible = false
+offset_left = 190.0
+offset_top = 2.0
+offset_right = 218.0
+offset_bottom = 30.0
+scale = Vector2(0.6, 0.6)
+
+[node name="Node2D" type="Node2D" parent="."]
+
+[node name="ColorRect2" type="ColorRect" parent="Node2D"]
+offset_left = 640.0
+offset_right = 831.0
+offset_bottom = 360.0
+mouse_filter = 2
+color = Color(0.354196, 0.654705, 0.971274, 1)
+
+[node name="ColorRect" type="ColorRect" parent="Node2D"]
+material = SubResource("ShaderMaterial_52hik")
+offset_left = 676.0
+offset_top = 360.0
+offset_right = 712.0
+offset_bottom = 720.0
+rotation = 3.14159
+mouse_filter = 2
+
+[node name="Node2D2" type="Node2D" parent="Node2D"]
+
+[node name="ColorRect" type="ColorRect" parent="Node2D/Node2D2"]
+clip_children = 2
+offset_top = 41.0
+offset_right = 640.0
+offset_bottom = 351.0
+scale = Vector2(1, 1e-05)
+mouse_filter = 2
+color = Color(0.711202, 0.890967, 0.991631, 1)
+
+[node name="ColorRect6" type="ColorRect" parent="Node2D/Node2D2/ColorRect"]
+material = SubResource("ShaderMaterial_ejv5o")
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 309.0
+mouse_filter = 2
+color = Color(1, 0.841252, 0.945091, 1)
+
+[node name="TextureRect2" type="TextureRect" parent="Node2D/Node2D2/ColorRect"]
+material = SubResource("ShaderMaterial_0mfb5")
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 310.0
+texture = ExtResource("4_q7scs")
+stretch_mode = 1
+
+[node name="ColorRect2" type="ColorRect" parent="Node2D/Node2D2/ColorRect"]
+layout_mode = 0
+offset_left = 323.0
+offset_top = -157.0
+offset_right = 1015.0
+offset_bottom = 429.0
+rotation = -1.2
+
+[node name="ColorRect" type="ColorRect" parent="Node2D/Node2D2/ColorRect"]
+layout_mode = 0
+offset_left = 334.0
+offset_top = -156.0
+offset_right = 1026.0
+offset_bottom = 430.0
+rotation = -1.2
+color = Color(0.534931, 0.745156, 0.930427, 1)
+
+[node name="ColorRect4" type="ColorRect" parent="Node2D/Node2D2/ColorRect"]
+layout_mode = 0
+offset_left = -152.659
+offset_top = 376.73
+offset_right = 539.341
+offset_bottom = 962.73
+rotation = -0.414
+pivot_offset = Vector2(692, 0)
+mouse_filter = 2
+
+[node name="ColorRect5" type="ColorRect" parent="Node2D/Node2D2/ColorRect"]
+layout_mode = 0
+offset_left = -162.659
+offset_top = 377.73
+offset_right = 529.341
+offset_bottom = 963.73
+rotation = -0.414
+pivot_offset = Vector2(692, 0)
+mouse_filter = 2
+color = Color(0.99679, 0.704604, 0.884711, 1)
+
+[node name="ColorRect3" type="ColorRect" parent="Node2D/Node2D2/ColorRect"]
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 4.0
+color = Color(0, 0, 0, 0.423529)
+
+[node name="Shop" type="Node2D" parent="Node2D/Node2D2"]
+position = Vector2(640, 0)
+
+[node name="ItemList1" type="ScrollContainer" parent="Node2D/Node2D2/Shop"]
+offset_left = 640.0
+offset_top = 47.0
+offset_right = 990.0
+offset_bottom = 346.0
+theme = SubResource("Theme_uhl17")
+script = ExtResource("17_hmhom")
+
+[node name="CardBox" type="GridContainer" parent="Node2D/Node2D2/Shop/ItemList1"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
+columns = 3
+
+[node name="ItemList1Anim" type="AnimationPlayer" parent="Node2D/Node2D2/Shop/ItemList1"]
+root_node = NodePath("../..")
+libraries = {
+"": SubResource("AnimationLibrary_7sxju")
+}
+
+[node name="Node2D" type="Node2D" parent="Node2D/Node2D2/Shop"]
+
+[node name="TextureRect2" type="TextureRect" parent="Node2D/Node2D2/Shop/Node2D"]
+offset_left = 570.0
+offset_top = 41.0
+offset_right = 638.0
+offset_bottom = 351.0
+texture = SubResource("GradientTexture2D_j4k8h")
+
+[node name="TextureRect" type="TextureRect" parent="Node2D/Node2D2/Shop/Node2D"]
+offset_left = 638.0
+offset_top = 41.0
+offset_right = 640.0
+offset_bottom = 297.0
+texture = SubResource("GradientTexture2D_k2awv")
+
+[node name="ColorRect" type="ColorRect" parent="Node2D/Node2D2/Shop/Node2D"]
+visible = false
+offset_left = 638.0
+offset_top = 48.0
+offset_right = 640.0
+offset_bottom = 346.0
+
+[node name="ShopTagButton1" parent="Node2D/Node2D2/Shop/Node2D" instance=ExtResource("19_qi3im")]
+tag_name = "button_character"
+
+[node name="ShopTagButton2" parent="Node2D/Node2D2/Shop/Node2D" instance=ExtResource("19_qi3im")]
+offset_top = 139.0
+offset_bottom = 174.0
+tag_name = "button_clothes"
+
+[node name="ItemList2" type="ScrollContainer" parent="Node2D/Node2D2/Shop"]
+offset_left = 640.0
+offset_top = 47.0
+offset_right = 990.0
+offset_bottom = 346.0
+theme = SubResource("Theme_x6pph")
+script = ExtResource("17_hmhom")
+
+[node name="CardBox2" type="GridContainer" parent="Node2D/Node2D2/Shop/ItemList2"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
+columns = 3
+
+[node name="ItemList2Anim" type="AnimationPlayer" parent="Node2D/Node2D2/Shop/ItemList2"]
+root_node = NodePath("../../../../..")
+libraries = {
+"": SubResource("AnimationLibrary_wb8mx")
+}
+
+[node name="support_shop" type="Node2D" parent="Node2D/Node2D2" node_paths=PackedStringArray("shop_menu")]
+visible = false
+position = Vector2(0, 360)
+script = ExtResource("32_dass8")
+shop_card = ExtResource("33_6twyr")
+shop_menu = NodePath("../../..")
+
+[node name="PanelContainer" type="PanelContainer" parent="Node2D/Node2D2/support_shop"]
+clip_children = 2
+offset_left = 17.0
+offset_top = 56.0
+offset_right = 141.0
+offset_bottom = 348.0
+theme = SubResource("Theme_k55hh")
+
+[node name="ColorRect" type="ColorRect" parent="Node2D/Node2D2/support_shop/PanelContainer"]
+custom_minimum_size = Vector2(0, 240)
+layout_mode = 2
+color = Color(0.968627, 0.568627, 0.733333, 1)
+
+[node name="Node2D" type="Node2D" parent="Node2D/Node2D2/support_shop"]
+
+[node name="ColorRect2" type="ColorRect" parent="Node2D/Node2D2/support_shop/Node2D"]
+offset_left = -1.0
+offset_top = 71.0
+offset_right = 403.0
+offset_bottom = 101.0
+color = Color(0.211765, 0.211765, 0.211765, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="Node2D/Node2D2/support_shop/Node2D"]
+clip_contents = true
+custom_minimum_size = Vector2(0, 30)
+offset_left = 133.0
+offset_top = 71.0
+offset_right = 401.0
+offset_bottom = 101.0
+mouse_filter = 0
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Node2D/Node2D2/support_shop/Node2D/MarginContainer"]
+layout_mode = 2
+horizontal_scroll_mode = 3
+vertical_scroll_mode = 3
+script = ExtResource("34_vtflg")
+
+[node name="card_box" type="HBoxContainer" parent="Node2D/Node2D2/support_shop/Node2D/MarginContainer/ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="support_main" type="PanelContainer" parent="Node2D/Node2D2/support_shop"]
+unique_name_in_owner = true
+clip_children = 2
+offset_left = 10.0
+offset_top = 56.0
+offset_right = 127.0
+offset_bottom = 343.0
+theme = SubResource("Theme_k55hh")
+
+[node name="ColorRect" type="ColorRect" parent="Node2D/Node2D2/support_shop/support_main"]
+custom_minimum_size = Vector2(0, 240)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ColorRect5" type="ColorRect" parent="Node2D/Node2D2/support_shop/support_main/ColorRect"]
+layout_mode = 0
+offset_left = -39.0
+offset_top = 8.0
+offset_right = 148.0
+offset_bottom = 218.0
+rotation = -1.1781
+mouse_filter = 2
+color = Color(0.857937, 0.247009, 0.420038, 1)
+
+[node name="ColorRect4" type="ColorRect" parent="Node2D/Node2D2/support_shop/support_main/ColorRect"]
+layout_mode = 0
+offset_left = -87.0
+offset_top = 277.0
+offset_right = 100.0
+offset_bottom = 487.0
+rotation = -1.1781
+mouse_filter = 2
+color = Color(0.796078, 0.796078, 0.796078, 1)
+
+[node name="ColorRect3" type="ColorRect" parent="Node2D/Node2D2/support_shop/support_main/ColorRect"]
+layout_mode = 2
+offset_left = -87.0
+offset_top = 292.0
+offset_right = 100.0
+offset_bottom = 502.0
+rotation = -1.1781
+mouse_filter = 2
+color = Color(0.857937, 0.247009, 0.420038, 1)
+
+[node name="support_halo" type="Sprite2D" parent="Node2D/Node2D2/support_shop/support_main/ColorRect"]
+unique_name_in_owner = true
+position = Vector2(27, 25)
+rotation = 0.349066
+scale = Vector2(0.35, 0.35)
+skew = 0.174533
+texture = ExtResource("33_gsib4")
+
+[node name="support_sprite" type="Sprite2D" parent="Node2D/Node2D2/support_shop/support_main/ColorRect"]
+unique_name_in_owner = true
+texture_filter = 2
+position = Vector2(47, 184)
+scale = Vector2(0.35, 0.35)
+texture = ExtResource("34_dde4k")
+flip_h = true
+hframes = 4
+
+[node name="lock_texture" type="TextureRect" parent="Node2D/Node2D2/support_shop/support_main/ColorRect"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = -1.0
+offset_top = -54.0
+offset_right = 118.0
+offset_bottom = 290.0
+mouse_filter = 2
+texture = SubResource("GradientTexture2D_4uh3k")
+
+[node name="unlock_cost" type="Label" parent="Node2D/Node2D2/support_shop/support_main/ColorRect/lock_texture"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1.0
+offset_top = 210.0
+offset_right = 118.0
+offset_bottom = 226.0
+theme_override_colors/font_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_colors/font_shadow_color = Color(0.933333, 0.392157, 0.458824, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 7
+theme_override_constants/shadow_outline_size = 4
+theme_override_fonts/font = ExtResource("6_imrhj")
+theme_override_font_sizes/font_size = 15
+text = "20"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="lock2" type="Label" parent="Node2D/Node2D2/support_shop/support_main/ColorRect/lock_texture"]
+visible = false
+modulate = Color(1, 1, 1, 0)
+layout_mode = 0
+offset_left = 1.0
+offset_top = 200.0
+offset_right = 118.0
+offset_bottom = 214.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.933333, 0.392157, 0.458824, 1)
+theme_override_colors/font_outline_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 7
+theme_override_constants/shadow_outline_size = 4
+theme_override_fonts/font = ExtResource("43_4eamn")
+theme_override_font_sizes/font_size = 12
+text = "button_confirm"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="lock" type="Label" parent="Node2D/Node2D2/support_shop/support_main/ColorRect/lock_texture"]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 228.0
+offset_right = 118.0
+offset_bottom = 246.0
+theme_override_colors/font_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_colors/font_shadow_color = Color(0.933333, 0.392157, 0.458824, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 7
+theme_override_constants/shadow_outline_size = 4
+theme_override_fonts/font = ExtResource("43_4eamn")
+theme_override_font_sizes/font_size = 15
+text = "button_unlock"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="ColorRect2" type="ColorRect" parent="Node2D/Node2D2/support_shop/support_main/ColorRect"]
+layout_mode = 0
+offset_top = 219.0
+offset_right = 117.0
+offset_bottom = 263.0
+mouse_filter = 2
+
+[node name="ColorRect" type="ColorRect" parent="Node2D/Node2D2/support_shop/support_main/ColorRect/ColorRect2"]
+layout_mode = 0
+offset_left = -1.0
+offset_right = 117.0
+offset_bottom = 31.0
+mouse_filter = 2
+color = Color(0.933816, 0.393994, 0.45781, 1)
+
+[node name="TextureRect2" type="TextureRect" parent="Node2D/Node2D2/support_shop/support_main/ColorRect/ColorRect2"]
+material = SubResource("ShaderMaterial_cytk1")
+layout_mode = 0
+offset_left = -14.0
+offset_top = 8.99997
+offset_right = 811.0
+offset_bottom = 154.0
+scale = Vector2(0.2, 0.2)
+mouse_filter = 2
+texture = ExtResource("35_w2w4j")
+stretch_mode = 1
+
+[node name="MainName" type="Label" parent="Node2D/Node2D2/support_shop/support_main/ColorRect"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 5.0
+offset_top = 212.0
+offset_right = 104.0
+offset_bottom = 239.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.933333, 0.392157, 0.458824, 1)
+theme_override_colors/font_outline_color = Color(0.933333, 0.392157, 0.458824, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 7
+theme_override_constants/shadow_outline_size = 4
+theme_override_fonts/font = ExtResource("6_imrhj")
+theme_override_font_sizes/font_size = 12
+text = "TENDOU KEI"
+autowrap_mode = 2
+
+[node name="main_anim" type="AnimationPlayer" parent="Node2D/Node2D2/support_shop"]
+libraries = {
+"": SubResource("AnimationLibrary_40dgq")
+}
+
+[node name="exp" type="Node2D" parent="Node2D/Node2D2/support_shop"]
+position = Vector2(161, 136)
+
+[node name="PanelContainer2" type="PanelContainer" parent="Node2D/Node2D2/support_shop/exp"]
+clip_children = 2
+offset_left = -29.0
+offset_top = -29.0
+offset_right = 242.0
+offset_bottom = 91.0
+theme = SubResource("Theme_k55hh")
+
+[node name="ColorRect" type="ColorRect" parent="Node2D/Node2D2/support_shop/exp/PanelContainer2"]
+layout_mode = 2
+color = Color(0.969158, 0.567284, 0.73208, 1)
+
+[node name="ColorRect" type="ColorRect" parent="Node2D/Node2D2/support_shop/exp"]
+offset_left = -18.0
+offset_top = -7.0
+offset_right = 235.0
+offset_bottom = 12.0
+color = Color(0.211765, 0.211765, 0.211765, 1)
+
+[node name="lv_icon" type="Node2D" parent="Node2D/Node2D2/support_shop/exp"]
+position = Vector2(35, 20)
+
+[node name="PanelContainer" type="PanelContainer" parent="Node2D/Node2D2/support_shop/exp/lv_icon"]
+clip_children = 2
+offset_left = -2.0
+offset_right = 123.0
+offset_bottom = 67.0
+theme = ExtResource("35_jofky")
+
+[node name="ColorRect" type="ColorRect" parent="Node2D/Node2D2/support_shop/exp/lv_icon/PanelContainer"]
+layout_mode = 2
+color = Color(0.28485, 0.28485, 0.28485, 1)
+
+[node name="Node2D" type="Node2D" parent="Node2D/Node2D2/support_shop/exp/lv_icon/PanelContainer"]
+
+[node name="weapon_icon" type="Sprite2D" parent="Node2D/Node2D2/support_shop/exp/lv_icon/PanelContainer/Node2D"]
+unique_name_in_owner = true
+position = Vector2(38, 17)
+texture = ExtResource("36_gdyli")
+
+[node name="lv_value" type="Label" parent="Node2D/Node2D2/support_shop/exp/lv_icon/PanelContainer/Node2D"]
+unique_name_in_owner = true
+offset_left = 78.0
+offset_top = 11.0
+offset_right = 116.0
+offset_bottom = 23.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_colors/font_outline_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 7
+theme_override_constants/shadow_outline_size = 4
+theme_override_fonts/font = ExtResource("6_imrhj")
+theme_override_font_sizes/font_size = 12
+text = "LV 100"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Node2D/Node2D2/support_shop/exp/lv_icon/PanelContainer/Node2D"]
+offset_left = 5.0
+offset_top = 45.0
+offset_right = 119.0
+offset_bottom = 62.0
+theme_override_constants/separation = 1
+alignment = 2
+
+[node name="pa_value" type="Label" parent="Node2D/Node2D2/support_shop/exp/lv_icon/PanelContainer/Node2D/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.690196, 0.929412, 0.278431, 1)
+theme_override_colors/font_shadow_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_colors/font_outline_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("6_imrhj")
+theme_override_font_sizes/font_size = 10
+text = "+100%"
+horizontal_alignment = 2
+
+[node name="pa_id" type="Label" parent="Node2D/Node2D2/support_shop/exp/lv_icon/PanelContainer/Node2D/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.690196, 0.929412, 0.278431, 1)
+theme_override_colors/font_shadow_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_colors/font_outline_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("6_imrhj")
+theme_override_font_sizes/font_size = 10
+text = "子弹伤害"
+horizontal_alignment = 2
+
+[node name="Label2" type="Label" parent="Node2D/Node2D2/support_shop/exp/lv_icon/PanelContainer/Node2D"]
+offset_left = 6.0
+offset_top = 32.0
+offset_right = 46.0
+offset_bottom = 43.0
+theme_override_colors/font_color = Color(0.690196, 0.929412, 0.278431, 1)
+theme_override_colors/font_shadow_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_colors/font_outline_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("6_imrhj")
+theme_override_font_sizes/font_size = 10
+text = "support_pa"
+
+[node name="ColorRect2" type="ColorRect" parent="Node2D/Node2D2/support_shop/exp/lv_icon/PanelContainer"]
+layout_mode = 2
+color = Color(0, 0, 0, 0)
+
+[node name="exp_bar" type="TextureProgressBar" parent="Node2D/Node2D2/support_shop/exp"]
+unique_name_in_owner = true
+offset_right = 230.0
+offset_bottom = 8.0
+max_value = 1.0
+step = 0.0
+value = 0.82
+texture_under = SubResource("GradientTexture2D_pgrqc")
+texture_progress = SubResource("GradientTexture2D_il0qv")
+
+[node name="exp_value" type="Label" parent="Node2D/Node2D2/support_shop/exp"]
+unique_name_in_owner = true
+offset_left = 33.0
+offset_top = 6.0
+offset_right = 100.0
+offset_bottom = 17.0
+pivot_offset = Vector2(0, 11)
+theme_override_colors/font_color = Color(0.212, 0.212, 0.212, 1)
+theme_override_colors/font_shadow_color = Color(0.933333, 0.392157, 0.458824, 1)
+theme_override_colors/font_outline_color = Color(0.933333, 0.392157, 0.458824, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 1
+theme_override_fonts/font = ExtResource("6_imrhj")
+theme_override_font_sizes/font_size = 10
+text = "-/-"
+
+[node name="EXP" type="Label" parent="Node2D/Node2D2/support_shop/exp"]
+offset_left = -8.0
+offset_top = 10.0
+offset_right = 22.0
+offset_bottom = 26.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_colors/font_outline_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 7
+theme_override_constants/shadow_outline_size = 4
+theme_override_fonts/font = ExtResource("6_imrhj")
+theme_override_font_sizes/font_size = 16
+text = "EXP"
+
+[node name="support_name" type="Label" parent="Node2D/Node2D2/support_shop/exp"]
+unique_name_in_owner = true
+offset_left = -22.0
+offset_top = -16.9471
+offset_right = 93.0
+offset_bottom = 1.0529
+theme_override_colors/font_shadow_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = -1
+theme_override_constants/shadow_outline_size = 7
+text = "TENDOU KEI"
+
+[node name="weapon_name" type="Label" parent="Node2D/Node2D2/support_shop/exp"]
+unique_name_in_owner = true
+offset_left = -21.7882
+offset_top = -26.0
+offset_right = 82.2119
+offset_bottom = -8.00003
+theme_override_colors/font_color = Color(0.863288, 0.149056, 0.361647, 1)
+theme_override_colors/font_shadow_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_colors/font_outline_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 1
+theme_override_constants/shadow_outline_size = 6
+theme_override_font_sizes/font_size = 9
+text = "LUMINOUS NOVA"
+
+[node name="lv_anim" type="AnimationPlayer" parent="Node2D/Node2D2/support_shop/exp"]
+root_node = NodePath("../lv_icon")
+libraries = {
+"": SubResource("AnimationLibrary_uek0j")
+}
+
+[node name="EXP2" type="Label" parent="Node2D/Node2D2/support_shop/exp"]
+visible = false
+offset_left = 46.0
+offset_top = 16.0
+offset_right = 144.0
+offset_bottom = 32.0
+theme_override_colors/font_color = Color(0.945869, 0.781443, 1.15514e-06, 1)
+theme_override_colors/font_shadow_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 9
+theme_override_constants/shadow_outline_size = 5
+theme_override_fonts/font = ExtResource("6_imrhj")
+theme_override_font_sizes/font_size = 16
+text = "LEVEL UP ↑"
+
+[node name="lv_up" type="Node2D" parent="Node2D/Node2D2/support_shop/exp"]
+position = Vector2(162, 61)
+
+[node name="upgrade_button" parent="Node2D/Node2D2/support_shop/exp/lv_up" instance=ExtResource("41_xiemr")]
+offset_top = 0.0
+
+[node name="skill" type="Node2D" parent="Node2D/Node2D2/support_shop"]
+
+[node name="Node2D2" type="Node2D" parent="Node2D/Node2D2/support_shop/skill"]
+position = Vector2(140, 228)
+
+[node name="ps_name" type="Label" parent="Node2D/Node2D2/support_shop/skill/Node2D2"]
+offset_right = 86.0
+offset_bottom = 15.0
+theme_override_colors/font_color = Color(0.364548, 0.626942, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.928756, 0.417389, 0.524779, 1)
+theme_override_colors/font_outline_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 9
+theme_override_constants/shadow_outline_size = 4
+theme_override_fonts/font = ExtResource("6_imrhj")
+theme_override_font_sizes/font_size = 12
+text = "PASSIVE SKILL"
+
+[node name="ps" type="Label" parent="Node2D/Node2D2/support_shop/skill/Node2D2"]
+unique_name_in_owner = true
+offset_left = 10.0
+offset_top = 13.0
+offset_right = 270.0
+offset_bottom = 33.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_colors/font_outline_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("6_imrhj")
+theme_override_font_sizes/font_size = 10
+text = "作为召唤物登场协助作战，继承50%子弹伤害。"
+autowrap_mode = 1
+
+[node name="Node2D" type="Node2D" parent="Node2D/Node2D2/support_shop/skill"]
+position = Vector2(140, 277)
+
+[node name="ex" type="Label" parent="Node2D/Node2D2/support_shop/skill/Node2D"]
+offset_right = 61.0
+offset_bottom = 15.0
+theme_override_colors/font_color = Color(0.963757, 0.196588, 0.331416, 1)
+theme_override_colors/font_shadow_color = Color(0.928756, 0.417389, 0.524779, 1)
+theme_override_colors/font_outline_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 9
+theme_override_constants/shadow_outline_size = 4
+theme_override_fonts/font = ExtResource("6_imrhj")
+theme_override_font_sizes/font_size = 14
+text = "EX SKILL"
+
+[node name="ex_skill" type="Label" parent="Node2D/Node2D2/support_shop/skill/Node2D"]
+unique_name_in_owner = true
+offset_left = 9.0
+offset_top = 15.0
+offset_right = 269.0
+offset_bottom = 72.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_colors/font_outline_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("6_imrhj")
+theme_override_font_sizes/font_size = 10
+text = "使用后8s内在自身周围内一定范围提升子弹伤害。（玩家120%，召唤物25%）"
+autowrap_mode = 1
+
+[node name="Node2D" type="Node2D" parent="Node2D"]
+
+[node name="ColorRect" type="ColorRect" parent="Node2D/Node2D"]
+clip_children = 1
+offset_top = 41.0
+offset_right = 640.0
+offset_bottom = 351.0
+mouse_filter = 2
+
+[node name="Arona" parent="Node2D/Node2D/ColorRect" instance=ExtResource("16_gjpoo")]
+position = Vector2(-138, 0)
+
+[node name="ChangeShop" type="PanelContainer" parent="Node2D/Node2D/ColorRect/Arona"]
+offset_left = -104.0
+offset_top = 13.0
+offset_right = -74.0
+offset_bottom = 43.0
+theme = SubResource("Theme_ka67v")
+
+[node name="Node2D" type="Node2D" parent="Node2D/Node2D/ColorRect/Arona/ChangeShop"]
+
+[node name="Panel" type="Panel" parent="Node2D/Node2D/ColorRect/Arona/ChangeShop/Node2D"]
+modulate = Color(0.539318, 0.775639, 0.989867, 1)
+offset_left = -2.0
+offset_top = -2.0
+offset_right = 33.0
+offset_bottom = 33.0
+mouse_filter = 2
+theme = SubResource("Theme_m4udm")
+
+[node name="Panel" type="Panel" parent="Node2D/Node2D/ColorRect/Arona/ChangeShop"]
+layout_mode = 2
+mouse_filter = 2
+theme = SubResource("Theme_m4udm")
+
+[node name="TextureRect" type="TextureRect" parent="Node2D/Node2D/ColorRect/Arona/ChangeShop/Panel"]
+modulate = Color(0.354196, 0.654705, 0.971274, 1)
+layout_mode = 0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 29.0
+offset_bottom = 29.0
+mouse_filter = 2
+texture = ExtResource("21_ie7rl")
+expand_mode = 5
+
+[node name="Plana" parent="Node2D/Node2D/ColorRect" instance=ExtResource("19_mro3f")]
+position = Vector2(780, 0)
+
+[node name="ChangeShop2" type="PanelContainer" parent="Node2D/Node2D/ColorRect/Plana"]
+offset_left = 48.0
+offset_top = 13.0
+offset_right = 78.0
+offset_bottom = 43.0
+theme = SubResource("Theme_ka67v")
+
+[node name="Node2D" type="Node2D" parent="Node2D/Node2D/ColorRect/Plana/ChangeShop2"]
+
+[node name="Panel" type="Panel" parent="Node2D/Node2D/ColorRect/Plana/ChangeShop2/Node2D"]
+modulate = Color(0.984317, 0.73082, 0.906501, 1)
+offset_left = -2.0
+offset_top = -2.0
+offset_right = 33.0
+offset_bottom = 33.0
+mouse_filter = 2
+theme = SubResource("Theme_m4udm")
+
+[node name="Panel" type="Panel" parent="Node2D/Node2D/ColorRect/Plana/ChangeShop2"]
+layout_mode = 2
+mouse_filter = 2
+theme = SubResource("Theme_m4udm")
+
+[node name="TextureRect" type="TextureRect" parent="Node2D/Node2D/ColorRect/Plana/ChangeShop2/Panel"]
+modulate = Color(0.99155, 0.58258, 0.820967, 1)
+layout_mode = 0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 29.0
+offset_bottom = 29.0
+mouse_filter = 2
+texture = ExtResource("21_ie7rl")
+expand_mode = 5
+
+[node name="ColorRect3" type="ColorRect" parent="Node2D"]
+offset_top = -21.0
+offset_right = 640.0
+mouse_filter = 2
+color = Color(0.14902, 0.14902, 0.14902, 1)
+
+[node name="TextureRect" type="TextureRect" parent="Node2D/ColorRect3"]
+material = SubResource("ShaderMaterial_kd0hi")
+layout_mode = 0
+offset_top = -35.0
+offset_right = 2560.0
+offset_bottom = 110.0
+scale = Vector2(0.25, 0.25)
+mouse_filter = 2
+texture = ExtResource("17_t36k7")
+stretch_mode = 1
+
+[node name="TextureRect2" type="TextureRect" parent="Node2D/ColorRect3"]
+material = SubResource("ShaderMaterial_kd0hi")
+layout_mode = 0
+offset_top = -35.0
+offset_right = 2560.0
+offset_bottom = 110.0
+scale = Vector2(0.25, 0.25)
+mouse_filter = 2
+texture = ExtResource("21_22x4y")
+stretch_mode = 1
+
+[node name="shop_anim" type="AnimationPlayer" parent="Node2D"]
+root_node = NodePath("../Node2D2")
+libraries = {
+"": SubResource("AnimationLibrary_7lx7h")
+}
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_wp415")
+}

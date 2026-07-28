@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://hrh12538g52l"]
+
+[ext_resource type="Texture2D" uid="uid://8yfk8od02fb2" path="res://sprites/update_item/concentrated_ammo.png" id="1_x82nk"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_7qlfb"]
+
+[resource]
+script = ExtResource("2_7qlfb")
+id = "concentrated_ammo"
+icon = ExtResource("1_x82nk")
+name = "浓缩炮弹"
+rare = 2
+order_num = 1
+special_rules = 0
+description = "将弹匣内子弹浓缩为一颗，按照消耗数量提升子弹伤害。"
+forward = "独特
++20%换弹速度"
+negative = "弹匣上限限制为1"
+item_tags = 1
+tags = Array[String](["弹道"])
+weight = 1.0

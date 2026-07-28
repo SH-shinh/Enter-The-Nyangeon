@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://bu0id0fl6hjg0"]
+
+[ext_resource type="Texture2D" uid="uid://bolp7cidhopnf" path="res://sprites/update_item/black_ninpero.png" id="1_bjwpy"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_70t88"]
+
+[resource]
+script = ExtResource("2_70t88")
+id = "black_ninpero"
+icon = ExtResource("1_bjwpy")
+name = "黑色忍佩洛"
+rare = 2
+order_num = -1
+special_rules = 0
+description = "黑色忍佩洛玩偶，子弹命中叠加1层2%易伤，最大25层。"
+forward = "+25最大叠加层数"
+negative = ""
+item_tags = 1
+tags = Array[String](["弹道"])
+weight = 1.0

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://jn2f1rn5l6ds"]
+
+[ext_resource type="Texture2D" uid="uid://dfgqsqogu2kji" path="res://sprites/update_item/mustache_shampoo.png" id="1_hcamn"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_i2rjf"]
+
+[resource]
+script = ExtResource("2_i2rjf")
+id = "mustache_shampoo"
+icon = ExtResource("1_hcamn")
+name = "胡子洗发剂"
+rare = 0
+order_num = -1
+special_rules = 0
+description = "红冬联邦学园特制洗发剂，名字里有「胡子」，但似乎并不适合用来洗胡子。"
+forward = "+32%异常持续时间"
+negative = ""
+item_tags = 224
+tags = Array[String](["燃烧", "中毒", "恶寒"])
+weight = 1.0

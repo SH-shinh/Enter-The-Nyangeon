@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://c0two50x0xics"]
+
+[ext_resource type="Texture2D" uid="uid://dp36ijart7rj0" path="res://sprites/update_item/GRS_grilled_corn.png" id="1_lx0ci"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_0ndrh"]
+
+[resource]
+script = ExtResource("2_0ndrh")
+id = "grs_grilled_corn"
+icon = ExtResource("1_lx0ci")
+name = "烤玉米"
+rare = 1
+order_num = -1
+special_rules = 0
+description = "美食研究会烤的烤玉米，但是无法确定是什么味道，造成燃烧伤害时有概率恢复1点生命值。"
+forward = "提升触发概率"
+negative = ""
+item_tags = 296
+tags = Array[String](["燃烧", "概率", "防御"])
+weight = 1.0

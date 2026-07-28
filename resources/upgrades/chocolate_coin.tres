@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://v4hvq5xlackl"]
+
+[ext_resource type="Texture2D" uid="uid://6dsgh5inllp7" path="res://sprites/update_item/chocolate_coin.png" id="1_m3h8w"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_y05by"]
+
+[resource]
+script = ExtResource("2_y05by")
+id = "chocolate_coin"
+icon = ExtResource("1_m3h8w")
+name = "巧克力硬币"
+rare = 0
+order_num = -1
+special_rules = 0
+description = "好吃的硬币形状巧克力，不能当作货币使用，提升拾取范围。"
+forward = "+25%拾取范围
+每拾取30个硬币额外+1硬币"
+negative = ""
+item_tags = 33792
+tags = Array[String](["通用"])
+weight = 1.0

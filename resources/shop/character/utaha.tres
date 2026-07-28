@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CharacterCard" load_steps=5 format=3 uid="uid://cnllww8n0l2i0"]
+
+[ext_resource type="Texture2D" uid="uid://b6vo8t1e5jiq" path="res://sprites/player/utaha/utaha_picture.png" id="1_l0fpo"]
+[ext_resource type="Texture2D" uid="uid://ca7j4dmko8tds" path="res://ui/school/MILLENNIUM_icon.png" id="2_u12mu"]
+[ext_resource type="Script" path="res://resources/shop/character/character_card.gd" id="3_rv2uq"]
+[ext_resource type="Texture2D" uid="uid://5pnl3ro124t0" path="res://ui/weapon/SMG_icon.png" id="4_b10kx"]
+
+[resource]
+script = ExtResource("3_rv2uq")
+cost = 6
+name_1 = "SHIRAISHI"
+name_2 = "UTAHA"
+character_sprite = ExtResource("1_l0fpo")
+weapon_name = "MEISTER ZERO"
+weapon_type_name = "SMG"
+weapon_icon = ExtResource("4_b10kx")
+school_name = "MILLENNIUM"
+school_icon = ExtResource("2_u12mu")
+id = "utaha"
+group = "ED"

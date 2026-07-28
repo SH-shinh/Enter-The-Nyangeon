@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dicoj2g1eo667"]
+
+[ext_resource type="Script" path="res://scenes/bullet/launcher/enemy_spawn_launcher.gd" id="1_n8s6i"]
+
+[node name="enemy_spawn_launcher" type="Node2D"]
+script = ExtResource("1_n8s6i")

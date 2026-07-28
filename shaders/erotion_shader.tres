@@ -1,0 +1,62 @@
+[gd_resource type="VisualShader" load_steps=5 format=3 uid="uid://ciowuj7dhso7g"]
+
+[sub_resource type="VisualShaderNodeTexture2DParameter" id="VisualShaderNodeTexture2DParameter_b2f7e"]
+parameter_name = "dissolver_texture"
+texture_type = 1
+texture_repeat = 1
+
+[sub_resource type="VisualShaderNodeTexture" id="VisualShaderNodeTexture_uoofu"]
+expanded_output_ports = [0]
+source = 5
+
+[sub_resource type="VisualShaderNodeSmoothStep" id="VisualShaderNodeSmoothStep_lsk61"]
+output_port_for_preview = 0
+
+[sub_resource type="VisualShaderNodeInput" id="VisualShaderNodeInput_4efdy"]
+expanded_output_ports = [0]
+input_name = "color"
+
+[resource]
+code = "shader_type canvas_item;
+render_mode blend_mix, unshaded;
+
+uniform sampler2D dissolver_texture : source_color, repeat_enable;
+
+
+
+void fragment() {
+// Input:5
+	vec4 n_out5p0 = COLOR;
+	float n_out5p4 = n_out5p0.a;
+
+
+	vec4 n_out3p0;
+// Texture2D:3
+	n_out3p0 = texture(dissolver_texture, UV);
+	float n_out3p1 = n_out3p0.r;
+
+
+// SmoothStep:4
+	float n_in4p1 = 1.00000;
+	float n_out4p0 = smoothstep(n_out5p4, n_in4p1, n_out3p1);
+
+
+// Output:0
+	COLOR.a = n_out4p0;
+
+
+}
+"
+mode = 1
+flags/unshaded = true
+flags/light_only = false
+nodes/fragment/0/position = Vector2(840, 120)
+nodes/fragment/2/node = SubResource("VisualShaderNodeTexture2DParameter_b2f7e")
+nodes/fragment/2/position = Vector2(-220, 140)
+nodes/fragment/3/node = SubResource("VisualShaderNodeTexture_uoofu")
+nodes/fragment/3/position = Vector2(100, 0)
+nodes/fragment/4/node = SubResource("VisualShaderNodeSmoothStep_lsk61")
+nodes/fragment/4/position = Vector2(480, 200)
+nodes/fragment/5/node = SubResource("VisualShaderNodeInput_4efdy")
+nodes/fragment/5/position = Vector2(380, -60)
+nodes/fragment/connections = PackedInt32Array(2, 0, 3, 2, 3, 1, 4, 2, 5, 4, 4, 0, 4, 0, 0, 1)

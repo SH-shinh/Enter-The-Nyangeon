@@ -1,0 +1,91 @@
+[gd_scene load_steps=9 format=3 uid="uid://bmgdyaumkmynv"]
+
+[ext_resource type="Script" path="res://ui/support_ui/support_shop_card.gd" id="1_gvk2x"]
+[ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="2_01e1t"]
+[ext_resource type="Texture2D" uid="uid://dsxq2scs6kcep" path="res://sprites/player_support/null_picture.png" id="2_jercv"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jfl7t"]
+
+[sub_resource type="Theme" id="Theme_y8mt0"]
+PanelContainer/styles/panel = SubResource("StyleBoxEmpty_jfl7t")
+
+[sub_resource type="Animation" id="Animation_220tl"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(0.5, 0.5, 0.5, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_uegua"]
+resource_name = "select_anim"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(0.5, 0.5, 0.5, 1), Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_ixg2g"]
+_data = {
+"RESET": SubResource("Animation_220tl"),
+"select_anim": SubResource("Animation_uegua")
+}
+
+[node name="PanelContainer" type="PanelContainer"]
+modulate = Color(0.5, 0.5, 0.5, 1)
+custom_minimum_size = Vector2(80, 30)
+mouse_filter = 1
+theme = SubResource("Theme_y8mt0")
+script = ExtResource("1_gvk2x")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+clip_children = 2
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.145098, 0.145098, 0.145098, 1)
+
+[node name="support_sprite" type="Sprite2D" parent="ColorRect"]
+unique_name_in_owner = true
+texture_filter = 2
+position = Vector2(45, 115.005)
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("2_jercv")
+hframes = 4
+
+[node name="MainName" type="Label" parent="ColorRect"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 20.0
+offset_right = 78.0
+offset_bottom = 31.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.933333, 0.392157, 0.458824, 1)
+theme_override_colors/font_outline_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 7
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("2_01e1t")
+theme_override_font_sizes/font_size = 10
+text = "KEI"
+horizontal_alignment = 2
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_ixg2g")
+}

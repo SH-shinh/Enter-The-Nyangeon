@@ -1,0 +1,55 @@
+[gd_scene load_steps=9 format=3 uid="uid://bi4k4ko4kdka4"]
+
+[ext_resource type="Script" path="res://scenes/bullet/yuzu_bullet.gd" id="1_qdjdj"]
+[ext_resource type="PackedScene" uid="uid://ygvqweawmhgs" path="res://scenes/line.tscn" id="2_eo4sa"]
+[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="3_0n1sh"]
+[ext_resource type="Texture2D" uid="uid://b82lcoxay21sj" path="res://sprites/bullet/yuzu_bullet.png" id="4_3fa04"]
+
+[sub_resource type="Gradient" id="Gradient_slpy4"]
+colors = PackedColorArray(0.970158, 0.701442, 0.266571, 1, 0.884652, 0.536598, 0.0589192, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0fqoh"]
+shader = ExtResource("3_0n1sh")
+shader_parameter/outline_width = 3.0
+shader_parameter/outline_color = Color(60, 45, 1, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="Curve" id="Curve_uc1as"]
+_data = [Vector2(0, 0.527472), 0.0, 0.0, 0, 0, Vector2(1, 0.67033), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_k2cyk"]
+radius = 7.0
+
+[node name="yuzu_bullet" type="CharacterBody2D" groups=["PlayerBullet"]]
+z_index = 2
+collision_layer = 4096
+collision_mask = 0
+motion_mode = 1
+script = ExtResource("1_qdjdj")
+life_time = 6
+base_explosion_range = 2.5
+
+[node name="Line" parent="." instance=ExtResource("2_eo4sa")]
+z_index = 1
+width = 12.0
+gradient = SubResource("Gradient_slpy4")
+texture_mode = 2
+width_f = 12.0
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_0fqoh")
+scale = Vector2(0.4, 0.4)
+texture = ExtResource("4_3fa04")
+
+[node name="Line2" parent="." instance=ExtResource("2_eo4sa")]
+z_index = 2
+width = 7.0
+width_curve = SubResource("Curve_uc1as")
+width_f = 7.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_k2cyk")
+
+[node name="FallTimer" type="Timer" parent="."]
+one_shot = true

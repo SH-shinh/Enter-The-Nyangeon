@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://ffd7wvb1272l"]
+
+[ext_resource type="Texture2D" uid="uid://b4hramjdk0vab" path="res://sprites/update_item/aether_essence.png" id="1_m0lck"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_g1olh"]
+
+[resource]
+script = ExtResource("2_g1olh")
+id = "aether_essence"
+icon = ExtResource("1_m0lck")
+name = "以太精"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "仅选用最为纯净强效的以太提炼制成的以太澄清液。"
+forward = "独特
+子弹每造成一次命中，提高该子弹5%伤害"
+negative = ""
+item_tags = 1
+tags = Array[String](["弹道"])
+weight = 1.0

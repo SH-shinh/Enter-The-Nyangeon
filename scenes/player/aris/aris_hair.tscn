@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://cftu3fqgrrsip"]
+
+[ext_resource type="Script" path="res://scenes/player/aris/Hair.gd" id="1_wga7p"]
+
+[node name="hair" type="Node2D"]
+
+[node name="Hair" type="Node2D" parent="."]
+position = Vector2(0, -22)
+script = ExtResource("1_wga7p")
+offset = Vector2(0, 3)
+k = 0.15
+col = Color(0.337255, 0.352941, 0.45098, 1)
+startRadius = 9.0

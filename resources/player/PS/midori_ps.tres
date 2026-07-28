@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PSCard" load_steps=3 format=3 uid="uid://cv744elimy3vi"]
+
+[ext_resource type="Script" path="res://resources/player/PS/ps_card.gd" id="1_co6dj"]
+[ext_resource type="Texture2D" uid="uid://cd7qi4w72l6uq" path="res://sprites/weapon/Fresh_Inspiration.png" id="2_3drab"]
+
+[resource]
+script = ExtResource("1_co6dj")
+weapon_icon = ExtResource("2_3drab")
+t_level = Array[String](["弹匣内前50%子弹可对敌人施加中毒异常，异常伤害获得额外10%加成。", "毒伤害击杀敌人会向范围内最近5个敌人扩散1次中毒异常。", "毒伤害击杀敌人会向范围内最近10个敌人扩散2次中毒异常。", "弹匣内所有子弹转变为毒属性，且受异常伤害加成。"])

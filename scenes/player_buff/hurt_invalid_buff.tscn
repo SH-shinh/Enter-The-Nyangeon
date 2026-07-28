@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://bciu86ugpmyiv"]
+
+[ext_resource type="Script" path="res://scenes/player_buff/hurt_invalid_buff.gd" id="1_vfjs8"]
+[ext_resource type="Resource" uid="uid://bb1aa7v4oy4tl" path="res://resources/buff/player_buff/hurt_invalid_buff.tres" id="2_vnpcf"]
+
+[node name="hurt_invalid_buff" type="Node2D" groups=["PlayerBuff"]]
+script = ExtResource("1_vfjs8")
+buff = ExtResource("2_vnpcf")
+buff_id = "hurt_invalid_buff"
+buff_layer = 1
+buff_value = 1.0
+buff_erase_timer = 999.0
+
+[node name="BuffTimer" type="Timer" parent="."]
+
+[connection signal="timeout" from="BuffTimer" to="." method="_on_buff_timer_timeout"]

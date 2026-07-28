@@ -1,0 +1,290 @@
+[gd_scene load_steps=20 format=3 uid="uid://cawafswp4jodm"]
+
+[ext_resource type="Script" path="res://scenes/update_item/utaha_turret_body.gd" id="1_1jrni"]
+[ext_resource type="Shader" path="res://shaders/screen_outline.gdshader" id="1_c3cj2"]
+[ext_resource type="PackedScene" uid="uid://pkd8wgu6vmgs" path="res://scenes/update_item/utaha_turret_icon.tscn" id="1_rtjim"]
+[ext_resource type="Texture2D" uid="uid://caiblqa0ao53y" path="res://sprites/update_item/utaha_turret_2_8.png" id="2_kj1pj"]
+[ext_resource type="PackedScene" uid="uid://dogh3pe2fynxi" path="res://scenes/weapon/shoot_flash_2.tscn" id="2_to0me"]
+[ext_resource type="Script" path="res://script/render_sprites.gd" id="3_hlwy1"]
+[ext_resource type="Texture2D" uid="uid://owtvqmd3tfd2" path="res://sprites/update_item/refresh.png" id="3_i727h"]
+[ext_resource type="Script" path="res://scenes/player/StateMachine.gd" id="6_gao25"]
+[ext_resource type="Script" path="res://script/SummonedStats.gd" id="9_qmclt"]
+[ext_resource type="PackedScene" uid="uid://qh7xxgcqcqi" path="res://scenes/manager/summoned_buff_manager.tscn" id="10_yoxab"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_wxrt8"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_qxiu0"]
+shader = ExtResource("1_c3cj2")
+shader_parameter/outline_width = 2.0
+shader_parameter/outline_color = Color(20, 10, 20, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="Animation" id="Animation_knqgb"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_kepn4"]
+resource_name = "reload"
+length = 1.5
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [6.28319, 0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_q4mcw"]
+_data = {
+"RESET": SubResource("Animation_knqgb"),
+"reload": SubResource("Animation_kepn4")
+}
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_5v2ei"]
+radius = 300.0
+
+[sub_resource type="Animation" id="Animation_wdkw6"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CanvasGroup:position:x")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("CanvasGroup:position:y")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("CanvasGroup:scale")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_n63ti"]
+resource_name = "spawn_anim"
+length = 0.3
+step = 0.01
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.06, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CanvasGroup:position:x")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0.3)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("CanvasGroup:position:y")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0),
+"points": PackedFloat32Array(-120, -0.25, 0, 0.25, 0, 10, 0, 0, 0, 0, 0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 0.24, 0.3)
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("CanvasGroup:scale")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0.23, 0.24, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(1, 0.7), Vector2(1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_cqq10"]
+_data = {
+"RESET": SubResource("Animation_wdkw6"),
+"spawn_anim": SubResource("Animation_n63ti")
+}
+
+[node name="utaha_turret_body" type="CharacterBody2D" node_paths=PackedStringArray("stats") groups=["Summoned"]]
+scale = Vector2(0.7, 0.7)
+collision_layer = 512
+collision_mask = 256
+motion_mode = 1
+script = ExtResource("1_1jrni")
+stats = NodePath("Stats")
+rotate_sprites = true
+shoot_flash = ExtResource("2_to0me")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_wxrt8")
+
+[node name="CanvasGroup" type="CanvasGroup" parent="."]
+material = SubResource("ShaderMaterial_qxiu0")
+
+[node name="Reload" type="Node2D" parent="CanvasGroup"]
+visible = false
+
+[node name="Sprite2D" type="Sprite2D" parent="CanvasGroup/Reload"]
+modulate = Color(0.140447, 0.140447, 0.140447, 1)
+position = Vector2(-1.42109e-13, -42.8571)
+scale = Vector2(0.25, 0.25)
+texture = ExtResource("3_i727h")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="CanvasGroup/Reload"]
+libraries = {
+"": SubResource("AnimationLibrary_q4mcw")
+}
+
+[node name="utaha_turret_icon" parent="CanvasGroup" instance=ExtResource("1_rtjim")]
+unique_name_in_owner = true
+scale = Vector2(0.8, 0.8)
+
+[node name="Sprite2D" type="Sprite2D" parent="CanvasGroup"]
+unique_name_in_owner = true
+position = Vector2(0, -11.2)
+texture = ExtResource("2_kj1pj")
+hframes = 8
+frame = 4
+script = ExtResource("3_hlwy1")
+
+[node name="ShootR" type="Node2D" parent="."]
+position = Vector2(0, -15.2)
+
+[node name="Shoot" type="Marker2D" parent="ShootR"]
+unique_name_in_owner = true
+position = Vector2(14, 0)
+
+[node name="ReloadTimer" type="Timer" parent="."]
+wait_time = 2.0
+one_shot = true
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("6_gao25")
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("CircleShape2D_5v2ei")
+
+[node name="ShootTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="IdleTimer" type="Timer" parent="."]
+wait_time = 2.5
+one_shot = true
+
+[node name="Stats" type="Node" parent="."]
+script = ExtResource("9_qmclt")
+summoned_damage = 10
+SPEED_TIME = 0.4
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_cqq10")
+}
+autoplay = "spawn_anim"
+
+[node name="SummonedBuffManager" parent="." instance=ExtResource("10_yoxab")]
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+offset_left = -10.0
+offset_top = -45.7143
+offset_right = 30.0
+offset_bottom = -19.7143
+scale = Vector2(0.5, 0.5)
+
+[node name="BuffBox" type="HBoxContainer" parent="MarginContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+
+[connection signal="timeout" from="ReloadTimer" to="." method="_on_reload_timer_timeout"]
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
+[connection signal="body_exited" from="Area2D" to="." method="_on_area_2d_body_exited"]

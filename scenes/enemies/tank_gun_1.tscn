@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://dm63a0q5vhjbb"]
+
+[ext_resource type="Script" path="res://scenes/enemies/tank_gun_1.gd" id="1_t5p17"]
+[ext_resource type="PackedScene" uid="uid://bhyw00fayomdu" path="res://scenes/enemies/tank_bullet_1.tscn" id="2_bl4yu"]
+
+[node name="tank_gun_1" type="Node2D"]
+scale = Vector2(0.8, 0.8)
+script = ExtResource("1_t5p17")
+tank_bullet = ExtResource("2_bl4yu")
+pool_id = "tank_bullet_1"
+shoot_offeset = 50.0
+
+[node name="Marker2D" type="Marker2D" parent="."]
+position = Vector2(42, 0)

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://dp3t6gnxxtjtn"]
+
+[ext_resource type="Texture2D" uid="uid://wswb17srs7mn" path="res://sprites/update_item/life_jacket.png" id="1_p4nrm"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_jmqw3"]
+
+[resource]
+script = ExtResource("2_jmqw3")
+id = "life_jacket"
+icon = ExtResource("1_p4nrm")
+name = "救生衣"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "穿上就能浮在水面的救生衣，每5秒能够抵挡一次伤害并击退周围敌人。"
+forward = "独特
+抵挡1次伤害"
+negative = ""
+item_tags = 256
+tags = Array[String](["防御"])
+weight = 1.0

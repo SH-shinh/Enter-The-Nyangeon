@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PSCard" load_steps=3 format=3 uid="uid://ddr3s51crnvng"]
+
+[ext_resource type="Script" path="res://resources/player/PS/ps_card.gd" id="1_nuobm"]
+[ext_resource type="Texture2D" uid="uid://c0mu2nn45qwbp" path="res://sprites/weapon/professor_k.png" id="2_r8pv7"]
+
+[resource]
+script = ExtResource("1_nuobm")
+weapon_icon = ExtResource("2_r8pv7")
+t_level = Array[String](["射击前需要预热，子弹造成最大生命值5%的额外伤害，每发射15颗子弹可获得1点临时生命值。", "子弹弹道+1，临时生命值上限提升50%，子弹造成最大生命值15%的额外伤害。", "子弹弹道+1，临时生命值上限提升75%，子弹造成最大生命值40%的额外伤害。", "临时生命值上限提升100%，子弹造成最大生命值80%的额外伤害。"])

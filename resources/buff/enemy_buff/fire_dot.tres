@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://ddlwsbdn8hn6j"]
+
+[ext_resource type="Texture2D" uid="uid://c57l35qcln0a6" path="res://sprites/buff_icon/fire_dot_icon.png" id="1_17n5a"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_v2py7"]
+
+[resource]
+script = ExtResource("2_v2py7")
+id = "fire_dot"
+icon = ExtResource("1_17n5a")
+name = "燃烧dot"
+ability = ""
+remove_by_layer = true
+description = "按照间隔时间给予燃烧伤害"

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://cxuwj322vbttw"]
+
+[ext_resource type="Texture2D" uid="uid://21ddy1swxs60" path="res://sprites/update_item/ammunition_box.png" id="1_brhjb"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_hadol"]
+
+[resource]
+script = ExtResource("2_hadol")
+id = "ammunition_box"
+icon = ExtResource("1_brhjb")
+name = "50发弹链"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "大幅增加子弹容量，同时大幅提升后勤小精灵的人工费。"
+forward = "独特
++50弹匣容量"
+negative = "+100%换弹时间"
+item_tags = 3
+tags = Array[String](["通用", "弹道"])
+weight = 1.0

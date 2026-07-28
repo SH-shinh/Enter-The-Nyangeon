@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PSCard" load_steps=3 format=3 uid="uid://df3qve3ntkiar"]
+
+[ext_resource type="Script" path="res://resources/player/PS/ps_card.gd" id="1_m8ha6"]
+[ext_resource type="Texture2D" uid="uid://c5oxewng2g338" path="res://sprites/weapon/eye_of_horus.png" id="2_8y2wk"]
+
+[resource]
+script = ExtResource("1_m8ha6")
+weapon_icon = ExtResource("2_8y2wk")
+t_level = Array[String](["远程击杀获得近战充能强化下一次近战攻击，近战击杀获得远程充能强化下一次射击。", "+25%子弹伤害，强化近战造成击杀时可以补充1颗子弹。", "+25%近战伤害，强化远程的伤害+80%，穿透值提升4。", "+25%射速，子弹或近战造成暴击也可获得对应充能。"])

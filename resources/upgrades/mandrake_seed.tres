@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://bx4icecgwrcm4"]
+
+[ext_resource type="Texture2D" uid="uid://dxp3k7scwqtoy" path="res://sprites/update_item/mandrake_seed.png" id="1_aoj2u"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_xf02o"]
+
+[resource]
+script = ExtResource("2_xf02o")
+id = "mandrake_seed"
+icon = ExtResource("1_aoj2u")
+name = "曼德拉草种子"
+rare = 2
+order_num = 1
+special_rules = 0
+description = "紧闭着的曼德拉草种子，提升些许生命值。"
+forward = "独特
+击杀时恢复造成伤害1%的生命值，间隔1s
++10生命值"
+negative = ""
+item_tags = 256
+tags = Array[String](["防御"])
+weight = 1.0

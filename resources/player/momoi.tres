@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PlayerCard" load_steps=4 format=3 uid="uid://c6qtvi7orlce1"]
+
+[ext_resource type="Texture2D" uid="uid://b20o1pcgeachj" path="res://sprites/player/momoi/momoi_picture_halo.png" id="1_khgkd"]
+[ext_resource type="Script" path="res://resources/player/player.gd" id="1_kqmhs"]
+[ext_resource type="Texture2D" uid="uid://ds8c5ssu2cqt7" path="res://sprites/player/momoi/momoi_picture.png" id="2_tvg37"]
+
+[resource]
+script = ExtResource("1_kqmhs")
+name = "SAIBA MOMOI"
+weapon = "UNIQUE IDEA"
+sprite = ExtResource("2_tvg37")
+halo = ExtResource("1_khgkd")
+color = Color(0.980392, 0.580392, 0.662745, 1)
+description = ""
+voice_name = "momoi"
+id = "momoi"

@@ -1,0 +1,291 @@
+[gd_scene load_steps=19 format=3 uid="uid://vu4kwhexhsp8"]
+
+[ext_resource type="Shader" path="res://shaders/shock_wave_2.gdshader" id="1_jtonj"]
+[ext_resource type="Script" path="res://script/range_explosion.gd" id="1_rd2f4"]
+[ext_resource type="Shader" path="res://shaders/shock_wave.gdshader" id="3_fov4a"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_2wo4t"]
+resource_local_to_scene = true
+shader = ExtResource("1_jtonj")
+shader_parameter/center = Vector2(0.5, 0.5)
+shader_parameter/size = 0.0
+shader_parameter/thickness = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_rb5y8"]
+resource_local_to_scene = true
+shader = ExtResource("1_jtonj")
+shader_parameter/center = Vector2(0.5, 0.5)
+shader_parameter/size = 0.0
+shader_parameter/thickness = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_p5od3"]
+resource_local_to_scene = true
+shader = ExtResource("3_fov4a")
+shader_parameter/center = Vector2(0.5, 0.5)
+shader_parameter/force = 0.01
+shader_parameter/size = 0.0
+shader_parameter/thickness = 0.0
+shader_parameter/strength = 1.0
+shader_parameter/color_add = null
+
+[sub_resource type="Animation" id="Animation_a63c0"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ColorRect:material:shader_parameter/size")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ColorRect:material:shader_parameter/thickness")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("ColorRect2:material:shader_parameter/size")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/3/type = "bezier"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("ColorRect2:material:shader_parameter/thickness")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("../GPUParticles2D3:emitting")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/5/type = "bezier"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("ColorRect3:material:shader_parameter/size")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/6/type = "bezier"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("ColorRect3:material:shader_parameter/thickness")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="Animation" id="Animation_vg4oh"]
+resource_name = "new_animation"
+length = 0.2
+step = 0.01
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ColorRect:material:shader_parameter/size")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, 0, 0, 0, 0, 0.5, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 0.2)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ColorRect:material:shader_parameter/thickness")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0.15, 0, 0, 0, 0, 0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 0.2)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("ColorRect2:material:shader_parameter/size")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0),
+"points": PackedFloat32Array(0, 0, 0, 0, 0, 0.2, 0, 0, 0, 0, 0.42, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 0.04, 0.2)
+}
+tracks/3/type = "bezier"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("ColorRect2:material:shader_parameter/thickness")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0),
+"points": PackedFloat32Array(0.1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 0.04, 0.2)
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("../GPUParticles2D3:emitting")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/5/type = "bezier"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("ColorRect3:material:shader_parameter/size")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, 0, 0, 0, 0, 0.5, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 0.2)
+}
+tracks/6/type = "bezier"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("ColorRect3:material:shader_parameter/thickness")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(1, 0, 0, 0, 0, 0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 0.2)
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_n761n"]
+_data = {
+"RESET": SubResource("Animation_a63c0"),
+"new_animation": SubResource("Animation_vg4oh")
+}
+
+[sub_resource type="Gradient" id="Gradient_vcpjo"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0, 0.590164, 0.745902)
+colors = PackedColorArray(1, 1, 1, 1, 0.589096, 0.589096, 0.589096, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_eukuh"]
+gradient = SubResource("Gradient_vcpjo")
+
+[sub_resource type="Gradient" id="Gradient_4i60w"]
+offsets = PackedFloat32Array(0.696721, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0.870588)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_thisx"]
+gradient = SubResource("Gradient_4i60w")
+
+[sub_resource type="Curve" id="Curve_w4jmc"]
+_data = [Vector2(0, 1), 0.0, -0.173511, 0, 0, Vector2(0.626667, 0.604396), -1.42099, -1.42099, 0, 0, Vector2(1, 0), -1.86813, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_8jing"]
+curve = SubResource("Curve_w4jmc")
+
+[sub_resource type="Curve" id="Curve_pnky5"]
+max_value = 500.0
+_data = [Vector2(0, 500), 0.0, 0.0, 0, 0, Vector2(0.64, 324.176), 0.0, 0.0, 0, 0, Vector2(0.94, 22.4176), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_hcxxy"]
+curve = SubResource("Curve_pnky5")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_5jfx4"]
+particle_flag_disable_z = true
+spread = 180.0
+initial_velocity_min = 500.0
+initial_velocity_max = 1000.0
+velocity_limit_curve = SubResource("CurveTexture_hcxxy")
+gravity = Vector3(0, 0, 0)
+scale_min = 3.0
+scale_max = 5.0
+scale_curve = SubResource("CurveTexture_8jing")
+color_ramp = SubResource("GradientTexture1D_thisx")
+color_initial_ramp = SubResource("GradientTexture1D_eukuh")
+
+[node name="RangeExplosion" type="Node2D"]
+script = ExtResource("1_rd2f4")
+
+[node name="Node2D" type="Node2D" parent="."]
+z_index = -1
+
+[node name="ColorRect" type="ColorRect" parent="Node2D"]
+material = SubResource("ShaderMaterial_2wo4t")
+offset_left = -10.0
+offset_top = -10.0
+offset_right = 10.0
+offset_bottom = 10.0
+pivot_offset = Vector2(10, 10)
+mouse_filter = 2
+color = Color(0.187176, 0.187176, 0.187176, 1)
+
+[node name="ColorRect2" type="ColorRect" parent="Node2D"]
+material = SubResource("ShaderMaterial_rb5y8")
+offset_left = -10.0
+offset_top = -10.0
+offset_right = 10.0
+offset_bottom = 10.0
+pivot_offset = Vector2(10, 10)
+mouse_filter = 2
+
+[node name="ColorRect3" type="ColorRect" parent="Node2D"]
+material = SubResource("ShaderMaterial_p5od3")
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+pivot_offset = Vector2(10, 10)
+mouse_filter = 2
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Node2D"]
+libraries = {
+"": SubResource("AnimationLibrary_n761n")
+}
+
+[node name="GPUParticles2D3" type="GPUParticles2D" parent="."]
+z_index = 1
+emitting = false
+amount = 16
+process_material = SubResource("ParticleProcessMaterial_5jfx4")
+lifetime = 0.2
+one_shot = true
+explosiveness = 1.0
+fixed_fps = 60

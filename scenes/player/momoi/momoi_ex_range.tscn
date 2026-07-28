@@ -1,0 +1,59 @@
+[gd_scene load_steps=4 format=3 uid="uid://d21w0vma3wyyk"]
+
+[ext_resource type="Script" path="res://scenes/player/momoi/momoi_ex_range.gd" id="1_8q0c5"]
+[ext_resource type="Texture2D" uid="uid://m54grm4ymrn8" path="res://ui/line_point.png" id="2_4j0px"]
+[ext_resource type="Texture2D" uid="uid://du3bpxxc4dcxt" path="res://ui/momoi_ex_range.png" id="3_miin8"]
+
+[node name="MomoiEXRange" type="Node2D"]
+script = ExtResource("1_8q0c5")
+
+[node name="Line2D" type="Line2D" parent="."]
+points = PackedVector2Array(128, -64, 0, 0, 128, 64)
+width = 3.0
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="Marker2D3" type="Marker2D" parent="."]
+position = Vector2(192, 0)
+
+[node name="Marker2D" type="Marker2D" parent="Marker2D3"]
+position = Vector2(0, -96)
+
+[node name="Marker2D2" type="Marker2D" parent="Marker2D3"]
+z_as_relative = false
+position = Vector2(0, 96)
+
+[node name="Marker2D4" type="Marker2D" parent="."]
+position = Vector2(256, 0)
+
+[node name="Marker2D" type="Marker2D" parent="Marker2D4"]
+position = Vector2(0, -128)
+
+[node name="Marker2D2" type="Marker2D" parent="Marker2D4"]
+position = Vector2(0, 128)
+
+[node name="Line2D2" type="Line2D" parent="."]
+texture_repeat = 2
+points = PackedVector2Array(128, -64, 256, -128)
+width = 3.0
+texture = ExtResource("2_4j0px")
+texture_mode = 1
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="Line2D3" type="Line2D" parent="."]
+texture_repeat = 2
+points = PackedVector2Array(128, 64, 256, 128)
+width = 3.0
+texture = ExtResource("2_4j0px")
+texture_mode = 1
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(1, 1, 1, 0.0392157)
+position = Vector2(108, 0)
+texture = ExtResource("3_miin8")

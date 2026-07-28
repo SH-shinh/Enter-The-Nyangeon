@@ -1,0 +1,335 @@
+[gd_scene load_steps=25 format=3 uid="uid://b0iipco20o0p6"]
+
+[ext_resource type="Script" path="res://ui/ability_shop_item_card.gd" id="1_bcj12"]
+[ext_resource type="Texture2D" uid="uid://b0vhck4unhuia" path="res://sprites/update_item/school_bag.png" id="1_snb05"]
+[ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="2_lhpak"]
+[ext_resource type="Texture2D" uid="uid://btitvjexf1qpv" path="res://ui/hammer_icon.png" id="2_r4l0l"]
+[ext_resource type="Texture2D" uid="uid://jcqmwo1t8vv0" path="res://ui/ui.png" id="5_1pipi"]
+[ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="6_rsksx"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_i24sp"]
+
+[sub_resource type="Theme" id="Theme_7snbp"]
+PanelContainer/styles/panel = SubResource("StyleBoxEmpty_i24sp")
+
+[sub_resource type="Gradient" id="Gradient_1cxtd"]
+offsets = PackedFloat32Array(0, 0.2, 0.8, 1)
+colors = PackedColorArray(0.25098, 0.32549, 0.431373, 0, 0.25098, 0.32549, 0.431373, 1, 0.25098, 0.32549, 0.431373, 1, 0.25098, 0.32549, 0.431373, 0)
+metadata/_snap_enabled = true
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_5ylsv"]
+gradient = SubResource("Gradient_1cxtd")
+width = 32
+height = 32
+fill_from = Vector2(1, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_g3u17"]
+
+[sub_resource type="Theme" id="Theme_8v2ar"]
+PanelContainer/styles/panel = SubResource("StyleBoxEmpty_g3u17")
+
+[sub_resource type="Animation" id="Animation_rxwxx"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("TextureRect:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+
+[sub_resource type="Animation" id="Animation_lmk06"]
+resource_name = "hammer_anim"
+length = 0.4
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("TextureRect:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [0.0, -0.785398]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_3se0n"]
+_data = {
+"RESET": SubResource("Animation_rxwxx"),
+"hammer_anim": SubResource("Animation_lmk06")
+}
+
+[sub_resource type="Animation" id="Animation_5n8kg"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node2D/ColorRect:color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(0.236145, 0.41285, 0.621341, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_khq01"]
+resource_name = "coin_lack"
+length = 0.2
+step = 0.01
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node2D/ColorRect:color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.05, 0.15, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Color(0.0980392, 0.219608, 0.407843, 1), Color(0.758067, 0.090934, 0.274269, 1), Color(0.756863, 0.0901961, 0.27451, 1), Color(0.0980392, 0.219608, 0.407843, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_l3oys"]
+resource_name = "mouse_in"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node2D/ColorRect:color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(0.236145, 0.41285, 0.621341, 1), Color(0.0975495, 0.218507, 0.407278, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_q5v3f"]
+resource_name = "mouse_out"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node2D/ColorRect:color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(0.0975495, 0.218507, 0.407278, 1), Color(0.235294, 0.411765, 0.619608, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_l87cy"]
+_data = {
+"RESET": SubResource("Animation_5n8kg"),
+"coin_lack": SubResource("Animation_khq01"),
+"mouse_in": SubResource("Animation_l3oys"),
+"mouse_out": SubResource("Animation_q5v3f")
+}
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_24xot"]
+
+[sub_resource type="Theme" id="Theme_frkdq"]
+PanelContainer/styles/panel = SubResource("StyleBoxEmpty_24xot")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_jr5cw"]
+texture = ExtResource("5_1pipi")
+texture_margin_left = 1.0
+texture_margin_top = 1.0
+texture_margin_right = 1.0
+texture_margin_bottom = 1.0
+expand_margin_left = 3.0
+expand_margin_top = 3.0
+expand_margin_right = 3.0
+expand_margin_bottom = 3.0
+region_rect = Rect2(44, 12, 8, 8)
+
+[sub_resource type="Theme" id="Theme_vg5ts"]
+PanelContainer/styles/panel = SubResource("StyleBoxTexture_jr5cw")
+
+[node name="AbilityShopItemCard" type="PanelContainer"]
+custom_minimum_size = Vector2(38, 0)
+theme = SubResource("Theme_7snbp")
+script = ExtResource("1_bcj12")
+
+[node name="Node2D" type="Node2D" parent="."]
+
+[node name="TextureRect" type="TextureRect" parent="Node2D"]
+offset_right = 38.0
+offset_bottom = 49.0
+texture = SubResource("GradientTexture2D_5ylsv")
+
+[node name="ColorRect3" type="ColorRect" parent="Node2D"]
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 37.0
+offset_bottom = 48.0
+
+[node name="upgrade" type="PanelContainer" parent="Node2D"]
+offset_left = 3.0
+offset_top = 2.0
+offset_right = 35.0
+offset_bottom = 12.0
+theme = SubResource("Theme_8v2ar")
+
+[node name="Node2D" type="Node2D" parent="Node2D/upgrade"]
+
+[node name="ColorRect" type="ColorRect" parent="Node2D/upgrade/Node2D"]
+offset_right = 32.0
+offset_bottom = 10.0
+mouse_filter = 2
+color = Color(0.236145, 0.41285, 0.621341, 1)
+
+[node name="TextureRect" type="TextureRect" parent="Node2D/upgrade/Node2D/ColorRect"]
+layout_mode = 0
+offset_left = 1.0
+offset_right = 11.0
+offset_bottom = 10.0
+pivot_offset = Vector2(5, 5)
+mouse_filter = 2
+texture = ExtResource("2_r4l0l")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="Node2D/upgrade/Node2D/ColorRect"]
+layout_mode = 0
+offset_left = 9.0
+offset_top = 1.0
+offset_right = 32.0
+offset_bottom = 11.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.0980392, 0.0980392, 0.0980392, 1)
+theme_override_colors/font_outline_color = Color(0.0980392, 0.0980392, 0.0980392, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 0
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("2_lhpak")
+theme_override_font_sizes/font_size = 9
+text = "999"
+horizontal_alignment = 1
+clip_text = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Node2D/upgrade/Node2D/ColorRect"]
+libraries = {
+"": SubResource("AnimationLibrary_3se0n")
+}
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Node2D/upgrade"]
+libraries = {
+"": SubResource("AnimationLibrary_l87cy")
+}
+
+[node name="ColorRect2" type="ColorRect" parent="Node2D"]
+clip_children = 2
+offset_left = 3.0
+offset_top = 14.0
+offset_right = 35.0
+offset_bottom = 46.0
+mouse_filter = 2
+
+[node name="TextureRect" type="TextureRect" parent="Node2D/ColorRect2"]
+layout_mode = 0
+offset_right = 32.0
+offset_bottom = 32.0
+mouse_filter = 2
+texture = ExtResource("1_snb05")
+
+[node name="Label" type="Label" parent="Node2D/ColorRect2"]
+layout_mode = 0
+offset_top = 22.0
+offset_right = 32.0
+offset_bottom = 33.0
+theme_override_colors/font_color = Color(0.0980392, 0.0980392, 0.0980392, 1)
+theme_override_colors/font_shadow_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 2
+theme_override_constants/shadow_outline_size = 2
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 2
+clip_text = true
+
+[node name="EquipTextP" type="PanelContainer" parent="Node2D"]
+offset_left = 3.0
+offset_top = 13.0
+offset_right = 35.0
+offset_bottom = 47.0
+theme = SubResource("Theme_frkdq")
+
+[node name="Node2D2" type="Node2D" parent="."]
+visible = false
+z_index = 1
+scale = Vector2(0.7, 0.7)
+
+[node name="PanelContainer" type="PanelContainer" parent="Node2D2"]
+offset_left = -55.0
+offset_top = -41.0
+offset_right = 56.0
+offset_bottom = -19.0
+mouse_filter = 2
+theme = SubResource("Theme_vg5ts")
+
+[node name="Label" type="Label" parent="Node2D2/PanelContainer"]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("6_rsksx")
+theme_override_font_sizes/font_size = 12
+text = "+2生命值  +2攻击力"
+horizontal_alignment = 1
+
+[node name="Marker2D" type="Marker2D" parent="."]
+position = Vector2(19, 30)
+
+[node name="Node2D3" type="Node2D" parent="."]
+visible = false
+z_index = 1
+scale = Vector2(0.7, 0.7)
+
+[node name="PanelContainer" type="PanelContainer" parent="Node2D3"]
+offset_left = -55.0
+offset_top = -59.0
+offset_right = 56.0
+offset_bottom = -19.0
+mouse_filter = 2
+theme = SubResource("Theme_vg5ts")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Node2D3/PanelContainer"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="Node2D3/PanelContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 2
+theme_override_font_sizes/font_size = 14
+text = "T10"
+
+[node name="Label2" type="Label" parent="Node2D3/PanelContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("6_rsksx")
+theme_override_font_sizes/font_size = 12
+text = "+2生命值  +2攻击力"
+horizontal_alignment = 1

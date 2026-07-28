@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://15jc8ushcvxl"]
+
+[ext_resource type="Texture2D" uid="uid://b1e0us8jbefoi" path="res://sprites/update_item/flammable_explosives.png" id="1_iqfkl"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="1_xevcs"]
+
+[resource]
+script = ExtResource("1_xevcs")
+id = "flammable_explosives"
+icon = ExtResource("1_iqfkl")
+name = "易燃炸药"
+rare = 1
+order_num = -1
+special_rules = 0
+description = "由青色衬衫紫色裤子的匠人打造而成，爆炸伤害会对目标施加1层燃烧。"
+forward = "+1施加的燃烧层数"
+negative = ""
+item_tags = 34
+tags = Array[String](["爆炸", "燃烧"])
+weight = 1.0

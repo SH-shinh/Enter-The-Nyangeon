@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://br7d34b1a4hj0"]
+
+[ext_resource type="Script" path="res://scenes/update_item/ancient_battery.gd" id="1_vkk5p"]
+[ext_resource type="Resource" uid="uid://dbvp83gmjg071" path="res://resources/buff/player_buff/bullet_damage_mult_1_buff.tres" id="2_0b4m6"]
+
+[node name="AncientBattery" type="Node2D"]
+script = ExtResource("1_vkk5p")
+player_buff = ExtResource("2_0b4m6")
+buff_layer = 5
+buff_value = 0.1
+buff_erase_timer = 5.0

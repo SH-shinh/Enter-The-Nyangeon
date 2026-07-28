@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://e0pyxbkthlk6"]
+
+[ext_resource type="Texture2D" uid="uid://bq3v0ich5ct7v" path="res://sprites/update_item/dimension_engine_part.png" id="1_8i4od"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_pd6d0"]
+
+[resource]
+script = ExtResource("2_pd6d0")
+id = "dimension_engine_part"
+icon = ExtResource("1_8i4od")
+name = "次元引擎配件"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "从次元引擎上拆下来的配件。"
+forward = "独特
+近战可受子弹伤害50%加成"
+negative = ""
+item_tags = 4097
+tags = Array[String](["近战"])
+weight = 1.0

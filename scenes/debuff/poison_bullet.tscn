@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://dnhhhd7ueq3f3"]
+
+[ext_resource type="Script" path="res://scenes/debuff/poison_bullet.gd" id="1_tv61l"]
+[ext_resource type="Resource" uid="uid://dsblwps2uxvdu" path="res://resources/buff/enemy_buff/poison_dot.tres" id="2_xe4h6"]
+
+[node name="poison_bullet" type="Node2D"]
+script = ExtResource("1_tv61l")
+enemy_buff = ExtResource("2_xe4h6")
+buff_layer = 1
+buff_erase_timer = 1.0

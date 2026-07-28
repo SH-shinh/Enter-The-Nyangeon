@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bx8e5upvknetp"]
+
+[ext_resource type="Script" path="res://scenes/update_item/dumbbell_set.gd" id="1_065ug"]
+
+[node name="dumbbell_set" type="Node2D"]
+script = ExtResource("1_065ug")

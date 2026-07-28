@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://bd1kykk3hi5v1"]
+
+[ext_resource type="Texture2D" uid="uid://d1wy8cm85wrxm" path="res://sprites/update_item/roller_skates.png" id="1_w2d16"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_5apmf"]
+
+[resource]
+script = ExtResource("2_5apmf")
+id = "roller_skates"
+icon = ExtResource("1_w2d16")
+name = "空中轮鞋"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "内含庞大动力的高科技直排轮，因为是仿制品，所以没办法飞行。"
+forward = "独特
++100%移动速度"
+negative = "降低操作性能"
+item_tags = 8192
+tags = Array[String](["速度"])
+weight = 1.0

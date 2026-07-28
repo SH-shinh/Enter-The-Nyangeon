@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PSCard" load_steps=3 format=3 uid="uid://dj6rr0qjyihpk"]
+
+[ext_resource type="Script" path="res://resources/player/PS/ps_card.gd" id="1_2v5hk"]
+[ext_resource type="Texture2D" uid="uid://d4hukwsckh3ys" path="res://sprites/weapon/Unique_Idea.png" id="2_j2834"]
+
+[resource]
+script = ExtResource("1_2v5hk")
+weapon_icon = ExtResource("2_j2834")
+t_level = Array[String](["子弹伤害有概率点燃敌人，对燃烧中的敌人造成额外伤害，异常伤害额外提升10%。", "子弹伤害有较高概率点燃敌人，燃烧有概率向周围扩。", "子弹伤害有更高概率点燃敌人，燃烧上限+5。", "子弹伤害必定点燃敌人，且对燃烧中的敌人额外施加1层燃烧，燃烧上限+8。"])

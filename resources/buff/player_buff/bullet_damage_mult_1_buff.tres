@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://dbvp83gmjg071"]
+
+[ext_resource type="Texture2D" uid="uid://iaelkd8kfdhi" path="res://sprites/buff_icon/bullet_damage_buff_icon.png" id="1_0vlcx"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_tjptm"]
+
+[resource]
+script = ExtResource("2_tjptm")
+id = "bullet_damage_mult_1_buff"
+icon = ExtResource("1_0vlcx")
+name = "攻击力"
+description = ""

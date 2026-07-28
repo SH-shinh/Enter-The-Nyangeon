@@ -1,0 +1,103 @@
+[gd_scene load_steps=11 format=3 uid="uid://b3orktuto1loo"]
+
+[ext_resource type="Script" path="res://scenes/debuff/poison_dot.gd" id="1_mogw6"]
+[ext_resource type="Texture2D" uid="uid://bmo6xygwo4im6" path="res://sprites/particle/circular_2.png" id="1_xayel"]
+
+[sub_resource type="Gradient" id="Gradient_yy3fp"]
+colors = PackedColorArray(0.118915, 0.449978, 0.605091, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_y27yx"]
+gradient = SubResource("Gradient_yy3fp")
+
+[sub_resource type="Curve" id="Curve_y5y1f"]
+_data = [Vector2(0, 0.901099), 0.0, 0.0, 0, 0, Vector2(1, 0), -5.24476, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_0g4l0"]
+curve = SubResource("Curve_y5y1f")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_mwuxf"]
+particle_flag_disable_z = true
+emission_shape_scale = Vector3(5, 1, 1)
+emission_shape = 3
+emission_box_extents = Vector3(2, 1, 1)
+angle_min = -45.0
+angle_max = 45.0
+direction = Vector3(0, -1, 0)
+spread = 15.0
+initial_velocity_min = 11.24
+initial_velocity_max = 179.78
+gravity = Vector3(0, -500, 0)
+scale_min = 0.3
+scale_max = 0.6
+scale_curve = SubResource("CurveTexture_0g4l0")
+color = Color(0.149926, 0.792551, 0.477366, 1)
+color_initial_ramp = SubResource("GradientTexture1D_y27yx")
+hue_variation_max = 0.05
+
+[sub_resource type="Animation" id="Animation_kmayt"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("GPUParticles2D:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_t3p5g"]
+resource_name = "new_animation"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("GPUParticles2D:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.5),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"idle_state"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_u4dl0"]
+_data = {
+"RESET": SubResource("Animation_kmayt"),
+"new_animation": SubResource("Animation_t3p5g")
+}
+
+[node name="PoisonDot" type="Node2D"]
+script = ExtResource("1_mogw6")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+emitting = false
+process_material = SubResource("ParticleProcessMaterial_mwuxf")
+texture = ExtResource("1_xayel")
+lifetime = 0.3
+explosiveness = 0.5
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_u4dl0")
+}
+autoplay = "new_animation"

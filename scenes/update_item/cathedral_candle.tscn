@@ -1,0 +1,111 @@
+[gd_scene load_steps=11 format=3 uid="uid://cro37xmm6sk3w"]
+
+[ext_resource type="Script" path="res://scenes/update_item/cathedral_candle.gd" id="1_lnef4"]
+[ext_resource type="Texture2D" uid="uid://c7vyq0e22y2jl" path="res://sprites/particle/point_5.png" id="2_3da8p"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_qs5my"]
+blend_mode = 1
+
+[sub_resource type="Gradient" id="Gradient_u3lan"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0, 0.974026, 1)
+colors = PackedColorArray(0, 0, 0, 0, 23.244, 3.784, 0, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_05xkt"]
+gradient = SubResource("Gradient_u3lan")
+width = 170
+height = 170
+use_hdr = true
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0)
+metadata/_snap_enabled = true
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_e6bqe"]
+particle_flag_disable_z = true
+emission_shape = 6
+emission_ring_axis = Vector3(0, 0, 1)
+emission_ring_height = 0.0
+emission_ring_radius = 85.0
+emission_ring_inner_radius = 84.0
+inherit_velocity_ratio = 0.5
+direction = Vector3(0, -1, 0)
+spread = 0.0
+initial_velocity_max = 20.0
+gravity = Vector3(0, 0, 0)
+scale_min = 0.1
+scale_max = 0.2
+color = Color(0.936113, 0, 0.165103, 1)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_v78as"]
+radius = 85.0
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_6lgyj"]
+blend_mode = 1
+
+[sub_resource type="Gradient" id="Gradient_mq4l3"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_tsub0"]
+gradient = SubResource("Gradient_mq4l3")
+width = 100
+height = 100
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0)
+metadata/_snap_enabled = true
+
+[node name="CathedralCandle" type="Node2D"]
+script = ExtResource("1_lnef4")
+
+[node name="Node2D" type="Node2D" parent="."]
+position = Vector2(0, -12)
+
+[node name="TextureRect" type="TextureRect" parent="Node2D"]
+modulate = Color(1, 0.215686, 0.415686, 0.027451)
+z_index = 1
+material = SubResource("CanvasItemMaterial_qs5my")
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("GradientTexture2D_05xkt")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="Node2D"]
+modulate = Color(9.189, 0, 5.404, 0.02)
+amount = 12
+process_material = SubResource("ParticleProcessMaterial_e6bqe")
+texture = ExtResource("2_3da8p")
+
+[node name="Area2D" type="Area2D" parent="Node2D"]
+collision_layer = 0
+collision_mask = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Node2D/Area2D"]
+shape = SubResource("CircleShape2D_v78as")
+
+[node name="TextureRect2" type="TextureRect" parent="Node2D"]
+modulate = Color(2, 1, 0.049, 0.011)
+material = SubResource("CanvasItemMaterial_6lgyj")
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -103.0
+offset_top = -103.0
+offset_right = 103.0
+offset_bottom = 103.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("GradientTexture2D_tsub0")
+
+[connection signal="body_entered" from="Node2D/Area2D" to="." method="_on_area_2d_body_entered"]
+[connection signal="body_exited" from="Node2D/Area2D" to="." method="_on_area_2d_body_exited"]

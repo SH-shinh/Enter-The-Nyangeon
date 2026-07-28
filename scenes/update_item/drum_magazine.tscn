@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c5yyp0nk0pjm1"]
+
+[ext_resource type="Script" path="res://scenes/update_item/drum_magazine.gd" id="1_macm7"]
+
+[node name="drum_magazine" type="Node2D"]
+script = ExtResource("1_macm7")

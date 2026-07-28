@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://cwonfqopcwqnd"]
+
+[ext_resource type="Texture2D" uid="uid://gtf7t82l48r4" path="res://sprites/buff_icon/bullet_shoot_time_buff_icon.png" id="1_spr1f"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_f4k4u"]
+
+[resource]
+script = ExtResource("2_f4k4u")
+id = "bullet_shoot_time_buff"
+icon = ExtResource("1_spr1f")
+name = "攻速buff"
+description = "提升攻击速度"

@@ -1,0 +1,40 @@
+[gd_scene load_steps=4 format=3 uid="uid://b440wbabgpxlp"]
+
+[ext_resource type="Script" path="res://scenes/game_camera/transition.gd" id="1_ixd3v"]
+
+[sub_resource type="Gradient" id="Gradient_eqhap"]
+resource_local_to_scene = true
+interpolation_mode = 1
+colors = PackedColorArray(1, 1, 1, 0, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_jpylh"]
+gradient = SubResource("Gradient_eqhap")
+width = 128
+height = 128
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0)
+metadata/_snap_enabled = true
+
+[node name="Transition" type="CanvasLayer"]
+process_mode = 3
+layer = 2
+script = ExtResource("1_ixd3v")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -375.0
+offset_top = -375.0
+offset_right = 375.0
+offset_bottom = 375.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("GradientTexture2D_jpylh")
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 0.5
+one_shot = true

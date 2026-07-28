@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b78jo1set8q45"]
+
+[ext_resource type="Script" path="res://script/follow.gd" id="1_k13n7"]
+
+[node name="Follow" type="Marker2D" groups=["Follow"]]
+script = ExtResource("1_k13n7")

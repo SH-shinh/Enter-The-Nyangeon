@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://cg6f7h8coh2ue"]
+
+[ext_resource type="Texture2D" uid="uid://d0xyanxmc865g" path="res://sprites/update_item/suppressor_icon.png" id="1_wp7ti"]
+[ext_resource type="PackedScene" uid="uid://bjvr1nuwo7ish" path="res://script/muzzle.tscn" id="2_xcwiq"]
+
+[node name="Sprite2D" type="Sprite2D"]
+position = Vector2(3, 0.5)
+texture = ExtResource("1_wp7ti")
+
+[node name="Muzzle" parent="." instance=ExtResource("2_xcwiq")]
+position = Vector2(3, -0.5)

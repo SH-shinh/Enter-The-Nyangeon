@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://doo2iqjf4dlg8"]
+
+[ext_resource type="Script" path="res://scenes/update_item/summer_ninjutsu_codex_scroll.gd" id="1_05kv3"]
+
+[node name="summer_ninjutsu_codex_scroll" type="Node2D"]
+script = ExtResource("1_05kv3")

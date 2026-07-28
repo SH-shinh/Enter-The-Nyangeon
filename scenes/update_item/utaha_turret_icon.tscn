@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://pkd8wgu6vmgs"]
+
+[ext_resource type="Texture2D" uid="uid://tnt1bbqum2jp" path="res://sprites/update_item/utaha_turret_14.png" id="1_fpmvm"]
+[ext_resource type="Script" path="res://scenes/update_item/utaha_turret_icon.gd" id="2_ko2ku"]
+
+[node name="utaha_turret_icon" type="Sprite2D"]
+texture = ExtResource("1_fpmvm")
+hframes = 14
+script = ExtResource("2_ko2ku")
+rotate_sprites = true

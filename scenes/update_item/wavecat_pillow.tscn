@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://dqejc5665wd8o"]
+
+[ext_resource type="Script" path="res://scenes/update_item/wavecat_pillow.gd" id="1_2bqsd"]
+[ext_resource type="Resource" uid="uid://21fk0d1c8dr1" path="res://resources/buff/player_buff/melee_buff_1.tres" id="2_ywmyl"]
+
+[node name="wavecat_pillow" type="Node2D"]
+script = ExtResource("1_2bqsd")
+player_buff = ExtResource("2_ywmyl")
+buff_layer = 99
+buff_value = 0.35
+buff_erase_timer = 2.0

@@ -1,0 +1,59 @@
+[gd_scene load_steps=9 format=3 uid="uid://b1la0ecuas7n2"]
+
+[ext_resource type="Texture2D" uid="uid://dcdfpkuwxmvxf" path="res://sprites/particle/fire-0001.png" id="1_ona8n"]
+[ext_resource type="Script" path="res://scenes/enemies/enemy_fire_field.gd" id="1_wiyoa"]
+[ext_resource type="Resource" uid="uid://b71qgg62orgs2" path="res://resources/buff/player_buff/player_fire_dot.tres" id="2_cench"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hiacl"]
+radius = 18.0
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_l05pv"]
+particles_animation = true
+particles_anim_h_frames = 12
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="Gradient" id="Gradient_bjoll"]
+colors = PackedColorArray(0.530048, 0, 0.0896135, 1, 1, 0.0122264, 0.732318, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_1ranw"]
+gradient = SubResource("Gradient_bjoll")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_8ad5u"]
+lifetime_randomness = 0.3
+particle_flag_disable_z = true
+emission_shape_offset = Vector3(0, -5, 0)
+emission_shape = 1
+emission_sphere_radius = 20.0
+gravity = Vector3(0, 5, 0)
+scale_max = 1.5
+color = Color(2, 1.2, 1.1, 0.6)
+color_initial_ramp = SubResource("GradientTexture1D_1ranw")
+anim_speed_min = 1.0
+anim_speed_max = 1.0
+
+[node name="enemy_fire_field" type="Node2D"]
+script = ExtResource("1_wiyoa")
+pool_id = "enemy_fire_field"
+self_life = 10
+player_buff = ExtResource("2_cench")
+buff_layer = 1
+buff_value = 1.0
+buff_erase_timer = 1.0
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2048
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("CircleShape2D_hiacl")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+material = SubResource("CanvasItemMaterial_l05pv")
+amount = 24
+process_material = SubResource("ParticleProcessMaterial_8ad5u")
+texture = ExtResource("1_ona8n")
+explosiveness = 0.1
+
+[connection signal="area_shape_entered" from="Area2D" to="." method="_on_area_2d_area_shape_entered"]
+[connection signal="area_shape_exited" from="Area2D" to="." method="_on_area_2d_area_shape_exited"]

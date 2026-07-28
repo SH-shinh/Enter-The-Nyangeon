@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PlayerCard" load_steps=4 format=3 uid="uid://bvsdm656r7dd2"]
+
+[ext_resource type="Texture2D" uid="uid://k670fwjayhta" path="res://sprites/player/ichika/ichika_picture_halo.png" id="1_flc0f"]
+[ext_resource type="Script" path="res://resources/player/player.gd" id="2_qpk4b"]
+[ext_resource type="Texture2D" uid="uid://ck3p8p1m8lnru" path="res://sprites/player/ichika/ichika_picture.png" id="3_kb1fr"]
+
+[resource]
+script = ExtResource("2_qpk4b")
+name = "NAKAMASA ICHIKA"
+weapon = "RED DRAGON"
+sprite = ExtResource("3_kb1fr")
+halo = ExtResource("1_flc0f")
+color = Color(1, 0.490196, 0.478431, 1)
+description = ""
+voice_name = "ichika"
+id = "ichika"

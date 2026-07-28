@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://c7rl2oyo3rnr4"]
+
+[ext_resource type="Texture2D" uid="uid://b56a5baso0d6d" path="res://sprites/update_item/unusual_screw.png" id="1_fkblt"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_2p8qe"]
+
+[resource]
+script = ExtResource("2_2p8qe")
+id = "unusual_screw"
+icon = ExtResource("1_fkblt")
+name = "变形螺丝"
+rare = 0
+order_num = -1
+special_rules = 0
+description = "多少有些变形的螺丝，使用在千年废墟的机器上。"
+forward = "+20%召唤物伤害"
+negative = ""
+item_tags = 2048
+tags = Array[String](["召唤"])
+weight = 1.0

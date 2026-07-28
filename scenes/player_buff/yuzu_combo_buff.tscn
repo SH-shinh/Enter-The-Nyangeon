@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://ba58y522g46gi"]
+
+[ext_resource type="Script" path="res://scenes/player_buff/yuzu_combo_buff.gd" id="1_tjefb"]
+[ext_resource type="Resource" uid="uid://comb3nd35hmd8" path="res://resources/buff/player_buff/yuzu_combo_buff.tres" id="2_ua7f4"]
+
+[node name="yuzu_combo_buff" type="Node2D" groups=["PlayerBuff"]]
+script = ExtResource("1_tjefb")
+buff = ExtResource("2_ua7f4")
+buff_id = "yuzu_combo_buff"
+buff_layer = 999
+buff_value = 0.1
+buff_erase_timer = 3.0
+
+[node name="BuffTimer" type="Timer" parent="."]
+
+[connection signal="timeout" from="BuffTimer" to="." method="_on_buff_timer_timeout"]

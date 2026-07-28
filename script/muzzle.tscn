@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://bjvr1nuwo7ish"]
+
+[ext_resource type="Script" path="res://script/Muzzle.gd" id="1_lsa77"]
+
+[node name="Muzzle" type="Marker2D" groups=["Muzzle"]]
+position = Vector2(25, -0.5)
+script = ExtResource("1_lsa77")

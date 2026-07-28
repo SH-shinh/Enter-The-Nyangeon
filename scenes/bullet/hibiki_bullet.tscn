@@ -1,0 +1,55 @@
+[gd_scene load_steps=9 format=3 uid="uid://roshtqilroy7"]
+
+[ext_resource type="Script" path="res://scenes/bullet/yuzu_bullet.gd" id="1_aowr3"]
+[ext_resource type="PackedScene" uid="uid://ygvqweawmhgs" path="res://scenes/line.tscn" id="2_i3cw4"]
+[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="3_6xlkc"]
+[ext_resource type="Texture2D" uid="uid://bvli3g2w3c47x" path="res://sprites/bullet/hibiki_bullet.png" id="4_hgmmf"]
+
+[sub_resource type="Gradient" id="Gradient_c3rc8"]
+colors = PackedColorArray(0.814848, 0.802224, 0.959282, 1, 0.71828, 0.66301, 0.867552, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_foltx"]
+shader = ExtResource("3_6xlkc")
+shader_parameter/outline_width = 3.0
+shader_parameter/outline_color = Color(22, 20, 28, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="Curve" id="Curve_uc1as"]
+_data = [Vector2(0, 0.527472), 0.0, 0.0, 0, 0, Vector2(1, 0.67033), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_k2cyk"]
+radius = 7.0
+
+[node name="hibiki_bullet" type="CharacterBody2D" groups=["PlayerBullet"]]
+z_index = 2
+collision_layer = 4096
+collision_mask = 0
+motion_mode = 1
+script = ExtResource("1_aowr3")
+life_time = 6
+base_explosion_range = 5.0
+
+[node name="Line" parent="." instance=ExtResource("2_i3cw4")]
+z_index = 1
+width = 12.0
+gradient = SubResource("Gradient_c3rc8")
+texture_mode = 2
+width_f = 12.0
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_foltx")
+scale = Vector2(0.4, 0.4)
+texture = ExtResource("4_hgmmf")
+
+[node name="Line2" parent="." instance=ExtResource("2_i3cw4")]
+z_index = 2
+width = 7.0
+width_curve = SubResource("Curve_uc1as")
+width_f = 7.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_k2cyk")
+
+[node name="FallTimer" type="Timer" parent="."]
+one_shot = true

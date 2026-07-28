@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PSCard" load_steps=3 format=3 uid="uid://73ijamee6r8r"]
+
+[ext_resource type="Script" path="res://resources/player/PS/ps_card.gd" id="1_1u85q"]
+[ext_resource type="Texture2D" uid="uid://bc2y5xq00v1g0" path="res://sprites/weapon/blood_n_gunpowder.png" id="2_o3uux"]
+
+[resource]
+script = ExtResource("1_1u85q")
+weapon_icon = ExtResource("2_o3uux")
+t_level = Array[String](["", "", "", ""])

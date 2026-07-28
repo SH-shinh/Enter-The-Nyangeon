@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://bvuaitv4okkgj"]
+
+[ext_resource type="Texture2D" uid="uid://cpfgw008vqhhd" path="res://sprites/update_item/peroro_wheel.png" id="1_u7ntt"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_rasp8"]
+
+[resource]
+script = ExtResource("2_rasp8")
+id = "peroro_wheel"
+icon = ExtResource("1_u7ntt")
+name = "佩洛洛健腹滚轮"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "今年锻炼类商品排行榜荣获第一位的，佩洛洛样式的健腹滚轮！？"
+forward = "独特
+近战攻击对满血的敌人造成双倍伤害"
+negative = ""
+item_tags = 4096
+tags = Array[String](["近战"])
+weight = 1.0

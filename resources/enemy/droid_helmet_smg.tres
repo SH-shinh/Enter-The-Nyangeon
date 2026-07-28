@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EnemyCard" load_steps=3 format=3 uid="uid://dtv88mgk8m0i"]
+
+[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="1_cbo0i"]
+[ext_resource type="PackedScene" uid="uid://b5qdmjfk1e306" path="res://scenes/enemies/droid_helmet_smg.tscn" id="1_ei5kc"]
+
+[resource]
+script = ExtResource("1_cbo0i")
+id = "droid_helmet_smg"
+body = ExtResource("1_ei5kc")
+description = ""

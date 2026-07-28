@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://bsmudrk6k2s1p"]
+
+[ext_resource type="Texture2D" uid="uid://bnvwmqqne3vw4" path="res://sprites/update_item/winnipesaukee_stone.png" id="1_txcmm"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_kfey3"]
+
+[resource]
+script = ExtResource("2_kfey3")
+id = "winnipesaukee_stone"
+icon = ExtResource("1_txcmm")
+name = "温尼珀索基石"
+rare = 1
+order_num = 3
+special_rules = 1
+description = "状态完好的温尼珀索基石，造成伤害时落下巨石造成自身生命值比例（80%）的额外伤害。"
+forward = "最大持有3个
++80%最大生命值比例伤害"
+negative = ""
+item_tags = 516
+tags = Array[String](["装备", "弹道"])
+weight = 1.0

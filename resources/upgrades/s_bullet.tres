@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://did40sjltt6oa"]
+
+[ext_resource type="Texture2D" uid="uid://b55guybk463j6" path="res://sprites/update_item/s_bullet.png" id="1_4imux"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_26wsd"]
+
+[resource]
+script = ExtResource("2_26wsd")
+id = "s_bullet"
+icon = ExtResource("1_4imux")
+name = "神秘S字母"
+rare = 2
+order_num = 1
+special_rules = 0
+description = "使弹道一分为三的神秘字母，感觉非常眼熟。"
+forward = "独特
+弹道+2"
+negative = "子弹伤害×40%"
+item_tags = 3
+tags = Array[String](["弹道"])
+weight = 1.0

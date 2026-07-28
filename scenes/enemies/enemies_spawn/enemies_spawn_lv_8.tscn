@@ -1,0 +1,33 @@
+[gd_scene load_steps=12 format=3 uid="uid://kxw5lb5tr62h"]
+
+[ext_resource type="Script" path="res://script/enemies_spawn.gd" id="1_wol2i"]
+[ext_resource type="Resource" uid="uid://tyefl3u2oxr" path="res://resources/enemy/sweeper.tres" id="2_cu2gn"]
+[ext_resource type="PackedScene" uid="uid://blgdeks0i23pt" path="res://scenes/enemies/sweeper.tscn" id="2_lsx36"]
+[ext_resource type="PackedScene" uid="uid://b1cfdw3ja54qj" path="res://scenes/enemies/enhanced_sweeper.tscn" id="3_av2sh"]
+[ext_resource type="Resource" uid="uid://bo5aojm81wiil" path="res://resources/enemy/enhanced_sweeper.tres" id="3_m828q"]
+[ext_resource type="PackedScene" uid="uid://jpy0bx2qrcgo" path="res://scenes/enemies/modded_sweeper.tscn" id="4_5wbfn"]
+[ext_resource type="Resource" uid="uid://q1y8ttghyuve" path="res://resources/enemy/modded_sweeper.tres" id="4_pkkeo"]
+[ext_resource type="PackedScene" uid="uid://bhyuj2aufn4nq" path="res://scenes/enemies/tester_automaton.tscn" id="5_krjt2"]
+[ext_resource type="Resource" uid="uid://dmixiglqom01n" path="res://resources/enemy/tester_automaton.tres" id="5_yedsx"]
+[ext_resource type="Resource" uid="uid://dwgipm2sx68ue" path="res://resources/enemy/tester_automaton_rl.tres" id="6_62d0v"]
+[ext_resource type="PackedScene" uid="uid://bnlpg5jbpx83m" path="res://scenes/enemies/tester_automaton_rl.tscn" id="6_b1dms"]
+
+[node name="EnemiesSpawnLV8" type="Node2D"]
+script = ExtResource("1_wol2i")
+num_mult = 2.2
+round_mult = 1.0
+hp_mult = 2.0
+damage_mult = 1.2
+enemy = Array[Resource("res://resources/enemy/enemy.gd")]([ExtResource("2_cu2gn"), ExtResource("3_m828q"), ExtResource("4_pkkeo"), ExtResource("5_yedsx"), ExtResource("6_62d0v")])
+enemy_pool = Array[PackedScene]([ExtResource("2_lsx36"), ExtResource("3_av2sh"), ExtResource("4_5wbfn"), ExtResource("5_krjt2"), ExtResource("6_b1dms")])
+enemy_spawn_num = Array[int]([6, 3, 2, 1, 1])
+enemy_spawn_time = Array[float]([15.0, 55.0, 40.0, 35.0, 40.0])
+
+[node name="RoundTimer" type="Timer" parent="."]
+wait_time = 60.0
+one_shot = true
+
+[node name="EnemySpawnCDTime" type="Timer" parent="."]
+wait_time = 0.1
+
+[connection signal="timeout" from="EnemySpawnCDTime" to="." method="_on_enemy_spawn_cd_time_timeout"]

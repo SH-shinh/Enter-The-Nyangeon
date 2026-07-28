@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://21fk0d1c8dr1"]
+
+[ext_resource type="Texture2D" uid="uid://da7prrm71x0e7" path="res://sprites/buff_icon/melee_buff_icon.png" id="1_t08av"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_87fgk"]
+
+[resource]
+script = ExtResource("2_87fgk")
+id = "melee_buff_1"
+icon = ExtResource("1_t08av")
+name = "近战伤害buff"
+ability = ""
+remove_by_layer = false
+description = ""

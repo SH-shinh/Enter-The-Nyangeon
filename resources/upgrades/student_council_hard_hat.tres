@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3 uid="uid://d3pug3i8lq6eq"]
+
+[ext_resource type="Texture2D" uid="uid://bfsn0i3fm3m5g" path="res://sprites/update_item/student_council_hard_hat.png" id="1_exlf4"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_w8fok"]
+
+[resource]
+script = ExtResource("2_w8fok")
+id = "student_council_hard_hat"
+icon = ExtResource("1_exlf4")
+name = "学生会安全帽"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "印有联邦学生会标志的安全帽。"
+forward = "独特
+受到相当于50%最大生命值的伤害时，赋予3秒无敌。"
+negative = ""
+item_tags = 256
+tags = Array[String](["防御"])
+weight = 1.0

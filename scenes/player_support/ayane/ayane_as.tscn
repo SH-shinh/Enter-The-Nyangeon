@@ -1,0 +1,231 @@
+[gd_scene load_steps=12 format=3 uid="uid://xrpq35n8ial3"]
+
+[ext_resource type="Script" path="res://scenes/player_support/ayane/ayane_as.gd" id="1_y2274"]
+[ext_resource type="PackedScene" uid="uid://667yyp8p3mrr" path="res://script/explosion_damage.tscn" id="2_4ne0r"]
+[ext_resource type="Texture2D" uid="uid://c1yrscddqexvb" path="res://sprites/player_support/ayane/water_cloud_1.png" id="4_ahgu2"]
+[ext_resource type="Texture2D" uid="uid://bahxxqms8l1ry" path="res://sprites/player_support/ayane/water_cloud_2.png" id="5_wjs65"]
+[ext_resource type="AudioStream" uid="uid://chndm0i7y5d13" path="res://sounds/49483__lorenzosu__helicopterraw_30sec.wav" id="6_0kygq"]
+
+[sub_resource type="Animation" id="Animation_jpdja"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("water_clound/CanvasGroup/Sprite2D2:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+
+[sub_resource type="Animation" id="Animation_6ffr3"]
+resource_name = "loop"
+length = 0.2
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("water_clound/CanvasGroup/Sprite2D2:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, 6.28319]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_02vjh"]
+_data = {
+"RESET": SubResource("Animation_jpdja"),
+"loop": SubResource("Animation_6ffr3")
+}
+
+[sub_resource type="Animation" id="Animation_kf3hm"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("water_clound:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("water_clound/CanvasGroup:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [-3.14159]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("water_clound/CanvasGroup:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("AudioStreamPlayer:volume_db")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("AudioStreamPlayer:playing")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_montn"]
+resource_name = "attack_anim"
+length = 3.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("water_clound:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.0333333, 2.6),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [false, true, false]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("water_clound/CanvasGroup:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.266667, 0.633333, 0.933333, 1.13333, 1.26667, 2.1, 2.2),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [-3.79086, -3.31613, -3.05433, -3.14159, -2.96706, -3.14159, -3.68264]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("water_clound/CanvasGroup:position")
+tracks/2/interp = 2
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.5, 1.06667, 1.16667, 1.36667, 2.16667, 2.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(-577.562, -68.8602), Vector2(-29.3185, 365.324), Vector2(-65.7859, 353.95), Vector2(-65.7859, 353.95), Vector2(-65.8105, 310.583), Vector2(-2.88635, 1411.44), Vector2(523.92, 2075.12)]
+}
+tracks/3/type = "method"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(1.36667),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"explosion_to_map"
+}]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("AudioStreamPlayer:volume_db")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 0.0666667, 2.26667, 2.76667, 3),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [-80.0, 5.0, 5.0, -10.0, -80.0]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("AudioStreamPlayer:playing")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0, 3, 3.0001),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [true, true, false]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_a727a"]
+_data = {
+"RESET": SubResource("Animation_kf3hm"),
+"attack_anim": SubResource("Animation_montn")
+}
+
+[node name="ayane_as" type="Node2D"]
+script = ExtResource("1_y2274")
+explosion_pack = ExtResource("2_4ne0r")
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 0.1
+one_shot = true
+
+[node name="water_clound" type="Node2D" parent="."]
+visible = false
+top_level = true
+rotation = -0.453786
+skew = -0.663225
+
+[node name="CanvasGroup" type="CanvasGroup" parent="water_clound"]
+self_modulate = Color(1, 1, 1, 0.8)
+rotation = -3.14159
+scale = Vector2(3, 3)
+
+[node name="Sprite2D" type="Sprite2D" parent="water_clound/CanvasGroup"]
+texture = ExtResource("4_ahgu2")
+
+[node name="Sprite2D2" type="Sprite2D" parent="water_clound/CanvasGroup"]
+position = Vector2(0, -14)
+texture = ExtResource("5_wjs65")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_02vjh")
+}
+
+[node name="AnimationPlayer2" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_a727a")
+}
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("6_0kygq")
