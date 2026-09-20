@@ -15,14 +15,28 @@ signal fade_out_end
 var on_fade_out: bool = false
 var game_end: bool = false
 
-func play_sfx(name: String):
-	var player := sfx.get_node(name) as AudioStreamPlayer
+func play_sfx(sfx_name: String):
+	var player := sfx.get_node(sfx_name) as AudioStreamPlayer
 	if not player:
 		return
 	player.play()
 
-func stop_sfx(name: String):
-	var player := sfx.get_node(name) as AudioStreamPlayer
+func play_sfx_once(sfx_name: String):
+	var player := sfx.get_node(sfx_name) as AudioStreamPlayer
+	if not player:
+		return
+	if player.playing:
+		return
+	player.play()
+
+func play_loop_sfx(sfx_name: String):
+	var player := sfx.get_node(sfx_name) as AudioStreamPlayer
+	if player == null or player.playing:
+		return
+	player.play()
+
+func stop_sfx(sfx_name: String):
+	var player := sfx.get_node(sfx_name) as AudioStreamPlayer
 	if not player:
 		return
 	player.stop()

@@ -1,8 +1,6 @@
-extends CharacterBody2D
+extends Enemy
+class_name EnemyTank
 
-signal is_hurt
-signal is_dead
-signal is_knockback
 signal turning_mod
 
 enum State {
@@ -14,10 +12,6 @@ enum State {
 	DEAD,
 }
 
-var coin:PackedScene = preload("res://scenes/item/coin.tscn")
-@export var pool_id: String
-@export var icon:String
-@export var stats: EnemyStats
 @export var shoot_range: int
 @export var back_range: int
 @export var aim_and_move: float
@@ -26,23 +20,6 @@ var coin:PackedScene = preload("res://scenes/item/coin.tscn")
 @export var surround_time: int
 @export var rand_time: int = 60
 @export var rand_length: float = 300
-
-var is_critical_hit:bool = false
-var is_fire_hit:bool = false
-var is_explosion_hit:bool = false
-var is_poison_hit:bool = false
-var is_weak_hit: bool = false
-
-var ACCELERATION:float
-
-var hurt_damage:int = 0
-var hurt_knockback:int = 0
-var hurt_direction:Vector2
-
-var enemy_body:Array = []
-var body_part: Array = []
-
-var player: Node
 
 var can_shoot: bool = true
 
@@ -60,14 +37,6 @@ var move_mod:int = 0
 
 var dir_num: int = 0
 
-var in_knockback: bool = false
-
-var is_idle: int = 1
-
-var knockback_time: int = 0
-
-var flash_time: int = 0
-
 @export var shoot_cd_time: int = 40
 @export var aim_time: int = 20
 
@@ -82,12 +51,8 @@ var dir_p: Vector2 = Vector2.ZERO
 var tilemap: Node
 var target_position: Vector2 = Vector2.ZERO
 
-@onready var sprite_2d = $Graphics/TankGraphics
-@onready var graphics = $Graphics
-@onready var enemy_buff_manager = $EnemyBuffManager
 @onready var buff_box = $%BuffBox
 @onready var gun = $Graphics/Gun
-@onready var collision_shape_2d = $CollisionShape2D
 @onready var tank_turret: Sprite2D = %tank_turret
 @onready var tank_body: Sprite2D = %tank_body
 @onready var area_2d: Area2D = $Area2D
@@ -114,6 +79,10 @@ func idle_state():
 	collision_shape_2d.set_deferred("disabled",true)
 	weak_shape_2d.set_deferred("disabled",true)
 	enemy_buff_manager.clear_all_buff()
+	if tank_body != null:
+		tank_body.set_physics_process(false)
+	if tank_turret != null:
+		tank_turret.set_physics_process(false)
 	set_physics_process(false)
 
 func active_state():
@@ -129,6 +98,10 @@ func active_state():
 	self.visible = true
 	collision_shape_2d.set_deferred("disabled",false)
 	weak_shape_2d.set_deferred("disabled",false)
+	if tank_body != null:
+		tank_body.set_physics_process(true)
+	if tank_turret != null:
+		tank_turret.set_physics_process(true)
 	set_physics_process(true)
 
 func time_count():
@@ -136,8 +109,8 @@ func time_count():
 	if flash_time > 0:
 		flash_time -= 1
 		if flash_time <= 0:
-			sprite_2d.material.set_shader_parameter("flash_opacity", 0)
-			sprite_2d.material.set_shader_parameter("outline_color", Color(0,0,0))
+			if graphics != null:
+				graphics.modulate = Color.WHITE
 	
 	if now_rand_time > 0:
 		now_rand_time -= 1
@@ -156,7 +129,7 @@ func time_count():
 		decision_time -= 1
 		if decision_time <= 0:
 			dir_v = get_distance_to_player()
-			shoot_and_move_speed = shoot_and_move * stats.MAX_SPEED
+			shoot_and_move_speed = int(shoot_and_move * stats.MAX_SPEED)
 			decision_time = 5
 	
 	if knockback_time > 0:
@@ -171,15 +144,18 @@ func body_in_knockback():
 func body_end_knockback():
 	in_knockback = false
 
+func _hurt_flash():
+	if graphics != null:
+		graphics.modulate = Color(2, 2, 2)
+	flash_time = 1
+
 func tick_physics(state: State, delta: float) -> void:
 	if is_idle == 1:
 		return
 	
 	ACCELERATION = stats.MAX_SPEED / stats.SPEED_TIME
 	
-	if enemy_body.size() != 0:
-		for i in enemy_body:
-			i.velocity += i.stats.weigth_mult * (i.global_position - self.global_position).normalized() * stats.MAX_SPEED / max(0.5, i.global_position.distance_to(self.global_position))
+	apply_soft_collision()
 	
 	if player != null:
 		tank_turret.v = face_to_player().angle()
@@ -233,8 +209,15 @@ func add_player_explosion():
 		add_ins = true
 	
 	ins.global_position = self.global_position
-	ins.explosion_damage = 50 * stats.Enemy_damage_mult
-	ins.explosion_knockback = stats.Enemy_Knockback
+	if ins.damage_data == null:
+		ins.damage_data = DamageData.new()
+	else:
+		ins.damage_data.reset_data()
+	ins.damage_data.base_damage = 50 * stats.Enemy_damage_mult
+	ins.damage_data.knockback_force = stats.Enemy_Knockback
+	ins.damage_data.damage_type.append(GameTags.EXPLOSION_DAMAGE)
+	ins.damage_data.source_type.append(GameTags.NEUTRAL)
+	ins.damage_data.source_node = self.get_path()
 	ins.explosion_range = 6
 	
 	ins.active_state()
@@ -243,20 +226,20 @@ func add_player_explosion():
 	ins.is_explosion()
 
 func face_to_player():
-	if player != null and self.position.distance_to(player.position) > 5:
-		return (player.global_position - global_position).normalized()
+	var t := get_target()
+	if t != null and self.position.distance_to(t.global_position) > 5:
+		return (t.global_position - global_position).normalized()
 	return Vector2.ZERO
 
 func get_distance_to_player():
-	if player == null:
-		return Vector2.ZERO
-	distance = self.global_position.distance_to(player.position)
+	var tp := get_target_position()
+	distance = self.global_position.distance_to(tp)
 	if distance > shoot_range:
 		move_mod = 0
-		return (player.global_position - global_position).normalized()
+		return (tp - global_position).normalized()
 	elif distance < back_range:
 		move_mod = 0
-		return (global_position - player.global_position).normalized()
+		return (global_position - tp).normalized()
 	else:
 		distance_t = self.global_position.distance_to(target_position)
 		if distance_t > 40:
@@ -269,9 +252,11 @@ func get_distance_to_player():
 			return Vector2.ZERO
 
 func _shootAnim():
-	for sprite_2d in tank_turret.get_children():
-		var tween = get_tree().create_tween().set_parallel(true)
-		tween.tween_property(sprite_2d, "scale", Vector2(sprite_2d.scale.x,sprite_2d.scale.y), 0.3).from(Vector2(sprite_2d.scale.x - 0.15, sprite_2d.scale.y + 0.4))
+	if tank_turret.get_child_count() == 0:
+		return
+	var tween := get_tree().create_tween().set_parallel(true)
+	for sprite_local in tank_turret.get_children():
+		tween.tween_property(sprite_local, "scale", Vector2(sprite_local.scale.x,sprite_local.scale.y), 0.3).from(Vector2(sprite_local.scale.x - 0.15, sprite_local.scale.y + 0.4))
 
 func shoot_bullet():
 	if shoot_cd <= 0 and can_shoot == true:
@@ -279,15 +264,15 @@ func shoot_bullet():
 		gun.gun_shot()
 		shoot_cd = shoot_cd_time
 
-func move(delta: float, ACCELERATION: float ,MAX_SPEED: float ) -> void:
+func move(delta: float, acceleration_local: float ,MAX_SPEED: float ) -> void:
 	
-	var direction = dir_v
+	direction = dir_v
 	dir_p = face_to_player()
 	
 	if stats.hp != 0:
 	
-		velocity.x = move_toward(velocity.x, direction.x * MAX_SPEED, ACCELERATION * delta)
-		velocity.y = move_toward(velocity.y, direction.y * MAX_SPEED, ACCELERATION * delta)
+		velocity.x = move_toward(velocity.x, direction.x * MAX_SPEED, acceleration_local * delta)
+		velocity.y = move_toward(velocity.y, direction.y * MAX_SPEED, acceleration_local * delta)
 		
 	else:
 		velocity = Vector2.ZERO
@@ -340,7 +325,7 @@ func get_next_state(state: State) -> State:
 			
 	return state
 	
-func transition_state(from:State, to: State) -> void:
+func transition_state(_from:State, to: State) -> void:
 	
 	match to:
 		State.IDLE:
@@ -364,45 +349,14 @@ func transition_state(from:State, to: State) -> void:
 		State.DEAD:
 			pass
 
-func _coin_drops():
-	var coin_drops = PoolManager.get_pool("coins")
-	if coin_drops == null or coin_drops.is_idle == 0:
-		coin_drops = coin.instantiate()
-		get_tree().get_first_node_in_group("CoinRoot").add_child(coin_drops)
-	
-	coin_drops.global_position = self.global_position
-	coin_drops.coin = self.stats.Enemy_coin
-	coin_drops.pick_up = self.stats.coin_pick
-	coin_drops.active_state()
-
-func _hurt_flash():
-	sprite_2d.material.set_shader_parameter("flash_opacity", 1)
-	sprite_2d.material.set_shader_parameter("outline_color", Color(2,2,2))
-	flash_time = 1
-
-func _on_damage():
-	GameEvents.emit_enemy_hit_position(self)
-	
-	if hurt_damage != 0:
-		stats.hp -= max(1, ( hurt_damage * stats.global_hurt_damage - stats.hurt_resis ))
-		hurt_damage = 0
-		_hurt_flash()
-	
-	if hurt_knockback != 0:
-		var now_knockback = max(0, hurt_knockback - stats.knockback_resis )
-		if now_knockback > 0:
-			self.velocity = hurt_direction * now_knockback
-		hurt_knockback = 0
-	
-	SoundManager.play_sfx("HurtSounds")
-
 func rand_target_position():
 	var ran = RandomNumberGenerator.new()
-	var rand_position_num = ran.randi_range(0,len(tilemap.get_used_cells(0) ) ) - 5
-	var rand_position = tilemap.map_to_local(tilemap.get_used_cells(0)[rand_position_num])
-	while rand_position.distance_to(player.global_position) > rand_length:
-		rand_position_num = ran.randi_range(0,len(tilemap.get_used_cells(0) ) ) - 5
-		rand_position = tilemap.map_to_local(tilemap.get_used_cells(0)[rand_position_num])
+	var cells: Array = tilemap.get_used_cells(0)
+	var rand_position_num = ran.randi_range(0, cells.size()) - 5
+	var rand_position = tilemap.map_to_local(cells[rand_position_num])
+	while rand_position.distance_to(get_target_position()) > rand_length:
+		rand_position_num = ran.randi_range(0, cells.size()) - 5
+		rand_position = tilemap.map_to_local(cells[rand_position_num])
 	target_position = rand_position
 	now_v = (target_position - global_position).normalized().angle()
 
@@ -410,7 +364,7 @@ func rand_aim_and_move_speed():
 	var num:float = randf_range(0,aim_and_move)
 	if num < 0.3 :
 		num = 0
-	aim_and_move_speed = num * stats.MAX_SPEED
+	aim_and_move_speed = int(num * stats.MAX_SPEED)
 
 func surround_player():
 	var num = randf_range(0,100)
@@ -418,32 +372,9 @@ func surround_player():
 		aim = surround_time
 		aim_and_move_speed = stats.MAX_SPEED
 
-func _on_is_hurt():
-	if is_idle == 1:
-		return
-	_on_damage()
-
 func _on_enemy_stats_is_dead():
 	_coin_drops.call_deferred()
 	on_dead.call_deferred()
-
-func _on_area_2d_body_entered(body):
-	if is_idle == 1:
-		return
-	if body.is_in_group("Enemy")  and !enemy_body.has(body) and body != self and !body.is_in_group("EnemyPart"):
-		enemy_body.append(body)
-	
-	if body.is_in_group("Enemy") and body != self and !body.is_in_group("EnemyPart"):
-		var collosion_direction = (self.position - body.position).normalized()
-		self.velocity += stats.weigth_mult * collosion_direction * stats.MAX_SPEED / 2
-
-func _on_area_2d_body_exited(body):
-	if is_idle == 1:
-		return
-	if body.is_in_group("Enemy")  and enemy_body.has(body):
-		enemy_body.remove_at(enemy_body.find(body))
-		if in_knockback == false:
-			body.velocity = velocity.limit_length(body.stats.MAX_SPEED)
 
 func _on_gun_shoot_end():
 	aim_end = false
@@ -457,14 +388,3 @@ func _on_turning_mod() -> void:
 func _on_weak_part_body_entered(body: Node2D) -> void:
 	if body.is_in_group("PlayerBullet"):
 		hurt_damage = body.bullet_damage * 10
-		is_critical_hit = true
-		is_weak_hit = true
-		is_hurt.emit()
-		body.kill_time = 0
-		body._on_bullet_kill_timer_timeout()
-		GameEvents.emit_enemy_body(self,body)
-		if body.is_player_shoot == true:
-			GameEvents.emit_player_bullet_hit_enemy(body)
-			GameEvents.emit_player_critical_hit_enemy(self)
-		if stats.hp <= body.bullet_damage:
-			GameEvents.emit_player_bullet_kill_enemy(body)

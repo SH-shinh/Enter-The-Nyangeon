@@ -55,17 +55,17 @@ func time_count():
 		raid_f = pick_raid()
 		SoundManager.play_sfx("WarringSounds")
 		for i in raid_f.enemy_id.size():
-			var can_spawn = raid_f.spawn_position.get(raid_f.enemy_id[i])
-			if can_spawn[0] == true and n_emit == false:
+			var can_spawn_local = raid_f.spawn_position.get(raid_f.enemy_id[i])
+			if can_spawn_local[0] == true and n_emit == false:
 				n_emit = true
 				GameEvents.emit_map_n_warring()
-			if can_spawn[1] == true and e_emit == false:
+			if can_spawn_local[1] == true and e_emit == false:
 				e_emit = true
 				GameEvents.emit_map_e_warring()
-			if can_spawn[2] == true and s_emit == false:
+			if can_spawn_local[2] == true and s_emit == false:
 				s_emit = true
 				GameEvents.emit_map_s_warring()
-			if can_spawn[3] == true and w_emit == false:
+			if can_spawn_local[3] == true and w_emit == false:
 				w_emit = true
 				GameEvents.emit_map_w_warring()
 		pass
@@ -80,11 +80,13 @@ func enemy_spawn():
 	for i in raid_f.enemy.size():
 		var enemy_temp = raid_f.enemy[i]
 		for x in 4:
-			var can_spawn = raid_f.spawn_position.get(raid_f.enemy_id[i])
-			if can_spawn[x] == true:
+			var can_spawn_local = raid_f.spawn_position.get(raid_f.enemy_id[i])
+			if can_spawn_local[x] == true:
+				var cells: Array = map_group[x].get_used_cells(0)
+				var cell_count: int = cells.size()
 				for n in floor(raid_f.enemy_num[i] * spawn_round.round_mult):
-					var rand_position_num = ran.randi_range(0,len(map_group[x].get_used_cells(0) ) ) - 1
-					var rand_position = map_group[x].map_to_local(map_group[x].get_used_cells(0)[rand_position_num])
+					var rand_position_num = ran.randi_range(0, cell_count) - 1
+					var rand_position = map_group[x].map_to_local(cells[rand_position_num])
 					var spawn_anim = PoolManager.get_pool("spawn_anim")
 					if spawn_anim == null or spawn_anim.is_idle == 0:
 						spawn_anim = enemy_spawn_anim.instantiate()

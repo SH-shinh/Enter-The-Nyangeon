@@ -8,6 +8,36 @@ var enemies_size: int = 0
 
 var buff_box: Node
 
+const IDLE_LIMITS := {
+	"player_bullet": 150,
+	"player_sniper_bullet": 100,
+	"shiro_missile": 60,
+	"explosion_particles": 30,
+	"explosion_smoke_particles": 30,
+	"normal_bullet": 150,
+	"player_explosion": 100,
+	"small_explosion": 15,
+	"big_explosion": 20,
+	"enemy_bullet_1": 200,
+	"enemy_bullet_2": 40,
+	"enemy_missile_1": 20,
+	"enemy_explosion": 20,
+	"bullet_smoke_1": 30,
+	"bullet_smoke_2": 30,
+	"floating_text": 100,
+	"fire": 30,
+	"poison": 30,
+	"chill": 30,
+	"player_flash": 5,
+	"enemy_flash_1": 10,
+	"summoned_flash_1": 5,
+	"floor_paint": 20,
+	"enemy_fire_field": 100,
+	"support_bullet": 60,
+	"hit_flash": 10,
+	"hit_flash_2": 10,
+}
+
 @onready var floating_text_scene: PackedScene = preload("res://ui/floating_text.tscn")
 
 func get_buff_box():
@@ -36,95 +66,80 @@ func check_enemies():
 		GameEvents.emit_spawn_restart()
 
 func add_pool(body_name: String, body: Node):
-	
-	var has_pool = pool.has(body_name)
-	
-	if !has_pool:
+	var entry = pool.get(body_name)
+	if entry == null:
 		pool[body_name] = {
 			"resource": body_name,
 			"body": [body],
-			"index": 0
+			"index": 0,
+			"limit": IDLE_LIMITS.get(body_name, -1),
+			"set": {body: true}
 		}
+	elif entry["set"].has(body):
+		return
 	else:
-		pool[body_name]["body"].push_back(body)
+		entry["body"].push_back(body)
+		entry["set"][body] = true
 
 func get_buff_pool():
-	var group = buff_box.get_children()
-	if !group.is_empty():
-		return group[0]
-	else:
+	if buff_box == null or not is_instance_valid(buff_box):
 		return null
+	for child in buff_box.get_children():
+		if child.get("is_idle") == 1:
+			return child
+	return null
 
-func sort_pool(body_name: String):
+func sort_pool(_body_name: String):
 	pass
 
 func get_pool(body_name: String):
-	if pool.has(body_name):
-		var body = pool[body_name]["body"]
-		if !body.is_empty():
-			
-			var max_value = body.size()
-			var pool_index = pool[body_name]["index"]
-			
-			if max_value > 150 and body_name == "player_bullet" :
-				body[pool_index].idle_state()
-			elif max_value > 100 and body_name == "player_sniper_bullet" :
-				body[pool_index].idle_state()
-			elif max_value > 60 and body_name == "shiro_missile" :
-				body[pool_index].idle_state()
-			elif max_value > 30 and body_name == "explosion_particles" :
-				body[pool_index].idle_state()
-			elif max_value > 30 and body_name == "explosion_smoke_particles" :
-				body[pool_index].idle_state()
-			elif max_value > 150 and body_name == "normal_bullet" :
-				body[pool_index].idle_state()
-			elif max_value > 100 and body_name == "player_explosion" :
-				body[pool_index].idle_state()
-			elif max_value > 15 and body_name == "small_explosion" :
-				body[pool_index].idle_state()
-			elif max_value > 20 and body_name == "big_explosion" :
-				body[pool_index].idle_state()
-			elif max_value > 200 and body_name == "enemy_bullet_1" :
-				body[pool_index].idle_state()
-			elif max_value > 40 and body_name == "enemy_bullet_2" :
-				body[pool_index].idle_state()
-			elif max_value > 20 and body_name == "enemy_missile_1" :
-				body[pool_index].idle_state()
-			elif max_value > 20 and body_name == "enemy_explosion" :
-				body[pool_index].idle_state()
-			elif max_value > 30 and body_name == "bullet_smoke_1" :
-				body[pool_index].idle_state()
-			elif max_value > 30 and body_name == "bullet_smoke_2" :
-				body[pool_index].idle_state()
-			elif max_value > 100 and body_name == "floating_text" :
-				body[pool_index].idle_state()
-			elif max_value > 30 and body_name == "fire" :
-				body[pool_index].idle_state()
-			elif max_value > 30 and body_name == "poison" :
-				body[pool_index].idle_state()
-			elif max_value > 5 and body_name == "player_flash" :
-				body[pool_index].idle_state()
-			elif max_value > 10 and body_name == "enemy_flash_1" :
-				body[pool_index].idle_state()
-			elif max_value > 5 and body_name == "summoned_flash_1" :
-				body[pool_index].idle_state()
-			elif max_value > 20 and body_name == "floor_paint" :
-				body[pool_index].idle_state()
-			elif max_value > 100 and body_name == "enemy_fire_field" :
-				body[pool_index].idle_state()
-			elif max_value > 60 and body_name == "support_bullet" :
-				body[pool_index].idle_state()
-			elif max_value > 10 and body_name == "hit_flash" :
-				body[pool_index].idle_state()
-			elif max_value > 10 and body_name == "hit_flash_2" :
-				body[pool_index].idle_state()
-			
-			if body[pool_index].is_idle == 1:
-				pool[body_name]["index"] = wrapi(pool_index + 1, 0, max_value)
-			
-			return body[pool_index]
-	else:
+	var entry = pool.get(body_name)
+	if entry == null:
 		return null
+	var body = entry["body"]
+	if body.is_empty():
+		return null
+	
+	var max_value = body.size()
+	var pool_index = entry["index"]
+	
+	var limit: int = entry["limit"]
+	if limit >= 0 and max_value > limit:
+		body[pool_index].idle_state()
+	
+	if body[pool_index].is_idle != 1:
+		var scan_max: int = mini(max_value, 64)
+		for s in range(1, scan_max):
+			var scan_index: int = wrapi(pool_index + s, 0, max_value)
+			if body[scan_index].is_idle == 1:
+				pool_index = scan_index
+				break
+	
+	if body[pool_index].is_idle == 1:
+		entry["index"] = wrapi(pool_index + 1, 0, max_value)
+	
+	return body[pool_index]
+
+func get_pool_idle(body_name: String):
+	var entry = pool.get(body_name)
+	if entry == null:
+		return null
+	var body = entry["body"]
+	var max_value = body.size()
+	if max_value == 0:
+		return null
+	var pool_index = entry["index"]
+	if body[pool_index].is_idle != 1:
+		var scan_max: int = mini(max_value, 32)
+		for s in range(1, scan_max):
+			var scan_index: int = wrapi(pool_index + s, 0, max_value)
+			if body[scan_index].is_idle == 1:
+				pool_index = scan_index
+				break
+	if body[pool_index].is_idle != 1:
+		return null
+	entry["index"] = wrapi(pool_index + 1, 0, max_value)
+	return body[pool_index]
 
 func add_text(text: String,text_position: Vector2, text_color: Color, text_size: int):
 	
@@ -133,7 +148,6 @@ func add_text(text: String,text_position: Vector2, text_color: Color, text_size:
 		floating_text = floating_text_scene.instantiate() as Node2D
 		get_tree().get_first_node_in_group("ForegroundLayer").add_child(floating_text)
 	
-	floating_text.label.set("theme_override_colors/font_color", text_color)
-	floating_text.label.set("theme_override_font_sizes/font_size", text_size)
+	floating_text.set_style(text_color, text_size)
 	floating_text.global_position = text_position + (Vector2.UP * randf_range(15,25)) + (Vector2.RIGHT * randf_range(-15,15))
 	floating_text.start(text)

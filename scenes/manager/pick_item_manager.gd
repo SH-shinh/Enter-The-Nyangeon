@@ -47,8 +47,9 @@ func coin_add():
 func add_medical_kit(spawn_position: Vector2):
 	if spawn_position == Vector2.ZERO:
 		var ran = RandomNumberGenerator.new()
-		var rand_position_num = ran.randi_range(0,len(tilemap.get_used_cells(0) ) ) - 1
-		var rand_position = tilemap.map_to_local(tilemap.get_used_cells(0)[rand_position_num])
+		var cells: Array = tilemap.get_used_cells(0)
+		var rand_position_num = ran.randi_range(0, cells.size()) - 1
+		var rand_position = tilemap.map_to_local(cells[rand_position_num])
 		var ins = medical_kit.instantiate()
 		ins.global_position = rand_position
 		get_tree().get_first_node_in_group("CoinRoot").add_child(ins)

@@ -11,6 +11,9 @@ var color_2: Color
 #var scale_tween: Tween
 var is_idle:int = 1
 
+var _last_color: Color = Color(-1, -1, -1, -1)
+var _last_size: int = -1
+
 func _ready():
 	PoolManager.add_pool("floating_text", self)
 
@@ -30,6 +33,14 @@ func start(text: String):
 	visible = true
 	label.text = text
 	animation_player_2.play("new_animation")
+
+func set_style(text_color: Color, text_size: int):
+	if text_color != _last_color:
+		label.set("theme_override_colors/font_color", text_color)
+		_last_color = text_color
+	if text_size != _last_size:
+		label.set("theme_override_font_sizes/font_size", text_size)
+		_last_size = text_size
 
 func play_anim(color_a: Color, color_b: Color):
 	color_1 = color_a

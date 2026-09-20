@@ -51,7 +51,7 @@ func get_level():
 func round_count(x: float, y:float):
 	return pow(x, y)
 
-func _physics_process(delta):
+func _physics_process(_delta):
 	time_mult = 1 - (round_timer.round_timer.time_left / round_timer.round_timer.wait_time)
 
 func spawn_start():
@@ -90,11 +90,13 @@ func boss_spawn():
 
 func enemy_spawn():
 	var ran = RandomNumberGenerator.new()
+	var cells: Array = tilemap.get_used_cells(0)
+	var cell_count: int = cells.size()
 	for i in enemy.size():
 		if enemy_spawn_time_copy[i] <= 0:
 			for n in floor(enemy_spawn_num[i] + (time_mult * time_mult * num_mult)) * round_mult:
-				var rand_position_num = ran.randi_range(0,len(tilemap.get_used_cells(0) ) ) - 1
-				var rand_position = tilemap.map_to_local(tilemap.get_used_cells(0)[rand_position_num])
+				var rand_position_num = ran.randi_range(0, cell_count) - 1
+				var rand_position = tilemap.map_to_local(cells[rand_position_num])
 				
 				var enemy_temp = enemy[i]
 				
@@ -102,8 +104,8 @@ func enemy_spawn():
 					return
 				
 				while rand_position.distance_to(player.position) < 170:
-					rand_position_num = ran.randi_range(0,len(tilemap.get_used_cells(0) ) ) - 1
-					rand_position = tilemap.map_to_local(tilemap.get_used_cells(0)[rand_position_num])
+					rand_position_num = ran.randi_range(0, cell_count) - 1
+					rand_position = tilemap.map_to_local(cells[rand_position_num])
 				
 				var spawn_anim = PoolManager.get_pool("spawn_anim")
 				if spawn_anim == null or spawn_anim.is_idle == 0:

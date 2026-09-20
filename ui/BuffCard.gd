@@ -13,17 +13,20 @@ var layer: int
 var is_idle: int = 1
 
 func _ready():
-	PoolManager.add_pool("buff_card",self)
 	active_state()
 
 func idle_state():
-	if PoolManager.buff_box != null:
-		self.reparent(PoolManager.buff_box)
 	is_idle = 1
 	if GameEvents.global_time_count.is_connected(set_value):
 		GameEvents.global_time_count.disconnect(set_value)
 	player_buff = null
 	self.visible = false
+
+func release_to_pool():
+	idle_state()
+	var box = PoolManager.buff_box
+	if box != null and is_instance_valid(box) and get_parent() != box:
+		self.reparent(box)
 
 func active_state():
 	is_idle = 0
@@ -31,23 +34,29 @@ func active_state():
 		GameEvents.global_time_count.connect(set_value)
 	self.visible = true
 
-func _physics_process(delta):
+func _physics_process(_delta):
 	if player_buff != null:
 		if player_buff.buff_erase_timer != 0:
 			buff_icon.value = player_buff.buff_timer.time_left / player_buff.buff_erase_timer
-			if player_buff.layer <= 1:
-				buff_layer.text = ""
-			else:
-				buff_layer.text = str(player_buff.layer)
+		else:
+			buff_icon.value = 1
+		
+		if player_buff.layer <= 1:
+			buff_layer.text = ""
+		else:
+			buff_layer.text = str(player_buff.layer)
 
 func set_value():
 	if player_buff == null:
 		if erase_time != 0:
 			buff_icon.value = 1 - float(now_time) / float(erase_time)
-			if layer <= 1:
-				buff_layer.text = ""
-			else:
-				buff_layer.text = str(layer)
+		else:
+			buff_icon.value = 1
+		
+		if layer <= 1:
+			buff_layer.text = ""
+		else:
+			buff_layer.text = str(layer)
 
 func set_buff_card(buff:Buff):
 	buff_icon.texture_progress = buff.icon
