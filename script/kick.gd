@@ -1,50 +1,63 @@
 extends Node2D
 
 @export var player: Node
-@onready var collision_shape_2d = $Area2D/CollisionShape2D
+@onready var hit_box = $HitBox
+@onready var collision_shape_2d = $HitBox/CollisionShape2D
 @onready var timer = $Timer
 @onready var timer_2 = $Timer2
 @onready var gpu_2d = $GPUParticles2D
 
+var body_group: Array[Node]
+
+func _ready():
+	hit_box.area_entered.connect(_on_hit_box_entered)
 
 func kick_start():
 	if timer.time_left <= 0 and player.sprite_2d.position.y == -17:
 		if timer_2.time_left <= 0:
+			if !body_group.is_empty():
+				body_group.clear()
+			apply_melee_damage_data()
 			SoundManager.play_sfx("Swing1")
 			collision_shape_2d.disabled = false
 			player.kick_anim.play("kick_anim")
-			#gpu_2d.emitting = true
+			gpu_2d.restart()
 			timer_2.start()
 		timer.start()
 
-func _on_area_2d_body_entered(body):
-	if body.is_in_group("Enemy"):
-		
-		var hit_direction = (body.position - player.position).normalized()
-		
-		var luck = randf_range(0, 100)
-		if luck < player.stats.critical_luck:
-			body.hurt_damage = player.stats.kick_damage * player.stats.global_damage * player.stats.critical_damage
-			body.is_critical_hit = true
-			GameEvents.emit_player_melee_critical_hit_enemy(body)
-		else:
-			body.hurt_damage = player.stats.kick_damage * player.stats.global_damage
-		
-		body.hurt_knockback = min( player.stats.bullet_knockback + 200, 1000 )
-		body.hurt_direction = hit_direction
-		GameEvents.emit_player_melee_hit_enemy(body)
-		body.emit_signal("is_hurt")
-		SoundManager.play_sfx("HurtSounds2")
+func apply_melee_damage_data():
+	if hit_box.damage_data == null:
+		hit_box.damage_data = DamageData.new()
+	else:
+		hit_box.damage_data.reset_data()
 	
-	if body.is_in_group("Summoned"):
-		
-		var hit_direction = (body.position - player.position).normalized()
-		body.hurt_knockback = min( player.stats.bullet_knockback + 200, 1000 )
-		body.hurt_dir = hit_direction
-		
-		body.stats.emit_signal("is_hurt")
-		SoundManager.play_sfx("HurtSounds2")
+	var luck = randf_range(0, 100)
+	if luck < player.stats.critical_luck:
+		hit_box.damage_data.base_damage = max(1, round(player.stats.kick_damage * player.stats.global_damage * player.stats.critical_damage))
+		hit_box.damage_data.is_crit = true
+	else:
+		hit_box.damage_data.base_damage = max(1, round(player.stats.kick_damage * player.stats.global_damage))
+		hit_box.damage_data.is_crit = false
 	
+	hit_box.damage_data.knockback_force = max( player.stats.bullet_knockback + 200, 1)
+	hit_box.damage_data.knockback_direction = Vector2.RIGHT.rotated(global_rotation)
+	hit_box.damage_data.damage_type.append(GameTags.MELEE_DAMAGE)
+	hit_box.damage_data.source_node = self.get_path()
+	hit_box.damage_data.source_type.append(GameTags.PLAYER)
+
+func add_damage_data():
+	if !body_group.is_empty():
+		SoundManager.play_sfx("HurtSounds2")
+		for i in body_group:
+			if i == null or not is_instance_valid(i):
+				continue
+			i.hit_received.emit(hit_box.damage_data)
+
+func _on_hit_box_entered(hurtbox: Area2D):
+	if hurtbox is HurtBox and !body_group.has(hurtbox):
+		body_group.push_back(hurtbox)
 
 func _on_timer_2_timeout():
 	collision_shape_2d.disabled = true
+	add_damage_data()
+	body_group.clear()

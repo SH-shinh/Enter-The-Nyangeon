@@ -6,6 +6,7 @@ extends Node2D
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
 @onready var timer: Timer = $Timer
 @onready var gpu_particles_2d: GPUParticles2D = $GPUParticles2D
+@onready var hit_box = $HitBox
 
 var charge_time: int = 2
 var now_time: int = 0
@@ -20,11 +21,14 @@ var melee_damage: int = 20
 var x_movement: float = 0
 var y_movement: float = 0
 
+var body_group: Array[Node]
+
 func _ready() -> void:
 	GameEvents.global_time_count.connect(time_count)
 	GameEvents.round_start.connect(control_reset)
 	GameEvents.round_end.connect(control_reset)
 	timer.timeout.connect(reset_melee_index_time)
+	hit_box.area_entered.connect(_on_hit_box_entered)
 
 func reset_melee_index_time():
 	animation_player.play("RESET")
@@ -80,15 +84,16 @@ func melee_anim_play(anim_time: float, charge_speed: int, anim_name: String, nex
 	melee_index = next_index
 
 func charge_invincibility_frames():
-	player.hitbox_shape.disabled = true
+	player.hurtbox_shape.disabled = true
 
 func charge_invincibility_frames_out():
-	player.hitbox_shape.disabled = false
+	player.hurtbox_shape.disabled = false
 
 func kick_start():
 	if can_comboo == false or player.sprite_2d.position.y != -17:
 		return
-	
+	if !body_group.is_empty():
+		body_group.clear()
 	if player_ps.melee_rank <= 0:
 		melee_damage = player.stats.kick_damage
 		melee_anim_play(0.2, 150, "normal_melee", 0)
@@ -106,8 +111,41 @@ func kick_start():
 			melee_damage = player.stats.kick_damage + player.stats.bullet_damage * 2
 			melee_anim_play(0.4, 250, "melee_3", 0)
 			gpu_particles_2d.restart()
-		
-		
+	
+	apply_melee_damage_data()
+
+func apply_melee_damage_data():
+	if hit_box.damage_data == null:
+		hit_box.damage_data = DamageData.new()
+	else:
+		hit_box.damage_data.reset_data()
+	
+	var luck = randf_range(0, 100)
+	if luck < player.stats.critical_luck:
+		hit_box.damage_data.base_damage = max(1, round(melee_damage * player.stats.global_damage * player.stats.critical_damage))
+		hit_box.damage_data.is_crit = true
+	else:
+		hit_box.damage_data.base_damage = max(1, round(melee_damage * player.stats.global_damage))
+		hit_box.damage_data.is_crit = false
+	
+	hit_box.damage_data.knockback_force = max( player.stats.bullet_knockback + 200, 1)
+	hit_box.damage_data.knockback_direction = Vector2.RIGHT.rotated(global_rotation)
+	hit_box.damage_data.damage_type.append(GameTags.MELEE_DAMAGE)
+	hit_box.damage_data.source_node = self.get_path()
+	hit_box.damage_data.source_type.append(GameTags.PLAYER)
+
+func add_damage_data():
+	if !body_group.is_empty():
+		SoundManager.play_sfx("HurtSounds2")
+		for i in body_group:
+			if i == null or not is_instance_valid(i):
+				continue
+			i.hit_received.emit(hit_box.damage_data)
+		body_group.clear()
+
+func _on_hit_box_entered(hurtbox: Area2D):
+	if hurtbox is HurtBox and !body_group.has(hurtbox):
+		body_group.push_back(hurtbox)
 
 func _on_area_2d_body_entered(body):
 	if body.is_in_group("Enemy"):

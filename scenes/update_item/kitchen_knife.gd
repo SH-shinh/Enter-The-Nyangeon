@@ -15,10 +15,13 @@ var roation_count: bool = false
 var hp_mult: float = 0.1
 
 @onready var knife: Node2D = $knife
+@onready var hit_box = $knife/Sprite2D/HitBox
 
 func _ready():
 	first_activation()
 	GameEvents.ability_upgrade_added.connect(on_upgrade_added)
+	hit_box.area_entered.connect(_on_hit_box_area_entered)
+	hit_box.area_exited.connect(_on_hit_box_area_exited)
 
 func first_activation():
 	player = get_tree().get_first_node_in_group("Player")
@@ -30,8 +33,6 @@ func _physics_process(delta: float) -> void:
 		knife.look_at(player.crosshair_pos)
 		knife.position.y = player.sprite_2d.position.y + 3
 		self.scale.x = player.graphics.scale.x
-	
-	
 	
 	if !enemy_group.is_empty():
 		roation_damage_count()
@@ -68,36 +69,48 @@ func on_upgrade_added(upgrade: AbilityUpgrade, current_upgrade: Dictionary):
 	equip_damage += 45
 	hp_mult += 0.01
 
+func apply_melee_damage_data():
+	if hit_box.damage_data == null:
+		hit_box.damage_data = DamageData.new()
+	else:
+		hit_box.damage_data.reset_data()
+	
+	var luck = randf_range(0, 100)
+	if luck < player.stats.critical_luck:
+		hit_box.damage_data.base_damage = max(1, equip_damage * PlayerData.kick_damage_mult * player.stats.equip_damage * player.stats.global_damage * player.stats.critical_damage)
+		hit_box.damage_data.is_crit = true
+	else:
+		hit_box.damage_data.base_damage = max(1, equip_damage * PlayerData.kick_damage_mult * player.stats.equip_damage * player.stats.global_damage)
+		hit_box.damage_data.is_crit = false
+	
+	hit_box.damage_data.knockback_force = player.stats.bullet_knockback
+	hit_box.damage_data.knockback_direction = Vector2.RIGHT.rotated(knife.global_rotation)
+	hit_box.damage_data.damage_type.append(GameTags.MELEE_DAMAGE)
+	hit_box.damage_data.source_node = self.get_path()
+	hit_box.damage_data.source_type.append(GameTags.EQUIP)
+	hit_box.damage_data.flags.append(GameTags.TRUE_DAMAGE)
+
 func damage_add():
-	for i in enemy_group.size():
-		var hit_direction = (enemy_group[i].global_position - player.global_position).normalized()
-		
-		if enemy_group[i].stats.hp < (enemy_group[i].stats.max_hp * hp_mult):
-			enemy_group[i].hurt_damage = 9999999
-			enemy_group[i].stats.hurt_resis = 0
-			enemy_group[i].stats.global_hurt_damage = 1
-		else:
-			var luck = randf_range(0, 100)
-			if luck < player.stats.critical_luck:
-				enemy_group[i].hurt_damage = max(1, equip_damage * PlayerData.kick_damage_mult * player.stats.equip_damage * player.stats.global_damage * player.stats.critical_damage)
-				enemy_group[i].is_critical_hit = true
-				GameEvents.emit_player_melee_critical_hit_enemy(enemy_group[i])
-			else:
-				enemy_group[i].hurt_damage = max(1, equip_damage * PlayerData.kick_damage_mult * player.stats.equip_damage * player.stats.global_damage)
-		
-		enemy_group[i].hurt_knockback = player.stats.bullet_knockback
-		enemy_group[i].hurt_direction = hit_direction
-		
-		GameEvents.emit_player_melee_hit_enemy(enemy_group[i])
-		GameEvents.emit_equip_hit_enemy(enemy_group[i], self)
-		enemy_group[i].emit_signal("is_hurt")
+	
+	if !enemy_group.is_empty():
+		#SoundManager.play_sfx("HurtSounds2")
+		for i in enemy_group:
+			if i == null or not is_instance_valid(i):
+				continue
+			apply_melee_damage_data()
+			if i.owner.stats.hp < (i.owner.stats.max_hp * hp_mult):
+				if i.owner.stats.hp <= 99999:
+					hit_box.damage_data.base_damage = 99999
+				else:
+					hit_box.damage_data.base_damage = i.owner.stats.hp
+			
+			i.hit_received.emit(hit_box.damage_data)
 
-
-func _on_area_2d_body_entered(body: Node2D) -> void:
-	if body.is_in_group("Enemy") and !enemy_group.has(body):
-		enemy_group.push_back(body)
+func _on_hit_box_area_entered(hurt_box: Area2D) -> void:
+	if hurt_box is HurtBox and !enemy_group.has(hurt_box):
+		enemy_group.push_back(hurt_box)
 		damage_cd = 1
 
-func _on_area_2d_body_exited(body: Node2D) -> void:
-	if body.is_in_group("Enemy") and enemy_group.has(body):
-		enemy_group.remove_at(enemy_group.find(body))
+func _on_hit_box_area_exited(hurt_box: Area2D) -> void:
+	if hurt_box is HurtBox and enemy_group.has(hurt_box):
+		enemy_group.remove_at(enemy_group.find(hurt_box))
