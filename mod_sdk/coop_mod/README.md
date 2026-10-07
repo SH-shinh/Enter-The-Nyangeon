@@ -1,5 +1,7 @@
 # ETN Coop Mod（骨架）
 
+> 当前版本 **0.1.1**；最低支持本体 **v0.5.1.2-test 及以上**（版本比较忽略 `-test` 等后缀）。
+
 联机以 **mod 形式注入**，本体零改动（仅通过 `ExtensionHooks` 挂接）。当前进度：**传输层 + 玩家/敌人/召唤物同步 + 敌人伤害权威 + 子弹与爆炸/特效广播 + 金币共享 + 倒地救援/团队流程 + 场景切换广播 + 主菜单 COOP 按钮（置于 QUIT 之上）+ 联机覆盖层（option 菜单式布局，页签复用 `option_button.tscn` 绿色高亮，4 语）+ 开房后自动进准备房（测试房作为准备房）+ 开始球/选人/就绪/房主难度流程 + 玩家 ID 常驻顶部 + LAN 全员选定握手 + 出生点居中 + 测试场菜单 get_player 修复 + 玩家 ID 输入/持久化 + 头顶名牌同步 + 房间聊天室（右侧小窗，回车/手机按钮 + 升级页按钮）**。
 
 ## 目录
@@ -132,7 +134,7 @@ mod_sdk/coop_mod/mods/etn_coop/
 
 ## 连接体验与信息面板（LAN 发现 / 版本握手 / 队友 HUD / 战绩）
 - **LAN 房间发现**（`net/coop_lan_discovery.gd`，常驻于 `CoopNet`）：独立 UDP，`DISCOVERY_PORT=24592`；host 开服后每 1s 广播 JSON（`{magic:ETN_COOP, pv, name, port, players, max, mode, game_version}`），**只发不收、绑临时端口**；client 在 LAN 页自动 `browse_start()` 收包、按 `ip:port` 去重、`2.5s` 超时剔除。`ui/coop_menu.gd` 在 `JoinRow` 下动态构建房间列表（点击即填 IP 并加入）。同机自测兜底：额外单播一份到 `127.0.0.1:24592`。
-- **版本/协议握手**（`coop_net.gd`）：`PROTOCOL_VERSION` + `MOD_VERSION` + `Game.version_number`；client 连接后 `rpc_id(1,"_client_hello",...)`，host 校验，不一致 `_hello_reject(reason)` 并**延迟 0.5s 再踢**（立即 disconnect 会丢可靠包）；`_on_peer_connected` 不再立即发 lobby/roster，改由握手通过后 `_accept_peer` 执行；未握手连接 5s 超时踢除。i18n `coop_version_mismatch`。
+- **版本/协议握手**（`coop_net.gd`）：`PROTOCOL_VERSION` + `MOD_VERSION` + `Game.version_number`；client 连接后 `rpc_id(1,"_client_hello",...)`，host 校验，不一致 `_hello_reject(reason)` 并**延迟 0.5s 再踢**（立即 disconnect 会丢可靠包）；`_on_peer_connected` 不再立即发 lobby/roster，改由握手通过后 `_accept_peer` 执行；未握手连接 5s 超时踢除。i18n `coop_version_mismatch`。版本比较（`_versions_equal`）按**数字段**进行、**忽略 `-test` 等后缀**，故 `v0.5.1.2-test` 与 `v0.5.1.2` 视为同版本、可互通。
 - **实时战绩面板（可编辑场景）**：`ui/coop_scoreboard.tscn`（+ 行模板 `ui/coop_scoreboard_row.tscn`，脚本 `ui/coop_scoreboard.gd`）。按住 `coop_scoreboard`（运行时注册，默认 `Tab`/手柄 Back）显示，居中、无压暗底，行按伤害降序。**静态布局（面板/标题/表头/列宽/字体/颜色/位置）全在 `.tscn` 里，可直接在编辑器手动调整**；脚本只负责输入、按 `CoopNet.team_stats` 实例化行并填 `%Name/%Kills/%Damage/%Coins`（伤害/击杀/金币大数用 **K/M/B/T 缩写**：1 位小数去尾零 + 进位保护，如 `999950→1M`）。
 - **战绩数据（host 权威）**：按 peer 累计 `team_stats={kills,damage,coins}`——伤害在 `_on_server_enemy_damage_taken`（本地命中）与 `_server_enemy_hit`（客机转发命中，`suppress_feedback=true` 不发 `damage_taken` 故需单列）两处累加；击杀在 `_on_server_enemy_dead` 按 `last_attacker_by_net_id` 归属；每 1s `_remote_team_stats` 广播。i18n `coop_sb_*`。
 - **自测**：`--coop-devdiscover`（只浏览进程，打印 `dev-discover rooms=N`）；`--coop-devbadver`（模拟版本不一致，验证被拒）；`dev status` 附 `team=`。
@@ -363,7 +365,7 @@ mod_sdk/coop_mod/mods/etn_coop/
 
 ## 批A：刷怪门 / 敌人选敌 / 角色事件通道
 - **H1 客机不本地刷怪**：`ExtensionHooks.round_enemy_spawn_gate`；`enemy_manager.round_enemy_spawn_start` 前置门；mod 非 host 跳过。
-- **H2 host 敌人锁定客机玩家**：`entity_ENEMY.get_nearest_player()`（host 加扫 `"RemotePlayer"` 组、过滤 `is_downed`）；子类 `enhanced/modded_sweeper`、`sweeper`、`goliath`、`enemy_tank`/`tank_gun_1` 改走 `get_target()/get_target_position()`。
+- **H2 host 敌人锁定客机玩家**：`entity_ENEMY.get_nearest_player()`（host 加扫 `"RemotePlayer"` 组、过滤 `is_downed`）；子类 `sweeper`、`goliath`、`enemy_tank`/`tank_gun_1` 改走 `get_target()/get_target_position()`。（`enhanced_sweeper.gd`/`modded_sweeper.gd` 经核为未被任何 tscn 引用的死代码，两场景根脚本本就是 `sweeper.gd`，已于 2026-10-07 删除。）
 - **M5 角色专属事件通道接口**：`ExtensionHooks.on_character_event`；`player.broadcast_character_event()` / `player.apply_network_character_event()`（子节点转发）；mod `_on/_server/_remote/_apply_character_event`。暂无调用点（供未来角色 EX 等）。
 
 ## 批B–E：稳健性/完整性/性能/低优先
@@ -525,6 +527,9 @@ mod_sdk/coop_mod/mods/etn_coop/
 - **UI（`ui/coop_chat.tscn` + `coop_chat.gd`）**：`CanvasLayer`（`layer=119`，`process_mode=ALWAYS`），右侧中间 `PanelContainer`（200×160，字体 9）内含 `ScrollContainer`+`VBoxContainer` 消息列表 + 底部 `LineEdit`；消息行格式 `玩家id： 内容`，自动滚到底。
   - **Enter**（`coop_chat` 动作，`KEY_ENTER`/`KEY_KP_ENTER`）三态：窗口隐藏 → 开窗+聚焦+**占用控件**（显示鼠标+冻结本地玩家）；窗口可见且输入框**已聚焦** → 发送（`send_chat`）→ 清空并取消聚焦 → **立即释放控件**（鼠标恢复、玩家解冻）+ **2 秒后淡出隐藏**（无内容同样处理）；窗口可见但**未聚焦**（淡出期内）→ `_refocus()` **取消淡出、重新聚焦并再次占用控件**，支持「输入→回车→再输入→回车」连续发送，无需等窗口消失。`ESC` 立即隐藏。
   - **控件占用/释放**：`_acquire_controls()`/`_release_controls()` 幂等——占用时记 `_prev_mouse_mode`/`_prev_player_stop` 并置鼠标 `VISIBLE`+`player_stop=true`；释放时按原值还原。**发送即释放**（鼠标/操作立刻恢复，窗口仍显示 2 秒），`_open_chat`/`_refocus` 占用，`_submit`/`_hide_now` 释放。游玩态释放后指针隐藏（准星捕获）而窗口仍可见 2 秒，属预期。
+  - **自动显示（PEEK）**：`_on_chat_received` 在窗口关闭（含淡出中）时 → `_peek_show()`：显示面板、**不聚焦/不占用控件**（不显示鼠标、不冻结玩家、游玩无感）、**背景与输入框透明度 0.4**（消息文字保持满不透明）、滚到底、**2 秒后淡出**（peek 期间每条新消息重置计时；淡出中再来消息亦重置重显）。PEEK 下按回车/点按钮 → `_refocus()` 升格为输入态（恢复满不透明 + 占用 + 聚焦）。
+  - **不拦截鼠标 / 隐藏滚动条**：`_ready` 递归把面板子树 `mouse_filter=IGNORE`（永不吞鼠标点击，输入靠程序聚焦；游玩期不挡开火）；`Scroll.vertical_scroll_mode=3`（SHOW_NEVER，不显示拉条，程序滚动仍可用）。
+  - **游戏结束后保留窗口**：`_on_game_over` 不再隐藏（仅清 `_upgrade_active`），结算/团队结束页仍可聊天、新消息仍 peek。
   - **手机按钮**：`TextureButton` 30×30、`texture_normal=res://ui/scoreboard_icon.png`、铺满 30×30、无边框、**半透明 `modulate.a=0.45`（恒定，无悬停反馈）**，挂到**本地玩家** `$GameUI/AmmoPosition` 右侧（战斗与准备房均显示；换人/重生后自动重挂）。
   - **升级页按钮（第二个，场景节点）**：`ui/coop_chat.tscn` 的 `%UpgradeChatButton`（同为 30×30/0.45/`mouse_filter=IGNORE`，挂在 `CoopChat` 层 → 盖在升级页 `layer=2` 之上），初始 `position=(590,268)`（红框处，**编辑器可直接改**）。`coop_chat.gd` 监听 `round_upgrade`→`_upgrade_active=true`、`round_upgrade_end`/`round_upgrade_closing`/`round_start`/`game_over`→`false`；`_process` 里 `visible = _upgrade_active and is_lan_game and 本地玩家有效`（兼容升级页「刷新」重建——刷新不重发 `round_upgrade` 但仍处升级阶段，按钮保持）。**本体 `UpgradeScreen` 背景不透明且 layer=2，会盖住玩家 `GameUI`(layer=1) 里的 HUD 按钮，故升级页必须用这个上层按钮。**
   - **点击门控（防游玩误触 / 升级页可点）**：两按钮均 `mouse_filter=IGNORE`（**纯显示，不接收 GUI 鼠标事件、不吞游玩期鼠标**），点击由 `coop_chat._input` 手动命中判定——`InputEventScreenTouch`（命中矩形）**始终可激活**；`InputEventMouseButton` 左键在**指针空闲**时可激活（`_pointer_free() = _is_open or Input.mouse_mode==MOUSE_MODE_VISIBLE`）。游玩期准星把鼠标设为 `CONFINED_HIDDEN` → 鼠标不处理也不 consume（不挡瞄准/开火、不误触开窗）；升级页/暂停等鼠标 `VISIBLE` 时桌面可点。`_last_touch_frame` 守卫忽略触摸模拟出的鼠标事件，避免双触发。
@@ -564,6 +569,12 @@ mod_sdk/coop_mod/mods/etn_coop/
 - **Kasumi 钻头（M5 角色事件）**：钻头是**瞬态**近战（`kasumi_melee.kick_start` 临时实例化），走 `player.broadcast_character_event(&"kasumi_drill", {pos,scale_x,now_t,dur})`；镜像在 `kasumi_ps.apply_network_character_event` 生成**纯视觉**钻头（`set_script(null)` + 关 `Area2D2`，播 `drill_anim`，短暂后释放）。
 - **Hina QTE 联机化（本体 `hina_ps.gd`，`is_lan_session` 门控）**：LAN 下 QTE **不再 `Engine.time_scale` 全局慢放**（会拖慢本机、房主端还会饿死网络节奏），改为**等比慢放 QTE 动画**（`qte_bar/AnimationPlayer.speed_scale = 0.07`，bar 移动本就是 `qte_anim` 的 `bar:position` 轨道）；`check_qte`/`qte_false`/`_exit_tree` 恢复 `speed_scale=1`。单机行为不变。
 - **dev**：`--coop-devparabola`（host 生成一枚抛物线金币，打印两端轨迹/位置）、`--coop-devhina`（打印 `Engine.time_scale` 应恒 1 与 QTE 动画 `speed_scale`）。
+
+## 延迟小字（两个聊天按钮下方）
+- **位置**：主 HUD 聊天按钮（代码构建 `CoopChatButton`，挂 `$GameUI/AmmoPosition`）正下方用**代码构建**的 `_ping_label`（兄弟节点、`PING_POS = BTN_POS + (-10, 32)`）；升级页聊天按钮 `%UpgradeChatButton` 下方是**场景节点** `%UpgradePingLabel`（`coop_chat.tscn`，编辑器可调）。二者均只在 **LAN + 本地玩家有效**（升级小字另需升级阶段）时显示。
+- **样式**：`BoutiqueBitmap7x7_1.7`、字号 8、居中、黑描边 `outline_size=3`、`mouse_filter=IGNORE`（不吞输入）。
+- **内容/颜色**：纯数字 `"%dms" % round(rtt)`（无样本时 `--`）；颜色按 `CoopNet.get_network_quality_debug_text()`（复用现有阈值 `rtt<60&loss<2` → good / `rtt<140&loss<8` → fair / 其余 poor）映射 **绿/黄/红**。数据源 `CoopNet.get_network_timing()["rtt"]`，`_process` 节流 0.3s 刷新，仅变化时写入。
+- **实现**：`ui/coop_chat.gd`（`_make_ping_label`/`_hide_ping`/`_refresh_pings`/`_apply_ping_label`；`_ensure_button`/`_ensure_upgrade_button` 同步显隐）+ `ui/coop_chat.tscn`（`UpgradePingLabel` 节点 + 7x7 字体 ext_resource）。
 
 
 

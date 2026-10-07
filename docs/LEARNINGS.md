@@ -1064,6 +1064,7 @@
 - Notes / 说明: **H1**：`script/extension_hooks.gd`+`round_enemy_spawn_gate`；`enemy_manager.round_enemy_spawn_start` 首行 gate；mod `_gate_round_enemy_spawn()`=非 host 返回 true（测试房无回合，未实测，以逻辑+参考版一致为准）。**H2**：`entity_ENEMY._select_target` 改走 `get_nearest_player()`（物理帧缓存；`multiplayer.multiplayer_peer!=null and is_server` 时加扫 `"RemotePlayer"`；`_is_valid_player_target` 过滤 `is_downed`）；并把子类绕过 `get_target()` 的选敌点改用它：`enhanced_sweeper.get_direction_to_player`、`modded_sweeper.get_direction_to_player`、`sweeper` 冲撞距离、`goliath` 5 处 `player.global_position`→`get_target_position()`、`enemy_tank` 守卫/`tank_gun_1` 目标。**M5**：`extension_hooks.gd`+`on_character_event`；`player.gd`+`broadcast_character_event`/`apply_network_character_event`（转发子节点，同 `apply_network_character_state` 款式）；mod `_on_character_event`/`_server_character_event`/`_remote_character_event`/`_apply_character_event`。**通用教训**：联机镜像一旦移出 `"Player"` 组（为修面板缓存），所有"敌人选敌/朝向/开火"里直接 `get_first_node_in_group("Player")`/`player.` 的路径都会退化为只认本机，必须统一改走 `get_target()`；敌波生成入口（`enemy_manager.round_enemy_spawn_start`）必须按端门控。实测（双进程 LAN `--coop-devspawn`）：host 敌人 `get_target()` 指向 `CoopRemote_*[RemotePlayer]`；M5 探针客机发 `dev_probe`→host `apply_character_event node=ok`；综合回归零错误。
 - Source / 来源: user + code + test
 - Date / 日期: 2026-10-05
+- SUPERSEDED: 2026-10-07 上述 `enhanced_sweeper.gd`/`modded_sweeper.gd` 实为**孤儿脚本**（两场景根脚本本就是 `sweeper.gd`），已删除；运行期增强/改装清扫者选敌走 `sweeper.gd` 的 `get_target()`。
 
 ### [Mod] 批B–E：切包/可靠通道/枪口闪光/升级就绪/特效池化/伤害洞/掉落事件
 - Evidence / 证据: 参考版 `NetworkManager.gd:27 BULLET_BATCH_LIMIT=128`、`_flush_pending_bullet_batches` 切包（1379-1412）、`_server_visual_effect` reliable（1476-1491）、`broadcast_player_bullet_reliable`（652-667）、`UpgradeScreen.gd:224-250` 就绪指示；`NetworkVisualSync` 特效池化（54-192）；`_open_player_damage_hole` 遍历全部（334-394）；`_apply_shared_pyroxenes` 发拾取事件（1717-1723）。
@@ -1356,3 +1357,55 @@
 - Notes / 说明: 原实现把「恢复鼠标 + 解冻玩家」放在 `_hide_now()`（发送后 2 秒淡出结束才跑）→ 发送后 2 秒内鼠标仍 `VISIBLE`、玩家仍冻结，无法立刻继续操作。改为占用/释放两半并**幂等**：`_open_chat`/`_refocus` 占用（记 `_prev_mouse_mode`/`_prev_player_stop`，置鼠标 `VISIBLE` + `player_stop=true`），`_submit`/`_hide_now` 释放（按原值还原）。**发送即释放**（鼠标/操作立即恢复），窗口仍按 2 秒淡出；2 秒内回车重聚焦会再次占用。游玩态释放后指针隐藏（准星捕获）而窗口仍可见，属预期。验证（无头探针）：acquire 幂等=`true`、submit 后 `held=false`+失焦+窗口仍 `visible`、release 幂等=`false`、refocus 后 `held=true`；LAN 两端 `log=2` 无 `SCRIPT ERROR`。
 - Source / 来源: user + code + test
 - Date / 日期: 2026-10-07
+
+### [Mod] 聊天按钮下方延迟小字：数据取常开的 `get_network_timing`、两个按钮各挂一个、场景节点需 force_reload
+- Evidence / 证据: `mod_sdk/coop_mod/mods/etn_coop/ui/coop_chat.gd`（`_make_ping_label`/`_hide_ping`/`_refresh_pings`/`_apply_ping_label`；`_ensure_button`/`_ensure_upgrade_button` 同步显隐）、`ui/coop_chat.tscn`（`%UpgradePingLabel` + 7x7 字体 ext_resource）、`net/coop_net.gd`（`get_network_timing`/`get_network_quality_debug_text`）。
+- Notes / 说明: 主 HUD 按钮是**代码构建**（挂本地玩家 `$GameUI/AmmoPosition`，含 reparent）→ 延迟小字也代码构建、作其兄弟节点；升级页按钮是**场景节点** → 小字也放场景节点 `%UpgradePingLabel`（编辑器可调位置）。数据用**常开采集**的 `get_network_timing()["rtt"]`（`net_rtt_ms` 只在刷新点更新、且用采样均值更有代表性）；颜色复用 `get_network_quality_debug_text()`（good/fair/poor → 绿/黄/红），与 F9 HUD 同口径；`_process` 节流 0.3s、仅变化写入。**坑**：编辑 `coop_chat.tscn` 后若编辑器已加载该场景，`scene_open` 默认不重读（`reloaded_from_disk=false`）、`node_find` 看不到新节点 → 须 `scene_open(force_reload=true)`（或等 filesystem 重扫）；新增 `[ext_resource]` 字体可只写 `path`（uid 可选）。
+- Source / 来源: code + test
+- Date / 日期: 2026-10-07
+
+### [Mod] 聊天按钮命中判定用带类型参数接收已释放对象会崩（`_hit_test`）；删除孤儿 sweeper 脚本
+- Evidence / 证据: `mods/etn_coop/ui/coop_chat.gd:406`（`func _hit_test(btn: TextureButton, event: InputEvent)`；`_button_hit:403` 调 `_hit_test(_btn, event) or _hit_test(_upgrade_btn, event)`；`_ensure_button` 把 `_btn` 挂到本地玩家 `$GameUI/AmmoPosition`）；`scenes/enemies/enhanced_sweeper.tscn:3`/`modded_sweeper.tscn:3` 根脚本 = `sweeper.gd`（uid://caqfbtqobq27l），`scenes/enemies/{enhanced,modded}_sweeper.gd` 无任何场景/资源引用（其 uid 仅出现在各自 `.uid`，且无 `class_name`）。
+- Notes / 说明: **崩溃**：游戏 break reason = `Invalid type in function '_hit_test' ... argument 1 (previously freed)`。根因：场景切换/进测试房时本地玩家重建 → 挂在玩家 `GameUI/AmmoPosition` 下的 `_btn` 被释放，而 `_input` 早于 `_process`（`_ensure_button` 重建）触发，把已释放对象传给**带类型参数** `btn: TextureButton` → Godot 在参数类型检查处直接报错，函数体里的 `is_instance_valid(btn)` 守卫根本轮不到执行。修法：`_hit_test` 参数去类型（`func _hit_test(btn, event: InputEvent)`），已释放引用可进门、由内部 `is_instance_valid` 拦掉；镜像 `mods/etn_coop/ui/coop_chat.gd` 与源码 `mod_sdk/coop_mod/mods/etn_coop/ui/coop_chat.gd` 两份同改。**孤儿脚本**：`scenes/enemies/{enhanced,modded}_sweeper.gd` 曾被误当在用（两场景根脚本本就是 `sweeper.gd`），本轮连同 `.uid` 一并删除（`filesystem_manage remove` 因 `res://ui/res/button.res` 二进制依赖拒绝，改由直接删文件 + `filesystem scan`）。**通用教训**：① GDScript 带类型参数对**已释放实例**会在入参边界报 `Invalid type ... previously freed`，`is_instance_valid` 守卫必须配合**无类型参数**（或调用方先判有效）才生效；② 「靠 `_process` 重建的引用」不要在 `_input` 等更早回调里直接使用，跨帧可能仍指向已释放对象。验证：`game_eval` 构造并释放 `TextureButton` 后 `chat.call("_hit_test", freed, event)` 返回 `false`（`freed=true`，无报错）；删除后 `filesystem scan` 通过、`iori_ps.gd`/`hit_box.gd`/`coop_chat.gd` `find_symbols` 均正常，重跑无 break。
+- Source / 来源: code + test
+- Date / 日期: 2026-10-07
+
+### [Mod][Base] 版本比较：`game_version` 作“最低支持本体版本”，按数字段比较并忽略 `-test` 后缀
+- Evidence / 证据: `script/Game.gd:10`（`version_number = "v0.5.1.2-test"`）；`script/mod_manager.gd:_mount_one`（原 `gv != Game.version_number` 仅告警；`_version_parts`/`_version_gte`）；`mods/etn_coop/net/coop_net.gd:_client_hello`（原 `game_ver != Game.version_number`；`_versions_equal`/`_version_parts`）；`mods/etn_coop/mod.json` 与 `mod_sdk/coop_mod/mods/etn_coop/mod.json`（`version` 0.1.1、`game_version` v0.5.1.2-test）。
+- Notes / 说明: **规则**——manifest `game_version` 语义 = **最低支持的本体版本**（不再要求相等）；比较取 `v` 后按 `.` 拆数字段、丢弃首个 `-` 及其后（`-test` 等）、去尾零、缺位补 0，逐段比。**两处用途**：① 本体 `mod_manager` 仅在「本体 < 声明最低版本」时 `push_warning`（**不阻断挂载**，符合既有宽松设计）；② mod LAN 握手 `_versions_equal` 按数字段判等 → 测试版 `v0.5.1.2-test` 与正式版 `v0.5.1.2` 视为同版本可互通。**动机**：`-test` 是测试标签，正式版会去掉后缀；若沿用字符串精确比较，正式版与更高版本都会误报/误拒。**通用教训**：本体版本若带 `-test` 等后缀，任何“版本门槛”比较都必须归一化后按数字段比，别用字符串相等。
+
+### [Mod] 打包版本号约定与产物
+- Evidence / 证据: `mod_sdk/build_coop_mod.ps1`（默认输出 `mod_sdk/coop_mod/build/etn_coop.pck` + `etn_coop.zip`）；本次额外产出 `build/etn_coop_0.1.1.zip`。
+- Notes / 说明: 版本号三处同步——`mod.json.version`、`coop_net.gd:MOD_VERSION`、以及（用于分发归档的）`etn_coop_<version>.zip`；当前 **0.1.1**。`build/` 已被 `.gitignore` 忽略，产物不入库。
+- Source / 来源: user + code
+- Date / 日期: 2026-10-07
+
+### [Foundation] `Object.get_meta(name, null)` 不抑制“缺少 meta”的报错，仅非 null 默认值才抑制
+- Evidence / 证据: `mods/etn_coop/net/coop_item_visuals.gd:92`（原 `mirror.get_meta("coop_last_follow_icon", null)`）；运行日志 `The object does not have any 'meta' values with the key 'coop_last_follow_icon'. (coop_item_visuals.gd:92 @ build_icon)`。
+- Notes / 说明: Godot 的 `get_meta(name, default)` 只在 `default != null` 时返回默认并跳过报错；显式传 `null` 会被当作“未提供默认” → 缺 key 仍 `push_error`。判存在请用 `has_meta(name)` 再 `get_meta(name)`（本轮改法），或传一个非 null 哨兵值。首个 follow 图标时该 meta 尚未写入，故必触发。
+- Source / 来源: test + code
+- Date / 日期: 2026-10-08
+
+### [GDScript] 硬类型 `Node` 变量访问 native 属性（如 `global_position`）是 parse error；脚本自定义属性按动态放行
+- Evidence / 证据: `scenes/player/iori/iori_ps.gd:84`（`ExtensionHooks.notify(..., [..., bullet_body.global_position])`，`bullet_body: Node`）→ `Parse Error: Identifier "global_position" not declared in the current scope`；同文件 `bullet_body.penetrate`（脚本属性）不报错。
+- Notes / 说明: Godot 4 静态检查对 **native 属性**（`global_position`/`rotation`/`global_rotation`/`scale`）在硬类型基类缺失时直接 parse error；而 **GDScript 脚本自定义属性**（`penetrate`/`speed`/`damage_data`…）解析器无法穷举子类 → 按动态访问放行、不报错。子弹实际是 `HitBox`→`Area2D`。修法：把用 native 属性的参数类型 `Node` 收窄为 `Node2D`（`add_flash`/`shoot_bullet`），调用处 `shoot_bullet(bullet_body as Node2D)` 显式转换（信号 `player_projectile_hit` 声明为 `Node`）。
+- Source / 来源: code + test
+- Date / 日期: 2026-10-08
+
+### [Mod] 中继客机不进准备房：引擎 `connected_to_server` 依赖自定义 peer 显式 admit host(peer 1)
+- Evidence / 证据: `mods/etn_coop/net/coop_relay_peer.gd`（旧 `join_admitted` 只把服务端 `join_prepared.peers` 列出的 peer 放进 `_peers_to_connect`，再由 `_poll` `emit peer_connected`）；引擎 `SceneMultiplayer::_admit_peer` 只在 `p_id == 1` 时 `emit_signal("connected_to_server")`（`modules/multiplayer/scene_multiplayer.cpp`）；`mods/etn_coop/net/coop_net.gd:384-389`（`_on_connected_to_server` 才发 `_client_hello`）、`:440-451`（房主 `_accept_peer` 才 `_remote_change_scene` 送 `test_room`）、`:6694-6695`（`_on_relay_room_joined` 仅改状态、不切场景）。
+- Notes / 说明: **现象**（user）：房主中继开房已进准备房，客机面板显示「已作为 N 加入中继」（`relay_room_joined` 已触发、传输通），但客机不切 `test_room`、房主也看不到客机。**根因**：中继客机能否进入准备房完全取决于能否发出 `_client_hello`，而该 RPC 只由引擎的 `connected_to_server` 触发；对自定义 `MultiplayerPeerExtension`，`connected_to_server` 只在 peer 发出 `peer_connected(1)` 时产生。旧实现只 admit 服务端 `join_prepared.peers` 列出的 peer——若该服务端列表不含 host(1)，客机永不 admit host → 不发 hello → 房主不 `_accept_peer` → 不进准备房，且约 5s 后因未握手被踢。**修法**（`coop_relay_peer.gd`）：① `join_admitted` 时若 `_unique_id != 1` 且列表无 1，强制补入 host(1)（协议保证 host=1、client≥2）；② `_on_data` 收到谁的数据就 `_queue_peer(source)`——因 relay `_poll()` 在引擎 drain `_incoming` **之前** emit `peer_connected`，房主可在同一帧接纳客机的 `_client_hello`，无需依赖服务端 join 通知；③ 新增 `_admitted` 去重（防重复 `peer_connected` 导致重复 hello / 重复 `_remote_change_scene`）；④ `--debug` 下打印控制帧与 admit 日志。**通用教训**：凡自定义 `MultiplayerPeerExtension`，**必须**确保「对端=1」被显式 admit，否则引擎端到端信号（`connected_to_server`）与对端包的受理（`connected_peers.has(sender)`）都不会发生；网络层 peer 的发现不能只信服务端下发的成员列表，应以「协议保证的 host id + 实际收到的数据源」共同兜底。**待真机验证**（未跑中继服务端）：改后需房主/客机双端 relay 实测客机自动进 `test_room`。
+- Source / 来源: user + code
+- Date / 日期: 2026-10-08
+
+### [Mod] 特效通道（无 velocity）只广播 spawn、无 despawn：长期物远端残留累积；客机回合边界不跑本体 bullet_clear
+- Evidence / 证据: `mods/etn_coop/net/coop_net.gd`（`_on_projectile_spawned`：`bullet.get("velocity")==null` → `_pending_effects`；`_on_projectile_despawned`：原只处理 `remote_visual`/`net_visual_id`）、`scenes/main/main.gd:120 bullet_clear_unit`（仅由 `scenes/manager/round_manager.gd:141` 在 host 非测试房触发）、`coop_net.gd`（`_gate_round_end_proceed` 令客机在 `round_manager` 的 bullet_clear 之前 return）、`scenes/bullet/player_laser_beam.gd`（`extends RayCast2D`，无 velocity）、`scenes/bullet/launcher/laser_launcher.gd`（`extends Node2D`，无 velocity）。
+- Notes / 说明: **现象**（user）：联机远端 `player_laser_beam` 本机消失后对方侧不消失、每回合累积。**根因**：`_on_projectile_spawned` 以「有无 `velocity`」分流，无 velocity 者走**特效通道**（只发一次 spawn、无 id、无 despawn）；`_on_projectile_despawned` 原只回收 `net_visual_id`/`remote_visual` → 持续激光/发射器远端永不回收。跨回合更不清：`_visual.reset()` 只在换场（`_reset_player_sync`）触发；且本体 `bullet_clear` 只在 host 非测试房分支跑，**客机被 `_gate_round_end_proceed` 提前 return，`BulletRoot` 下远端视觉/特效无人清**。**修法**：① 特效通道分配 `net_effect_id`（`_on_projectile_spawned`）→ `_on_projectile_despawned` 广播 `_despawn_visual_effect`/`_server_despawn_visual_effect` → `CoopVisualSync.despawn_visual_effect` 按 id 回收（含 `_ended_effect` 防迟到复活）；② 新增 `_clear_round_visuals()` 挂 `_on_round_start`（两端都触发）：`_visual.reset()` + 释放 `BulletRoot` 下带 `remote_visual` 的子节点 + 清 pending 队列。**敌人无需 mod 另清**：本体 `scenes/main/main.gd:83 enemy_clear_unit`（`EnemiesRoot` 的 `Enemy` 子节点 `erase_pool`+`queue_free`）挂在 `round_manager.enemy_clear`+`GameEvents.round_upgrade`+`round_upgrade_end`，两端都会跑。**另修**：`_despawn_owned_summons_local` 客户端越权调 authority-only `_despawn_summoned_remote` → 改走 `request_summoned_despawn`（host/client 分流）。两份副本（`mods/coop` + `mod_sdk/coop_mod`）同步改。
+- Source / 来源: user + code
+- Date / 日期: 2026-10-08
+
+### [Mod] 聊天室自动显示（PEEK）与输入（COMPOSE）双态：只调背景/输入框透明度、面板不拦截鼠标
+- Evidence / 证据: `mod_sdk/coop_mod/mods/etn_coop/ui/coop_chat.gd`（`_composing`、`_peek_show`、`_set_peek_visual`、`_on_chat_received`、`_activate`、`_set_mouse_ignore`；`PEEK_BG_ALPHA`/`PEEK_INPUT_ALPHA=0.4`）、`ui/coop_chat.tscn`（`Scroll.vertical_scroll_mode=3`）。
+- Notes / 说明: 需求：新消息自动显示、不聚焦、更透明、不拦鼠标、隐藏滚动条、游戏结束保留。修法：把单一 `_is_open` 拆成 `_is_open`（可见）+ `_composing`（输入态）。`_on_chat_received` 在关闭时 → `_peek_show()`（显示、`_composing=false`、滚动到底、`_schedule_hide(HIDE_DELAY)`；peek 中再来消息重置计时，淡出中亦重置重显）；PEEK 下 `_activate()` → `_refocus()` 升格为 COMPOSE（占用控件+聚焦+恢复满不透明）。**透明度只动面板 StyleBox 的 `bg_color.a` 与 `_input_box.modulate.a`（0.4 ↔ 原值 `_orig_bg_alpha`），消息 `Label` 保持 1.0**——改整个面板 `modulate` 会连文字一起变淡，故不用。**不拦截**：`_ready` 递归把面板子树 `mouse_filter=IGNORE`（输入靠程序 `grab_focus`，键盘仍可输入），避免可见面板吞掉游玩期鼠标点击/挡开火。**滚动条**：`vertical_scroll_mode=3`（SHOW_NEVER）隐藏但仍可程序滚动。**游戏结束**：`_on_game_over` 不再 `_hide_now()`（结算/团队结束页保留窗口、peek 继续）。`_schedule_hide(delay)` 参数化，peek 与 compose 共用 `_hide_token`。**坑**：stylebox 是场景内 sub_resource，运行时改 `bg_color` 仅影响本面板；`get_theme_stylebox("panel")` 可能非 flat，须判类型。验证（无头探针）：peek(open/comp=false/holds=false/bg=0.40/in=0.40)、compose(comp=true/held=true/focus=true/bg=0.94/in=1.0)、submit 后 held=false、game_over 后仍 open、面板子树全 IGNORE、vmode=3；LAN 两端 `log=2` 无错误。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-10-08

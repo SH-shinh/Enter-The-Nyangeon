@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://ld4dil61b3tl" path="res://mods/etn_coop/ui/coop_chat.gd" id="1_script"]
 [ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="2_font"]
 [ext_resource type="Texture2D" path="res://ui/scoreboard_icon.png" id="3_icon"]
+[ext_resource type="FontFile" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="4_pingfont"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 content_margin_left = 4.0
@@ -46,6 +47,7 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
 
 [node name="LogBox" type="VBoxContainer" parent="Panel/VBox/Scroll" unique_id=1257753769]
 unique_name_in_owner = true
@@ -71,3 +73,19 @@ modulate = Color(1, 1, 1, 0.45)
 texture_normal = ExtResource("3_icon")
 ignore_texture_size = true
 stretch_mode = 0
+
+[node name="UpgradePingLabel" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+offset_left = 580.0
+offset_top = 302.0
+offset_right = 630.0
+offset_bottom = 314.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.4, 1)
+theme_override_colors/font_outline_color = Color(0.06, 0.06, 0.06, 1)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("4_pingfont")
+theme_override_font_sizes/font_size = 8
+text = "--"
+horizontal_alignment = 1
