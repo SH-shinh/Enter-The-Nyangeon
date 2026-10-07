@@ -84,8 +84,8 @@ mod_sdk/coop_mod/mods/etn_coop/
 - 敌人→玩家伤害：client 的**敌方视觉弹**对本地玩家开放"伤害洞"（置 `enemy_bullet` 层 + monitorable、合成 enemy DamageData），玩家 HurtBox 正常结算；镜像敌人物理/AI 停用，不会二次开火。
 - 金币权威/共享：host 登记金币 net_id 并广播，client 生成金币视觉；拾取经 `coin_pickup_gate` 转交 host，host 广播**共享增益**（所有玩家 +相同金币）。
 - 召唤物同步（拥有者权威）：`on_summoned_spawned` 登记 net_id（client 经服务端中转）→ 其它端生成镜像挂 `CoopSummonedProxy`；拥有者 ~15Hz（`SEND_INTERVAL=0.066`）上报位置/速度/朝向角。`SummonedFollower`（`kei_summoned`/`mobu_trinity` 等跟随型）另上报**状态 IDLE/RUNNING/JUMP + 朝向 ±1**（快照新增 `state`/`facing`），枪口角复用 rotation 通道（`get/apply_network_visual_rotation`）；镜像端 `apply_network_state()` 只切动画/翻转/跳跃表现，**开火**由拥有者 `SummonedGun.shoot_bullet` → `notify(on_summoned_action,...)` 广播闪光/音效/后坐，镜像 `network_play_action("shoot")` 回放（子弹本体另经 `ProjectileSpawner` 广播，不双生）。
-- 团队流程：`player_death_gate` 把本地死亡转为**倒地**并广播；附近队友按住 `use` 达 2.5s 请求救援；host 统一判定**全员倒地 → 团队 game over**；`round_upgrade_end_gate` 等待全员升级就绪后统一推进。
-- 倒地视觉 / 受击反馈：倒地时本地与远程镜像都套用冷色 tint + `DOWN!/REVIVED!` 飘字（本体 `player.set_downed_state` 内实现）；救援时靠近倒地队友按住 `use` 会用 `interact_prompt` 显示**进度气泡**；`player_is_hurt` 广播使**非拥有端**也能看到远程玩家受击白闪；服务器把敌人 `damage_taken` 的**实际伤害**广播回各端，client 在镜像敌人上重发 `enemy_damage_taken` → 全端都能看到伤害数字与受击闪。
+- 团队流程：`player_death_gate` 把本地死亡转为**倒地**并广播；**站在倒地队友 96px 内即自动开始救援读条**（无需按键），**读条速度按半径内存活队友人数翻倍**（时长 = 2.5s ÷ 人数）；host 统一判定**全员倒地 → 团队 game over**；`round_upgrade_end_gate` 等待全员升级就绪后统一推进。
+- 倒地视觉 / 受击反馈：倒地时本地与远程镜像都套用冷色 tint + `DOWN!/REVIVED!` 飘字（本体 `player.set_downed_state` 内实现）；救援对每个倒地目标用 `interact_prompt` 显示**共享进度气泡**（含参与人数 `×N`，隐藏 `use` 键图标），**所有存活队友可见**；`player_is_hurt` 广播使**非拥有端**也能看到远程玩家受击白闪；服务器把敌人 `damage_taken` 的**实际伤害**广播回各端，client 在镜像敌人上重发 `enemy_damage_taken` → 全端都能看到伤害数字与受击闪。
 - Boss：`boss_round_start/end` 由 host 广播；本体 `GameEvents.boss_event(name, data)` 事件总线（`goliath` 的 `random/strafe/big_gun_end`、`hit_wall` 与 `idle/run/shoot_ready/shoot/charge/turret_ready` 动画态，`erosion_tower` 的 `stop_shoot`/`tower_dead` 与 `idle/attack/defense/enter/death` 动画态）经 host 广播并在 client 重发；**goliath / erosion_tower 镜像**监听 `boss_event` 回放动画态（仅表现、带 `_net_visual_replaying` 重入保护，不重复攻击）。塔的攻击：**子弹**经 `ProjectileSpawner` 随子弹广播、**激光**经 `laser_launcher.active_state` 的 `notify_local` 走特效通道，且 client 的敌方激光视觉副本会开**伤害洞**（`laser_bullet.open_network_player_damage_hole`：只命中 `player_box` 层、只对本地玩家）——因此激光在其它端**可见且可伤害本地玩家**。另提供通用 `CoopNet.instance.broadcast_boss_pattern_event(net_id, data)` + `boss_pattern_event_received`。
 - 角色专属通道：玩家状态携带 `character_state:int` + `heading:Vector2`；本体 `script/player.gd` 默认**汇总子节点（PS）**的 `get/apply_network_character_state`；已接 `aris_armed`（悬浮喷气 `is_hovering`）与 `mashiro` PS（蓄力发光）；其它角色/PS 覆写同名方法即自动同步。
 - 场景切换广播：host 调 `change_scene` 时广播 `_remote_change_scene(path, roster)`，client 跟随并用各自选择的角色场景实例化（`_server_player_selected` 上报选择）。
@@ -143,8 +143,8 @@ mod_sdk/coop_mod/mods/etn_coop/
 
 1. 子弹**提前终止已同步**（撞墙/命中广播 `_despawn_visual_bullet`，`ended` 集合防迟到复活）；特效属性按白名单收集（缺失则跳过）——更特殊的自定义视觉参数仍可能不还原。
 2. 中继(WebSocket)**服务端需自备**（仓库不含；协议见 `coop_relay_peer.gd`）；默认 `127.0.0.1:7716`。LAN 开箱可用。
-3. 倒地/救援：冷色 tint + `DOWN!/REVIVED!` 飘字 + **救援进度气泡**均已实现（按住 `use`）。
-4. 角色专属同步：本体 `player.gd` 汇总子节点 PS 状态，已接 `aris_armed`/`mashiro`；**其余角色/PS 需自行覆写** `get/apply_network_character_state` 才生效。
+3. 倒地/救援：冷色 tint + `DOWN!/REVIVED!` 飘字 + **共享救援进度气泡**（靠近自动读条、人越多越快、所有存活队友可见）均已实现。
+4. 角色专属同步：本体 `player.gd` 汇总子节点 PS 状态，已接 `aris_armed`/`mashiro`/`aris`(热条)/`chinatsu`(充能)/`hoshino`(rank 条)；`kasumi`(钻头)走 M5 角色事件通道；**其余角色/PS 需自行覆写** `get/apply_network_character_state`（或 `apply_network_character_event`）才生效。
 5. Boss：生成/移动/血量 + `boss_round_start/end` + `GameEvents.boss_event` 总线已同步；**goliath / erosion_tower 动画态已在 client 回放**（仅表现）。其它 Boss 的专属演出可按同一模式（监听 `boss_event`，仅做表现）自行接上。
 
 ## Android 导出要求（联机必需）
@@ -350,7 +350,7 @@ mod_sdk/coop_mod/mods/etn_coop/
 - **敌人部件**：镜像生成后激活 `body_part`。
 - **Boss**：`goliath`/`erosion_tower_group` 镜像端跳过相机/暂停演出（避免镜像本地 pause），只播动画。
 - **掉落**：`pyroxenes` 生成广播纯视觉副本（`CoinRoot` 纳入广播组）。
-- **已知未做**：coin_box 抛物线只同步起点、SceneProp（未放置）。
+- **已知未做**：SceneProp（未放置）。
 
 ## 医疗箱（medical_kit）同步：host 权威 + 支援效果聚合
 - **生成（host 权威）**：只有 host 的 `PickItemManager` 产生随机医疗箱；客机 `_gate_medkit_spawn` 一律返回 true（本端不生成）。host 生成后 `_on_medkit_spawned` 分配 `net_id` 并 `rpc("_remote_spawn_medkit")`，客机实例化带 `coop_medkit_net_id`/`remote_medkit` 的本地镜像加入 `CoinRoot`。→ 全端同一批医疗箱。
@@ -523,8 +523,8 @@ mod_sdk/coop_mod/mods/etn_coop/
   - `send_chat(text)`：本地先回显（立即显示自己的消息），再广播——host 经 `_fanout_chat` 逐 client `rpc_id` 且**排除发送者**（避免发送者重复收到自己的回显）；client `rpc_id(1,"_server_chat")`，host 用 `get_remote_sender_id()` 得真实 peer 再分发。显示名统一用既有 `_display_name_for(peer_id)`（自定义 ID / 回退 `PlayerN`）。
   - `_reset_run_state()` 里 `chat_log.clear()`：回菜单/重开/房主离开即清空，符合「本次房间」语义。
 - **UI（`ui/coop_chat.tscn` + `coop_chat.gd`）**：`CanvasLayer`（`layer=119`，`process_mode=ALWAYS`），右侧中间 `PanelContainer`（200×160，字体 9）内含 `ScrollContainer`+`VBoxContainer` 消息列表 + 底部 `LineEdit`；消息行格式 `玩家id： 内容`，自动滚到底。
-  - **Enter**（`coop_chat` 动作，`KEY_ENTER`/`KEY_KP_ENTER`）三态：窗口隐藏 → 开窗+聚焦+显示鼠标+冻结本地玩家；窗口可见且输入框**已聚焦** → 发送（`send_chat`）→ 清空并取消聚焦 → **2 秒后淡出隐藏**（无内容同样处理）；窗口可见但**未聚焦**（淡出期内）→ `_refocus()` **取消淡出并重新聚焦**，支持「输入→回车→再输入→回车」连续发送，无需等窗口消失。`ESC` 立即隐藏。
-  - **隐藏收尾**还原鼠标模式与 `player_stop`（按开窗前原值，倒地时不误置 false）。
+  - **Enter**（`coop_chat` 动作，`KEY_ENTER`/`KEY_KP_ENTER`）三态：窗口隐藏 → 开窗+聚焦+**占用控件**（显示鼠标+冻结本地玩家）；窗口可见且输入框**已聚焦** → 发送（`send_chat`）→ 清空并取消聚焦 → **立即释放控件**（鼠标恢复、玩家解冻）+ **2 秒后淡出隐藏**（无内容同样处理）；窗口可见但**未聚焦**（淡出期内）→ `_refocus()` **取消淡出、重新聚焦并再次占用控件**，支持「输入→回车→再输入→回车」连续发送，无需等窗口消失。`ESC` 立即隐藏。
+  - **控件占用/释放**：`_acquire_controls()`/`_release_controls()` 幂等——占用时记 `_prev_mouse_mode`/`_prev_player_stop` 并置鼠标 `VISIBLE`+`player_stop=true`；释放时按原值还原。**发送即释放**（鼠标/操作立刻恢复，窗口仍显示 2 秒），`_open_chat`/`_refocus` 占用，`_submit`/`_hide_now` 释放。游玩态释放后指针隐藏（准星捕获）而窗口仍可见 2 秒，属预期。
   - **手机按钮**：`TextureButton` 30×30、`texture_normal=res://ui/scoreboard_icon.png`、铺满 30×30、无边框、**半透明 `modulate.a=0.45`（恒定，无悬停反馈）**，挂到**本地玩家** `$GameUI/AmmoPosition` 右侧（战斗与准备房均显示；换人/重生后自动重挂）。
   - **升级页按钮（第二个，场景节点）**：`ui/coop_chat.tscn` 的 `%UpgradeChatButton`（同为 30×30/0.45/`mouse_filter=IGNORE`，挂在 `CoopChat` 层 → 盖在升级页 `layer=2` 之上），初始 `position=(590,268)`（红框处，**编辑器可直接改**）。`coop_chat.gd` 监听 `round_upgrade`→`_upgrade_active=true`、`round_upgrade_end`/`round_upgrade_closing`/`round_start`/`game_over`→`false`；`_process` 里 `visible = _upgrade_active and is_lan_game and 本地玩家有效`（兼容升级页「刷新」重建——刷新不重发 `round_upgrade` 但仍处升级阶段，按钮保持）。**本体 `UpgradeScreen` 背景不透明且 layer=2，会盖住玩家 `GameUI`(layer=1) 里的 HUD 按钮，故升级页必须用这个上层按钮。**
   - **点击门控（防游玩误触 / 升级页可点）**：两按钮均 `mouse_filter=IGNORE`（**纯显示，不接收 GUI 鼠标事件、不吞游玩期鼠标**），点击由 `coop_chat._input` 手动命中判定——`InputEventScreenTouch`（命中矩形）**始终可激活**；`InputEventMouseButton` 左键在**指针空闲**时可激活（`_pointer_free() = _is_open or Input.mouse_mode==MOUSE_MODE_VISIBLE`）。游玩期准星把鼠标设为 `CONFINED_HIDDEN` → 鼠标不处理也不 consume（不挡瞄准/开火、不误触开窗）；升级页/暂停等鼠标 `VISIBLE` 时桌面可点。`_last_touch_frame` 守卫忽略触摸模拟出的鼠标事件，避免双触发。
@@ -532,6 +532,39 @@ mod_sdk/coop_mod/mods/etn_coop/
   - **音效**：开窗/重聚焦/发送均播 `SoundManager.play_sfx("ButtonSounds")`。
 - **自测**：`--coop-devchat`（配 `--coop-host` / `--coop-join=127.0.0.1` + `--coop-devbattle`）双端各发一条，打印 `dev-chat id=.. log=..`。实测两端 `log=2`（含双方消息、无重复），无 `SCRIPT ERROR`。
 - **备注**：聊天窗脚本的 `LineEdit` 引用名不可用 `_input`（与虚拟方法 `_input` 冲突 → Parse Error），已命名 `_input_box`。
+
+
+## 联机救援改为「靠近自动读条 + 人越多越快」（2026-10-07）
+
+- **目标**：站在倒地队友附近即自动开始救援（不再按住 `use`）；读条速度按半径内存活队友人数提升。
+- **权威归属（关键）**：「人越多越快」是**全局共享量**，单机各端各自累加无法体现（各端都会在 2.5s 完成，先到先复活）。故进度改由 **host 权威维护**，client 只做展示。
+- **实现（`net/coop_net.gd`）**：
+  - host 状态：`_rescue_progress`（target peer → 0..`RESCUE_TIME`）、`_rescue_rescuer_count`、`_rescue_sync_timer`；常量 `RESCUE_SYNC_INTERVAL=0.1`。
+  - `_server_update_rescue(delta)`（`_physics_process` server 分支）：遍历 `down_peer_ids`，`_count_rescuers_for()` 统计目标 96px 内「存活且未倒地」的玩家数 `count`（host 自身 + 远端代理）；`count>0` 时 `progress += delta * count`（时长 = 2.5s ÷ 人数），达阈值 `_complete_revive()`；`count==0` 时按 2× 速率衰减；节流广播。
+  - `_broadcast_rescue_progress()` → `@rpc("authority","call_remote","unreliable") _remote_rescue_progress(payload:Dictionary)`（payload: target → `{p,n}`；空 dict 表示无进行中救援）；host 本地直调一次。
+  - client `_apply_rescue_progress()` 为纯展示：本地倒地时不显示；否则对每个活动目标用 `_ensure_rescue_prompt_for(peer)` 维护独立气泡（`_rescue_prompts` 池，隐藏 `IconHolder` 图标），文本 `救援 xx%`，人数 >1 时追加 `×N`。
+  - 旧「按住 `use`」路径（`_update_rescue`/`_find_downed_ally`/`request_revive_player`/`_server_try_revive`/`_server_request_revive`）移除；复活核心抽为 `_complete_revive(target)`，升级统一复活 `_revive_all_downed_for_upgrade` 同步清空进度。
+  - `_reset_player_sync` 清空进度并 `_clear_all_rescue_prompts()`。
+- **dev**：`dev_force_local_downed()`（强制倒地，替代原先只置 hp=0 无效的路径）、`dev_rescue_state()`（host 端进度快照）、`--coop-devdown` 在 host 端额外采样 `dev-rescue host state=... prompt=...`。
+- **实测**（双/三进程 LAN `--coop-devbattle --coop-devdown`）：双人 host 端 `state={peer:[0.73,2]}` → `1.73`（0.5s 内 +1.0 = 2×delta，count=2）、`prompt=true`，随后 `state={}`、`prompt=false`，被救端 `downed=true → false`；无 `SCRIPT ERROR`。
+
+## Boss 过场（镜头 / UI / 暂停锁）+ FEVER/rage 同步
+- **背景**：真 Boss（host）在进场/死亡/开大招时 `emit_camera_move(marker,true)` → `emit_ui_visible(false)` → `emit_pause_lock(true)` → `get_tree().paused=true` → 等动画 → 复位；镜像端此前**直接 `return` 跳过**，客机完全没有镜头/暂停，且 `round_timer` 的 FEVER/rage 各端本地各自触发（客机 `add_rage_buff` 经 buff gate 转发又会让 host **重复上 buff**）。
+- **过场同步（纯 mod）**：mod 连接 `GameEvents.camera_move/camera_reset/ui_visible`；host 广播 `_remote_boss_camera_move(pos,black)` / `_remote_boss_camera_reset()` / `_remote_boss_ui_visible(v)`。客机在 `current_scene` 下建临时 `Marker2D` 置世界坐标后 `emit_camera_move(marker,black)`；`black=true` 时额外 `emit_pause_lock(true)` + `get_tree().paused=true`。复位时 `_release_boss_cinematic()` 幂等：`emit_camera_reset` + 释放 marker + `paused=false` + `emit_pause_lock(false)` + `emit_ui_visible(true)`。非 Boss 的 `camera_move`（如开始球 `black=false`）也一并广播（仅镜头、不暂停）。
+- **兜底（不依赖 `camera_reset` 送达）**：`_physics_process`（`PROCESS_MODE_ALWAYS`）每帧查 `Time.get_ticks_msec() > _cinematic_deadline_msec`（墙钟，`CINEMATIC_MAX_MSEC=8000`）→ 强制释放；断线/复位挂点（`_on_peer_disconnected`/`_on_server_disconnected`/`_handle_host_left`/`_reset_run_state`/`close_connection`/`_exit_tree`）统一走 `_release_boss_cinematic()`。
+- **FEVER/rage host 权威**：本体新增 `ExtensionHooks.fever_time_gate`；`ui/round_timer.gd` 的 `emit_fever_time_start()` 与 `add_rage_buff()` 各包一层 gate（仍本地设 `rage_mode`/`boss_group`）。mod 的 `_gate_fever_time()` 在 LAN 且非 host 时返回 true（客机不本地触发）；host 连 `GameEvents.fever_time_start` → `rpc("_remote_fever_time_start")`；客机收到后 `emit_fever_time_start()`（只驱动 `play_fever_anim` + 镜像 `enemy_fever_time` 的 `fever_gpu` 视觉）。rage buff 只由 host 施加，经既有 `on_enemy_buff_applied → _remote_enemy_buff` 同步卡面，消除重复 buff。
+- **dev**：`--coop-devcine`（host 强制一次黑幕过场；客机打印 `dev_cinematic_state` 看 `active/paused/marker` 的进入与释放）、`--coop-devfever`（host 强制 FEVER；打印两端 `dev_fever_state` 的 local/remote 计数）。
+
+## 抛物线金币（coin_box）+ 角色专属状态 + Hina QTE 联机化
+- **coin_box 抛物线（纯 mod）**：host `_on_coin_spawned` 检测到 coin 的父节点是 `PathFollow2D`（抛物线 body）时 `call_deferred` 一帧（等 `drop()` 建好 `curve`）→ `_register_parabola_coin` 读 `parabola.curve` baked 点转世界坐标 → `rpc("_remote_parabola_coin", net_id, points, value, pick_up)`。客机建 coin 镜像（`can_pick=false`）+ `coin_traj`，`_physics_process` 按**墙钟**沿折线采样驱动飞行，落地才 `can_pick=true`；拾取仍走 `_gate_coin_pickup → host 共享`。清理：`_despawn_coin_remote`/`_do_shared_coin_pickup`/`_server_pickup_coin`/`_reset_player_sync` 清 `coin_traj`。
+- **角色专属状态（int `cstate`，镜像只视觉回放）**：在玩家直接子节点实现 `get/apply_network_character_state`。**铁律：`apply_*` 只写视觉节点，绝不走会发 gameplay 信号的 setter**。
+  - Aris（`aris_ps`）：`state = round(k*255)`；apply 直接写 `GraphicsGun/HeatBar.bar.value`/`visible`（+过热动画），**不写 `gun_heat.k`**。
+  - Chinatsu（`chinatsu_ps`）：`state = charge & 0xF`；apply 只更新 `ChargeCount/Label.text`。
+  - Hoshino（`hoshino_ps`）：`state = (melee&0xF) | ((shot&0xF)<<4)`；apply 只写 `RankBar/TextureProgressBar*` + 动画，**不写 rank setter**。
+- **Kasumi 钻头（M5 角色事件）**：钻头是**瞬态**近战（`kasumi_melee.kick_start` 临时实例化），走 `player.broadcast_character_event(&"kasumi_drill", {pos,scale_x,now_t,dur})`；镜像在 `kasumi_ps.apply_network_character_event` 生成**纯视觉**钻头（`set_script(null)` + 关 `Area2D2`，播 `drill_anim`，短暂后释放）。
+- **Hina QTE 联机化（本体 `hina_ps.gd`，`is_lan_session` 门控）**：LAN 下 QTE **不再 `Engine.time_scale` 全局慢放**（会拖慢本机、房主端还会饿死网络节奏），改为**等比慢放 QTE 动画**（`qte_bar/AnimationPlayer.speed_scale = 0.07`，bar 移动本就是 `qte_anim` 的 `bar:position` 轨道）；`check_qte`/`qte_false`/`_exit_tree` 恢复 `speed_scale=1`。单机行为不变。
+- **dev**：`--coop-devparabola`（host 生成一枚抛物线金币，打印两端轨迹/位置）、`--coop-devhina`（打印 `Engine.time_scale` 应恒 1 与 QTE 动画 `speed_scale`）。
+
 
 
 

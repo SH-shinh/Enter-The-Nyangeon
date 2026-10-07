@@ -1,7 +1,8 @@
 extends CanvasLayer
 
 ## CoopChat：联机聊天室（mod 内，非 autoload）。
-## 右侧中间小窗记录本次房间全部消息；Enter 开窗/发送；显示时显示鼠标并冻结本地玩家，隐藏时恢复。
+## 右侧中间小窗记录本次房间全部消息；Enter 开窗/发送；聚焦时显示鼠标并冻结本地玩家，
+## 发送后立即恢复鼠标与操作（窗口仍 2 秒后淡出）；重新聚焦再占用。
 ## 本地玩家 HUD（$GameUI/AmmoPosition）旁挂一个仅图标按钮（scoreboard_icon），供手机端开聊。
 ## mod 内不使用 class_name，一律 preload。
 
@@ -26,6 +27,7 @@ var _is_open: bool = false
 var _prev_mouse_mode: int = Input.MOUSE_MODE_VISIBLE
 var _frozen_player: Node = null
 var _prev_player_stop: bool = false
+var _controls_held: bool = false
 var _fade_tween: Tween = null
 var _hide_token: int = 0
 var _btn: TextureButton = null
@@ -118,9 +120,7 @@ func _open_chat() -> void:
 		_fade_tween.kill()
 	_panel.visible = true
 	_panel.modulate.a = 1.0
-	_freeze_local_player(true)
-	_prev_mouse_mode = Input.mouse_mode
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	_acquire_controls()
 	_rebuild_log()
 	_input_box.text = ""
 	_input_box.grab_focus()
@@ -137,6 +137,8 @@ func _submit() -> void:
 	if coop != null and is_instance_valid(coop):
 		coop.send_chat(text)
 	SoundManager.play_sfx(SFX)
+	# 发送即释放控件：鼠标立即恢复、玩家解除冻结（窗口仍按 2 秒淡出）
+	_release_controls()
 	_schedule_hide()
 
 
@@ -157,6 +159,7 @@ func _refocus() -> void:
 	_panel.visible = true
 	_panel.modulate.a = 1.0
 	_input_box.grab_focus()
+	_acquire_controls()
 	_scroll_to_bottom()
 	SoundManager.play_sfx(SFX)
 
@@ -166,8 +169,7 @@ func _hide_now() -> void:
 		return
 	_is_open = false
 	_hide_token += 1
-	_freeze_local_player(false)
-	Input.mouse_mode = _prev_mouse_mode
+	_release_controls()
 	if _fade_tween != null and _fade_tween.is_valid():
 		_fade_tween.kill()
 	_fade_tween = create_tween()
@@ -180,26 +182,38 @@ func _on_game_over(_player_dead: bool) -> void:
 	_hide_now()
 
 
-# ---------------- 冻结 / 鼠标 ----------------
+# ---------------- 控件占用 / 释放（鼠标 + 玩家冻结） ----------------
 
-func _freeze_local_player(freeze: bool) -> void:
-	var coop = CoopNetScript.instance
-	if coop == null or not is_instance_valid(coop):
+# 打开/重新聚焦时占用：显示鼠标、冻结本地玩家（幂等）。
+func _acquire_controls() -> void:
+	if _controls_held:
 		return
-	if freeze:
+	var coop = CoopNetScript.instance
+	_frozen_player = null
+	if coop != null and is_instance_valid(coop):
 		var player = coop.call("get_local_player")
-		if player == null or not is_instance_valid(player):
-			return
-		_frozen_player = player
-		_prev_player_stop = bool(player.get("player_stop"))
-		player.set("player_stop", true)
-		var gun = player.get("gun")
+		if player != null and is_instance_valid(player):
+			_frozen_player = player
+	if _frozen_player != null:
+		_prev_player_stop = bool(_frozen_player.get("player_stop"))
+		_frozen_player.set("player_stop", true)
+		var gun = _frozen_player.get("gun")
 		if gun != null:
 			gun.set("is_shoot", false)
-	else:
-		if _frozen_player != null and is_instance_valid(_frozen_player):
-			_frozen_player.set("player_stop", _prev_player_stop)
-		_frozen_player = null
+	_prev_mouse_mode = Input.mouse_mode
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	_controls_held = true
+
+
+# 发送/隐藏时释放：恢复鼠标模式与玩家冻结状态（幂等）。
+func _release_controls() -> void:
+	if not _controls_held:
+		return
+	if _frozen_player != null and is_instance_valid(_frozen_player):
+		_frozen_player.set("player_stop", _prev_player_stop)
+	_frozen_player = null
+	Input.mouse_mode = _prev_mouse_mode
+	_controls_held = false
 
 
 # ---------------- 日志 ----------------
