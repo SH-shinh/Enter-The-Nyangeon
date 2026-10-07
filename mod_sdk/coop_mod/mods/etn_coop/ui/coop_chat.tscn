@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://coopchat0etn01"]
+[gd_scene format=3 uid="uid://bi4123jpjla3y"]
 
-[ext_resource type="Script" path="res://mods/etn_coop/ui/coop_chat.gd" id="1_script"]
-[ext_resource type="FontFile" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="2_font"]
+[ext_resource type="Script" uid="uid://ld4dil61b3tl" path="res://mods/etn_coop/ui/coop_chat.gd" id="1_script"]
+[ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="2_font"]
+[ext_resource type="Texture2D" path="res://ui/scoreboard_icon.png" id="3_icon"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 content_margin_left = 4.0
@@ -14,13 +15,15 @@ corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
-[node name="CoopChat" type="CanvasLayer"]
+[node name="CoopChat" type="CanvasLayer" unique_id=3239773]
 process_mode = 3
 layer = 119
 script = ExtResource("1_script")
 
-[node name="Panel" type="PanelContainer" parent="."]
+[node name="Panel" type="PanelContainer" parent="." unique_id=1807477308]
 visible = false
+modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(200, 160)
 anchors_preset = 6
 anchor_left = 1.0
 anchor_top = 0.5
@@ -32,27 +35,39 @@ offset_right = -8.0
 offset_bottom = 80.0
 grow_horizontal = 0
 grow_vertical = 2
-custom_minimum_size = Vector2(200, 160)
 theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
 
-[node name="VBox" type="VBoxContainer" parent="Panel"]
+[node name="VBox" type="VBoxContainer" parent="Panel" unique_id=785679596]
 layout_mode = 2
 theme_override_constants/separation = 2
 
-[node name="Scroll" type="ScrollContainer" parent="Panel/VBox"]
+[node name="Scroll" type="ScrollContainer" parent="Panel/VBox" unique_id=1516947121]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="LogBox" type="VBoxContainer" parent="Panel/VBox/Scroll"]
+[node name="LogBox" type="VBoxContainer" parent="Panel/VBox/Scroll" unique_id=1257753769]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 2
 
-[node name="ChatInput" type="LineEdit" parent="Panel/VBox"]
+[node name="ChatInput" type="LineEdit" parent="Panel/VBox" unique_id=610292691]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 9
+
+[node name="UpgradeChatButton" type="TextureButton" parent="."]
+unique_name_in_owner = true
+visible = false
+offset_left = 590.0
+offset_top = 268.0
+offset_right = 620.0
+offset_bottom = 298.0
+mouse_filter = 2
+modulate = Color(1, 1, 1, 0.45)
+texture_normal = ExtResource("3_icon")
+ignore_texture_size = true
+stretch_mode = 0

@@ -20,6 +20,7 @@ const SFX := "ButtonSounds"
 @onready var _scroll: ScrollContainer = %Scroll
 @onready var _log_box: VBoxContainer = %LogBox
 @onready var _input_box: LineEdit = %ChatInput
+@onready var _upgrade_btn: TextureButton = %UpgradeChatButton
 
 var _is_open: bool = false
 var _prev_mouse_mode: int = Input.MOUSE_MODE_VISIBLE
@@ -29,6 +30,7 @@ var _fade_tween: Tween = null
 var _hide_token: int = 0
 var _btn: TextureButton = null
 var _last_touch_frame: int = -2
+var _upgrade_active: bool = false
 
 
 func _ready() -> void:
@@ -40,6 +42,11 @@ func _ready() -> void:
 	if coop != null and is_instance_valid(coop):
 		coop.chat_received.connect(_on_chat_received)
 	GameEvents.game_over.connect(_on_game_over)
+	# 升级页期间显示上层按钮（升级页 layer=2，本聊天层 layer=119 盖在其上）
+	GameEvents.round_upgrade.connect(_on_upgrade_begin)
+	GameEvents.round_upgrade_end.connect(_on_upgrade_end)
+	GameEvents.round_upgrade_closing.connect(_on_upgrade_end)
+	GameEvents.round_start.connect(_on_upgrade_end)
 
 
 func _register_action() -> void:
@@ -82,12 +89,21 @@ func _input(event: InputEvent) -> void:
 
 func _process(_delta: float) -> void:
 	_ensure_button()
+	_ensure_upgrade_button()
 	# 本地玩家被释放（场景切换/换人/回菜单）时收起
 	if _is_open:
 		var coop = CoopNetScript.instance
 		var p = coop.call("get_local_player") if coop != null and is_instance_valid(coop) else null
 		if p == null or not is_instance_valid(p):
 			_hide_now()
+
+
+func _on_upgrade_begin() -> void:
+	_upgrade_active = true
+
+
+func _on_upgrade_end() -> void:
+	_upgrade_active = false
 
 
 # ---------------- 开合 ----------------
@@ -160,6 +176,7 @@ func _hide_now() -> void:
 
 
 func _on_game_over(_player_dead: bool) -> void:
+	_upgrade_active = false
 	_hide_now()
 
 
@@ -270,25 +287,47 @@ func _make_button() -> TextureButton:
 	return b
 
 
-# 命中判定：触摸始终可点；鼠标仅聊天窗激活时可点（游玩期不处理、不 consume）。
+# 升级页按钮（场景节点，编辑器可调位置）：升级阶段 + LAN + 本地玩家有效时显示。
+func _ensure_upgrade_button() -> void:
+	if _upgrade_btn == null or not is_instance_valid(_upgrade_btn):
+		return
+	var coop = CoopNetScript.instance
+	var active: bool = coop != null and is_instance_valid(coop) and bool(coop.is_lan_game)
+	var show: bool = active and _upgrade_active
+	if show:
+		var player = coop.call("get_local_player")
+		show = player != null and is_instance_valid(player)
+	_upgrade_btn.visible = show
+
+
+# 鼠标可点：聊天窗激活，或指针空闲（升级页/暂停等鼠标可见时）；游玩期鼠标被捕获(隐藏)则不点。
+func _pointer_free() -> bool:
+	return _is_open or Input.mouse_mode == Input.MOUSE_MODE_VISIBLE
+
+
+# 命中判定：触摸始终可点；鼠标在指针空闲时可点（游玩期不处理、不 consume）。
 func _button_hit(event: InputEvent) -> bool:
-	if _btn == null or not is_instance_valid(_btn) or not _btn.visible:
+	return _hit_test(_btn, event) or _hit_test(_upgrade_btn, event)
+
+
+func _hit_test(btn: TextureButton, event: InputEvent) -> bool:
+	if btn == null or not is_instance_valid(btn) or not btn.visible:
 		return false
 	if event is InputEventScreenTouch:
 		if not event.pressed:
 			return false
-		if not _btn.get_global_rect().has_point(event.position):
+		if not btn.get_global_rect().has_point(event.position):
 			return false
 		_last_touch_frame = Engine.get_process_frames()
 		return true
 	if event is InputEventMouseButton:
 		if event.button_index != MOUSE_BUTTON_LEFT or not event.pressed:
 			return false
-		if not _is_open:
+		if not _pointer_free():
 			return false
 		if Engine.get_process_frames() - _last_touch_frame <= 1:
 			return false  # 忽略触摸模拟出的鼠标事件
-		return _btn.get_global_rect().has_point(event.position)
+		return btn.get_global_rect().has_point(event.position)
 	return false
 
 

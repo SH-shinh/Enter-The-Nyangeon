@@ -1,6 +1,6 @@
 # ETN Coop Mod（骨架）
 
-联机以 **mod 形式注入**，本体零改动（仅通过 `ExtensionHooks` 挂接）。当前进度：**传输层 + 玩家/敌人/召唤物同步 + 敌人伤害权威 + 子弹与爆炸/特效广播 + 金币共享 + 倒地救援/团队流程 + 场景切换广播 + 主菜单 COOP 按钮（置于 QUIT 之上）+ 联机覆盖层（option 菜单式布局，页签复用 `option_button.tscn` 绿色高亮，4 语）+ 开房后自动进准备房（测试房作为准备房）+ 开始球/选人/就绪/房主难度流程 + 玩家 ID 常驻顶部 + LAN 全员选定握手 + 出生点居中 + 测试场菜单 get_player 修复 + 玩家 ID 输入/持久化 + 头顶名牌同步 + 房间聊天室（右侧小窗，回车/手机按钮）**。
+联机以 **mod 形式注入**，本体零改动（仅通过 `ExtensionHooks` 挂接）。当前进度：**传输层 + 玩家/敌人/召唤物同步 + 敌人伤害权威 + 子弹与爆炸/特效广播 + 金币共享 + 倒地救援/团队流程 + 场景切换广播 + 主菜单 COOP 按钮（置于 QUIT 之上）+ 联机覆盖层（option 菜单式布局，页签复用 `option_button.tscn` 绿色高亮，4 语）+ 开房后自动进准备房（测试房作为准备房）+ 开始球/选人/就绪/房主难度流程 + 玩家 ID 常驻顶部 + LAN 全员选定握手 + 出生点居中 + 测试场菜单 get_player 修复 + 玩家 ID 输入/持久化 + 头顶名牌同步 + 房间聊天室（右侧小窗，回车/手机按钮 + 升级页按钮）**。
 
 ## 目录
 
@@ -526,7 +526,9 @@ mod_sdk/coop_mod/mods/etn_coop/
   - **Enter**（`coop_chat` 动作，`KEY_ENTER`/`KEY_KP_ENTER`）三态：窗口隐藏 → 开窗+聚焦+显示鼠标+冻结本地玩家；窗口可见且输入框**已聚焦** → 发送（`send_chat`）→ 清空并取消聚焦 → **2 秒后淡出隐藏**（无内容同样处理）；窗口可见但**未聚焦**（淡出期内）→ `_refocus()` **取消淡出并重新聚焦**，支持「输入→回车→再输入→回车」连续发送，无需等窗口消失。`ESC` 立即隐藏。
   - **隐藏收尾**还原鼠标模式与 `player_stop`（按开窗前原值，倒地时不误置 false）。
   - **手机按钮**：`TextureButton` 30×30、`texture_normal=res://ui/scoreboard_icon.png`、铺满 30×30、无边框、**半透明 `modulate.a=0.45`（恒定，无悬停反馈）**，挂到**本地玩家** `$GameUI/AmmoPosition` 右侧（战斗与准备房均显示；换人/重生后自动重挂）。
-  - **点击门控（防游玩误触）**：按钮设 `mouse_filter=IGNORE`（**纯显示，不接收 GUI 鼠标事件、不吞游玩期鼠标**），点击改由 `coop_chat._input` 手动命中判定——`InputEventScreenTouch`（命中矩形）**始终可激活**（手机开聊）；`InputEventMouseButton` 左键**仅聊天窗激活时（`_is_open`）可激活**，游玩期鼠标不处理也不 consume（不挡瞄准/开火、不误触开窗）。`_last_touch_frame` 守卫忽略触摸模拟出的鼠标事件，避免双触发。
+  - **升级页按钮（第二个，场景节点）**：`ui/coop_chat.tscn` 的 `%UpgradeChatButton`（同为 30×30/0.45/`mouse_filter=IGNORE`，挂在 `CoopChat` 层 → 盖在升级页 `layer=2` 之上），初始 `position=(590,268)`（红框处，**编辑器可直接改**）。`coop_chat.gd` 监听 `round_upgrade`→`_upgrade_active=true`、`round_upgrade_end`/`round_upgrade_closing`/`round_start`/`game_over`→`false`；`_process` 里 `visible = _upgrade_active and is_lan_game and 本地玩家有效`（兼容升级页「刷新」重建——刷新不重发 `round_upgrade` 但仍处升级阶段，按钮保持）。**本体 `UpgradeScreen` 背景不透明且 layer=2，会盖住玩家 `GameUI`(layer=1) 里的 HUD 按钮，故升级页必须用这个上层按钮。**
+  - **点击门控（防游玩误触 / 升级页可点）**：两按钮均 `mouse_filter=IGNORE`（**纯显示，不接收 GUI 鼠标事件、不吞游玩期鼠标**），点击由 `coop_chat._input` 手动命中判定——`InputEventScreenTouch`（命中矩形）**始终可激活**；`InputEventMouseButton` 左键在**指针空闲**时可激活（`_pointer_free() = _is_open or Input.mouse_mode==MOUSE_MODE_VISIBLE`）。游玩期准星把鼠标设为 `CONFINED_HIDDEN` → 鼠标不处理也不 consume（不挡瞄准/开火、不误触开窗）；升级页/暂停等鼠标 `VISIBLE` 时桌面可点。`_last_touch_frame` 守卫忽略触摸模拟出的鼠标事件，避免双触发。
+  - **Enter 行为**：LAN 下回车始终归聊天（升级页回车=开聊/发送，**不**触发升级页的 `ui_accept`）；升级页确认走空格/手柄 A/鼠标点「继续」。
   - **音效**：开窗/重聚焦/发送均播 `SoundManager.play_sfx("ButtonSounds")`。
 - **自测**：`--coop-devchat`（配 `--coop-host` / `--coop-join=127.0.0.1` + `--coop-devbattle`）双端各发一条，打印 `dev-chat id=.. log=..`。实测两端 `log=2`（含双方消息、无重复），无 `SCRIPT ERROR`。
 - **备注**：聊天窗脚本的 `LineEdit` 引用名不可用 `_input`（与虚拟方法 `_input` 冲突 → Parse Error），已命名 `_input_box`。
