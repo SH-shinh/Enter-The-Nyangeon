@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://bg1t28jf41yjf"]
+
+[ext_resource type="PackedScene" uid="uid://br7p1dvdixt7u" path="res://scenes/yellow_ball.tscn" id="1_ball"]
+[ext_resource type="Script" uid="uid://u1bgdjodf25t" path="res://mods/etn_coop/ui/coop_start_ball.gd" id="2_script"]
+[ext_resource type="Shader" uid="uid://bqypa5578tm8a" path="res://shaders/sprite_outline.gdshader" id="3_6iw0y"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_embua"]
+resource_local_to_scene = true
+shader = ExtResource("3_6iw0y")
+shader_parameter/outline_width = 0.0
+shader_parameter/outline_color = Color(10, 10, 10, 1)
+shader_parameter/flash_opacity = 0.0
+
+[node name="CoopStartBall" unique_id=1119493693 instance=ExtResource("1_ball")]
+script = ExtResource("2_script")
+
+[node name="Sprite2D" parent="." index="1" unique_id=1046471706]
+material = SubResource("ShaderMaterial_embua")

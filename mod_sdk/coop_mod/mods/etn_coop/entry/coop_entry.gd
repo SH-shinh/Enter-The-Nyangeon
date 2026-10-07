@@ -185,6 +185,11 @@ func _handle_dev_args() -> void:
 	var devabort := false
 	var devready := false
 	var devchat := false
+	var devmedkit := false
+	var devcine := false
+	var devfever := false
+	var devparabola := false
+	var devhina := false
 	var use_relay := false
 	var relay_target := ""
 	for a in OS.get_cmdline_user_args():
@@ -291,6 +296,16 @@ func _handle_dev_args() -> void:
 			devready = true
 		elif a == "--coop-devchat":
 			devchat = true
+		elif a == "--coop-devmedkit":
+			devmedkit = true
+		elif a == "--coop-devcine":
+			devcine = true
+		elif a == "--coop-devfever":
+			devfever = true
+		elif a == "--coop-devparabola":
+			devparabola = true
+		elif a == "--coop-devhina":
+			devhina = true
 	# 旧的无头自测自行切换场景，禁用开房自动进准备房，避免重复切场景
 	if devbattle:
 		_coop.set("auto_enter_lobby", false)
@@ -391,6 +406,11 @@ func _handle_dev_args() -> void:
 		if devenemy and mode == "host":
 			_coop.call("register_existing_enemies")
 			print("[etn_coop] dev registered %d enemies" % _coop.enemy_by_net_id.size())
+		if devdown and mode == "host":
+			for i in 12:
+				await get_tree().create_timer(0.5).timeout
+				print("[etn_coop] dev-rescue host state=%s prompt=%s" % [
+					str(_coop.call("dev_rescue_state")), str(_coop.call("dev_rescue_prompt_shown"))])
 		if mode == "host" and devcoin:
 			await get_tree().create_timer(2.5).timeout
 			_coop.call("dev_spawn_coin", 100)
@@ -447,8 +467,12 @@ func _handle_dev_args() -> void:
 			if devdown:
 				await get_tree().create_timer(1.0).timeout
 				_coop.call("dev_set_local_hp", 0)
+				_coop.call("dev_force_local_downed")
 				await get_tree().create_timer(0.8).timeout
 				print("[etn_coop] dev local downed=%s" % str(_coop.call("dev_local_downed")))
+				await get_tree().create_timer(4.0).timeout
+				print("[etn_coop] dev after-rescue downed=%s prompt=%s" % [
+					str(_coop.call("dev_local_downed")), str(_coop.call("dev_rescue_prompt_shown"))])
 	if devpause:
 		await get_tree().create_timer(1.0).timeout
 		_coop.call("dev_pause_probe")
@@ -520,6 +544,72 @@ func _handle_dev_args() -> void:
 			_coop.call("dev_grant_item", item_id)
 			await get_tree().create_timer(0.5).timeout
 		print("[etn_coop] dev-items granted")
+	if devmedkit:
+		var waited_mk: float = 0.0
+		while not _coop.battle_active and waited_mk < 15.0:
+			await get_tree().create_timer(0.2).timeout
+			waited_mk += 0.2
+		await get_tree().create_timer(1.5).timeout
+		if mode == "host":
+			print("[etn_coop] dev-medkit mods=%s" % str(_coop.call("dev_medkit_mods")))
+			_coop.call("dev_spawn_medkit")
+			await get_tree().create_timer(2.0).timeout
+			print("[etn_coop] dev-medkit host count=%d" % int(_coop.call("dev_medkit_count")))
+		else:
+			await get_tree().create_timer(2.0).timeout
+			print("[etn_coop] dev-medkit client count=%d" % int(_coop.call("dev_medkit_count")))
+			_coop.call("dev_take_medkit")
+			await get_tree().create_timer(1.0).timeout
+			print("[etn_coop] dev-medkit client after count=%d hp=%d" % [int(_coop.call("dev_medkit_count")), int(_coop.call("dev_local_hp"))])
+	if devcine:
+		var waited_cine: float = 0.0
+		while not _coop.battle_active and waited_cine < 15.0:
+			await get_tree().create_timer(0.2).timeout
+			waited_cine += 0.2
+		await get_tree().create_timer(1.5).timeout
+		if mode == "host":
+			_coop.call("dev_trigger_boss_cinematic")
+			print("[etn_coop] dev-cine host triggered")
+		else:
+			await get_tree().create_timer(1.0).timeout
+			print("[etn_coop] dev-cine client mid=%s" % str(_coop.call("dev_cinematic_state")))
+			await get_tree().create_timer(2.5).timeout
+			print("[etn_coop] dev-cine client after=%s" % str(_coop.call("dev_cinematic_state")))
+	if devfever:
+		var waited_fv: float = 0.0
+		while not _coop.battle_active and waited_fv < 15.0:
+			await get_tree().create_timer(0.2).timeout
+			waited_fv += 0.2
+		await get_tree().create_timer(1.5).timeout
+		if mode == "host":
+			_coop.call("dev_trigger_fever")
+			await get_tree().create_timer(1.5).timeout
+			print("[etn_coop] dev-fever host state=%s" % str(_coop.call("dev_fever_state")))
+		else:
+			await get_tree().create_timer(2.5).timeout
+			print("[etn_coop] dev-fever client state=%s" % str(_coop.call("dev_fever_state")))
+	if devparabola:
+		var waited_pb: float = 0.0
+		while not _coop.battle_active and waited_pb < 15.0:
+			await get_tree().create_timer(0.2).timeout
+			waited_pb += 0.2
+		await get_tree().create_timer(1.5).timeout
+		if mode == "host":
+			_coop.call("dev_spawn_parabola")
+			await get_tree().create_timer(1.0).timeout
+			print("[etn_coop] dev-parabola host traj=%d" % int(_coop.call("dev_coin_traj_count")))
+		else:
+			await get_tree().create_timer(1.0).timeout
+			print("[etn_coop] dev-parabola client traj=%d pos=%s" % [int(_coop.call("dev_coin_traj_count")), str(_coop.call("dev_coin_positions"))])
+			await get_tree().create_timer(3.5).timeout
+			print("[etn_coop] dev-parabola client after traj=%d pos=%s" % [int(_coop.call("dev_coin_traj_count")), str(_coop.call("dev_coin_positions"))])
+	if devhina:
+		var waited_h: float = 0.0
+		while not _coop.battle_active and waited_h < 15.0:
+			await get_tree().create_timer(0.2).timeout
+			waited_h += 0.2
+		await get_tree().create_timer(1.0).timeout
+		print("[etn_coop] dev-hina state=%s" % str(_coop.call("dev_hina_probe")))
 	if devspawn and mode == "host":
 		var waited_spawn: float = 0.0
 		while not _coop.battle_active and waited_spawn < 15.0:

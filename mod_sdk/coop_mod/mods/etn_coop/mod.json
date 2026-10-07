@@ -1,0 +1,9 @@
+{
+  "id": "etn_coop",
+  "name": "ETN Coop (skeleton)",
+  "version": "0.1.1",
+  "author": "local",
+  "api_version": 1,
+  "game_version": "v0.5.1.2-test",
+  "entry": "res://mods/etn_coop/entry/coop_entry.gd"
+}

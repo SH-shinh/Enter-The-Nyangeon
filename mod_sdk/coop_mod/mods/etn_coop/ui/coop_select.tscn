@@ -1,0 +1,311 @@
+[gd_scene format=3 uid="uid://6fto5ewa0pkj"]
+
+[ext_resource type="Script" uid="uid://bkru342xil36i" path="res://mods/etn_coop/ui/coop_select.gd" id="1_script"]
+[ext_resource type="Shader" uid="uid://d3frxix26ovel" path="res://shaders/scrolling_bkgd.gdshader" id="2_p54vp"]
+[ext_resource type="Texture2D" uid="uid://dieipwoadjxoa" path="res://ui/title_picture_2.png" id="3_njav5"]
+[ext_resource type="Script" uid="uid://bp2ie61wci7v1" path="res://script/ScrollBox_x.gd" id="5_lqi4l"]
+[ext_resource type="Script" uid="uid://cxexg1p6wvaks" path="res://script/ScrollBox.gd" id="8_qwqtw"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_a3im8"]
+shader = ExtResource("2_p54vp")
+shader_parameter/scroll_speed = 0.2
+shader_parameter/angle_degrees = 90.0
+shader_parameter/repeat_x = 1.0
+shader_parameter/repeat_y = 1.0
+shader_parameter/tint = Color(0.819608, 0.819608, 0.819608, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vxipu"]
+shader = ExtResource("2_p54vp")
+shader_parameter/scroll_speed = 0.2
+shader_parameter/angle_degrees = 90.0
+shader_parameter/repeat_x = 1.0
+shader_parameter/repeat_y = 1.0
+shader_parameter/tint = Color(0.141176, 0.141176, 0.141176, 1)
+
+[sub_resource type="Animation" id="Animation_p54vp"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Background:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Control:offset_transform_position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("ColorRect4:offset_transform_position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("SupportScroll:offset_transform_position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("PlayerScroll:offset_transform_scale")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("SocietyScroll:offset_transform_position")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_njav5"]
+resource_name = "show_anim"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Background:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Control:offset_transform_position")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-680, 0), Vector2(0, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("ColorRect4:offset_transform_position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0, -30), Vector2(0, 0)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("SupportScroll:offset_transform_position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0, -30), Vector2(0, 0)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("PlayerScroll:offset_transform_scale")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0.033333335, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0, 1), Vector2(1, 1)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("SocietyScroll:offset_transform_position")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(100, 0), Vector2(0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_lqi4l"]
+_data = {
+&"RESET": SubResource("Animation_p54vp"),
+&"show_anim": SubResource("Animation_njav5")
+}
+
+[node name="CoopSelect" type="CanvasLayer" unique_id=2088444054]
+process_mode = 3
+layer = 100
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1822936277]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.06, 0.06, 0.08, 0.92)
+
+[node name="Control" type="Control" parent="." unique_id=955635491]
+layout_mode = 3
+anchors_preset = 0
+offset_top = 30.0
+offset_bottom = 30.0
+offset_transform_enabled = true
+
+[node name="ColorRect3" type="ColorRect" parent="Control" unique_id=1122882202]
+layout_mode = 0
+offset_left = -21.0
+offset_top = -38.0
+offset_right = 640.0
+offset_bottom = 359.0
+color = Color(0.819608, 0.819608, 0.819608, 1)
+
+[node name="ColorRect2" type="ColorRect" parent="Control" unique_id=1114476704]
+layout_mode = 0
+offset_left = -24.0
+offset_top = -32.0
+offset_right = 627.0
+offset_bottom = 360.0
+mouse_filter = 2
+color = Color(0.141176, 0.141176, 0.141176, 1)
+
+[node name="TextureRect3" type="TextureRect" parent="Control" unique_id=486373898]
+material = SubResource("ShaderMaterial_a3im8")
+layout_mode = 0
+offset_left = 640.0
+offset_top = -77.0
+offset_right = 854.0
+offset_bottom = 3259.0
+scale = Vector2(0.125, 0.125)
+texture = ExtResource("3_njav5")
+stretch_mode = 1
+
+[node name="TextureRect2" type="TextureRect" parent="Control" unique_id=463648339]
+material = SubResource("ShaderMaterial_vxipu")
+layout_mode = 0
+offset_left = 627.33777
+offset_top = -32.0
+offset_right = 841.33777
+offset_bottom = 3104.0
+scale = Vector2(0.125, 0.125)
+texture = ExtResource("3_njav5")
+stretch_mode = 1
+
+[node name="ColorRect4" type="ColorRect" parent="." unique_id=835247529]
+custom_minimum_size = Vector2(640, 30)
+offset_right = 640.0
+offset_bottom = 30.0
+offset_transform_enabled = true
+color = Color(0.211765, 0.211765, 0.211765, 1)
+
+[node name="SupportScroll" type="ScrollContainer" parent="." unique_id=2098457799]
+offset_right = 640.0
+offset_bottom = 30.0
+offset_transform_enabled = true
+horizontal_scroll_mode = 3
+vertical_scroll_mode = 0
+script = ExtResource("5_lqi4l")
+
+[node name="SupportBox" type="HBoxContainer" parent="SupportScroll" unique_id=1870280636]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="PlayerScroll" type="ScrollContainer" parent="." unique_id=579342263]
+offset_top = 30.0
+offset_right = 585.99384
+offset_bottom = 370.0
+scale = Vector2(0.971, 0.971)
+offset_transform_enabled = true
+offset_transform_pivot_ratio = Vector2(0, 0.5)
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 0
+
+[node name="Control" type="Control" parent="PlayerScroll" unique_id=1975712078]
+layout_mode = 2
+
+[node name="ColorRect" type="ColorRect" parent="PlayerScroll/Control" unique_id=743343916]
+layout_mode = 0
+offset_left = -22.0
+offset_right = 586.0
+offset_bottom = 360.0
+
+[node name="ColorRect3" type="ColorRect" parent="PlayerScroll/Control" unique_id=850061708]
+layout_mode = 0
+offset_left = -22.0
+offset_right = 582.0
+offset_bottom = 360.0
+color = Color(0.172549, 0.172549, 0.172549, 0.384314)
+
+[node name="PlayerBox" type="HBoxContainer" parent="PlayerScroll" unique_id=2083374872]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 340)
+layout_mode = 2
+
+[node name="SocietyScroll" type="ScrollContainer" parent="." unique_id=1398991834]
+offset_left = 574.0
+offset_top = 48.0
+offset_right = 683.0
+offset_bottom = 360.0
+offset_transform_enabled = true
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
+script = ExtResource("8_qwqtw")
+
+[node name="SocietyBox" type="VBoxContainer" parent="SocietyScroll" unique_id=1857169779]
+unique_name_in_owner = true
+layout_mode = 2
+offset_transform_enabled = true
+offset_transform_position = Vector2(3, 0)
+theme_override_constants/separation = 4
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=655479662]
+libraries/ = SubResource("AnimationLibrary_lqi4l")

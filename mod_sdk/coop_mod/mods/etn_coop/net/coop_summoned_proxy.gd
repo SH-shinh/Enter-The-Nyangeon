@@ -58,8 +58,23 @@ func setup(p_net_id: int, p_owner_peer_id: int, p_is_local_owner: bool) -> void:
 	summoned.set_meta("summoned_net_id", net_id)
 	summoned.set_meta("owner_peer_id", owner_peer_id)
 	summoned.set_meta("is_local_summoned", is_local_owner)
+	if is_local_owner and not summoned.tree_exiting.is_connected(_on_summoned_tree_exiting):
+		# 无 is_idle 的持久身体（drone/vacuum）或直接 queue_free 的召唤物：以退树作为 despawn 兜底
+		summoned.tree_exiting.connect(_on_summoned_tree_exiting)
 	if not is_local_owner:
 		_disable_remote_simulation()
+
+
+# 本地拥有者节点退树（换角色/道具移除/场景清）→ 兜底请求 despawn（覆盖无 is_idle 的持久身体）
+func _on_summoned_tree_exiting() -> void:
+	if despawn_sent or net_id < 0:
+		return
+	despawn_sent = true
+	if multiplayer.multiplayer_peer == null:
+		return
+	var coop = CoopNetScript.instance
+	if coop != null and is_instance_valid(coop):
+		coop.request_summoned_despawn(net_id)
 
 
 func apply_state(position: Vector2, velocity: Vector2, rotation: float, state: int = -1, facing: int = 1) -> void:

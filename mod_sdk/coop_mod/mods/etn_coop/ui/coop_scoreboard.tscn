@@ -1,0 +1,103 @@
+[gd_scene format=3 uid="uid://bsmvqnuqwc4bd"]
+
+[ext_resource type="Script" uid="uid://btcyhmlphkelt" path="res://mods/etn_coop/ui/coop_scoreboard.gd" id="1_script"]
+[ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="2_font"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.08235294, 0.08235294, 0.08235294, 0.9411765)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="CoopScoreboard" type="CanvasLayer" unique_id=797818558]
+process_mode = 3
+layer = 120
+script = ExtResource("1_script")
+
+[node name="Center" type="CenterContainer" parent="." unique_id=1359720057]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="Center" unique_id=1380845100]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_1")
+
+[node name="VBox" type="VBoxContainer" parent="Center/Panel" unique_id=415187399]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="Title" type="Label" parent="Center/Panel/VBox" unique_id=1362416478]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.09411765, 0.09411765, 0.09411765, 1)
+theme_override_constants/outline_size = 5
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 12
+text = "coop_sb_title"
+horizontal_alignment = 1
+
+[node name="Header" type="HBoxContainer" parent="Center/Panel/VBox" unique_id=990332888]
+layout_mode = 2
+
+[node name="HName" type="Label" parent="Center/Panel/VBox/Header" unique_id=1004023226]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35283655, 0.7939099, 0.98989576, 1)
+theme_override_colors/font_outline_color = Color(0.09411765, 0.09411765, 0.09411765, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 10
+text = "coop_sb_player"
+clip_text = true
+
+[node name="HKills" type="Label" parent="Center/Panel/VBox/Header" unique_id=1379120965]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96182126, 0.27034, 0.32182592, 1)
+theme_override_colors/font_outline_color = Color(0.09411765, 0.09411765, 0.09411765, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 10
+text = "coop_sb_kills"
+horizontal_alignment = 2
+clip_text = true
+
+[node name="HDamage" type="Label" parent="Center/Panel/VBox/Header" unique_id=971811351]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98382443, 0.21856439, 0.5662538, 1)
+theme_override_colors/font_outline_color = Color(0.09411765, 0.09411765, 0.09411765, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 10
+text = "coop_sb_damage"
+horizontal_alignment = 2
+clip_text = true
+
+[node name="HCoins" type="Label" parent="Center/Panel/VBox/Header" unique_id=1548877967]
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.5722917, 0.17140782, 1)
+theme_override_colors/font_outline_color = Color(0.09411765, 0.09411765, 0.09411765, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 10
+text = "coop_sb_coins"
+horizontal_alignment = 2
+clip_text = true
+
+[node name="Rows" type="VBoxContainer" parent="Center/Panel/VBox" unique_id=1751158581]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 3

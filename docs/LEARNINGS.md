@@ -1404,8 +1404,20 @@
 - Source / 来源: user + code
 - Date / 日期: 2026-10-08
 
+### [Mod] 持久身体/召唤物 despawn：无 is_idle 与直接 queue_free 都漏发；换角色不清 EquipLayer
+- Evidence / 证据: `scenes/update_item/shiroko_drone.gd:7-10`（`_on_equip` 把 body 挂 `EquipLayer`）、`scenes/update_item/robotic_vacuum_cleaner_body.gd` 与 `shiroko_drone_icon_2.gd`（`extends CharacterBody2D`，**均无 `is_idle`**）、`coop_summoned_proxy.gd:46,82-87`（仅按 `is_idle` 判定 despawn）、`coop_net.gd:_replace_player_for_peer`（换角色只 `old.queue_free()`，不清 EquipLayer、不发 summon despawn）。
+- Notes / 说明: **现象**（user）：测试房内选带视觉道具（如 shiroko_drone）后重置/换角色，残留 `shiroko_drone_body`。**定位更正**：该残留属**持久身体/召唤同步**通道（`PERSISTENT_BODY_SCENES`：drone/vacuum body 由 `_on_equip` 挂到 `EquipLayer`，`_register_persistent_body` 走召唤同步），**不是** `item_visual_by_peer`（`shiroko_drone` 不在任何图标清单，`_remote_item_visual` 打印 none）；两者根脚本**都无 `is_idle`**，`CoopSummonedProxy` 永不发 despawn；换角色时 base 只释放玩家节点，EquipLayer 孤儿 body 与本机/远端镜像都不清。**修法**：① proxy 本地拥有者连 `summoned.tree_exiting` → 未发过则 `request_summoned_despawn`（覆盖无 is_idle 与直接 `queue_free`）；② `_replace_player_for_peer` 本地分支调 `_despawn_owned_summons_local()`、远端分支调新 `_despawn_peer_summons(peer_id)`。**同类补齐**：通用视觉通道（`_on_visual_activated`/`_maybe_broadcast_visual_node`）原也无 despawn → 现分配 `net_effect_id` + 连 `tree_exiting`，释放时广播 `_despawn_visual_effect`（复用特效通道 id/RPC）；带 id 的一次性特效不再被远端 6s 抢先释放（`CoopVisualSync.spawn_visual_effect` 的 `_queue_free_after` 仅在无 id 时启用）；回合兜底 `_clear_round_visuals` 扩到 `CoinRoot` 的远端 medkit 镜像（客机 `item_clear` 被 gate 跳过）。
+- Source / 来源: user + code
+- Date / 日期: 2026-10-08
+
 ### [Mod] 聊天室自动显示（PEEK）与输入（COMPOSE）双态：只调背景/输入框透明度、面板不拦截鼠标
 - Evidence / 证据: `mod_sdk/coop_mod/mods/etn_coop/ui/coop_chat.gd`（`_composing`、`_peek_show`、`_set_peek_visual`、`_on_chat_received`、`_activate`、`_set_mouse_ignore`；`PEEK_BG_ALPHA`/`PEEK_INPUT_ALPHA=0.4`）、`ui/coop_chat.tscn`（`Scroll.vertical_scroll_mode=3`）。
 - Notes / 说明: 需求：新消息自动显示、不聚焦、更透明、不拦鼠标、隐藏滚动条、游戏结束保留。修法：把单一 `_is_open` 拆成 `_is_open`（可见）+ `_composing`（输入态）。`_on_chat_received` 在关闭时 → `_peek_show()`（显示、`_composing=false`、滚动到底、`_schedule_hide(HIDE_DELAY)`；peek 中再来消息重置计时，淡出中亦重置重显）；PEEK 下 `_activate()` → `_refocus()` 升格为 COMPOSE（占用控件+聚焦+恢复满不透明）。**透明度只动面板 StyleBox 的 `bg_color.a` 与 `_input_box.modulate.a`（0.4 ↔ 原值 `_orig_bg_alpha`），消息 `Label` 保持 1.0**——改整个面板 `modulate` 会连文字一起变淡，故不用。**不拦截**：`_ready` 递归把面板子树 `mouse_filter=IGNORE`（输入靠程序 `grab_focus`，键盘仍可输入），避免可见面板吞掉游玩期鼠标点击/挡开火。**滚动条**：`vertical_scroll_mode=3`（SHOW_NEVER）隐藏但仍可程序滚动。**游戏结束**：`_on_game_over` 不再 `_hide_now()`（结算/团队结束页保留窗口、peek 继续）。`_schedule_hide(delay)` 参数化，peek 与 compose 共用 `_hide_token`。**坑**：stylebox 是场景内 sub_resource，运行时改 `bg_color` 仅影响本面板；`get_theme_stylebox("panel")` 可能非 flat，须判类型。验证（无头探针）：peek(open/comp=false/holds=false/bg=0.40/in=0.40)、compose(comp=true/held=true/focus=true/bg=0.94/in=1.0)、submit 后 held=false、game_over 后仍 open、面板子树全 IGNORE、vmode=3；LAN 两端 `log=2` 无错误。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-10-08
+
+### [Mod] 战绩金币改「各自获取」：共享拾取按拾取者归属 + 个人金币复用 player_coins_get 上报
+- Evidence / 证据: `mod_sdk/coop_mod/mods/etn_coop/net/coop_net.gd`（`_add_team_coins`；`_broadcast_team_stats` 去掉 coins 覆盖；`_do_shared_coin_pickup`/`_server_pickup_coin` 归属；`_apply_shared_coin_local` 打 `_applying_shared_coin`；`_on_local_coins_get`/`_server_coin_gain`；`install_hooks` 连 `GameEvents.player_coins_get`）。
+- Notes / 说明: 原 `_broadcast_team_stats` 每周期把 host 的共享 `stats.coin` 覆盖到每个人的 `team_stats[pid]["coins"]` → 全行相同。改为按「各自获取」：① **共享拾取归拾取者**（host 在 `_do_shared_coin_pickup` 记 `get_unique_id()`；client 经 `_server_pickup_coin` 记 `get_remote_sender_id()`）；② **个人金币加成**（满血医疗箱转金币 / coin_return / chocolate_coin / atlantis medal / 策反清场结算）都经既有 `GameEvents.player_coins_get` → `_on_local_coins_get` 上报 host 归属本人。**区分关键**：共享拾取唯一走 mod 的 `_apply_shared_coin_local`，其发 `player_coins_get` 时用 `_applying_shared_coin` 抑制，避免个人通道重复计入——**零本体改动**。跨回合累计，`_reset_run_state` 清空。验证（无头探针）：personal 50→`team[1].coins=50`、抑制期 30 不计、非 LAN 999 不计；`_do_shared_coin_pickup(77)`→host 77、再 `_add_team_coins(2,30)` 后 `_broadcast_team_stats` 不覆盖（77/30 保持）。
 - Source / 来源: user + code + test
 - Date / 日期: 2026-10-08

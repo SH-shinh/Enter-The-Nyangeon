@@ -104,6 +104,7 @@ const MESSAGES: Dictionary = {
 	"coop_only_host_interact": {"zh_CN": "只有房主能够互动", "en": "Only the host can interact", "pt": "Só o anfitrião pode interagir", "vi_VN": "Chỉ chủ phòng mới tương tác được"},
 	"coop_ready": {"zh_CN": "已就绪", "en": "READY", "pt": "PRONTO", "vi_VN": "SẴN SÀNG"},
 	"coop_waiting_host": {"zh_CN": "等待房主选择", "en": "Waiting for host", "pt": "Aguardando o anfitrião", "vi_VN": "Đang chờ chủ phòng"},
+	"coop_wait_all_ready": {"zh_CN": "等待所有人就绪", "en": "Waiting for all players", "pt": "Aguardando todos os jogadores", "vi_VN": "Đang chờ mọi người sẵn sàng"},
 	"coop_room_number": {"zh_CN": "房间号", "en": "Room", "pt": "Sala", "vi_VN": "Phòng"},
 	"coop_room_ip": {"zh_CN": "IP", "en": "IP", "pt": "IP", "vi_VN": "IP"},
 	"coop_select_support": {"zh_CN": "支援角色选择", "en": "Support selection", "pt": "Seleção de apoio", "vi_VN": "Chọn nhân vật hỗ trợ"},

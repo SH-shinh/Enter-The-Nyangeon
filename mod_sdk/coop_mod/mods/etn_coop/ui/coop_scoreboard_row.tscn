@@ -1,0 +1,56 @@
+[gd_scene format=3 uid="uid://ccn6ehk282kkb"]
+
+[ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="1_font"]
+
+[node name="ScoreRow" type="HBoxContainer" unique_id=1798624197]
+
+[node name="Name" type="Label" parent="." unique_id=107001758]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.92)
+theme_override_colors/font_outline_color = Color(0.09411765, 0.09411765, 0.09411765, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("1_font")
+theme_override_font_sizes/font_size = 8
+text = "最多十二最多十二最多十二"
+clip_text = true
+
+[node name="Kills" type="Label" parent="." unique_id=1310194194]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9372549, 0.2, 0.2784314, 1)
+theme_override_colors/font_outline_color = Color(0.09411765, 0.09411765, 0.09411765, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("1_font")
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+clip_text = true
+
+[node name="Damage" type="Label" parent="." unique_id=1074362847]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9019608, 0.08627451, 0.49803922, 1)
+theme_override_colors/font_outline_color = Color(0.09411765, 0.09411765, 0.09411765, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("1_font")
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+clip_text = true
+
+[node name="Coins" type="Label" parent="." unique_id=868120431]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.5568628, 0.105882354, 1)
+theme_override_colors/font_outline_color = Color(0.09411765, 0.09411765, 0.09411765, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("1_font")
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+clip_text = true

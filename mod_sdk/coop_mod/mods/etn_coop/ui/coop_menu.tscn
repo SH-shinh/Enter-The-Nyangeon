@@ -1,0 +1,763 @@
+[gd_scene load_steps=20 format=3 uid="uid://bcoopmenuscene2"]
+
+[ext_resource type="Script" path="res://mods/etn_coop/ui/coop_menu.gd" id="1_script"]
+[ext_resource type="Shader" path="res://shaders/scrolling_bkgd.gdshader" id="2_shader"]
+[ext_resource type="FontFile" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="4_font"]
+[ext_resource type="PackedScene" path="res://ui/return.tscn" id="5_return"]
+[ext_resource type="PackedScene" path="res://ui/option_button.tscn" id="6_button"]
+[ext_resource type="PackedScene" path="res://ui/damage_freq_slider.tscn" id="7_freq"]
+[ext_resource type="PackedScene" path="res://ui/option_toggle.tscn" id="8_toggle"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_banner"]
+shader = ExtResource("2_shader")
+shader_parameter/scroll_speed = 0.05
+shader_parameter/angle_degrees = 0.0
+shader_parameter/repeat_x = 1.0
+shader_parameter/repeat_y = 1.0
+shader_parameter/tint = Color(0, 0.837, 0.295, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_panel"]
+
+[sub_resource type="Gradient" id="Gradient_sep"]
+colors = PackedColorArray(0, 0, 0, 1, 0, 0, 0, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture_sep"]
+gradient = SubResource("Gradient_sep")
+width = 16
+
+[sub_resource type="Animation" id="Anim_panel_reset"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 0)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".:scale")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 1)]
+}
+
+[sub_resource type="Animation" id="Anim_panel_in"]
+resource_name = "panel_option_in"
+length = 0.1
+step = 0.01
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.1),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(146, 48)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.1),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.03, 0.07),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".:scale")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.07, 0.1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0, 1), Vector2(1.1, 1), Vector2(1, 1)]
+}
+
+[sub_resource type="Animation" id="Anim_panel_out"]
+resource_name = "panel_option_out"
+length = 0.1
+step = 0.01
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.03, 0.1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(1.2, 1), Vector2(0, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.02, 0.06),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_panel"]
+_data = {
+&"RESET": SubResource("Anim_panel_reset"),
+&"panel_option_in": SubResource("Anim_panel_in"),
+&"panel_option_out": SubResource("Anim_panel_out")
+}
+
+[sub_resource type="Animation" id="Anim_root_reset"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:anchor_left")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [-1.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:anchor_right")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+
+[sub_resource type="Animation" id="Anim_root_in"]
+resource_name = "coop_in"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:anchor_left")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [-1.0, 0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:anchor_right")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, 1.0]
+}
+
+[sub_resource type="Animation" id="Anim_root_out"]
+resource_name = "coop_out"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:anchor_left")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, -1.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:anchor_right")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [1.0, 0.0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_root"]
+_data = {
+&"RESET": SubResource("Anim_root_reset"),
+&"coop_in": SubResource("Anim_root_in"),
+&"coop_out": SubResource("Anim_root_out")
+}
+
+[node name="CoopMenu" type="Control"]
+layout_mode = 3
+anchor_left = -1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.141176, 0.141176, 0.141176, 1)
+
+[node name="TopBarBack" type="ColorRect" parent="."]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+mouse_filter = 2
+
+[node name="Banner" type="TextureRect" parent="."]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_banner")
+layout_mode = 1
+offset_left = -41.0
+offset_top = -8.0
+offset_right = 2847.0
+offset_bottom = 137.0
+scale = Vector2(0.25, 0.25)
+mouse_filter = 2
+stretch_mode = 1
+
+[node name="Panel" type="PanelContainer" parent="."]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 0
+offset_right = 489.0
+offset_bottom = 322.0
+scale = Vector2(1e-05, 1)
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_panel")
+
+[node name="PanelAnimator" type="AnimationPlayer" parent="Panel"]
+unique_name_in_owner = true
+libraries/ = SubResource("AnimationLibrary_panel")
+
+[node name="RootHBox" type="HBoxContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Separator" type="ColorRect" parent="Panel/RootHBox"]
+custom_minimum_size = Vector2(1, 0)
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.22, 0.22, 0.22, 1)
+
+[node name="ContentRoot" type="VBoxContainer" parent="Panel/RootHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="RowPlayerId" type="HBoxContainer" parent="Panel/RootHBox/ContentRoot"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="Panel/RootHBox/ContentRoot/RowPlayerId"]
+custom_minimum_size = Vector2(190, 22)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "coop_option_player_id"
+vertical_alignment = 1
+
+[node name="PlayerIdInput" type="LineEdit" parent="Panel/RootHBox/ContentRoot/RowPlayerId"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 26)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+placeholder_text = "coop_option_player_id_placeholder"
+
+[node name="PlayerIdConfirm" type="Button" parent="Panel/RootHBox/ContentRoot/RowPlayerId"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(70, 26)
+layout_mode = 2
+mouse_filter = 2
+text = "button_confirm"
+
+[node name="Header" type="VBoxContainer" parent="Panel/RootHBox/ContentRoot"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TitleLabel" type="Label" parent="Panel/RootHBox/ContentRoot/Header"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "coop_title"
+
+[node name="ModeSubtitleLabel" type="Label" parent="Panel/RootHBox/ContentRoot/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "coop_mode_subtitle_lan"
+
+[node name="LanPanel" type="VBoxContainer" parent="Panel/RootHBox/ContentRoot"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="LanHeader" type="Label" parent="Panel/RootHBox/ContentRoot/LanPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "coop_mode_lan"
+
+[node name="HostRow" type="HBoxContainer" parent="Panel/RootHBox/ContentRoot/LanPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HostButton" type="Button" parent="Panel/RootHBox/ContentRoot/LanPanel/HostRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(98, 30)
+layout_mode = 2
+mouse_filter = 2
+text = "coop_host"
+
+[node name="LocalIpLabel" type="Label" parent="Panel/RootHBox/ContentRoot/LanPanel/HostRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 10
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="JoinRow" type="HBoxContainer" parent="Panel/RootHBox/ContentRoot/LanPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="IpInput" type="LineEdit" parent="Panel/RootHBox/ContentRoot/LanPanel/JoinRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+placeholder_text = "coop_host_lan_ip_placeholder"
+
+[node name="JoinButton" type="Button" parent="Panel/RootHBox/ContentRoot/LanPanel/JoinRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 30)
+layout_mode = 2
+mouse_filter = 2
+text = "coop_join"
+
+[node name="LanNote" type="Label" parent="Panel/RootHBox/ContentRoot/LanPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 9
+text = "coop_lan_note"
+autowrap_mode = 3
+
+[node name="RelayPanel" type="VBoxContainer" parent="Panel/RootHBox/ContentRoot"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="SakiServerRow" type="HBoxContainer" parent="Panel/RootHBox/ContentRoot/RelayPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RelayHeader" type="Label" parent="Panel/RootHBox/ContentRoot/RelayPanel/SakiServerRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "coop_mode_relay"
+
+[node name="SakiSpacer" type="Control" parent="Panel/RootHBox/ContentRoot/RelayPanel/SakiServerRow"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SakiServerButton" type="Button" parent="Panel/RootHBox/ContentRoot/RelayPanel/SakiServerRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 30)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "coop_saki_server"
+
+[node name="RelayServerRow" type="HBoxContainer" parent="Panel/RootHBox/ContentRoot/RelayPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RelayServerInput" type="LineEdit" parent="Panel/RootHBox/ContentRoot/RelayPanel/RelayServerRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+placeholder_text = "coop_relay_server_placeholder"
+
+[node name="RelayCreateButton" type="Button" parent="Panel/RootHBox/ContentRoot/RelayPanel/RelayServerRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(112, 30)
+layout_mode = 2
+mouse_filter = 2
+text = "coop_create_room"
+
+[node name="RelayRoomCodeLabel" type="Label" parent="Panel/RootHBox/ContentRoot/RelayPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "coop_room_code_empty"
+
+[node name="RelayJoinRow" type="HBoxContainer" parent="Panel/RootHBox/ContentRoot/RelayPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RelayRoomInput" type="LineEdit" parent="Panel/RootHBox/ContentRoot/RelayPanel/RelayJoinRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+placeholder_text = "coop_room_code_placeholder"
+
+[node name="RelayJoinButton" type="Button" parent="Panel/RootHBox/ContentRoot/RelayPanel/RelayJoinRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(112, 30)
+layout_mode = 2
+mouse_filter = 2
+text = "coop_join_room"
+
+[node name="RelayNote" type="Label" parent="Panel/RootHBox/ContentRoot/RelayPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 9
+text = "coop_relay_note"
+autowrap_mode = 3
+
+[node name="DedicatedPanel" type="VBoxContainer" parent="Panel/RootHBox/ContentRoot"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="DedicatedHeader" type="Label" parent="Panel/RootHBox/ContentRoot/DedicatedPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "coop_mode_dedicated"
+
+[node name="DedicatedNote" type="Label" parent="Panel/RootHBox/ContentRoot/DedicatedPanel"]
+custom_minimum_size = Vector2(0, 86)
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "coop_dedicated_note"
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="OptionPanel" type="VBoxContainer" parent="Panel/RootHBox/ContentRoot"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="OptionHeader" type="Label" parent="Panel/RootHBox/ContentRoot/OptionPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "coop_mode_option"
+
+[node name="RowRemoteEffect" type="HBoxContainer" parent="Panel/RootHBox/ContentRoot/OptionPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="Panel/RootHBox/ContentRoot/OptionPanel/RowRemoteEffect"]
+custom_minimum_size = Vector2(190, 22)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "coop_option_remote_effect"
+vertical_alignment = 1
+
+[node name="RemoteEffectFreq" parent="Panel/RootHBox/ContentRoot/OptionPanel/RowRemoteEffect" instance=ExtResource("7_freq")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 16)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+
+[node name="RemoteEffectFreqValue" type="Label" parent="Panel/RootHBox/ContentRoot/OptionPanel/RowRemoteEffect"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(84, 20)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="RowRemoteFlash" type="HBoxContainer" parent="Panel/RootHBox/ContentRoot/OptionPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="Panel/RootHBox/ContentRoot/OptionPanel/RowRemoteFlash"]
+custom_minimum_size = Vector2(190, 22)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "coop_option_remote_flash"
+vertical_alignment = 1
+
+[node name="RemoteFlashFreq" parent="Panel/RootHBox/ContentRoot/OptionPanel/RowRemoteFlash" instance=ExtResource("7_freq")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 16)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+
+[node name="RemoteFlashFreqValue" type="Label" parent="Panel/RootHBox/ContentRoot/OptionPanel/RowRemoteFlash"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(84, 20)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="RowRemoteText" type="HBoxContainer" parent="Panel/RootHBox/ContentRoot/OptionPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="Panel/RootHBox/ContentRoot/OptionPanel/RowRemoteText"]
+custom_minimum_size = Vector2(190, 22)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "coop_option_remote_text"
+vertical_alignment = 1
+
+[node name="RemoteTextFreq" parent="Panel/RootHBox/ContentRoot/OptionPanel/RowRemoteText" instance=ExtResource("7_freq")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 16)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+
+[node name="RemoteTextFreqValue" type="Label" parent="Panel/RootHBox/ContentRoot/OptionPanel/RowRemoteText"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(84, 20)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="RowDebugHud" type="HBoxContainer" parent="Panel/RootHBox/ContentRoot/OptionPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="Panel/RootHBox/ContentRoot/OptionPanel/RowDebugHud"]
+custom_minimum_size = Vector2(190, 22)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "coop_option_debug_hud"
+vertical_alignment = 1
+
+[node name="DebugHudToggle" parent="Panel/RootHBox/ContentRoot/OptionPanel/RowDebugHud" instance=ExtResource("8_toggle")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="OptionNote" type="Label" parent="Panel/RootHBox/ContentRoot/OptionPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 9
+text = "coop_option_note"
+autowrap_mode = 3
+
+[node name="ContentSpacer" type="Control" parent="Panel/RootHBox/ContentRoot"]
+layout_mode = 2
+[node name="StatusBox" type="HBoxContainer" parent="Panel/RootHBox/ContentRoot"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="StatusDot" type="ColorRect" parent="Panel/RootHBox/ContentRoot/StatusBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(8, 8)
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.45, 0.45, 0.45, 1)
+
+[node name="StatusLabel" type="Label" parent="Panel/RootHBox/ContentRoot/StatusBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(320, 34)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 10
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="Hint" type="Label" parent="."]
+layout_mode = 0
+offset_left = 59.0
+offset_top = 323.0
+offset_right = 209.0
+offset_bottom = 345.0
+theme_override_font_sizes/font_size = 11
+text = "coop_return_hint"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries/ = SubResource("AnimationLibrary_root")
+
+[node name="Node2D" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TextureRect" type="TextureRect" parent="Node2D"]
+layout_mode = 0
+offset_left = 135.0
+offset_top = 20.0
+offset_right = 151.0
+offset_bottom = 360.0
+mouse_filter = 2
+texture = SubResource("GradientTexture_sep")
+
+[node name="ColorRect" type="ColorRect" parent="Node2D"]
+layout_mode = 0
+offset_top = 20.0
+offset_right = 139.0
+offset_bottom = 360.0
+mouse_filter = 2
+color = Color(0.0768358, 0.0768358, 0.0768358, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Node2D"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 39.0
+offset_right = 121.0
+offset_bottom = 87.0
+
+[node name="LAN" parent="Node2D/VBoxContainer" instance=ExtResource("6_button")]
+unique_name_in_owner = true
+layout_mode = 2
+button_id = "coop_lan"
+
+[node name="lan_label" type="Label" parent="Node2D/VBoxContainer/LAN"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_shadow_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 4
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("4_font")
+theme_override_font_sizes/font_size = 19
+text = "coop_mode_lan"
+
+[node name="Relay" parent="Node2D/VBoxContainer" instance=ExtResource("6_button")]
+unique_name_in_owner = true
+layout_mode = 2
+button_id = "coop_relay"
+
+[node name="relay_label" type="Label" parent="Node2D/VBoxContainer/Relay"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_shadow_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 4
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("4_font")
+theme_override_font_sizes/font_size = 19
+text = "coop_mode_relay"
+
+[node name="Option" parent="Node2D/VBoxContainer" instance=ExtResource("6_button")]
+unique_name_in_owner = true
+layout_mode = 2
+button_id = "coop_option"
+
+[node name="option_label" type="Label" parent="Node2D/VBoxContainer/Option"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_shadow_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 4
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("4_font")
+theme_override_font_sizes/font_size = 19
+text = "coop_mode_option"
+
+[node name="Label" type="Label" parent="Node2D"]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 344.0
+offset_right = 81.0
+offset_bottom = 357.0
+theme_override_font_sizes/font_size = 11
+text = "coop_return_hint"
+
+[node name="return" parent="Node2D" instance=ExtResource("5_return")]
+layout_mode = 0
+offset_left = 108.0
+offset_top = 329.0
+offset_right = 134.0
+offset_bottom = 355.0

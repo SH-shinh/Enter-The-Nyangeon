@@ -26,7 +26,7 @@ const DEFAULT_BATTLE_SCENE: String = "res://scenes/main/main.tscn"
 const MENU_SCENE: String = "res://scenes/main/menu_screen.tscn"
 # 协议/版本握手：不一致直接拒绝
 const PROTOCOL_VERSION: int = 1
-const MOD_VERSION: String = "0.1.0"
+const MOD_VERSION: String = "0.1.1"
 const HELLO_TIMEOUT_MSEC: int = 5000
 
 # 房主存活心跳：房主每 HOST_HEARTBEAT_INTERVAL 广播一次；客户端超过 HOST_TIMEOUT_MSEC 未收到
@@ -146,6 +146,7 @@ var last_attacker_by_net_id: Dictionary = {}  # net_id -> owner_peer（击杀归
 const TEAM_STATS_INTERVAL: float = 1.0
 var team_stats: Dictionary = {}   # pid -> {kills, damage, coins}
 var _team_stats_timer: float = 0.0
+var _applying_shared_coin: bool = false  # 共享金币应用中：抑制 player_coins_get 的个人归属
 # 聊天室：本次联机房间的全部消息（按加入顺序），回菜单/重开即清空
 const CHAT_LOG_MAX: int = 200
 const CHAT_TEXT_MAX: int = 120
@@ -230,6 +231,9 @@ var _rate_window_msec: int = 0
 # ---------------- 金币同步状态 ----------------
 var coin_by_net_id: Dictionary = {}
 var next_coin_net_id: int = 1
+# 抛物线金币（Boss coin_box）：客机按广播折线驱动镜像飞行（parabola_path tween 固定 3s）
+const PARABOLA_DURATION: float = 3.0
+var coin_traj: Dictionary = {}   # net_id -> {points:PackedVector2Array, start:int, dur:float, pick_up:bool}
 # 医疗箱同步：host 权威生成，全端共享拾取
 var medkit_by_net_id: Dictionary = {}       # net_id -> Node
 var next_medkit_net_id: int = 1
@@ -257,10 +261,15 @@ const PERSISTENT_BODY_SCENES: Array[String] = [
 const RESCUE_RADIUS: float = 96.0
 const RESCUE_TIME: float = 2.5
 const REVIVE_HEALTH_MULT: float = 0.5
+const RESCUE_SYNC_INTERVAL: float = 0.1
 var down_peer_ids: Dictionary = {}
-var _rescue_target: Node = null
-var _rescue_hold: float = 0.0
-var _rescue_prompt: Node = null
+# host 权威：target peer -> 已累积救援进度（0..RESCUE_TIME）
+var _rescue_progress: Dictionary = {}
+# host 权威：target peer -> 本帧参与救援的存活队友数（供气泡显示人数）
+var _rescue_rescuer_count: Dictionary = {}
+var _rescue_sync_timer: float = 0.0
+# 客户端展示：target peer -> interact_prompt 节点（目标复活后仅隐藏，后续复用）
+var _rescue_prompts: Dictionary = {}
 var _rescue_prompt_scene: PackedScene = null
 var _rescue_prompt_shown: bool = false
 # 暂停页房间号（关卡内显示）
@@ -279,6 +288,13 @@ var _support_buffed_peers: Dictionary = {}
 var _support_auras: Dictionary = {}
 # 召唤物范围光环已转发记录：key "<source_id>|<buff_id>|<net_id>" -> {owner_peer, net_id, buff_path, value, source_id}
 var _summon_aura_applied: Dictionary = {}
+# Boss 过场（镜头/UI/暂停锁）同步状态（客机侧）
+const CINEMATIC_MAX_MSEC: int = 8000
+var _boss_cinematic_active: bool = false
+var _cinematic_deadline_msec: int = 0
+var _remote_cam_marker: Node = null
+var _dev_fever_local_count: int = 0
+var _dev_fever_remote_count: int = 0
 
 
 func _ready() -> void:
@@ -380,7 +396,7 @@ func _client_hello(proto: int, _mod_ver: String, game_ver: String) -> void:
 	if not multiplayer.is_server():
 		return
 	var sender: int = multiplayer.get_remote_sender_id()
-	if proto != PROTOCOL_VERSION or game_ver != Game.version_number:
+	if proto != PROTOCOL_VERSION or not _versions_equal(game_ver, Game.version_number):
 		var reason: String = "protocol" if proto != PROTOCOL_VERSION else "game_version"
 		print("[etn_coop] handshake reject peer=%d reason=%s (proto=%d game=%s)" % [sender, reason, proto, game_ver])
 		rpc_id(sender, "_hello_reject", reason)
@@ -389,6 +405,26 @@ func _client_hello(proto: int, _mod_ver: String, game_ver: String) -> void:
 	_pending_hello.erase(sender)
 	_handshaked_peers[sender] = true
 	_accept_peer(sender)
+
+
+# 版本比较：忽略 `-test` 等后缀，仅比数字段（测试版/正式版同号视为同版本、可互通）。
+static func _version_parts(v: String) -> Array:
+	var s: String = v.strip_edges()
+	if s.begins_with("v") or s.begins_with("V"):
+		s = s.substr(1)
+	var dash: int = s.find("-")
+	if dash >= 0:
+		s = s.substr(0, dash)
+	var out: Array[int] = []
+	for p in s.split(".", false):
+		out.append(String(p).to_int())
+	while out.size() > 1 and out[out.size() - 1] == 0:
+		out.remove_at(out.size() - 1)
+	return out
+
+
+static func _versions_equal(a: String, b: String) -> bool:
+	return _version_parts(a) == _version_parts(b)
 
 
 @rpc("authority", "call_remote", "reliable")
@@ -536,16 +572,17 @@ func _add_team_kill(pid: int) -> void:
 	_ensure_team_stat(pid)["kills"] += 1
 
 
+# 金币：按「各自获取」归属到具体玩家（共享金币拾取者 + 个人金币加成），host 权威累计
+func _add_team_coins(pid: int, amount: int) -> void:
+	if not multiplayer.is_server() or amount <= 0:
+		return
+	_ensure_team_stat(pid)["coins"] += amount
+
+
 func _broadcast_team_stats() -> void:
 	if not multiplayer.is_server():
 		return
-	var coin: int = 0
-	var p := get_local_player()
-	if p != null and p.get("stats") != null:
-		coin = int(p.stats.coin)
 	_ensure_team_stat(multiplayer.get_unique_id())
-	for pid in team_stats.keys():
-		team_stats[pid]["coins"] = coin
 	rpc("_remote_team_stats", team_stats.duplicate(true))
 
 
@@ -672,6 +709,7 @@ func install_hooks() -> void:
 	ExtensionHooks.round_enemy_spawn_gate = Callable(self, "_gate_round_enemy_spawn")
 	ExtensionHooks.enemy_conversion_interceptor = Callable(self, "_gate_enemy_conversion")
 	ExtensionHooks.enemy_proc_owner_suppress = Callable(self, "_gate_enemy_proc_owner_suppress")
+	ExtensionHooks.fever_time_gate = Callable(self, "_gate_fever_time")
 	ExtensionHooks.player_buff_apply_interceptor = Callable(self, "_gate_player_buff_apply")
 	ExtensionHooks.player_buff_remove_interceptor = Callable(self, "_gate_player_buff_remove")
 
@@ -717,6 +755,11 @@ func install_hooks() -> void:
 	GameEvents.support_ex_active.connect(_on_local_support_ex_active)
 	GameEvents.support_ex_end.connect(_on_local_support_ex_end)
 	GameEvents.global_time_count.connect(_tick_summon_auras)
+	GameEvents.camera_move.connect(_on_local_camera_move)
+	GameEvents.camera_reset.connect(_on_local_camera_reset)
+	GameEvents.ui_visible.connect(_on_local_ui_visible)
+	GameEvents.fever_time_start.connect(_on_local_fever_time)
+	GameEvents.player_coins_get.connect(_on_local_coins_get)
 
 
 # ---------------- 接管类（骨架：默认放行） ----------------
@@ -1275,6 +1318,37 @@ func _gate_game_over(player_dead: bool) -> bool:
 func _on_round_start() -> void:
 	round_upgrade_ready_peers.clear()
 	_round_upgrade_hold = false
+	_clear_round_visuals()
+
+
+# 回合边界清场兜底：释放上一回合残留的远端视觉/特效。
+# 本体 bullet_clear 只在 host 的 round_end 非测试房分支执行（客机被 round_end_proceed_gate 提前 return），
+# 故客机 BulletRoot 下的远端视觉/特效无人回收，需在此补齐。
+func _clear_round_visuals() -> void:
+	_visual.reset()
+	_pending_effects.clear()
+	_pending_visual.clear()
+	_pending_visual_reliable.clear()
+	var root := get_tree().get_first_node_in_group("BulletRoot")
+	if root != null:
+		for c in root.get_children():
+			if c != null and is_instance_valid(c) and c.has_meta("remote_visual"):
+				c.queue_free()
+	# 客机本体 item_clear 被 gate 跳过：补清 CoinRoot 下的远端 medkit 镜像
+	var coin_root := get_tree().get_first_node_in_group("CoinRoot")
+	if coin_root != null:
+		for c in coin_root.get_children():
+			if c != null and is_instance_valid(c) and (c.has_meta("remote_medkit") or c.has_meta("coop_medkit_net_id")):
+				c.queue_free()
+	medkit_by_net_id.clear()
+	_medkit_consumed.clear()
+	# 本体回合边界已 queue_free 敌人，这里只剔除已失效的镜像引用
+	for k in enemy_by_net_id.keys():
+		var e = enemy_by_net_id[k]
+		if e == null or not is_instance_valid(e):
+			enemy_by_net_id.erase(k)
+			enemy_scene_by_net_id.erase(k)
+			enemy_proxy_by_net_id.erase(k)
 
 
 # 升级开始时由 host 统一复活所有倒地队友（对齐联机版），并广播 round_upgrade 让客机展示升级页
@@ -1383,6 +1457,9 @@ func _is_test_room() -> bool:
 
 
 func _revive_all_downed_for_upgrade() -> void:
+	_rescue_progress.clear()
+	_rescue_rescuer_count.clear()
+	_broadcast_rescue_progress()
 	var targets: Array = down_peer_ids.keys()
 	for pid in targets:
 		var target: int = int(pid)
@@ -1460,6 +1537,9 @@ func _on_projectile_spawned(bullet: Node, _owner: Node, _source_faction: int) ->
 			var v = bullet.get(pname)
 			if v != null:
 				props[pname] = v
+		var effect_id: String = "%d_%d" % [multiplayer.get_unique_id(), _next_visual_id]
+		_next_visual_id += 1
+		bullet.set_meta("net_effect_id", effect_id)
 		_pending_effects.append({
 			"s": scene_path,
 			"p": bullet.global_position,
@@ -1468,6 +1548,7 @@ func _on_projectile_spawned(bullet: Node, _owner: Node, _source_faction: int) ->
 			"g": _root_group_of(bullet),
 			"m": "active_state",
 			"pr": props,
+			"eid": effect_id,
 		})
 		return
 	var sync_id: String = "%d_%d" % [multiplayer.get_unique_id(), _next_visual_id]
@@ -1533,6 +1614,13 @@ func _on_projectile_despawned(bullet: Node) -> void:
 			rpc("_despawn_visual_bullet", sync_id)
 		else:
 			rpc_id(1, "_server_despawn_visual_bullet", sync_id)
+	if bullet.has_meta("net_effect_id"):
+		var effect_id: String = str(bullet.get_meta("net_effect_id"))
+		bullet.remove_meta("net_effect_id")
+		if multiplayer.is_server():
+			rpc("_despawn_visual_effect", effect_id)
+		else:
+			rpc_id(1, "_server_despawn_visual_effect", effect_id)
 
 
 # ---------------- 命中表现按来源广播（拥有者产出，其它端复刻） ----------------
@@ -1659,10 +1747,39 @@ func _on_visual_activated(node: Node) -> void:
 		rot = (node as Node2D).global_rotation
 		sc = (node as Node2D).scale
 	var method: String = "active_state" if node.has_method("active_state") else ""
+	var effect_id: String = _assign_effect_broadcast_id(node)
 	if multiplayer.is_server():
-		rpc("_remote_visual_node", scene_path, pos, rot, sc, grp, method)
+		rpc("_remote_visual_node", scene_path, pos, rot, sc, grp, method, effect_id)
 	else:
-		rpc_id(1, "_server_visual_node", scene_path, pos, rot, sc, grp, method)
+		rpc_id(1, "_server_visual_node", scene_path, pos, rot, sc, grp, method, effect_id)
+
+
+# 通用视觉通道：为节点分配一次性 net_effect_id 并连 tree_exiting，真正释放时广播 despawn。
+# 复用特效通道的 _despawn_visual_effect/_server_despawn_visual_effect；池化复用节点仅在最终释放时回收。
+func _assign_effect_broadcast_id(node: Node) -> String:
+	var existing: String = str(node.get_meta("net_effect_id", ""))
+	if existing != "":
+		return existing
+	var effect_id: String = "%d_%d" % [multiplayer.get_unique_id(), _next_visual_id]
+	_next_visual_id += 1
+	node.set_meta("net_effect_id", effect_id)
+	node.tree_exiting.connect(_on_visual_node_tree_exiting.bind(node))
+	return effect_id
+
+
+func _on_visual_node_tree_exiting(node: Node) -> void:
+	if node == null:
+		return
+	var effect_id: String = str(node.get_meta("net_effect_id", ""))
+	if effect_id == "":
+		return
+	node.remove_meta("net_effect_id")
+	if not is_lan_game or multiplayer.multiplayer_peer == null:
+		return
+	if multiplayer.is_server():
+		rpc("_despawn_visual_effect", effect_id)
+	else:
+		rpc_id(1, "_server_despawn_visual_effect", effect_id)
 
 
 # 拾取物生成（pyroxenes 等）→ 广播纯视觉副本
@@ -1779,11 +1896,43 @@ func _on_coin_spawned(coin: Node, value: int) -> void:
 		return
 	if coin == null or not is_instance_valid(coin) or value <= 0:
 		return
+	# 抛物线金币（Boss coin_box）：drop() 里 active_state() 早于 curve 构建 → 延后一帧读轨迹再广播
+	if coin.get_parent() is PathFollow2D:
+		_register_parabola_coin.call_deferred(coin)
+		return
 	var net_id: int = next_coin_net_id
 	next_coin_net_id += 1
 	coin.set_meta("net_id", net_id)
 	coin_by_net_id[net_id] = coin
 	rpc("_spawn_coin_remote", net_id, coin.global_position, int(coin.coin), bool(coin.pick_up))
+
+
+# host：抛物线金币登记 + 广播世界坐标折线
+func _register_parabola_coin(coin: Node) -> void:
+	if not is_lan_game or not multiplayer.is_server():
+		return
+	if coin == null or not is_instance_valid(coin):
+		return
+	if coin.has_meta("net_id"):
+		return
+	var pf := coin.get_parent()
+	var parabola := pf.get_parent() if pf != null else null
+	if parabola == null or not is_instance_valid(parabola):
+		return
+	var pts := PackedVector2Array()
+	var curve = parabola.get("curve")
+	if curve is Curve2D and (curve as Curve2D).point_count > 0:
+		pts = (curve as Curve2D).get_baked_points()
+		var origin: Vector2 = (parabola as Node2D).global_position if parabola is Node2D else Vector2.ZERO
+		for i in pts.size():
+			pts[i] = origin + pts[i]
+	else:
+		pts = PackedVector2Array([(coin as Node2D).global_position if coin is Node2D else Vector2.ZERO])
+	var net_id: int = next_coin_net_id
+	next_coin_net_id += 1
+	coin.set_meta("net_id", net_id)
+	coin_by_net_id[net_id] = coin
+	rpc("_remote_parabola_coin", net_id, pts, int(coin.coin), bool(coin.pick_up))
 
 
 func _on_player_downed(player: Node) -> void:
@@ -2060,6 +2209,8 @@ func _replace_player_for_peer(peer_id: int, path: String, position: Vector2) -> 
 		var old := get_local_player()
 		if old != null and is_instance_valid(old):
 			old.queue_free()
+		# 换角色：清旧角色的召唤物/持久身体（本机孤儿 body 在 EquipLayer，不随玩家释放）
+		_despawn_owned_summons_local()
 		var root := get_tree().get_first_node_in_group("PlayerRoot")
 		if root == null:
 			return
@@ -2085,6 +2236,7 @@ func _replace_player_for_peer(peer_id: int, path: String, position: Vector2) -> 
 		player_proxy_by_peer_id.erase(peer_id)
 		player_scene_by_peer[peer_id] = path
 		_clear_peer_item_visuals(peer_id)
+		_despawn_peer_summons(peer_id)
 		spawn_remote_player(peer_id, path)
 		var np = player_by_peer_id.get(peer_id)
 		if np is Node2D:
@@ -2174,11 +2326,21 @@ func _despawn_owned_summons_local() -> void:
 		if int(summoned_owner_by_net_id[k]) == local_id:
 			to_remove.append(int(k))
 	for net_id in to_remove:
-		summoned_by_net_id.erase(net_id)
-		summoned_proxy_by_net_id.erase(net_id)
-		summoned_scene_by_net_id.erase(net_id)
-		summoned_owner_by_net_id.erase(net_id)
-		rpc("_despawn_summoned_remote", net_id)
+		request_summoned_despawn(net_id)
+
+
+# 兜底：移除某 peer 拥有的召唤物/持久身体镜像（该 peer 换角色/despawn 迟到时）
+func _despawn_peer_summons(peer_id: int) -> void:
+	for key in summoned_owner_by_net_id.keys():
+		if int(summoned_owner_by_net_id[key]) != peer_id:
+			continue
+		var s = summoned_by_net_id.get(key)
+		if s != null and is_instance_valid(s):
+			s.queue_free()
+		summoned_by_net_id.erase(key)
+		summoned_proxy_by_net_id.erase(key)
+		summoned_scene_by_net_id.erase(key)
+		summoned_owner_by_net_id.erase(key)
 
 
 # ---------------- 道具生成视觉节点的通用广播（child_entered_tree，覆盖 murky scythe 等直接 add_child） ----------------
@@ -2246,10 +2408,11 @@ func _maybe_broadcast_visual_node(child: Node) -> void:
 		rot = (child as Node2D).global_rotation
 		sc = (child as Node2D).scale
 	var method: String = "active_state" if child.has_method("active_state") else ""
+	var effect_id: String = _assign_effect_broadcast_id(child)
 	if multiplayer.is_server():
-		rpc("_remote_visual_node", scene_path, pos, rot, sc, grp, method)
+		rpc("_remote_visual_node", scene_path, pos, rot, sc, grp, method, effect_id)
 	else:
-		rpc_id(1, "_server_visual_node", scene_path, pos, rot, sc, grp, method)
+		rpc_id(1, "_server_visual_node", scene_path, pos, rot, sc, grp, method, effect_id)
 
 
 # 把非 Summoned 的持久身体接入现有召唤同步（仅视觉镜像 + 变换同步）
@@ -2264,21 +2427,21 @@ func _register_persistent_body(child: Node, scene_path: String) -> void:
 
 
 @rpc("any_peer", "call_remote", "reliable")
-func _server_visual_node(scene_path: String, pos: Vector2, rot: float, sc: Vector2, grp: String, method: String) -> void:
+func _server_visual_node(scene_path: String, pos: Vector2, rot: float, sc: Vector2, grp: String, method: String, effect_id: String = "") -> void:
 	if not multiplayer.is_server():
 		return
-	_remote_visual_node(scene_path, pos, rot, sc, grp, method)
+	_remote_visual_node(scene_path, pos, rot, sc, grp, method, effect_id)
 	var sender: int = multiplayer.get_remote_sender_id()
 	for peer in multiplayer.get_peers():
 		if peer != sender:
-			rpc_id(peer, "_remote_visual_node", scene_path, pos, rot, sc, grp, method)
+			rpc_id(peer, "_remote_visual_node", scene_path, pos, rot, sc, grp, method, effect_id)
 
 
 @rpc("authority", "call_remote", "reliable")
-func _remote_visual_node(scene_path: String, pos: Vector2, rot: float, sc: Vector2, grp: String, method: String) -> void:
+func _remote_visual_node(scene_path: String, pos: Vector2, rot: float, sc: Vector2, grp: String, method: String, effect_id: String = "") -> void:
 	if scene_path == "":
 		return
-	_visual.spawn_visual_effect(get_tree(), scene_path, pos, rot, sc, grp, method, {})
+	_visual.spawn_visual_effect(get_tree(), scene_path, pos, rot, sc, grp, method, {}, effect_id)
 
 
 # ---------------- 玩家同步 ----------------
@@ -2303,6 +2466,7 @@ func _reset_player_sync() -> void:
 	_remote_text_counter = 0
 	coin_by_net_id.clear()
 	next_coin_net_id = 1
+	coin_traj.clear()
 	medkit_by_net_id.clear()
 	next_medkit_net_id = 1
 	_medkit_consumed.clear()
@@ -2316,9 +2480,11 @@ func _reset_player_sync() -> void:
 	_hide_motion_down()
 	_visual_roots_hooked.clear()
 	down_peer_ids.clear()
-	_rescue_target = null
-	_rescue_hold = 0.0
+	_rescue_progress.clear()
+	_rescue_rescuer_count.clear()
+	_rescue_sync_timer = 0.0
 	_rescue_prompt_shown = false
+	_clear_all_rescue_prompts()
 	round_upgrade_ready_peers.clear()
 	team_game_over_forced = false
 	_respawn_token += 1
@@ -2332,6 +2498,7 @@ func _reset_player_sync() -> void:
 
 # 彻底复位一局状态（返回标题/断线/重开时调用），保证同进程内再次开服/进房干净
 func _reset_run_state() -> void:
+	_release_boss_cinematic()
 	_reset_player_sync()
 	selected_player_scene_by_peer.clear()
 	support_by_peer.clear()
@@ -2568,6 +2735,8 @@ func _get_player_proxy(peer_id: int) -> Node:
 
 
 func _physics_process(delta: float) -> void:
+	_tick_boss_cinematic()
+	_update_coin_trajectories()
 	_update_network_diagnostics(delta)
 	_network_heartbeat(delta)
 	_pump_sim_queue()
@@ -2596,8 +2765,8 @@ func _physics_process(delta: float) -> void:
 		if _snapshot_timer <= 0.0:
 			_snapshot_timer = ENEMY_SNAPSHOT_INTERVAL
 			_send_enemy_snapshot()
+		_server_update_rescue(delta)
 	_flush_visuals()
-	_update_rescue(delta)
 
 
 func _send_local_player_state() -> void:
@@ -3906,7 +4075,8 @@ func _spawn_one_effect(e) -> void:
 		e.get("sc", Vector2.ONE),
 		str(e.get("g", "SELayer")),
 		str(e.get("m", "active_state")),
-		e.get("pr", {})
+		e.get("pr", {}),
+		str(e.get("eid", ""))
 	)
 
 
@@ -4039,6 +4209,24 @@ func _server_despawn_visual_bullet(sync_id: String) -> void:
 			rpc_id(peer, "_despawn_visual_bullet", sync_id)
 
 
+@rpc("authority", "call_remote", "reliable")
+func _despawn_visual_effect(effect_id: String) -> void:
+	if multiplayer.is_server():
+		return
+	_visual.despawn_visual_effect(effect_id)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _server_despawn_visual_effect(effect_id: String) -> void:
+	if not multiplayer.is_server():
+		return
+	_visual.despawn_visual_effect(effect_id)
+	var sender: int = multiplayer.get_remote_sender_id()
+	for peer in multiplayer.get_peers():
+		if peer != sender:
+			rpc_id(peer, "_despawn_visual_effect", effect_id)
+
+
 # 开发/测试：本地生成一发普通子弹（经 ProjectileSpawner → 触发广播）。
 func dev_spawn_bullet() -> void:
 	var scene := load("res://scenes/bullet/normal_bullet.tscn") as PackedScene
@@ -4098,7 +4286,58 @@ func dev_player_coins() -> int:
 	return int(p.stats.coin)
 
 
-# 开发/测试：host 生成一个医疗箱（走 net 广播）
+# 开发/测试：host 生成一枚抛物线金币（coin_box 同款），走轨迹广播
+func dev_spawn_parabola() -> void:
+	if not is_lan_game or not multiplayer.is_server():
+		return
+	var root := get_tree().get_first_node_in_group("CoinRoot")
+	if root == null:
+		return
+	var p := get_local_player()
+	var origin: Vector2 = (p.global_position + Vector2(150, -60)) if p != null else Vector2.ZERO
+	var scene := load("res://scenes/item/parabola_path.tscn") as PackedScene
+	if scene == null:
+		return
+	var ins = scene.instantiate()
+	ins.set("coin_num", 100)
+	root.add_child(ins)
+	(ins as Node2D).global_position = origin
+	ins.call("drop", Vector2.ZERO)
+	print("[etn_coop] dev parabola spawned at %s" % str(origin))
+
+
+func dev_coin_traj_count() -> int:
+	return coin_traj.size()
+
+
+func dev_coin_positions() -> Array:
+	var out: Array = []
+	for net_id in coin_by_net_id.keys():
+		var c = coin_by_net_id[net_id]
+		if c != null and is_instance_valid(c) and c is Node2D:
+			out.append([int(net_id), (c as Node2D).global_position])
+	return out
+
+
+# 开发/测试：Hina QTE 慢放探针（LAN 应只慢放 QTE 动画、Engine.time_scale 恒 1）
+func dev_hina_probe() -> Dictionary:
+	var p := get_local_player()
+	var ps = p.get_node_or_null("hina_ps") if p != null and is_instance_valid(p) else null
+	if ps == null:
+		return {"hina": false, "time_scale": Engine.time_scale}
+	if ps.has_method("_qte_slow_begin"):
+		ps.call("_qte_slow_begin")
+	var ap = ps.get("animation_player")
+	var out := {
+		"hina": true,
+		"time_scale": Engine.time_scale,
+		"speed_scale": (ap.speed_scale if ap != null and is_instance_valid(ap) else -1.0),
+	}
+	if ps.has_method("_qte_slow_end"):
+		ps.call("_qte_slow_end")
+	return out
+
+
 func dev_spawn_medkit() -> void:
 	if not is_lan_game or not multiplayer.is_server():
 		return
@@ -4158,6 +4397,12 @@ func dev_set_local_hp(v: int) -> void:
 		p.stats.hp = v
 
 
+func dev_force_local_downed() -> void:
+	var p := get_local_player()
+	if p != null and p.has_method("set_downed_state"):
+		p.set_downed_state(true)
+
+
 func dev_local_downed() -> bool:
 	var p := get_local_player()
 	return p != null and p.get("is_downed") != null and p.is_downed
@@ -4175,12 +4420,63 @@ func dev_rescue_prompt_shown() -> bool:
 	return _rescue_prompt_shown
 
 
+# 调试：当前 host 端活动救援进度快照（target peer -> [progress, count]）
+func dev_rescue_state() -> Dictionary:
+	var out: Dictionary = {}
+	for pid in _rescue_progress.keys():
+		var target: int = int(pid)
+		out[target] = [float(_rescue_progress[pid]), int(_rescue_rescuer_count.get(target, 0))]
+	return out
+
+
 func dev_emit_boss_event() -> void:
 	GameEvents.emit_boss_event("dev_test", {})
 
 
 func dev_boss_events_received() -> int:
 	return boss_events_received
+
+
+# 开发/测试：host 触发一次"黑幕过场"（镜头 + 暂停锁），走 mod 广播路径；2s 后复位
+func dev_trigger_boss_cinematic() -> void:
+	if not is_lan_game or not multiplayer.is_server():
+		return
+	var scene := get_tree().current_scene
+	if scene == null:
+		return
+	var p := get_local_player()
+	var pos: Vector2 = (p.global_position + Vector2(0, -96)) if p != null else Vector2.ZERO
+	var m := Marker2D.new()
+	m.name = "CoopDevCamMark"
+	scene.add_child(m)
+	m.global_position = pos
+	print("[etn_coop] dev cine: host emit camera_move(black) pos=%s" % str(pos))
+	GameEvents.emit_camera_move(m, true)
+	await get_tree().create_timer(2.0).timeout
+	GameEvents.emit_camera_reset()
+	if is_instance_valid(m):
+		m.queue_free()
+	print("[etn_coop] dev cine: host emit camera_reset")
+
+
+# 开发/测试：客机过场/暂停状态
+func dev_cinematic_state() -> Dictionary:
+	var tree := get_tree()
+	return {
+		"active": _boss_cinematic_active,
+		"paused": tree.paused if tree != null else false,
+		"marker": _remote_cam_marker != null and is_instance_valid(_remote_cam_marker),
+	}
+
+
+# 开发/测试：host 触发 FEVER（走 mod 广播路径）
+func dev_trigger_fever() -> void:
+	GameEvents.emit_fever_time_start()
+
+
+# 开发/测试：本端 FEVER 触发计数（host=本机 emit；client=收到远端广播）
+func dev_fever_state() -> Dictionary:
+	return {"local": _dev_fever_local_count, "remote": _dev_fever_remote_count}
 
 
 func dev_local_hp() -> int:
@@ -4271,8 +4567,11 @@ func _do_shared_coin_pickup(net_id: int, value: int, pos: Vector2, coin_node: No
 	if coin_node != null and is_instance_valid(coin_node) and coin_node.has_method("idle_state"):
 		coin_node.idle_state()
 	if net_id >= 0:
+		coin_traj.erase(net_id)
 		coin_by_net_id.erase(net_id)
 		rpc("_despawn_coin_remote", net_id, multiplayer.get_unique_id())
+	# 共享金币归属拾取者（host 权威）：host 拾取 → 记到本机
+	_add_team_coins(multiplayer.get_unique_id(), value)
 	_apply_shared_coin_local(value, pos)
 	rpc("_apply_shared_coin_remote", value, pos)
 
@@ -4285,7 +4584,28 @@ func _apply_shared_coin_local(value: int, pos: Vector2) -> void:
 	if p.get("coin_sounds") != null:
 		p.coin_sounds.play()
 	GameEvents.emit_player_pick_up_coin(pos)
+	# 共享金币不是「个人获取」：打抑制标记，避免被 _on_local_coins_get 重复归属
+	_applying_shared_coin = true
 	GameEvents.emit_player_coins_get(value)
+	_applying_shared_coin = false
+
+
+# 个人金币来源（满血医疗箱转金币 / coin_return / chocolate_coin / atlantis medal / 策反清场结算）
+# 都经 `player_coins_get` 发出 → 上报 host 归属到本人；共享金币拾取在此前已打抑制标记、另行归属。
+func _on_local_coins_get(amount: int) -> void:
+	if not is_lan_game or _applying_shared_coin or amount <= 0:
+		return
+	if multiplayer.is_server():
+		_add_team_coins(multiplayer.get_unique_id(), amount)
+	else:
+		rpc_id(1, "_server_coin_gain", amount)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _server_coin_gain(amount: int) -> void:
+	if not multiplayer.is_server() or amount <= 0:
+		return
+	_add_team_coins(multiplayer.get_remote_sender_id(), amount)
 
 
 @rpc("authority", "call_remote", "reliable")
@@ -4308,10 +4628,69 @@ func _spawn_coin_remote(net_id: int, position: Vector2, value: int, pick_up: boo
 	coin_by_net_id[net_id] = c
 
 
+# 客机：抛物线金币镜像。按广播的世界折线随时间驱动飞行，落地后才可拾取。
+@rpc("authority", "call_remote", "reliable")
+func _remote_parabola_coin(net_id: int, points: PackedVector2Array, value: int, pick_up: bool) -> void:
+	if multiplayer.is_server() or coin_by_net_id.has(net_id):
+		return
+	var root := get_tree().get_first_node_in_group("CoinRoot")
+	if root == null:
+		return
+	var scene := load("res://scenes/item/coin.tscn") as PackedScene
+	if scene == null:
+		return
+	var c: Node = scene.instantiate()
+	root.add_child(c)
+	var start: Vector2 = points[0] if points.size() > 0 else Vector2.ZERO
+	c.global_position = start
+	c.coin = value
+	c.active_state()
+	c.pick_up = pick_up
+	c.can_pick = false
+	c.set_meta("net_id", net_id)
+	c.set_meta("remote_coin", true)
+	coin_by_net_id[net_id] = c
+	coin_traj[net_id] = {"points": points, "start": Time.get_ticks_msec(), "dur": PARABOLA_DURATION, "pick_up": pick_up}
+
+
+# 客机：每物理帧推进抛物线镜像位置（墙钟计时，不受 Engine.time_scale 影响）
+func _update_coin_trajectories() -> void:
+	if coin_traj.is_empty():
+		return
+	var now: int = Time.get_ticks_msec()
+	for net_id in coin_traj.keys():
+		var c = coin_by_net_id.get(net_id)
+		if c == null or not is_instance_valid(c):
+			coin_traj.erase(net_id)
+			continue
+		var tr: Dictionary = coin_traj[net_id]
+		var dur_ms: float = maxf(1.0, float(tr.get("dur", PARABOLA_DURATION)) * 1000.0)
+		var t: float = float(now - int(tr.get("start", now))) / dur_ms
+		var pts: PackedVector2Array = tr.get("points", PackedVector2Array())
+		if t >= 1.0 or pts.size() < 2:
+			if pts.size() > 0 and c is Node2D:
+				(c as Node2D).global_position = pts[pts.size() - 1]
+			c.can_pick = true
+			c.pick_up = bool(tr.get("pick_up", false))
+			coin_traj.erase(net_id)
+		elif c is Node2D:
+			(c as Node2D).global_position = _sample_polyline(pts, t)
+
+
+func _sample_polyline(pts: PackedVector2Array, t: float) -> Vector2:
+	var n: int = pts.size()
+	var f: float = clampf(t, 0.0, 1.0) * float(n - 1)
+	var i: int = int(floor(f))
+	if i >= n - 1:
+		return pts[n - 1]
+	return pts[i].lerp(pts[i + 1], f - float(i))
+
+
 @rpc("authority", "call_remote", "reliable")
 func _despawn_coin_remote(net_id: int, picker_peer: int) -> void:
 	if multiplayer.is_server():
 		return
+	coin_traj.erase(net_id)
 	var c = coin_by_net_id.get(net_id)
 	coin_by_net_id.erase(net_id)
 	if c != null and is_instance_valid(c):
@@ -4322,12 +4701,15 @@ func _despawn_coin_remote(net_id: int, picker_peer: int) -> void:
 func _server_pickup_coin(net_id: int, value: int, pos: Vector2) -> void:
 	if not multiplayer.is_server():
 		return
+	coin_traj.erase(net_id)
 	var c = coin_by_net_id.get(net_id)
 	if c != null and is_instance_valid(c) and c.has_method("idle_state"):
 		c.idle_state()
 	if net_id >= 0:
 		coin_by_net_id.erase(net_id)
 		rpc("_despawn_coin_remote", net_id, multiplayer.get_remote_sender_id())
+	# 共享金币归属拾取者（host 权威）：client 拾取 → 记到该 client
+	_add_team_coins(multiplayer.get_remote_sender_id(), value)
 	_apply_shared_coin_local(value, pos)
 	rpc("_apply_shared_coin_remote", value, pos)
 
@@ -4752,35 +5134,122 @@ func _send_existing_summons_to_peer(peer_id: int) -> void:
 
 # ---------------- 倒地/救援 ----------------
 
-func _update_rescue(delta: float) -> void:
+# host 权威：按半径内存活队友数推进每个倒地目标的救援进度。
+# 推进速率 = 参与人数（时间 = RESCUE_TIME / 人数）；无人参与时按 2x 速率衰减。
+func _server_update_rescue(delta: float) -> void:
+	if down_peer_ids.is_empty():
+		if not _rescue_progress.is_empty():
+			_rescue_progress.clear()
+			_rescue_rescuer_count.clear()
+			_broadcast_rescue_progress()
+		return
+	var completed: bool = false
+	for pid in down_peer_ids.keys():
+		var target: int = int(pid)
+		var tgt: Node = _local_or_remote_player(target)
+		if tgt == null or not is_instance_valid(tgt) or not (tgt is Node2D):
+			_rescue_progress.erase(target)
+			_rescue_rescuer_count.erase(target)
+			continue
+		var count: int = _count_rescuers_for(tgt)
+		var prev: float = float(_rescue_progress.get(target, 0.0))
+		var cur: float = prev
+		if count > 0:
+			cur = prev + delta * float(count)
+			_rescue_rescuer_count[target] = count
+		else:
+			cur = maxf(0.0, prev - delta * 2.0)
+			_rescue_rescuer_count.erase(target)
+		if cur >= RESCUE_TIME:
+			_rescue_progress.erase(target)
+			_rescue_rescuer_count.erase(target)
+			_complete_revive(target)
+			completed = true
+			continue
+		if cur <= 0.0:
+			_rescue_progress.erase(target)
+		else:
+			_rescue_progress[target] = cur
+	_rescue_sync_timer -= delta
+	if completed or _rescue_sync_timer <= 0.0:
+		_rescue_sync_timer = RESCUE_SYNC_INTERVAL
+		_broadcast_rescue_progress()
+
+
+# 统计目标半径内「存活且未倒地」的队友数（含 host 自身）
+func _count_rescuers_for(tgt: Node) -> int:
+	if not (tgt is Node2D):
+		return 0
+	var tp: Vector2 = (tgt as Node2D).global_position
+	var n: int = 0
+	for pid in multiplayer.get_peers():
+		if _is_valid_rescuer(_local_or_remote_player(int(pid)), tp):
+			n += 1
+	if _is_valid_rescuer(get_local_player(), tp):
+		n += 1
+	return n
+
+
+func _is_valid_rescuer(player: Node, target_pos: Vector2) -> bool:
+	if player == null or not is_instance_valid(player) or not (player is Node2D):
+		return false
+	if player.get("is_downed") == true:
+		return false
+	if player.get("stats") != null and player.stats != null and int(player.stats.hp) <= 0:
+		return false
+	return (player as Node2D).global_position.distance_to(target_pos) <= RESCUE_RADIUS
+
+
+# 广播当前全部活动救援进度；收到空 dict 表示无进行中的救援。
+func _broadcast_rescue_progress() -> void:
+	var payload: Dictionary = {}
+	for pid in _rescue_progress.keys():
+		var target: int = int(pid)
+		payload[target] = {"p": float(_rescue_progress[pid]), "n": int(_rescue_rescuer_count.get(target, 0))}
+	if multiplayer.is_server():
+		rpc("_remote_rescue_progress", payload)
+	_apply_rescue_progress(payload)
+
+
+@rpc("authority", "call_remote", "unreliable")
+func _remote_rescue_progress(payload: Dictionary) -> void:
+	_apply_rescue_progress(payload)
+
+
+# 客户端展示：按 payload 更新每个倒地目标头顶的进度气泡；本地倒地时不显示任何气泡。
+func _apply_rescue_progress(payload: Dictionary) -> void:
 	var p := get_local_player()
-	if p == null:
-		_hide_rescue_prompt()
-		return
-	if p.get("is_downed") != null and p.is_downed:
-		_rescue_target = null
-		_rescue_hold = 0.0
-		_hide_rescue_prompt()
-		return
-	var target := _find_downed_ally()
-	if target == null:
-		_rescue_target = null
-		_rescue_hold = 0.0
-		_hide_rescue_prompt()
-		return
-	if target != _rescue_target:
-		_rescue_target = target
-		_rescue_hold = 0.0
-	if Input.is_action_pressed("use"):
-		_rescue_hold += delta
-		if _rescue_hold >= RESCUE_TIME:
-			_rescue_hold = 0.0
-			var tid: int = int(target.get_meta("peer_id")) if target.has_meta("peer_id") else -1
-			if tid > 0:
-				request_revive_player(tid)
-	else:
-		_rescue_hold = maxf(0.0, _rescue_hold - delta * 2.0)
-	_show_rescue_prompt(target, _rescue_hold)
+	var local_downed: bool = p != null and p.get("is_downed") == true
+	var active: Dictionary = {}
+	if not local_downed:
+		var local_id: int = multiplayer.get_unique_id()
+		for key in payload.keys():
+			var target: int = int(key)
+			if target == local_id:
+				continue
+			var entry = payload[key]
+			var prog: float = 0.0
+			var count: int = 0
+			if entry is Dictionary:
+				prog = float(entry.get("p", 0.0))
+				count = int(entry.get("n", 0))
+			else:
+				prog = float(entry)
+			if prog <= 0.0:
+				continue
+			var node: Node = _local_or_remote_player(target)
+			if node == null or not is_instance_valid(node) or not (node is Node2D):
+				continue
+			active[target] = [node, prog, count]
+	for key in _rescue_prompts.keys():
+		if not active.has(int(key)):
+			_hide_rescue_prompt_for(int(key))
+	var shown: bool = false
+	for key in active.keys():
+		var info: Array = active[key]
+		_show_rescue_prompt_for(int(key), info[0], float(info[1]), int(info[2]))
+		shown = true
+	_rescue_prompt_shown = shown
 
 
 func _rescue_text(key: String, fallback: String) -> String:
@@ -4790,9 +5259,10 @@ func _rescue_text(key: String, fallback: String) -> String:
 	return t
 
 
-func _ensure_rescue_prompt() -> Node:
-	if _rescue_prompt != null and is_instance_valid(_rescue_prompt):
-		return _rescue_prompt
+func _ensure_rescue_prompt_for(target_peer_id: int) -> Node:
+	var existing = _rescue_prompts.get(target_peer_id)
+	if existing != null and is_instance_valid(existing):
+		return existing
 	if _rescue_prompt_scene == null:
 		_rescue_prompt_scene = load("res://scenes/manager/interact_prompt.tscn") as PackedScene
 	if _rescue_prompt_scene == null:
@@ -4807,78 +5277,48 @@ func _ensure_rescue_prompt() -> Node:
 	if parent == null:
 		return null
 	parent.add_child(prompt)
-	_rescue_prompt = prompt
-	return _rescue_prompt
+	# 自动救援非交互：隐藏 use 键图标，仅保留文本进度
+	var holder = prompt.get_node_or_null("Root/Bubble/VBox/IconHolder")
+	if holder != null:
+		holder.visible = false
+	_rescue_prompts[target_peer_id] = prompt
+	return prompt
 
 
-func _show_rescue_prompt(target: Node, hold: float) -> void:
-	var prompt := _ensure_rescue_prompt()
+func _show_rescue_prompt_for(target_peer_id: int, target: Node, hold: float, count: int) -> void:
+	var prompt := _ensure_rescue_prompt_for(target_peer_id)
 	if prompt == null or not (target is Node2D):
 		return
 	var text: String = _rescue_text("lan_rescue_prompt", "RESCUE")
-	if hold > 0.0:
-		text = "%s %d%%" % [text, int(round(hold / RESCUE_TIME * 100.0))]
+	text = "%s %d%%" % [text, int(round(hold / RESCUE_TIME * 100.0))]
+	if count > 1:
+		text += " ×%d" % count
 	var world_pos: Vector2 = (target as Node2D).global_position + Vector2.UP * 24.0
 	if prompt.has_method("show_prompt"):
 		prompt.call("show_prompt", text, world_pos)
-	_rescue_prompt_shown = true
 
 
-func _hide_rescue_prompt() -> void:
-	if not _rescue_prompt_shown:
-		return
+func _hide_rescue_prompt_for(target_peer_id: int) -> void:
+	var prompt = _rescue_prompts.get(target_peer_id)
+	if prompt != null and is_instance_valid(prompt) and prompt.has_method("hide_prompt"):
+		prompt.call("hide_prompt")
+
+
+func _clear_all_rescue_prompts() -> void:
+	for key in _rescue_prompts.keys():
+		var prompt = _rescue_prompts[key]
+		if prompt != null and is_instance_valid(prompt):
+			prompt.queue_free()
+	_rescue_prompts.clear()
 	_rescue_prompt_shown = false
-	if _rescue_prompt != null and is_instance_valid(_rescue_prompt) and _rescue_prompt.has_method("hide_prompt"):
-		_rescue_prompt.call("hide_prompt")
 
 
-func _find_downed_ally() -> Node:
-	var p := get_local_player()
-	if p == null:
-		return null
-	var nearest: Node = null
-	var nearest_distance: float = RESCUE_RADIUS
-	for c in get_tree().get_nodes_in_group("RemotePlayer"):
-		if c == null or not is_instance_valid(c) or not (c is Node2D):
-			continue
-		if c.get("is_downed") == null or not c.is_downed:
-			continue
-		var d: float = p.global_position.distance_to((c as Node2D).global_position)
-		if d <= nearest_distance:
-			nearest_distance = d
-			nearest = c
-	return nearest
-
-
-func request_revive_player(target_peer_id: int) -> void:
-	if not is_lan_game:
-		return
-	if multiplayer.is_server():
-		_server_try_revive(multiplayer.get_unique_id(), target_peer_id)
-	else:
-		rpc_id(1, "_server_request_revive", target_peer_id)
-
-
-func _server_try_revive(requester: int, target: int) -> void:
+# 复活目标（host 权威）：广播并本地结算。升级统一复活与救援完成共用。
+func _complete_revive(target: int) -> void:
 	if not multiplayer.is_server():
-		return
-	if requester == target:
 		return
 	if not down_peer_ids.get(target, false):
 		return
-	var req: Node = _local_or_remote_player(requester)
-	var tgt: Node = _local_or_remote_player(target)
-	if req == null or tgt == null:
-		return
-	# 请求者必须存活、未倒地
-	if req.get("is_downed") != null and req.is_downed:
-		return
-	if req.get("stats") != null and req.stats != null and int(req.stats.hp) <= 0:
-		return
-	# 距离校验
-	if req is Node2D and tgt is Node2D:
-		if (req as Node2D).global_position.distance_to((tgt as Node2D).global_position) > RESCUE_RADIUS:
-			return
 	down_peer_ids.erase(target)
 	rpc("_remote_revived", target, REVIVE_HEALTH_MULT)
 	_apply_revive_local(target, REVIVE_HEALTH_MULT)
@@ -4939,14 +5379,6 @@ func _server_player_up() -> void:
 	down_peer_ids.erase(sender)
 	rpc("_remote_player_down_changed", sender, false)
 	_remote_player_down_changed(sender, false)
-
-
-@rpc("any_peer", "call_remote", "reliable")
-func _server_request_revive(target_peer_id: int) -> void:
-	if not multiplayer.is_server():
-		return
-	var requester: int = multiplayer.get_remote_sender_id()
-	_server_try_revive(requester, target_peer_id)
 
 
 @rpc("authority", "call_remote", "reliable")
@@ -5727,6 +6159,114 @@ func _remote_boss_round_end() -> void:
 	if multiplayer.is_server():
 		return
 	GameEvents.emit_boss_round_end()
+
+
+# ---------------- Boss 过场（镜头 / UI / 暂停锁）同步 + 兜底 ----------------
+# 真 Boss（host）的过场演出广播给客机；客机用自己的 GameCamera 复刻镜头，并在黑幕过场期间本地暂停。
+# 兜底：墙钟看门狗（_tick_boss_cinematic）+ 幂等释放 + 断线/复位挂点，避免客机卡在暂停/黑屏。
+
+# host：本机 camera_move → 广播（含非 Boss 的 camera_move，如开始球）
+func _on_local_camera_move(mark, black_frame: bool) -> void:
+	if not is_lan_game or not multiplayer.is_server():
+		return
+	if mark == null or not is_instance_valid(mark) or not (mark is Node2D):
+		return
+	rpc("_remote_boss_camera_move", (mark as Node2D).global_position, black_frame)
+
+
+func _on_local_camera_reset() -> void:
+	if not is_lan_game or not multiplayer.is_server():
+		return
+	rpc("_remote_boss_camera_reset")
+
+
+func _on_local_ui_visible(now_visible: bool) -> void:
+	if not is_lan_game or not multiplayer.is_server():
+		return
+	rpc("_remote_boss_ui_visible", now_visible)
+
+
+@rpc("authority", "call_remote", "reliable")
+func _remote_boss_camera_move(pos: Vector2, black_frame: bool) -> void:
+	if multiplayer.is_server():
+		return
+	var scene := get_tree().current_scene
+	if scene == null or not is_instance_valid(scene):
+		return
+	if _remote_cam_marker == null or not is_instance_valid(_remote_cam_marker):
+		_remote_cam_marker = Marker2D.new()
+		_remote_cam_marker.name = "CoopRemoteCamMark"
+		scene.add_child(_remote_cam_marker)
+	(_remote_cam_marker as Node2D).global_position = pos
+	GameEvents.emit_camera_move(_remote_cam_marker, black_frame)
+	if black_frame:
+		_boss_cinematic_active = true
+		_cinematic_deadline_msec = Time.get_ticks_msec() + CINEMATIC_MAX_MSEC
+		GameEvents.emit_pause_lock(true)
+		var tree := get_tree()
+		if tree != null:
+			tree.paused = true
+
+
+@rpc("authority", "call_remote", "reliable")
+func _remote_boss_camera_reset() -> void:
+	if multiplayer.is_server():
+		return
+	_release_boss_cinematic()
+
+
+@rpc("authority", "call_remote", "reliable")
+func _remote_boss_ui_visible(now_visible: bool) -> void:
+	if multiplayer.is_server():
+		return
+	GameEvents.emit_ui_visible(now_visible)
+
+
+# 幂等释放：复位相机 → 解除暂停 → 恢复 HUD。可在 reset/断线/看门狗任意时刻安全调用。
+func _release_boss_cinematic() -> void:
+	if _remote_cam_marker != null and is_instance_valid(_remote_cam_marker):
+		GameEvents.emit_camera_reset()
+		_remote_cam_marker.queue_free()
+	_remote_cam_marker = null
+	if not _boss_cinematic_active:
+		return
+	_boss_cinematic_active = false
+	_cinematic_deadline_msec = 0
+	var tree := get_tree()
+	if tree != null:
+		tree.paused = false
+	GameEvents.emit_pause_lock(false)
+	GameEvents.emit_ui_visible(true)
+
+
+# 看门狗：墙钟（不受 Engine.time_scale 影响）超时即强制释放，防 camera_reset 丢失导致卡暂停
+func _tick_boss_cinematic() -> void:
+	if not _boss_cinematic_active:
+		return
+	if Time.get_ticks_msec() > _cinematic_deadline_msec:
+		push_warning("[etn_coop] boss cinematic watchdog released pause")
+		_release_boss_cinematic()
+
+
+# ---------------- FEVER / rage（host 权威） ----------------
+# 客机不本地触发 fever_time_start / add_rage_buff，改由 host 广播；boss 提速/射击节奏本由快照驱动。
+
+func _gate_fever_time() -> bool:
+	return is_lan_game and not multiplayer.is_server()
+
+
+func _on_local_fever_time() -> void:
+	_dev_fever_local_count += 1
+	if is_lan_game and multiplayer.is_server():
+		rpc("_remote_fever_time_start")
+
+
+@rpc("authority", "call_remote", "reliable")
+func _remote_fever_time_start() -> void:
+	if multiplayer.is_server():
+		return
+	_dev_fever_remote_count += 1
+	GameEvents.emit_fever_time_start()
 
 
 # 通用 Boss 专属模式事件通道：Boss 脚本可调 CoopNet.instance.broadcast_boss_pattern_event(net_id, data)
