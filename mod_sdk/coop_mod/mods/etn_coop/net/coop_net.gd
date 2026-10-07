@@ -76,6 +76,9 @@ signal select_aborted
 signal select_ready_changed(peer_id: int, ready: bool)
 # 聊天室：收到/本地回显一条消息（内容已解析为显示名）
 signal chat_received(peer_id: int, name: String, text: String)
+# 回合升级「等待所有人就绪」遮罩：封面到黑屏后显示 / 全员就绪时隐藏（由 CoopFlow 挂/卸 UI）
+signal round_wait_show
+signal round_wait_hide
 
 static var instance: Node = null
 
@@ -104,6 +107,8 @@ var player_proxy_by_peer_id: Dictionary = {}# peer_id -> Node
 var player_name_by_peer: Dictionary = {}    # peer_id -> 显示名（空=未设置，回退 PlayerN）
 var _state_timer: float = 0.0
 var selected_player_scene_by_peer: Dictionary = {}
+var support_by_peer: Dictionary = {}   # peer_id -> support_id（各端所选支援；""/"null" = 无）
+var support_mods_by_peer: Dictionary = {}  # peer_id -> Dictionary（该端支援对 medical_kit 生成的影响）
 var scene_ready_peers: Dictionary = {}
 var _handshaked_peers: Dictionary = {}   # peer_id -> true（版本握手通过）
 var _pending_hello: Dictionary = {}      # peer_id -> 连接时刻（未握手超时踢除）
@@ -225,6 +230,14 @@ var _rate_window_msec: int = 0
 # ---------------- 金币同步状态 ----------------
 var coin_by_net_id: Dictionary = {}
 var next_coin_net_id: int = 1
+# 医疗箱同步：host 权威生成，全端共享拾取
+var medkit_by_net_id: Dictionary = {}       # net_id -> Node
+var next_medkit_net_id: int = 1
+var _medkit_consumed: Dictionary = {}       # net_id -> true（防重复拾取）
+# 支援聚合缓存（host 用于 PickManager；各端仅用于判断）
+var _medkit_rate_mult: float = 1.0
+var _medkit_at_player: bool = false
+var _medkit_on_take: bool = false
 
 # ---------------- 召唤物同步状态 ----------------
 var summoned_by_net_id: Dictionary = {}
@@ -258,6 +271,14 @@ var _pause_room_label: Label = null
 var round_upgrade_ready_peers: Dictionary = {}
 var team_game_over_forced: bool = false
 var boss_events_received: int = 0
+# 升级页点「继续」后本机是否已把过场推进到黑屏并保持（true → 本体跳过前半封面，只播后半揭示）
+var _round_upgrade_hold: bool = false
+# 支援 EX 光环：本机光环已转交 buff 的远端玩家（peer_id -> buff.resource_path）
+var _support_buffed_peers: Dictionary = {}
+# 远端支援 EX 光环视觉代理（owner_peer -> Node）
+var _support_auras: Dictionary = {}
+# 召唤物范围光环已转发记录：key "<source_id>|<buff_id>|<net_id>" -> {owner_peer, net_id, buff_path, value, source_id}
+var _summon_aura_applied: Dictionary = {}
 
 
 func _ready() -> void:
@@ -303,8 +324,46 @@ func _on_peer_disconnected(id: int) -> void:
 	player_scene_by_peer.erase(id)
 	scene_ready_peers.erase(id)
 	lobby_ready_by_peer.erase(id)
+	support_by_peer.erase(id)
+	support_mods_by_peer.erase(id)
+	_support_buffed_peers.erase(id)
+	var aura = _support_auras.get(id)
+	if aura != null and is_instance_valid(aura):
+		aura.queue_free()
+	_support_auras.erase(id)
 	_handshaked_peers.erase(id)
 	_pending_hello.erase(id)
+	# 升级等待中有人掉线：剔除其就绪态并重判，避免其余端卡在等待层
+	if round_upgrade_ready_peers.erase(id) and multiplayer.is_server() and _round_upgrade_hold:
+		_maybe_finish_round_upgrade()
+	# 断线者作为 kei 光环来源：清掉各端玩家身上其 source_refcount 层
+	if multiplayer.is_server():
+		rpc("_remote_clear_player_buff_source", id)
+	_clear_local_player_buff_source(id)
+
+
+# 清掉某来源在本机玩家 + 本机召唤物身上的按来源 buff（owner 断线的残留层）
+func _clear_local_player_buff_source(peer: int) -> void:
+	var src: String = str(peer)
+	var p = get_local_player()
+	if p != null and is_instance_valid(p):
+		var mgr = p.get("player_buff_manager")
+		if mgr != null and mgr.has_method("remove_source_all"):
+			mgr.call("remove_source_all", src)
+	for net_id in summoned_owner_by_net_id.keys():
+		if int(summoned_owner_by_net_id[net_id]) != multiplayer.get_unique_id():
+			continue
+		var s = summoned_by_net_id.get(net_id)
+		if s == null or not is_instance_valid(s):
+			continue
+		var smgr = s.get("summoned_buff_manager")
+		if smgr != null and smgr.has_method("remove_source_all"):
+			smgr.call("remove_source_all", src)
+
+
+@rpc("authority", "call_remote", "reliable")
+func _remote_clear_player_buff_source(peer: int) -> void:
+	_clear_local_player_buff_source(peer)
 
 
 func _on_connected_to_server() -> void:
@@ -601,9 +660,11 @@ func install_hooks() -> void:
 	ExtensionHooks.first_round_start_gate = Callable(self, "_gate_first_round")
 	ExtensionHooks.enemy_damage_interceptor = Callable(self, "_intercept_enemy_damage")
 	ExtensionHooks.coin_pickup_gate = Callable(self, "_gate_coin_pickup")
+	ExtensionHooks.medkit_spawn_gate = Callable(self, "_gate_medkit_spawn")
 	ExtensionHooks.player_death_gate = Callable(self, "_gate_player_death")
 	ExtensionHooks.game_over_gate = Callable(self, "_gate_game_over")
 	ExtensionHooks.round_upgrade_end_gate = Callable(self, "_gate_round_upgrade_end")
+	ExtensionHooks.round_upgrade_cover_hold = Callable(self, "_gate_round_upgrade_cover_hold")
 	ExtensionHooks.round_end_emit_gate = Callable(self, "_gate_round_end_emit")
 	ExtensionHooks.round_end_proceed_gate = Callable(self, "_gate_round_end_proceed")
 	ExtensionHooks.projectile_self_hit_gate = Callable(self, "_gate_projectile_self_hit")
@@ -611,6 +672,8 @@ func install_hooks() -> void:
 	ExtensionHooks.round_enemy_spawn_gate = Callable(self, "_gate_round_enemy_spawn")
 	ExtensionHooks.enemy_conversion_interceptor = Callable(self, "_gate_enemy_conversion")
 	ExtensionHooks.enemy_proc_owner_suppress = Callable(self, "_gate_enemy_proc_owner_suppress")
+	ExtensionHooks.player_buff_apply_interceptor = Callable(self, "_gate_player_buff_apply")
+	ExtensionHooks.player_buff_remove_interceptor = Callable(self, "_gate_player_buff_remove")
 
 	ExtensionHooks.on_projectile_spawned = Callable(self, "_on_projectile_spawned")
 	ExtensionHooks.on_projectile_despawned = Callable(self, "_on_projectile_despawned")
@@ -618,6 +681,8 @@ func install_hooks() -> void:
 	ExtensionHooks.on_summoned_spawned = Callable(self, "_on_summoned_spawned")
 	ExtensionHooks.on_summoned_despawned = Callable(self, "_on_summoned_despawned")
 	ExtensionHooks.on_coin_spawned = Callable(self, "_on_coin_spawned")
+	ExtensionHooks.on_medkit_spawned = Callable(self, "_on_medkit_spawned")
+	ExtensionHooks.on_medkit_taken = Callable(self, "_on_medkit_taken")
 	ExtensionHooks.on_player_downed = Callable(self, "_on_player_downed")
 	ExtensionHooks.on_player_revived = Callable(self, "_on_player_revived")
 	ExtensionHooks.on_player_melee = Callable(self, "_on_player_melee")
@@ -631,6 +696,7 @@ func install_hooks() -> void:
 	ExtensionHooks.on_visual_activated = Callable(self, "_on_visual_activated")
 	ExtensionHooks.on_pickup_spawned = Callable(self, "_on_pickup_spawned")
 	ExtensionHooks.on_character_event = Callable(self, "_on_character_event")
+	ExtensionHooks.on_round_upgrade_cover_consumed = Callable(self, "_on_round_upgrade_cover_consumed")
 	ExtensionHooks.local_player_change_gate = Callable(self, "_gate_local_player_change")
 	ExtensionHooks.pause_visibility = Callable(self, "_on_pause_visibility")
 	ExtensionHooks.is_lan_session = Callable(self, "_is_lan_session")
@@ -639,6 +705,7 @@ func install_hooks() -> void:
 	GameEvents.round_start.connect(_on_round_start)
 	GameEvents.round_upgrade.connect(_on_round_upgrade)
 	GameEvents.round_end.connect(_on_local_round_end)
+	GameEvents.round_upgrade_end.connect(_on_round_upgrade_end_local)
 	GameEvents.test_room_reset.connect(_on_local_test_room_reset)
 	GameEvents.ability_upgrade_added.connect(_on_local_ability_upgrade_added)
 	GameEvents.player_is_hurt.connect(_on_local_player_hurt)
@@ -647,6 +714,9 @@ func install_hooks() -> void:
 	GameEvents.boss_round_start.connect(_on_boss_round_start)
 	GameEvents.boss_round_end.connect(_on_boss_round_end)
 	GameEvents.boss_event.connect(_on_local_boss_event)
+	GameEvents.support_ex_active.connect(_on_local_support_ex_active)
+	GameEvents.support_ex_end.connect(_on_local_support_ex_end)
+	GameEvents.global_time_count.connect(_tick_summon_auras)
 
 
 # ---------------- 接管类（骨架：默认放行） ----------------
@@ -741,6 +811,8 @@ func _build_level_state() -> Dictionary:
 		"level_score_mult": float(PlayerData.level_score_mult),
 		"level_reward": float(PlayerData.level_reward),
 		"game_mode": PlayerData.game_mode.duplicate(),
+		"supports": support_by_peer.duplicate(),
+		"support_mods": support_mods_by_peer.duplicate(),
 	}
 
 
@@ -757,6 +829,14 @@ func _apply_level_state(d: Dictionary) -> void:
 		var gm = d.get("game_mode")
 		if gm is Array:
 			PlayerData.game_mode = (gm as Array).duplicate()
+	if d.has("supports"):
+		var sp = d.get("supports")
+		if sp is Dictionary:
+			support_by_peer = (sp as Dictionary).duplicate()
+	if d.has("support_mods"):
+		var sm = d.get("support_mods")
+		if sm is Dictionary:
+			support_mods_by_peer = (sm as Dictionary).duplicate()
 
 
 
@@ -1194,6 +1274,7 @@ func _gate_game_over(player_dead: bool) -> bool:
 
 func _on_round_start() -> void:
 	round_upgrade_ready_peers.clear()
+	_round_upgrade_hold = false
 
 
 # 升级开始时由 host 统一复活所有倒地队友（对齐联机版），并广播 round_upgrade 让客机展示升级页
@@ -1313,6 +1394,44 @@ func _revive_all_downed_for_upgrade() -> void:
 func _gate_round_upgrade_end() -> bool:
 	if not is_lan_game:
 		return false
+	# 点「继续」：本机立即播前半过场并保持到黑屏；就绪上报推迟到封面完成之后
+	# （保证所有端封面都完成再统一放后半，同时消除 gate 内同步重入 force_round_upgrade_end）
+	if not _round_upgrade_hold:
+		_round_upgrade_hold = true
+		var t = _transition()
+		if t != null and t.has_method("play_left_start"):
+			t.call("play_left_start")
+		_cover_then_report_ready()
+	return true
+
+
+func _transition():
+	return get_node_or_null("/root/Transition")
+
+
+# 本体 round_manager._on_round_start：本机是否已由 mod 封面保持（true → 跳过前半，只播后半）
+func _gate_round_upgrade_cover_hold() -> bool:
+	return is_lan_game and _round_upgrade_hold
+
+
+# 本体已消费「已封面」状态（在本体播后半揭示前回调），此处复位以便下一回合正常
+func _on_round_upgrade_cover_consumed() -> void:
+	_round_upgrade_hold = false
+
+
+# 全员就绪 / 收到 host 广播的推进 → 隐藏等待层（此时屏幕仍被过场深色板盖住，随后本体揭示）
+func _on_round_upgrade_end_local() -> void:
+	round_wait_hide.emit()
+
+
+# 等前半过场到黑屏（left_end_start 在 t=0.5 发出），再显示等待层并上报本机就绪
+func _cover_then_report_ready() -> void:
+	var t = _transition()
+	if t != null:
+		await t.left_end_start
+	if not is_lan_game or not _round_upgrade_hold:
+		return
+	round_wait_show.emit()
 	var pid: int = multiplayer.get_unique_id()
 	round_upgrade_ready_peers[pid] = true
 	if multiplayer.is_server():
@@ -1320,7 +1439,6 @@ func _gate_round_upgrade_end() -> bool:
 		_maybe_finish_round_upgrade()
 	else:
 		rpc_id(1, "_server_round_upgrade_ready")
-	return true
 
 
 # ---------------- 通知类（骨架：占位） ----------------
@@ -2185,6 +2303,9 @@ func _reset_player_sync() -> void:
 	_remote_text_counter = 0
 	coin_by_net_id.clear()
 	next_coin_net_id = 1
+	medkit_by_net_id.clear()
+	next_medkit_net_id = 1
+	_medkit_consumed.clear()
 	summoned_by_net_id.clear()
 	summoned_proxy_by_net_id.clear()
 	summoned_scene_by_net_id.clear()
@@ -2201,12 +2322,23 @@ func _reset_player_sync() -> void:
 	round_upgrade_ready_peers.clear()
 	team_game_over_forced = false
 	_respawn_token += 1
+	_support_buffed_peers.clear()
+	_summon_aura_applied.clear()
+	for n in _support_auras.values():
+		if n != null and is_instance_valid(n):
+			n.queue_free()
+	_support_auras.clear()
 
 
 # 彻底复位一局状态（返回标题/断线/重开时调用），保证同进程内再次开服/进房干净
 func _reset_run_state() -> void:
 	_reset_player_sync()
 	selected_player_scene_by_peer.clear()
+	support_by_peer.clear()
+	support_mods_by_peer.clear()
+	_medkit_rate_mult = 1.0
+	_medkit_at_player = false
+	_medkit_on_take = false
 	scene_ready_peers.clear()
 	_handshaked_peers.clear()
 	_pending_hello.clear()
@@ -2221,6 +2353,9 @@ func _reset_run_state() -> void:
 	_select_flow_active = false
 	select_ready_by_peer.clear()
 	lobby_ready_by_peer.clear()
+	round_upgrade_ready_peers.clear()
+	_round_upgrade_hold = false
+	round_wait_hide.emit()
 	_set_select_pause(false)
 	_respawn_token += 1
 	_diag_pending.clear()
@@ -2267,6 +2402,7 @@ func _on_first_round_add() -> void:
 	_hook_visual_roots()
 	_report_local_name()
 	_schedule_respawn_remotes()
+	_refresh_medkit_mods.call_deferred()
 
 
 # 场景进入后延迟补生远端镜像：本体 test_room.reset_data → reset_clear_unit 会 queue_free
@@ -2512,6 +2648,7 @@ func _server_player_ready(scene_path: String) -> void:
 	# 补发入场前已存在的敌人
 	_send_existing_enemies_to_peer(peer_id)
 	_send_existing_summons_to_peer(peer_id)
+	_send_existing_medkits_to_peer(peer_id)
 	# 告知其它端：有新玩家入场
 	for other in multiplayer.get_peers():
 		if other != peer_id:
@@ -3679,7 +3816,7 @@ func _server_enemy_hit(net_id: int, cfg: Dictionary, victim_pos: Vector2) -> voi
 		rpc("_remote_hit_feedback", net_id, actual, cfg, attacker, true)
 		if attacker != multiplayer.get_unique_id():
 			# 归属端在本机发射 enemy_damage_taken(_dead) 触发其道具/PS（host 端已被 suppress_proc 抑制）
-			rpc_id(attacker, "_remote_enemy_proc", net_id, actual, _damage_to_dict(data), killed)
+			rpc_id(attacker, "_remote_enemy_proc", net_id, actual, _damage_to_dict(data), killed, _enemy_score(enemy))
 
 
 # host 记录敌人位置历史（供命中回滚合理性校验）
@@ -3961,6 +4098,38 @@ func dev_player_coins() -> int:
 	return int(p.stats.coin)
 
 
+# 开发/测试：host 生成一个医疗箱（走 net 广播）
+func dev_spawn_medkit() -> void:
+	if not is_lan_game or not multiplayer.is_server():
+		return
+	var p := get_local_player()
+	var pos: Vector2 = (p.global_position + Vector2(150, 0)) if p != null else Vector2.ZERO
+	_spawn_medkit_networked(pos)
+	print("[etn_coop] dev medkit spawned net_id=%d count=%d" % [next_medkit_net_id - 1, medkit_by_net_id.size()])
+
+
+# 开发/测试：本机对第一个医疗箱执行拾取结算（模拟长按完成）
+func dev_take_medkit() -> void:
+	var p := get_local_player()
+	if p == null:
+		return
+	for net_id in medkit_by_net_id.keys():
+		var n = medkit_by_net_id[net_id]
+		if n != null and is_instance_valid(n) and n.has_method("_on_pickup_complete"):
+			var hp0: int = int(p.stats.hp)
+			n.call("_on_pickup_complete", p)
+			print("[etn_coop] dev medkit taken net_id=%d hp %d->%d" % [int(net_id), hp0, int(p.stats.hp)])
+			return
+
+
+func dev_medkit_count() -> int:
+	return medkit_by_net_id.size()
+
+
+func dev_medkit_mods() -> Dictionary:
+	return {"rate": _medkit_rate_mult, "at_player": _medkit_at_player, "on_take": _medkit_on_take}
+
+
 # 开发/测试：本地生成一个召唤物（触发 on_summoned_spawned → 广播）。
 func dev_spawn_summoned() -> void:
 	if not is_lan_game:
@@ -4168,6 +4337,195 @@ func _apply_shared_coin_remote(value: int, pos: Vector2) -> void:
 	_apply_shared_coin_local(value, pos)
 
 
+# ---------------- 医疗箱（medical_kit）同步 ----------------
+# host 权威生成：聚合各端支援对生成的影响（serina 倍率/落点、ayane 拾取追加），
+# 全端共享同一批医疗箱；拾取结算仍在拾取者本机（治疗/满血转金币随玩家状态 RPC 传播）。
+
+func _medkit_scene() -> PackedScene:
+	return load("res://scenes/item/medical_kit.tscn") as PackedScene
+
+
+# 聚合所有 peer 支援对医疗箱生成的影响，并在 host 侧写入本机 PickManager
+func _refresh_medkit_mods() -> void:
+	var rate: float = 1.0
+	var at_player: bool = false
+	var on_take: bool = false
+	for mods in support_mods_by_peer.values():
+		if mods is Dictionary:
+			rate = max(rate, float(mods.get("rate_mult", 1.0)))
+			if bool(mods.get("at_player", false)):
+				at_player = true
+			if int(mods.get("on_take_spawn", 0)) > 0:
+				on_take = true
+	_medkit_rate_mult = rate
+	_medkit_at_player = at_player
+	_medkit_on_take = on_take
+	if not is_lan_game or not multiplayer.is_server():
+		return
+	var pm = get_tree().get_first_node_in_group("PickManager")
+	if pm != null and is_instance_valid(pm):
+		pm.set("spawn_rate_mult", rate)
+		pm.set("spawn_at_player", at_player)
+
+
+# 选择一名"落点=玩家脚下"的支援携带者（serina）位置；无则返回 Vector2.INF（回退随机 tile）
+func _pick_medkit_at_player_position() -> Vector2:
+	var candidates: Array = []
+	for pid in support_mods_by_peer.keys():
+		var mods = support_mods_by_peer[pid]
+		if mods is Dictionary and bool(mods.get("at_player", false)):
+			candidates.append(int(pid))
+	if candidates.is_empty():
+		# 兼容：mods 缺失时按 support_id 兜底
+		for pid in support_by_peer.keys():
+			if str(support_by_peer[pid]) == "serina":
+				candidates.append(int(pid))
+	if candidates.is_empty():
+		return Vector2.INF
+	var pick: int = int(candidates[randi() % candidates.size()])
+	var p: Node = get_local_player() if pick == multiplayer.get_unique_id() else _local_or_remote_player(pick)
+	if p is Node2D:
+		return (p as Node2D).global_position
+	return Vector2.INF
+
+
+# 客机不本地生成；host 在"落点在玩家脚下"时改由 mod 显式生成（随机/支援两路都经过此处）
+func _gate_medkit_spawn(manager, spawn_position: Vector2) -> bool:
+	if not is_lan_game:
+		return false
+	if not multiplayer.is_server():
+		return true
+	if _medkit_at_player and spawn_position == Vector2.ZERO:
+		var pos := _pick_medkit_at_player_position()
+		if pos != Vector2.INF:
+			_spawn_medkit_networked(pos)
+			return true
+	return false
+
+
+# host 本地创建医疗箱 + 分配 net_id + 广播
+func _spawn_medkit_networked(pos: Vector2) -> void:
+	if not multiplayer.is_server():
+		return
+	var root := get_tree().get_first_node_in_group("CoinRoot")
+	if root == null:
+		return
+	var scene := _medkit_scene()
+	if scene == null:
+		return
+	var ins = scene.instantiate()
+	root.add_child(ins)
+	if ins is Node2D:
+		(ins as Node2D).global_position = pos
+	_register_medkit(ins)
+
+
+# host 本地生成（随机/支援）后登记并广播；远端镜像带 remote_medkit meta 不重复登记
+func _on_medkit_spawned(node: Node) -> void:
+	if not is_lan_game or not multiplayer.is_server():
+		return
+	if node == null or not is_instance_valid(node):
+		return
+	if node.has_meta("coop_medkit_net_id") or node.has_meta("remote_medkit"):
+		return
+	_register_medkit(node)
+
+
+func _register_medkit(node: Node) -> void:
+	if node == null or not is_instance_valid(node):
+		return
+	var net_id: int = next_medkit_net_id
+	next_medkit_net_id += 1
+	node.set_meta("coop_medkit_net_id", net_id)
+	medkit_by_net_id[net_id] = node
+	var pos: Vector2 = (node as Node2D).global_position if node is Node2D else Vector2.ZERO
+	rpc("_remote_spawn_medkit", net_id, pos)
+
+
+@rpc("authority", "call_remote", "reliable")
+func _remote_spawn_medkit(net_id: int, position: Vector2) -> void:
+	if multiplayer.is_server() or medkit_by_net_id.has(net_id):
+		return
+	var root := get_tree().get_first_node_in_group("CoinRoot")
+	if root == null:
+		return
+	var scene := _medkit_scene()
+	if scene == null:
+		return
+	var ins = scene.instantiate()
+	ins.set_meta("coop_medkit_net_id", net_id)
+	ins.set_meta("remote_medkit", true)
+	root.add_child(ins)
+	if ins is Node2D:
+		(ins as Node2D).global_position = position
+	medkit_by_net_id[net_id] = ins
+
+
+# 拾取者本地完成拾取（本机结算）后通知 mod：host 广播移除 + 处理 ayane；客机转发 host
+func _on_medkit_taken(node: Node) -> void:
+	if not is_lan_game or node == null or not is_instance_valid(node):
+		return
+	if not node.has_meta("coop_medkit_net_id"):
+		return
+	var net_id: int = int(node.get_meta("coop_medkit_net_id"))
+	if multiplayer.is_server():
+		if _mark_medkit_consumed(net_id):
+			rpc("_remote_medkit_consumed", net_id)
+			_handle_ayane_on_take()
+	else:
+		rpc_id(1, "_server_medkit_taken", net_id)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _server_medkit_taken(net_id: int) -> void:
+	if not multiplayer.is_server():
+		return
+	if not _mark_medkit_consumed(net_id):
+		return
+	rpc("_remote_medkit_consumed", net_id)
+	_handle_ayane_on_take()
+
+
+@rpc("authority", "call_remote", "reliable")
+func _remote_medkit_consumed(net_id: int) -> void:
+	var n = medkit_by_net_id.get(net_id)
+	medkit_by_net_id.erase(net_id)
+	_medkit_consumed[net_id] = true
+	if n != null and is_instance_valid(n) and n.has_method("consume_remote"):
+		n.call("consume_remote")
+
+
+func _mark_medkit_consumed(net_id: int) -> bool:
+	if _medkit_consumed.has(net_id):
+		return false
+	_medkit_consumed[net_id] = true
+	medkit_by_net_id.erase(net_id)
+	return true
+
+
+# 任意玩家拾取 → 只要本局有 ayane（on_take_spawn>0），host 每次额外生成 1 个
+func _handle_ayane_on_take() -> void:
+	if not is_lan_game or not multiplayer.is_server():
+		return
+	if not _medkit_on_take:
+		return
+	var pm = get_tree().get_first_node_in_group("PickManager")
+	if pm != null and is_instance_valid(pm) and pm.has_method("add_medical_kit"):
+		pm.call("add_medical_kit", Vector2.ZERO)
+
+
+# 晚加入：重发当前存活医疗箱
+func _send_existing_medkits_to_peer(peer: int) -> void:
+	if not multiplayer.is_server():
+		return
+	for net_id in medkit_by_net_id.keys():
+		var n = medkit_by_net_id[net_id]
+		if n == null or not is_instance_valid(n):
+			continue
+		var pos: Vector2 = (n as Node2D).global_position if n is Node2D else Vector2.ZERO
+		rpc_id(peer, "_remote_spawn_medkit", int(net_id), pos)
+
+
 # ---------------- 远程表现（对齐联机版） ----------------
 
 func _play_remote_enemy_spawn_anim(position: Vector2) -> void:
@@ -4241,13 +4599,13 @@ func _play_coin_pickup_visual(coin_node: Node, picker_peer: int) -> void:
 
 # ---------------- 召唤物同步（拥有者权威） ----------------
 
-func send_summoned_state(net_id: int, position: Vector2, velocity: Vector2, rotation: float) -> void:
+func send_summoned_state(net_id: int, position: Vector2, velocity: Vector2, rotation: float, state: int = -1, facing: int = 1) -> void:
 	if not is_lan_game:
 		return
 	if multiplayer.is_server():
-		rpc("_summoned_state_remote", net_id, position, velocity, rotation)
+		rpc("_summoned_state_remote", net_id, position, velocity, rotation, state, facing)
 	else:
-		rpc_id(1, "_server_summoned_state", net_id, position, velocity, rotation)
+		rpc_id(1, "_server_summoned_state", net_id, position, velocity, rotation, state, facing)
 
 
 func request_summoned_despawn(net_id: int) -> void:
@@ -4350,21 +4708,21 @@ func _despawn_summoned_remote(net_id: int) -> void:
 
 
 @rpc("any_peer", "call_remote", "unreliable")
-func _server_summoned_state(net_id: int, position: Vector2, velocity: Vector2, rotation: float) -> void:
+func _server_summoned_state(net_id: int, position: Vector2, velocity: Vector2, rotation: float, state: int = -1, facing: int = 1) -> void:
 	if not multiplayer.is_server():
 		return
-	_summoned_state_remote(net_id, position, velocity, rotation)
+	_summoned_state_remote(net_id, position, velocity, rotation, state, facing)
 	var sender: int = multiplayer.get_remote_sender_id()
 	for peer in multiplayer.get_peers():
 		if peer != sender:
-			rpc_id(peer, "_summoned_state_remote", net_id, position, velocity, rotation)
+			rpc_id(peer, "_summoned_state_remote", net_id, position, velocity, rotation, state, facing)
 
 
 @rpc("authority", "call_remote", "unreliable")
-func _summoned_state_remote(net_id: int, position: Vector2, velocity: Vector2, rotation: float) -> void:
+func _summoned_state_remote(net_id: int, position: Vector2, velocity: Vector2, rotation: float, state: int = -1, facing: int = 1) -> void:
 	var proxy = summoned_proxy_by_net_id.get(net_id)
 	if proxy != null and is_instance_valid(proxy) and proxy.has_method("apply_state"):
-		proxy.apply_state(position, velocity, rotation)
+		proxy.apply_state(position, velocity, rotation, state, facing)
 
 
 @rpc("any_peer", "call_remote", "reliable")
@@ -4868,12 +5226,311 @@ func _on_server_enemy_damage_taken(actual_damage: int, damage_data, enemy: Node)
 	rpc("_remote_hit_feedback", net_id, int(actual_damage), _damage_to_dict(damage_data), owner_peer, false)
 	if owner_peer != multiplayer.get_unique_id():
 		# 客机归属的持续伤害等（host 自然结算但归属客机）：回传归属端发射 proc（host 端已 suppress_proc）
-		rpc_id(owner_peer, "_remote_enemy_proc", net_id, int(actual_damage), _damage_to_dict(damage_data), killed)
+		rpc_id(owner_peer, "_remote_enemy_proc", net_id, int(actual_damage), _damage_to_dict(damage_data), killed, _enemy_score(enemy))
+
+
+# 敌人击杀分（EnemyStats.score）；非敌人返回 0
+func _enemy_score(enemy: Node) -> int:
+	if enemy == null or enemy.get("stats") == null:
+		return 0
+	return int(enemy.stats.score)
+
+
+# ---------------- 支援：范围 buff 跨端 + EX 光环视觉 ----------------
+
+func _local_support_id() -> String:
+	if SupportData.game_support != null:
+		return str(SupportData.game_support.support_id)
+	return ""
+
+
+# 本机所选支援对 medical_kit 生成的影响（临时实例化支援场景读取；不入树 → 不触发 _ready 逻辑）
+func _local_support_modifiers() -> Dictionary:
+	if SupportData.game_support == null:
+		return {}
+	var pack = SupportData.game_support.support_pack
+	if pack == null:
+		return {}
+	var inst = pack.instantiate()
+	if inst == null:
+		return {}
+	var mods: Dictionary = {}
+	if inst.has_method("get_medkit_spawn_modifiers"):
+		var m = inst.call("get_medkit_spawn_modifiers")
+		if m is Dictionary:
+			mods = m
+	inst.free()
+	return mods
+
+
+# 光环命中远端玩家镜像 → 转交其本机给真实玩家上 buff；返回 true 跳过本地 apply
+func _gate_player_buff_apply(target, buff, value) -> bool:
+	if not is_lan_game or target == null or buff == null:
+		return false
+	if not target.has_meta("peer_id"):
+		return false
+	var peer: int = int(target.get_meta("peer_id"))
+	if peer == multiplayer.get_unique_id():
+		return false
+	var path: String = str(buff.resource_path)
+	if path == "":
+		return false
+	_send_player_buff(peer, true, path, value, _local_buff_source_id())
+	_support_buffed_peers[peer] = path
+	return true
+
+
+# 光环离开远端镜像 → 转交其本机移除；返回 true 跳过本地 remove
+func _gate_player_buff_remove(target, buff) -> bool:
+	if not is_lan_game or target == null or buff == null:
+		return false
+	if not target.has_meta("peer_id"):
+		return false
+	var peer: int = int(target.get_meta("peer_id"))
+	if peer == multiplayer.get_unique_id():
+		return false
+	var path: String = str(buff.resource_path)
+	if path == "":
+		return false
+	_send_player_buff(peer, false, path, [], _local_buff_source_id())
+	_support_buffed_peers.erase(peer)
+	return true
+
+
+# 本机光环的来源标识（= 本机 peer id；单机为 "1"），与 kei_as._aura_source_id() 一致
+func _local_buff_source_id() -> String:
+	return str(multiplayer.get_unique_id())
+
+
+func _send_player_buff(peer: int, apply: bool, buff_path: String, value: Array, source_id: String) -> void:
+	if multiplayer.is_server():
+		rpc_id(peer, "_remote_player_buff", apply, buff_path, value, source_id)
+	else:
+		rpc_id(1, "_server_relay_player_buff", peer, apply, buff_path, value, source_id)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _server_relay_player_buff(peer: int, apply: bool, buff_path: String, value: Array, source_id: String) -> void:
+	if not multiplayer.is_server():
+		return
+	rpc_id(peer, "_remote_player_buff", apply, buff_path, value, source_id)
+
+
+# 目标端：对真实玩家按来源上/去 buff（source_refcount 类，如 kei_buff）
+@rpc("authority", "call_remote", "reliable")
+func _remote_player_buff(apply: bool, buff_path: String, value: Array, source_id: String) -> void:
+	var p = get_local_player()
+	if p == null or not is_instance_valid(p):
+		return
+	var buff = load(buff_path)
+	if buff == null:
+		return
+	if apply:
+		BuffRouter.apply_buff(p, buff, value, source_id)
+	else:
+		BuffRouter.remove_source(p, buff, source_id)
+
+
+# 本机支援 EX 激活/结束 → 广播（供远端镜像光环视觉），并在结束时兜底移除已转交的 buff
+func _on_local_support_ex_active() -> void:
+	if not is_lan_game:
+		return
+	var sid: String = _local_support_id()
+	if sid == "" or sid == "null":
+		return
+	var pid: int = multiplayer.get_unique_id()
+	if multiplayer.is_server():
+		rpc("_remote_support_ex", pid, sid, true)
+	else:
+		rpc_id(1, "_server_support_ex", pid, sid, true)
+
+
+func _on_local_support_ex_end() -> void:
+	if not _support_buffed_peers.is_empty():
+		var src: String = _local_buff_source_id()
+		for peer in _support_buffed_peers.keys():
+			_send_player_buff(int(peer), false, str(_support_buffed_peers[peer]), [], src)
+		_support_buffed_peers.clear()
+	if not is_lan_game:
+		return
+	var pid: int = multiplayer.get_unique_id()
+	if multiplayer.is_server():
+		rpc("_remote_support_ex", pid, _local_support_id(), false)
+	else:
+		rpc_id(1, "_server_support_ex", pid, _local_support_id(), false)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _server_support_ex(owner: int, support_id: String, active: bool) -> void:
+	if not multiplayer.is_server():
+		return
+	rpc("_remote_support_ex", owner, support_id, active)
+
+
+@rpc("authority", "call_remote", "reliable")
+func _remote_support_ex(owner: int, support_id: String, active: bool) -> void:
+	_apply_support_aura_visual(owner, support_id, active)
+
+
+func _apply_support_aura_visual(owner: int, support_id: String, active: bool) -> void:
+	if owner == multiplayer.get_unique_id():
+		return
+	if active:
+		if _support_auras.has(owner) and is_instance_valid(_support_auras[owner]):
+			return
+		var path: String = ""
+		if support_id == "serina":
+			path = "res://scenes/player_support/serina/serina_as.tscn"
+		elif support_id == "kei":
+			path = "res://scenes/player_support/kei/kei_as.tscn"
+		else:
+			return
+		var target: Node = null
+		if support_id == "kei":
+			target = _find_owner_kei_summon(owner)
+		if target == null:
+			target = player_by_peer_id.get(owner)
+		if target == null or not is_instance_valid(target):
+			return
+		# 纯视觉代理：不入 script（避免 SupportAS._ready 连信号/改本机 now_cost）；关掉 Area2D 逻辑
+		var inst = load(path).instantiate()
+		inst.set_script(null)
+		var area = inst.get_node_or_null("Area2D")
+		if area != null:
+			area.monitoring = false
+			area.monitorable = false
+		if support_id == "serina":
+			var aura = inst.get_node_or_null("Aura")
+			if aura != null:
+				aura.top_level = false
+		target.add_child(inst)
+		_support_auras[owner] = inst
+		var ap = inst.get_node_or_null("AnimationPlayer")
+		if ap == null and support_id == "serina":
+			ap = inst.get_node_or_null("Aura/AnimationPlayer")
+		if ap != null:
+			ap.play("new_animation" if support_id == "serina" else "as_loop")
+	else:
+		var n = _support_auras.get(owner)
+		if n != null and is_instance_valid(n):
+			n.queue_free()
+		_support_auras.erase(owner)
+
+
+func _find_owner_kei_summon(owner: int) -> Node:
+	for net_id in summoned_owner_by_net_id.keys():
+		if int(summoned_owner_by_net_id[net_id]) != owner:
+			continue
+		if not str(summoned_scene_by_net_id.get(net_id, "")).contains("kei_summoned"):
+			continue
+		var n = summoned_by_net_id.get(net_id)
+		if n != null and is_instance_valid(n):
+			return n
+	return null
+
+
+# ---------------- 召唤物范围光环（kei / utaha）：扫描队友召唤物镜像并转发 ----------------
+# 光环拥有者端执行：本机光环（"CoopSummonAura" 组）半径内的“远端召唤物镜像”经转发到
+# 其 owner peer，在真实召唤物上按来源上/去 buff（source_refcount / per_source_layers）。
+
+const SUMMON_AURA_EXIT_MARGIN: float = 8.0
+
+func _tick_summon_auras() -> void:
+	if not is_lan_game:
+		if not _summon_aura_applied.is_empty():
+			_summon_aura_applied.clear()
+		return
+	if not battle_active:
+		return
+	var desired: Dictionary = {}
+	for aura in get_tree().get_nodes_in_group("CoopSummonAura"):
+		if aura == null or not is_instance_valid(aura) or not aura.has_method("network_summon_aura_info"):
+			continue
+		var info = aura.call("network_summon_aura_info")
+		if not (info is Dictionary) or not bool(info.get("active", false)):
+			continue
+		var buff = info.get("buff")
+		if buff == null:
+			continue
+		var buff_path: String = str(buff.resource_path)
+		if buff_path == "":
+			continue
+		var radius: float = float(info.get("radius", 0.0))
+		if radius <= 0.0:
+			continue
+		var pos: Vector2 = info.get("pos", Vector2.ZERO)
+		var source_id: String = str(info.get("source_id", ""))
+		var value = info.get("value", [])
+		var bid: String = str(buff.id)
+		for net_id in summoned_owner_by_net_id.keys():
+			var owner_peer: int = int(summoned_owner_by_net_id[net_id])
+			if owner_peer == multiplayer.get_unique_id():
+				continue
+			var mirror = summoned_by_net_id.get(net_id)
+			if mirror == null or not is_instance_valid(mirror) or not (mirror is Node2D):
+				continue
+			if mirror.get("is_idle") != null and int(mirror.is_idle) == 1:
+				continue
+			var key: String = "%s|%s|%s" % [source_id, bid, str(net_id)]
+			var rr: float = radius + (SUMMON_AURA_EXIT_MARGIN if _summon_aura_applied.has(key) else 0.0)
+			if (mirror as Node2D).global_position.distance_to(pos) <= rr:
+				desired[key] = {"owner_peer": owner_peer, "net_id": int(net_id), "buff_path": buff_path, "value": value, "source_id": source_id}
+	# 不再命中/光环消失 → 移除
+	for key in _summon_aura_applied.keys():
+		if desired.has(key):
+			continue
+		var e: Dictionary = _summon_aura_applied[key]
+		_send_summoned_buff(int(e["owner_peer"]), int(e["net_id"]), false, str(e["buff_path"]), [], str(e["source_id"]))
+	# 新进入 → 施加
+	for key in desired.keys():
+		if _summon_aura_applied.has(key):
+			continue
+		var e: Dictionary = desired[key]
+		_send_summoned_buff(int(e["owner_peer"]), int(e["net_id"]), true, str(e["buff_path"]), e["value"], str(e["source_id"]))
+	_summon_aura_applied = desired
+
+
+func _send_summoned_buff(owner_peer: int, net_id: int, apply: bool, buff_path: String, value: Array, source_id: String) -> void:
+	if owner_peer == multiplayer.get_unique_id():
+		_apply_summoned_buff_local(net_id, apply, buff_path, value, source_id)
+		return
+	if multiplayer.is_server():
+		rpc_id(owner_peer, "_remote_summoned_buff", net_id, apply, buff_path, value, source_id)
+	else:
+		rpc_id(1, "_server_relay_summoned_buff", owner_peer, net_id, apply, buff_path, value, source_id)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _server_relay_summoned_buff(owner_peer: int, net_id: int, apply: bool, buff_path: String, value: Array, source_id: String) -> void:
+	if not multiplayer.is_server():
+		return
+	rpc_id(owner_peer, "_remote_summoned_buff", net_id, apply, buff_path, value, source_id)
+
+
+@rpc("authority", "call_remote", "reliable")
+func _remote_summoned_buff(net_id: int, apply: bool, buff_path: String, value: Array, source_id: String) -> void:
+	_apply_summoned_buff_local(net_id, apply, buff_path, value, source_id)
+
+
+# 在召唤物 owner 端：对真实召唤物按其 buff_manager 上/去来源 buff
+func _apply_summoned_buff_local(net_id: int, apply: bool, buff_path: String, value: Array, source_id: String) -> void:
+	if int(summoned_owner_by_net_id.get(net_id, -1)) != multiplayer.get_unique_id():
+		return
+	var s = summoned_by_net_id.get(net_id)
+	if s == null or not is_instance_valid(s):
+		return
+	var buff = load(buff_path)
+	if buff == null:
+		return
+	if apply:
+		BuffRouter.apply_buff(s, buff, value, source_id)
+	else:
+		BuffRouter.remove_source(s, buff, source_id)
 
 
 # 归属端接收权威命中结果 → 在本机发射 enemy_damage_taken(_dead)，触发归属玩家的道具/PS
 @rpc("authority", "call_remote", "reliable")
-func _remote_enemy_proc(net_id: int, actual_damage: int, cfg: Dictionary, killed: bool) -> void:
+func _remote_enemy_proc(net_id: int, actual_damage: int, cfg: Dictionary, killed: bool, score: int = 0) -> void:
 	if multiplayer.is_server():
 		return
 	var enemy = enemy_by_net_id.get(net_id)
@@ -4885,6 +5542,8 @@ func _remote_enemy_proc(net_id: int, actual_damage: int, cfg: Dictionary, killed
 	GameEvents.emit_enemy_damage_taken(actual_damage, data, enemy.get_path())
 	if killed:
 		GameEvents.emit_enemy_damage_taken_dead(actual_damage, data, enemy.get_path())
+		# 击杀分归属本机（本端即击杀归属端）：为其支援 EX 充能
+		GameEvents.emit_enemy_dead_score_owned(score, multiplayer.get_unique_id())
 
 
 # ---------------- 命中反馈回放（其它玩家来源可独立调速） ----------------
@@ -5196,6 +5855,38 @@ func report_local_selection(scene_path: String) -> void:
 	selected_player_scene_by_peer[pid] = scene_path
 	if not multiplayer.is_server():
 		rpc_id(1, "_server_player_selected", scene_path)
+
+
+# 本机所选支援 id（""/"null" = 无）：记录并同步给全端；mods 为其对 medical_kit 生成的影响
+func report_local_support(support_id: String, mods: Dictionary = {}) -> void:
+	if not is_lan_game:
+		return
+	var pid: int = multiplayer.get_unique_id()
+	support_by_peer[pid] = support_id
+	support_mods_by_peer[pid] = mods.duplicate()
+	if multiplayer.is_server():
+		rpc("_remote_support_changed", pid, support_id, mods)
+	else:
+		rpc_id(1, "_server_player_support", support_id, mods)
+	_refresh_medkit_mods()
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _server_player_support(support_id: String, mods: Dictionary = {}) -> void:
+	if not multiplayer.is_server():
+		return
+	var sender: int = multiplayer.get_remote_sender_id()
+	support_by_peer[sender] = support_id
+	support_mods_by_peer[sender] = mods.duplicate()
+	rpc("_remote_support_changed", sender, support_id, mods)
+	_refresh_medkit_mods()
+
+
+@rpc("authority", "call_remote", "reliable")
+func _remote_support_changed(peer_id: int, support_id: String, mods: Dictionary = {}) -> void:
+	support_by_peer[peer_id] = support_id
+	support_mods_by_peer[peer_id] = mods.duplicate()
+	_refresh_medkit_mods()
 
 
 # 本机就绪 / 取消就绪（选人阶段）

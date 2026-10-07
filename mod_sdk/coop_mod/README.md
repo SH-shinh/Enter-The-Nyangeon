@@ -83,7 +83,7 @@ mod_sdk/coop_mod/mods/etn_coop/
 - 爆炸/特效广播：`on_projectile_spawned` 中**无 velocity** 的作用域走特效通道（scene/位置/朝向/缩放/所属组 + **白名单属性** `explosion_range/damage_mult/range_mult/scale_mult/is_crit/color/modulate/bullet_scale`），对方生成不池化、超时释放的纯视觉特效（禁伤害）。
 - 敌人→玩家伤害：client 的**敌方视觉弹**对本地玩家开放"伤害洞"（置 `enemy_bullet` 层 + monitorable、合成 enemy DamageData），玩家 HurtBox 正常结算；镜像敌人物理/AI 停用，不会二次开火。
 - 金币权威/共享：host 登记金币 net_id 并广播，client 生成金币视觉；拾取经 `coin_pickup_gate` 转交 host，host 广播**共享增益**（所有玩家 +相同金币）。
-- 召唤物同步（拥有者权威）：`on_summoned_spawned` 登记 net_id（client 经服务端中转）→ 其它端生成镜像挂 `CoopSummonedProxy`；拥有者 ~12Hz 上报位置/速度/朝向。
+- 召唤物同步（拥有者权威）：`on_summoned_spawned` 登记 net_id（client 经服务端中转）→ 其它端生成镜像挂 `CoopSummonedProxy`；拥有者 ~15Hz（`SEND_INTERVAL=0.066`）上报位置/速度/朝向角。`SummonedFollower`（`kei_summoned`/`mobu_trinity` 等跟随型）另上报**状态 IDLE/RUNNING/JUMP + 朝向 ±1**（快照新增 `state`/`facing`），枪口角复用 rotation 通道（`get/apply_network_visual_rotation`）；镜像端 `apply_network_state()` 只切动画/翻转/跳跃表现，**开火**由拥有者 `SummonedGun.shoot_bullet` → `notify(on_summoned_action,...)` 广播闪光/音效/后坐，镜像 `network_play_action("shoot")` 回放（子弹本体另经 `ProjectileSpawner` 广播，不双生）。
 - 团队流程：`player_death_gate` 把本地死亡转为**倒地**并广播；附近队友按住 `use` 达 2.5s 请求救援；host 统一判定**全员倒地 → 团队 game over**；`round_upgrade_end_gate` 等待全员升级就绪后统一推进。
 - 倒地视觉 / 受击反馈：倒地时本地与远程镜像都套用冷色 tint + `DOWN!/REVIVED!` 飘字（本体 `player.set_downed_state` 内实现）；救援时靠近倒地队友按住 `use` 会用 `interact_prompt` 显示**进度气泡**；`player_is_hurt` 广播使**非拥有端**也能看到远程玩家受击白闪；服务器把敌人 `damage_taken` 的**实际伤害**广播回各端，client 在镜像敌人上重发 `enemy_damage_taken` → 全端都能看到伤害数字与受击闪。
 - Boss：`boss_round_start/end` 由 host 广播；本体 `GameEvents.boss_event(name, data)` 事件总线（`goliath` 的 `random/strafe/big_gun_end`、`hit_wall` 与 `idle/run/shoot_ready/shoot/charge/turret_ready` 动画态，`erosion_tower` 的 `stop_shoot`/`tower_dead` 与 `idle/attack/defense/enter/death` 动画态）经 host 广播并在 client 重发；**goliath / erosion_tower 镜像**监听 `boss_event` 回放动画态（仅表现、带 `_net_visual_replaying` 重入保护，不重复攻击）。塔的攻击：**子弹**经 `ProjectileSpawner` 随子弹广播、**激光**经 `laser_launcher.active_state` 的 `notify_local` 走特效通道，且 client 的敌方激光视觉副本会开**伤害洞**（`laser_bullet.open_network_player_damage_hole`：只命中 `player_box` 层、只对本地玩家）——因此激光在其它端**可见且可伤害本地玩家**。另提供通用 `CoopNet.instance.broadcast_boss_pattern_event(net_id, data)` + `boss_pattern_event_received`。
@@ -350,7 +350,16 @@ mod_sdk/coop_mod/mods/etn_coop/
 - **敌人部件**：镜像生成后激活 `body_part`。
 - **Boss**：`goliath`/`erosion_tower_group` 镜像端跳过相机/暂停演出（避免镜像本地 pause），只播动画。
 - **掉落**：`pyroxenes` 生成广播纯视觉副本（`CoinRoot` 纳入广播组）。
-- **已知未做**：medkit（各端独立随机生成）、coin_box 抛物线只同步起点、SceneProp（未放置）。
+- **已知未做**：coin_box 抛物线只同步起点、SceneProp（未放置）。
+
+## 医疗箱（medical_kit）同步：host 权威 + 支援效果聚合
+- **生成（host 权威）**：只有 host 的 `PickItemManager` 产生随机医疗箱；客机 `_gate_medkit_spawn` 一律返回 true（本端不生成）。host 生成后 `_on_medkit_spawned` 分配 `net_id` 并 `rpc("_remote_spawn_medkit")`，客机实例化带 `coop_medkit_net_id`/`remote_medkit` 的本地镜像加入 `CoinRoot`。→ 全端同一批医疗箱。
+- **支援效果聚合**：`SupportCharacter.get_medkit_spawn_modifiers()`（默认 `{}`）；`serina` 覆写 `{rate_mult, at_player:true}`、`ayane` 覆写 `{on_take_spawn:1}`。选择支援时随 `report_local_support(id, mods)` 一并同步（`support_mods_by_peer`，随 `level_state` 晚加入恢复、断线/复位清理），host `_refresh_medkit_mods()` 聚合：`rate_mult=max`（上限 2.0）、`at_player=any`、`on_take=any`，并写入本机 `PickManager`。
+  - **落点**：`at_player` 为真时 host 从所有 serina 携带者中**随机选一名**，医疗箱落在其脚下（`_pick_medkit_at_player_position`）；否则随机 tile。
+  - **ayane on-take**：任意玩家拾取 → host 每次额外生成 1 个（`_handle_ayane_on_take` → `PickManager.add_medical_kit(ZERO)`，同样经过上面的落点逻辑）。LAN 下 `ayane._special_effect` 跳过本地 `connect`，避免与 host 集中处理双生成。
+- **拾取**：拾取者本机结算（治疗 / 满血转金币；`medical_kit._on_pickup_complete` 加 `coop_medkit_consumed` 守卫）→ `on_medkit_taken` 通知 mod：host `_mark_medkit_consumed` + 广播 `_remote_medkit_consumed`（客机 `consume_remote()` 只播消失演出）。晚加入经 `_send_existing_medkits_to_peer` 补发存活医疗箱；`_reset_player_sync` 清空。
+- **本体 hook**：`ExtensionHooks.medkit_spawn_gate` / `on_medkit_spawned` / `on_medkit_taken`；`pick_item_manager.add_medical_kit` 前置 gate + 生成后 notify；`medical_kit.consume_remote()`。
+- **dev**：`--coop-devmedkit`（host 生成 1 个并打印落点/聚合值，客机打印数量、模拟拾取并打印 hp）。
 
 ## 批A：刷怪门 / 敌人选敌 / 角色事件通道
 - **H1 客机不本地刷怪**：`ExtensionHooks.round_enemy_spawn_gate`；`enemy_manager.round_enemy_spawn_start` 前置门；mod 非 host 跳过。
