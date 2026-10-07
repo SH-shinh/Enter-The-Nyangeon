@@ -1266,6 +1266,18 @@
 - Source / 来源: code + test
 - Date / 日期: 2026-10-07
 
+### [Mod] 聊天室手机按钮：游玩期勿吞鼠标 → `mouse_filter=IGNORE` + `_input` 手动命中判定
+- Evidence / 证据: `mod_sdk/coop_mod/mods/etn_coop/ui/coop_chat.gd`（`_make_button()` 设 `mouse_filter = Control.MOUSE_FILTER_IGNORE` 且不连 `pressed`；`_input` 的 `_button_hit(event)`：`InputEventScreenTouch` 命中矩形始终 true，`InputEventMouseButton` 左键仅 `_is_open` 时 true，且 `Engine.get_process_frames() - _last_touch_frame <= 1` 忽略触摸模拟出的鼠标）。
+- Notes / 说明: **坑**：`Control`（含 `TextureButton`）`mouse_filter=STOP` 会**吞掉命中它的鼠标事件**，使 `player._unhandled_input` 的 `fire` 收不到点击——按钮放在 HUD 上时，玩家瞄向 HUD 点击会「既不开火也不开窗」。要「手机触摸可点、桌面游玩期不误触/不挡开火」，应把按钮设为 `IGNORE`（纯显示、永不 consume），改在 `_input` 用 `_btn.get_global_rect().has_point(event.position)` 手动判定：`InputEventScreenTouch` 始终可触发；`InputEventMouseButton` 仅聊天窗激活（鼠标可见）时触发。另须用帧号守卫忽略「触摸模拟出的鼠标事件」（`input_devices/pointing/emulate_mouse_from_touch` 默认开），否则一次触摸会双触发。验证（无头探针）：`filter=2 alpha=0.45 mouse_closed=false touch=true mouse_open=true`。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-10-07
+
+### [Mod] 聊天室连续发送：淡出期内再按回车重聚焦并取消淡出
+- Evidence / 证据: `ui/coop_chat.gd`（`_input` ACTION 三态：隐藏→`_open_chat()`；可见且 `_input_box.has_focus()`→`_submit()` 发送+失焦+`_schedule_hide()`；可见未聚焦→`_refocus()` 增加 `_hide_token` 取消淡出、kill tween、`grab_focus()`）。
+- Notes / 说明: 发送后窗口仍 `_is_open` 并进入 2 秒淡出期，此时输入框已失焦；若 ACTION 仍一律走 `_submit()`，用户必须等窗口完全消失才能再输入，连发体验差。改为按 `has_focus()` 区分「发送」与「重聚焦」，重聚焦用 `_hide_token` 令在途的 `_schedule_hide()` 协程在超时后发现 token 不符而放弃隐藏。验证（无头探针）：发送后 `focus=false text='' token=1`；重聚焦后 `focus=true token=2`；2.6s 后 `still_open=true`（淡出被取消）。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-10-07
+
 ### [Mod] coop_menu 交互控件靠 `_set_buttons_enabled` 白名单恢复 STOP；新增控件必须入列
 - Evidence / 证据: `ui/coop_menu.gd:_set_buttons_enabled()`（先 `_panel.find_children("*","Control",true,false)` 把 `_panel` 下所有 Control 递归设 `MOUSE_FILTER_IGNORE`，再把 `controls` 白名单设为 `STOP`(启用)/`IGNORE`(禁用)；`:359-370`，`controls` 本轮已加入 `_debug_hud_toggle`）。
 - Notes / 说明: coop 覆盖层打开时 `_panel` 子树的**所有 Control 都被递归设为 `MOUSE_FILTER_IGNORE`**，只有列入 `_set_buttons_enabled()` 里 `controls` 数组的控件才会在打开时恢复 `STOP`。因此 **任何新增的可交互控件（Button/LineEdit/HSlider/开关…）都必须加进该数组**，否则收不到 `mouse_entered/gui_input`，表现为「点了没反应、悬停也没有动画」——这也是调试开关此前失效的根因（场景里那些控件写着 `mouse_filter = 2` 只是初始值，靠这个白名单在运行时恢复）。验证：`coop_menu.tscn` 实例化后调 `_set_buttons_enabled(true)` → `%DebugHudToggle.mouse_filter == 0`（STOP），`false` → `== 2`（IGNORE）；`coop_sim_regression.ps1` 全 PASS。

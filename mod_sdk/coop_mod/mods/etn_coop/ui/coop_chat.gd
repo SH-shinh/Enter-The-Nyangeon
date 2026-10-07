@@ -28,6 +28,7 @@ var _prev_player_stop: bool = false
 var _fade_tween: Tween = null
 var _hide_token: int = 0
 var _btn: TextureButton = null
+var _last_touch_frame: int = -2
 
 
 func _ready() -> void:
@@ -60,12 +61,20 @@ func _input(event: InputEvent) -> void:
 		_hide_now()
 		get_viewport().set_input_as_handled()
 		return
+	# 手机端图标按钮：纯显示 + 手动命中判定（避免游玩期吞鼠标/误触）。
+	if _button_hit(event):
+		_activate_from_button()
+		get_viewport().set_input_as_handled()
+		return
 	if not event.is_action_pressed(ACTION):
 		return
 	if not active:
 		return
 	if _is_open:
-		_submit()
+		if _input_box.has_focus():
+			_submit()
+		else:
+			_refocus()
 	else:
 		_open_chat()
 	get_viewport().set_input_as_handled()
@@ -122,6 +131,18 @@ func _schedule_hide() -> void:
 	if token != _hide_token or not _is_open:
 		return
 	_hide_now()
+
+
+# 淡出期内再次激活：取消淡出并重新聚焦输入（支持连续发送）。
+func _refocus() -> void:
+	_hide_token += 1
+	if _fade_tween != null and _fade_tween.is_valid():
+		_fade_tween.kill()
+	_panel.visible = true
+	_panel.modulate.a = 1.0
+	_input_box.grab_focus()
+	_scroll_to_bottom()
+	SoundManager.play_sfx(SFX)
 
 
 func _hide_now() -> void:
@@ -243,13 +264,39 @@ func _make_button() -> TextureButton:
 	b.stretch_mode = TextureButton.STRETCH_SCALE
 	b.custom_minimum_size = BTN_SIZE
 	b.size = BTN_SIZE
-	b.modulate = Color(1, 1, 1, 0.9)
-	b.pressed.connect(_on_button_pressed)
+	b.modulate = Color(1, 1, 1, 0.45)
+	# 纯显示：不接收 GUI 鼠标事件，避免游玩期吞鼠标/误触；点击由 _input 命中判定。
+	b.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return b
 
 
-func _on_button_pressed() -> void:
+# 命中判定：触摸始终可点；鼠标仅聊天窗激活时可点（游玩期不处理、不 consume）。
+func _button_hit(event: InputEvent) -> bool:
+	if _btn == null or not is_instance_valid(_btn) or not _btn.visible:
+		return false
+	if event is InputEventScreenTouch:
+		if not event.pressed:
+			return false
+		if not _btn.get_global_rect().has_point(event.position):
+			return false
+		_last_touch_frame = Engine.get_process_frames()
+		return true
+	if event is InputEventMouseButton:
+		if event.button_index != MOUSE_BUTTON_LEFT or not event.pressed:
+			return false
+		if not _is_open:
+			return false
+		if Engine.get_process_frames() - _last_touch_frame <= 1:
+			return false  # 忽略触摸模拟出的鼠标事件
+		return _btn.get_global_rect().has_point(event.position)
+	return false
+
+
+func _activate_from_button() -> void:
 	if _is_open:
-		_submit()
+		if _input_box.has_focus():
+			_submit()
+		else:
+			_refocus()
 	else:
 		_open_chat()

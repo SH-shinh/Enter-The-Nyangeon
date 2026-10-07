@@ -514,9 +514,11 @@ mod_sdk/coop_mod/mods/etn_coop/
   - `send_chat(text)`：本地先回显（立即显示自己的消息），再广播——host 经 `_fanout_chat` 逐 client `rpc_id` 且**排除发送者**（避免发送者重复收到自己的回显）；client `rpc_id(1,"_server_chat")`，host 用 `get_remote_sender_id()` 得真实 peer 再分发。显示名统一用既有 `_display_name_for(peer_id)`（自定义 ID / 回退 `PlayerN`）。
   - `_reset_run_state()` 里 `chat_log.clear()`：回菜单/重开/房主离开即清空，符合「本次房间」语义。
 - **UI（`ui/coop_chat.tscn` + `coop_chat.gd`）**：`CanvasLayer`（`layer=119`，`process_mode=ALWAYS`），右侧中间 `PanelContainer`（200×160，字体 9）内含 `ScrollContainer`+`VBoxContainer` 消息列表 + 底部 `LineEdit`；消息行格式 `玩家id： 内容`，自动滚到底。
-  - **Enter**（`coop_chat` 动作，`KEY_ENTER`/`KEY_KP_ENTER`）隐藏态 → 开窗+聚焦+显示鼠标+冻结本地玩家；已显示态 → 发送（`send_chat`）→ 清空并取消聚焦 → **2 秒后淡出隐藏**（无内容同样处理）。`ESC` 立即隐藏。
+  - **Enter**（`coop_chat` 动作，`KEY_ENTER`/`KEY_KP_ENTER`）三态：窗口隐藏 → 开窗+聚焦+显示鼠标+冻结本地玩家；窗口可见且输入框**已聚焦** → 发送（`send_chat`）→ 清空并取消聚焦 → **2 秒后淡出隐藏**（无内容同样处理）；窗口可见但**未聚焦**（淡出期内）→ `_refocus()` **取消淡出并重新聚焦**，支持「输入→回车→再输入→回车」连续发送，无需等窗口消失。`ESC` 立即隐藏。
   - **隐藏收尾**还原鼠标模式与 `player_stop`（按开窗前原值，倒地时不误置 false）。
-  - **手机按钮**：`TextureButton` 30×30，`texture_normal=res://ui/scoreboard_icon.png`、铺满 30×30、无边框，挂到**本地玩家** `$GameUI/AmmoPosition` 右侧（战斗与准备房均显示；换人/重生后自动重挂）。点击/回车均播 `SoundManager.play_sfx("ButtonSounds")`。
+  - **手机按钮**：`TextureButton` 30×30、`texture_normal=res://ui/scoreboard_icon.png`、铺满 30×30、无边框、**半透明 `modulate.a=0.45`（恒定，无悬停反馈）**，挂到**本地玩家** `$GameUI/AmmoPosition` 右侧（战斗与准备房均显示；换人/重生后自动重挂）。
+  - **点击门控（防游玩误触）**：按钮设 `mouse_filter=IGNORE`（**纯显示，不接收 GUI 鼠标事件、不吞游玩期鼠标**），点击改由 `coop_chat._input` 手动命中判定——`InputEventScreenTouch`（命中矩形）**始终可激活**（手机开聊）；`InputEventMouseButton` 左键**仅聊天窗激活时（`_is_open`）可激活**，游玩期鼠标不处理也不 consume（不挡瞄准/开火、不误触开窗）。`_last_touch_frame` 守卫忽略触摸模拟出的鼠标事件，避免双触发。
+  - **音效**：开窗/重聚焦/发送均播 `SoundManager.play_sfx("ButtonSounds")`。
 - **自测**：`--coop-devchat`（配 `--coop-host` / `--coop-join=127.0.0.1` + `--coop-devbattle`）双端各发一条，打印 `dev-chat id=.. log=..`。实测两端 `log=2`（含双方消息、无重复），无 `SCRIPT ERROR`。
 - **备注**：聊天窗脚本的 `LineEdit` 引用名不可用 `_input`（与虚拟方法 `_input` 冲突 → Parse Error），已命名 `_input_box`。
 
