@@ -61,10 +61,10 @@ shiroko_drone_description,"每3秒发射一次火箭，子弹造成5次暴击额
 20 Base damage.","Dispara um foguete a cada 3 segundos. Acertar 5 críticos com balas dispara um foguete adicional.
 20 de Dano Base.","Bắn tên lửa mỗi 3 giây. Gây 5 lần chí mạng bằng đạn sẽ bắn thêm một tên lửa bổ sung.
 20 ST cơ bản."
-shiroko_drone_forward,"+20装备基础伤害
-缩短发射CD","+20 Base Damage  
-Reduces firing cooldown.","+20 Dano Base
-Reduz o tempo de recarga do disparo.","+20 ST trang bị cơ bản
+shiroko_drone_forward,"+20本装备基础伤害
+缩短发射CD","+20 This Equipment's Base Damage  
+Reduces firing cooldown.","+20 Dano Base deste Equipamento
+Reduz o tempo de recarga do disparo.","+20 ST cơ bản của trang bị này
 Giảm độ trễ khi bắn."
 shiroko_drone_negative, , , , 
 arale_hat_name,翅膀帽子,Arale's Hat,Chapéu da Arale,Mũ Cánh Chim
@@ -85,10 +85,10 @@ Achieving a kill increases projectile count.","A espada de um cavaleiro de outro
 Conseguir um abate aumenta o número de projéteis.","Thanh kiếm của một hiệp sĩ từ thế giới khác. Ánh sáng tím của nó khiến người ta rùng mình.
 25 ST cơ bản.
 Tiêu diệt kẻ địch sẽ tăng số lượng vật thể bay."
-murky_hand_scythe_forward,"+18装备基础伤害
-+10%装备体积","+18 Base Damage  
-+10% Projectile Size","+18 Dano Base
-+10% Tamanho do Projétil","+18 ST trang bị cơ bản
+murky_hand_scythe_forward,"+18本装备基础伤害
++10%装备体积","+18 This Equipment's Base Damage  
++10% Projectile Size","+18 Dano Base deste Equipamento
++10% Tamanho do Projétil","+18 ST cơ bản của trang bị này
 +10% Kích thước trang bị"
 murky_hand_scythe_negative, , , , 
 ammunition_box_name,50发弹链,50-round belt,Cinto de 50 Balas,Dây Đạn 50 Viên
@@ -135,13 +135,13 @@ ink_cartridge_description,"给弹药填充颜料，子弹造成伤害时有概�
 20 ST cơ bản."
 ink_cartridge_forward,"可受子弹伤害加成
 提升触发概率
-+20装备基础伤害","Benefits from bullet damage bonuses.  
++20本装备基础伤害","Benefits from bullet damage bonuses.  
 Increases trigger chance.  
-+20 Base Damage.","Recebe bônus do Dano de Bala.
++20 This Equipment's Base Damage.","Recebe bônus do Dano de Bala.
 Aumenta a chance de ativação.
-+20 Dano Base.","Có thể nhận thưởng ST đạn
++20 Dano Base deste Equipamento.","Có thể nhận thưởng ST đạn
 Tăng xác suất kích hoạt
-+20 ST trang bị cơ bản"
++20 ST cơ bản của trang bị này"
 ink_cartridge_negative, , , , 
 black_ninpero_name,黑色忍佩洛,Black Ninpero,Ninpero Preto,Ninpero Đen
 black_ninpero_description,黑色忍佩洛玩偶，子弹命中叠加1层2%易伤，最大25层。,"Black Ninpero doll. Each bullet hit applies 1 stack of 2% vulnerability, up to a maximum of 25 stacks.","Pelúcia do Ninpero Preto. Cada acerto de bala aplica 1 acúmulo de 2% de vulnerabilidade, até um máximo de 25 acúmulos.","Búp bê Ninpero Đen, đạn trúng đích cộng dồn 1 tầng dễ bị tổn thương 2%, tối đa 25 tầng."
@@ -634,13 +634,13 @@ Executa inimigos abaixo de 10% de HP","Một con dao bếp cực kỳ sắc bén
 45 ST cơ bản.
 Có thể kết liễu kẻ địch dưới 10% HP."
 kitchen_knife_forward,"可受近战伤害加成
-+45装备基础伤害
++45本装备基础伤害
 +1%斩杀生命值","Benefits from Melee Damage bonuses
-+45 Base Damage
++45 This Equipment's Base Damage
 +1% Execute HP threshold","Recebe bônus do Dano Corpo a Corpo
-+45 Dano Base
++45 Dano Base deste Equipamento
 +1% do limiar de HP de Execução","Có thể nhận thưởng ST cận chiến
-+45 ST trang bị cơ bản
++45 ST cơ bản của trang bị này
 +1% Ngưỡng HP kết liễu"
 kitchen_knife_negative, , , , 
 bug_eating_plant_name,食虫植物,Bug-Eating Plant,Planta Carnívora,Cây Bắt Ruồi
@@ -782,10 +782,10 @@ sugar_cube_negative, , , ,
 renge_doll_name,莲华人偶,Renge Doll,Boneca da Renge,Búp bê Renge
 renge_doll_description,桔梗做的莲华木雕人偶，以人偶为中心，每0.2秒在其位置留下一个火场，灼烧范围内的敌人，基础伤害15。,"A wooden Renge doll that Kikyou made. Centered on the doll, every 0.2s it leaves a fire field at its position, burning enemies in range. Base damage 15.","Uma boneca de madeira da Renge feita pela Kikyou. Centrada na boneca, a cada 0,2s ela deixa um campo de fogo em sua posição, queimando os inimigos na área. Dano base 15.","Búp bê gỗ Renge do Kikyou làm, lấy búp bê làm tâm, mỗi 0,2 giây để lại một vùng lửa tại vị trí của nó, thiêu đốt kẻ địch trong phạm vi, ST cơ bản 15."
 renge_doll_forward,"最大持有5个
-+20基础伤害","Max Stack: 5
-+20 Base Damage","Acúmulo Máx.: 5
-+20 Dano Base","Tối đa giữ 5 cái
-+20 ST cơ bản"
++20本装备基础伤害","Max Stack: 5
++20 This Equipment's Base Damage","Acúmulo Máx.: 5
++20 Dano Base deste Equipamento","Tối đa giữ 5 cái
++20 ST cơ bản của trang bị này"
 renge_doll_negative, , , ,
 yukari_doll_name,紫草人偶,Yukari Doll,Boneca da Yukari,Búp bê Yukari
 yukari_doll_description,桔梗做的紫草木雕人偶，受到伤害产生一个脉冲波对所有敌人施加一次80策反值的策反伤害，冷却5秒。,A wooden Yukari doll that Kikyou made. Taking damage emits a pulse wave that applies one instance of Convert damage with 80 Convert value to all enemies. Cooldown 5s.,Uma boneca de madeira da Yukari feita pela Kikyou. Receber dano emite uma onda de pulso que aplica uma instância de dano de Conversão com 80 de valor de Conversão a todos os inimigos. Recarga de 5s.,"Búp bê gỗ Yukari do Kikyou làm, khi nhận ST sẽ phát ra một xung sóng áp dụng một lần ST Chuyển hóa 80 giá trị Chuyển hóa lên tất cả kẻ địch, hồi chiêu 5 giây."

@@ -15,7 +15,7 @@ description = "给弹药填充颜料，子弹造成伤害时有概率产生小�
 20基础伤害"
 forward = "可受子弹伤害加成
 提升触发概率
-+20装备基础伤害"
++20本装备基础伤害"
 negative = ""
 item_tags = 12
 tags = Array[String](["爆炸", "概率", "装备"])

@@ -14,7 +14,7 @@ special_rules = 1
 description = "某个世界骑士的佩剑，紫色的光芒让人不寒而栗。
 25基础伤害
 达成击杀增加投射物数量。"
-forward = "+18装备基础伤害
+forward = "+18本装备基础伤害
 +10%装备体积"
 negative = ""
 item_tags = 1028

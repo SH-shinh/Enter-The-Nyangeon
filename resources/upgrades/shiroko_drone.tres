@@ -13,7 +13,7 @@ order_num = -1
 special_rules = 1
 description = "每3秒发射一次火箭，子弹造成5次暴击额外发射一次火箭。
 20基础伤害"
-forward = "+20装备基础伤害
+forward = "+20本装备基础伤害
 缩短发射CD"
 negative = ""
 item_tags = 22
