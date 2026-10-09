@@ -2,7 +2,7 @@ extends CanvasLayer
 
 ## 回合升级「等待所有人就绪」遮罩 / 断线重连「等待 XX 重新连接」轻量遮罩。
 ## 纯展示：不注册取消/返回输入（ESC 无效）。由 CoopFlow 打开/关闭，挂当前场景下，切场景自动释放。
-## light 模式：无背景遮罩 + 小字号(12)顶部居中 + 鼠标穿透（回合进行中的重连等待，世界仍可操作）。
+## light 模式：无背景遮罩 + 小字号(12)、回合计时下方顶部居中 + 鼠标穿透（回合进行中的重连等待，世界仍可操作）。
 
 @onready var _label: Label = %ReadyLabel
 @onready var _background: ColorRect = $Background
@@ -13,8 +13,9 @@ const FONT_SIZE_FULL: int = 40
 const FONT_SIZE_LIGHT: int = 12
 const OUTLINE_SIZE_FULL: int = 6
 const OUTLINE_SIZE_LIGHT: int = 3
-const LIGHT_TOP_MARGIN: float = 12.0
-const LIGHT_BAND_HEIGHT: float = 40.0
+# 回合计时（ui/round_timer.tscn Control：顶部居中，内容高约 40px）下方留白起点，避免遮挡计时
+const LIGHT_TOP_MARGIN: float = 44.0
+const LIGHT_BAND_HEIGHT: float = 24.0
 
 
 func _ready() -> void:
@@ -24,7 +25,7 @@ func _ready() -> void:
 	show_style(false)
 
 
-# 设置文案与样式：light=true 用于断线重连（无黑底、小字号、顶部居中、鼠标穿透）
+# 设置文案与样式：light=true 用于断线重连（无黑底、小字号、回合计时下方顶部居中、鼠标穿透）
 func show_message(text: String, light: bool = false) -> void:
 	if _label != null and text != "":
 		_label.text = text
