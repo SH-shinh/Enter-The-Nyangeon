@@ -102,6 +102,7 @@ mod_sdk/coop_mod/mods/etn_coop/
   - **出生点居中**：`CoopNet._get_room_center_position()`（`CenterPosition` 组 → 当前场景内按名找 `BattleRoom/CenterPosition/SpawnPoint` → `(0,0)`）；本地玩家就绪后归位到 `_spawn_position_for_peer(本机)`，远端镜像同样在中心生成（本体 `test_room` 的 `BattleRoom` 无分组，靠按名兜底）。
   - **测试场点球报错修复**：本体 `test_room.reset_data` 在玩家未就绪时提前 `return`、不发 `get_player`，导致 `enemy_test_menu.player` 为 null。mod 在本地玩家就绪后补发 `GameEvents.emit_get_player()` 并 `PlayerData.player = 本地玩家`（对齐联机版 `bind_player_data_to_local_player`）。
   - **LAN 角色选择握手**：host 在 `change_scene_gate` 里记录各端选择，**等全员选定**后才广播 roster 并放行本体加载；未齐时状态栏显示「等待其它玩家选择」。按约定**跳过关卡选择与自动选卡**（联机版由本体 `menu_screen` 提供，本 mod 不改本体）。
+  - **玩家场景路径必须是 `res://...tscn`**（`PlayerCard.scene_path` 不要写 `uid://`）：联机路径白名单（`_is_safe_remote_path`，`SAFE_PLAYER_PREFIX="res://scenes/player/"`）拒绝非 `res://` 路径，`_server_player_selected` 会静默回退 `DEFAULT_PLAYER_SCENE`(momoi)、`_server_request_player_change` 直接拒绝（换角色时旧角色相机仍锁在测试房小球上 → 镜头卡住）。mod 侧 `_resolve_scene_path`（`ResourceUID.uid_to_path`）已在 `report_local_selection`/`_gate_change_scene`/`_gate_local_player_change`/`_server_player_selected`/`_server_player_ready`/`_server_request_player_change` 各入口先解析 uid，非法路径改为 `push_warning`（不硬报错）。
   - 本地玩家也挂轻量 `CoopPlayerProxy`（本地分支仅缓存/meta，不注册进 `player_by_peer_id` 以免被 `_reset_player_sync` 误释放）。
 - 与联机版 0.4.1.3 的进一步对齐（**纯 mod 侧 + 少量本体最小 hook**）：
   - **救援服务端校验**：`_server_try_revive` 增加「请求者≠目标、双方倒地状态、请求者存活、距离≤96」；`RESCUE_RADIUS`→96；复活补 `stats.player_dead=false`（`set_downed_state(false)` 复位 `player_stop`）。

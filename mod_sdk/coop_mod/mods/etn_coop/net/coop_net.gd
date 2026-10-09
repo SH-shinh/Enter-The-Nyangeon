@@ -151,6 +151,14 @@ func _is_safe_remote_path(path: String, prefixes: Array, exts: Array) -> bool:
 	return false
 
 
+# 把 uid:// 解析为 res:// 资源路径（未知 uid 返回 ""）。供玩家路径统一规范化，
+# 防 PlayerCard.scene_path 误写 uid:// 时被白名单静默拒绝、回退 momoi。
+func _resolve_scene_path(path: String) -> String:
+	if path.begins_with("uid://"):
+		return ResourceUID.uid_to_path(path)
+	return path
+
+
 # 有限 Vector2（非有限则回退 fallback）
 func _finite_v2(v, fallback: Vector2) -> Vector2:
 	if v is Vector2 and is_finite(v.x) and is_finite(v.y):
@@ -1766,11 +1774,13 @@ func _gate_change_scene(path: String, player: String) -> bool:
 		_force_release = false
 		current_scene_path = path
 		if player != "":
-			local_player_scene_path = player
+			var resolved_player: String = _resolve_scene_path(player)
+			local_player_scene_path = resolved_player if resolved_player != "" else player
 		return false
 	current_scene_path = path
 	if player != "":
-		local_player_scene_path = player
+		var resolved_player2: String = _resolve_scene_path(player)
+		local_player_scene_path = resolved_player2 if resolved_player2 != "" else player
 	if not is_lan_game:
 		_reset_run_state()
 		return false
@@ -3590,7 +3600,10 @@ func _apply_shared_pyroxenes_local(amount: int) -> void:
 func _gate_local_player_change(path: String, position: Vector2) -> bool:
 	if not is_lan_game or path == "":
 		return false
-	request_local_player_change(path, position)
+	var resolved_path: String = _resolve_scene_path(path)
+	if resolved_path == "":
+		resolved_path = path
+	request_local_player_change(resolved_path, position)
 	return true
 
 
@@ -3707,8 +3720,11 @@ func _server_request_player_change(path: String, position: Vector2) -> void:
 		return
 	if not _server_sender_ok():
 		return
-	if not _is_safe_remote_path(path, [SAFE_PLAYER_PREFIX, "res://mods/"], [".tscn"]):
+	var resolved_path: String = _resolve_scene_path(path)
+	if resolved_path == "" or not _is_safe_remote_path(resolved_path, [SAFE_PLAYER_PREFIX, "res://mods/"], [".tscn"]):
+		push_warning("[etn_coop] reject unsafe player change scene: %s" % path)
 		return
+	path = resolved_path
 	if not (is_finite(position.x) and is_finite(position.y)):
 		return
 	var sender: int = multiplayer.get_remote_sender_id()
@@ -4483,8 +4499,11 @@ func _server_player_ready(scene_path: String) -> void:
 	if not _server_sender_ok():
 		return
 	var peer_id: int = multiplayer.get_remote_sender_id()
-	if not _is_safe_remote_path(scene_path, [SAFE_PLAYER_PREFIX, "res://mods/"], [".tscn"]):
-		scene_path = DEFAULT_PLAYER_SCENE
+	var resolved_ready_scene: String = _resolve_scene_path(scene_path)
+	if resolved_ready_scene == "" or not _is_safe_remote_path(resolved_ready_scene, [SAFE_PLAYER_PREFIX, "res://mods/"], [".tscn"]):
+		push_warning("[etn_coop] unsafe player scene from peer %d, fallback to default: %s" % [peer_id, scene_path])
+		resolved_ready_scene = DEFAULT_PLAYER_SCENE
+	scene_path = resolved_ready_scene
 	player_scene_by_peer[peer_id] = scene_path
 	# 回发完整 roster 给上报者（覆盖它入场前错过的 existing 玩家）
 	rpc_id(peer_id, "_client_sync_roster", player_scene_by_peer)
@@ -7649,8 +7668,11 @@ func _server_player_selected(player_scene: String) -> void:
 	if not _server_sender_ok():
 		return
 	var sender: int = multiplayer.get_remote_sender_id()
-	if not _is_safe_remote_path(player_scene, [SAFE_PLAYER_PREFIX, "res://mods/"], [".tscn"]):
-		player_scene = DEFAULT_PLAYER_SCENE
+	var resolved_scene: String = _resolve_scene_path(player_scene)
+	if resolved_scene == "" or not _is_safe_remote_path(resolved_scene, [SAFE_PLAYER_PREFIX, "res://mods/"], [".tscn"]):
+		push_warning("[etn_coop] unsafe player scene from peer %d, fallback to default: %s" % [sender, player_scene])
+		resolved_scene = DEFAULT_PLAYER_SCENE
+	player_scene = resolved_scene
 	selected_player_scene_by_peer[sender] = player_scene
 	player_scene_by_peer[sender] = player_scene
 	print("[etn_coop] peer %d selected %s" % [sender, player_scene])
@@ -8618,11 +8640,14 @@ func _remote_select_begin() -> void:
 func report_local_selection(scene_path: String) -> void:
 	if not is_lan_game or scene_path == "":
 		return
-	local_player_scene_path = scene_path
+	var resolved_scene: String = _resolve_scene_path(scene_path)
+	if resolved_scene == "":
+		resolved_scene = scene_path
+	local_player_scene_path = resolved_scene
 	var pid: int = multiplayer.get_unique_id()
-	selected_player_scene_by_peer[pid] = scene_path
+	selected_player_scene_by_peer[pid] = resolved_scene
 	if not multiplayer.is_server():
-		rpc_id(1, "_server_player_selected", scene_path)
+		rpc_id(1, "_server_player_selected", resolved_scene)
 
 
 # 本机所选支援 id（""/"null" = 无）：记录并同步给全端；mods 为其对 medical_kit 生成的影响

@@ -159,3 +159,16 @@
 - Docs synced / 文档同步: `docs/SYSTEMS.md` §5.6、`docs/ARCHITECTURE.md` §1.7 补 null 归一/守卫说明；`docs/LEARNINGS.md` 新增 [Support] 条目（`Source: code + test`）。
 - Verified / 验证: `game_eval`——`game_support=null` 经 `reset_game_support()`/`check_data()` 后均变 `null_support`；`null` 进 `main.tscn` 后 `GameUI.support_box.get_child_count()==0`、无 Nil；置 `kei` 后 `game_add_support()` 得 1 张 `kei` 卡；脚本 `find_symbols` 解析通过；整局 game log 零错误。
 - Open / 待办: `save_data()/load_data()/count_exp()` 对 `now_support` 仍无判空（现有调用链先经 `get_card()`，暂未动，已记为已知隐患）。
+
+---
+
+## 2026-10-09 — Coop client can't pick aris_armed / camera stuck in test room (uid scene_path) / 联机客机选不了 aris_armed、测试房镜头卡住
+- Files / 涉及文件: `resources/player/aris_armed.tres`, `mods/etn_coop/net/coop_net.gd`, `mod_sdk/coop_mod/mods/etn_coop/net/coop_net.gd`, `mod_sdk/coop_mod/README.md`, `docs/LEARNINGS.md`
+- Summary / 改动摘要:
+  - **根因修正**：`resources/player/aris_armed.tres` 的 `scene_path` 由 `uid://coyh4dj2pbd2f` 改为 `res://scenes/player/aris_armed/aris_armed.tscn`（全项目唯一写 uid 的玩家卡，违反 `LEARNINGS` 既有约定）。联机 mod 玩家路径白名单只接受 `res://`，客机选择被静默回退 `DEFAULT_PLAYER_SCENE`(momoi)；换角色请求被 `_server_request_player_change` 直接拒绝 → 旧角色相机仍锁在测试房小球上（`ball.gd:61` 的 `emit_camera_move`），表现为角色变 momoi + 镜头卡住。
+  - **mod 防御**：新增 `_resolve_scene_path`（`ResourceUID.uid_to_path`）；`report_local_selection`/`_gate_change_scene`/`_gate_local_player_change` 入口先规范化，`_server_player_selected`/`_server_player_ready`/`_server_request_player_change` 服务端先解析后校验；非法路径改 `push_warning` 可观测（保留 momoi 回退 / 换人拒绝语义）。
+- Reason / 原因: 用户报告联机（房主外客机）选 aris_armed 无效、测试房换角色镜头卡住且变 momoi、进关卡前选角色也变 momoi。
+- Systems / 影响系统: 联机选人/换角色（`coop_net.gd`）、测试房相机、角色 `PlayerCard.scene_path` 资源。
+- Docs synced / 文档同步: `docs/LEARNINGS.md` 新增 `[Mod] 玩家 scene_path 必须 res://` 条目；`mod_sdk/coop_mod/README.md` 补约定。
+- Correction / 修正: `aris_armed.tres` 的 `scene_path` `uid://coyh4dj2pbd2f` → `res://scenes/player/aris_armed/aris_armed.tscn`（来源：code，符合既有用户约定）。
+- Verified / 验证: `find_symbols` 解析 `coop_net.gd` 通过（`_resolve_scene_path` 已注册）；两份副本 SHA256 一致；待双端 LAN 实机验收（客机选 aris_armed、测试房换角色镜头恢复）。

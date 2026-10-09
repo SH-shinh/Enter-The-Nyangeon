@@ -12,4 +12,4 @@ halo = ExtResource("2_y5vdx")
 color = Color(0.227451, 0.607843, 0.929412, 1)
 voice_name = "aris_armed"
 id = "aris_armed"
-scene_path = "uid://coyh4dj2pbd2f"
+scene_path = "res://scenes/player/aris_armed/aris_armed.tscn"
