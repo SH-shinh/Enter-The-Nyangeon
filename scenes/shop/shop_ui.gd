@@ -70,7 +70,7 @@ func int():
 
 func _ready():
 	
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 	gen_item_choose()
 
 
@@ -111,7 +111,10 @@ func gen_item_choose():
 
 
 func chose_item(attr_info):
-	
+
+	player = PlayerRef.ensure(self, player)
+	if player == null:
+		return
 	var scene_path = "res://scenes/update_item/" + str(attr_info.key) + ".tscn"
 	var scene = load(scene_path)
 	var up_item = scene.instantiate()

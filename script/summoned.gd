@@ -33,8 +33,13 @@ var is_idle: int = 0
 # 排序合帧：同帧多次 enter/exit 只排一次（deferred），避免每事件全量重排
 var _sort_dirty: bool = false
 
+# 玩家会在换角色时被销毁重建；召唤物长期存活，不得长期缓存旧引用（见 PlayerRef）。
+func _ensure_player() -> Node:
+	player = PlayerRef.ensure(self, player)
+	return player
+
 func _ready():
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 	_setup_level_display()
 	ExtensionHooks.notify(ExtensionHooks.on_summoned_spawned, [self, str(scene_file_path)])
 

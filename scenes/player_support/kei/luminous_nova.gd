@@ -21,8 +21,13 @@ var player: Node
 
 var summoned_ammo: int
 
+# 玩家会在换角色时被销毁重建；支援召唤物长期存活，不得长期缓存旧引用（见 PlayerRef）。
+func _ensure_player() -> Node:
+	player = PlayerRef.ensure(self, player)
+	return player
+
 func _ready() -> void:
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 	reload_timer.timeout.connect(_on_reload_timer_timeout)
 	shoot_bullet.connect(bullet_hit_damage)
 	GameEvents.global_time_count.connect(time_count)
@@ -41,7 +46,8 @@ func _shoot():
 		shoot_timer.start()
 
 func _shoot_bullet():
-	if player == null:
+	var p := _ensure_player()
+	if p == null:
 		return
 	
 	if summoned_ammo > 0:
@@ -50,7 +56,7 @@ func _shoot_bullet():
 		reload_ammo()
 		return
 	
-	if player.stats.bullet_count == 1:
+	if p.stats.bullet_count == 1:
 		ProjectileSpawner.spawn_core(
 			bullet, pool_id, "BulletRoot", self, Faction.PLAYER_SIDE,
 			shoot.global_position, self.global_rotation, Vector2.ZERO,
@@ -59,9 +65,9 @@ func _shoot_bullet():
 			Callable(self, "_pre_activate_bullet")
 		)
 	else:
-		var arc_rad = deg_to_rad(player.stats.bullet_arc)
-		var increment = arc_rad / (player.stats.bullet_count - 1)
-		for i in player.stats.bullet_count:
+		var arc_rad = deg_to_rad(p.stats.bullet_arc)
+		var increment = arc_rad / (p.stats.bullet_count - 1)
+		for i in p.stats.bullet_count:
 			ProjectileSpawner.spawn_core(
 				bullet, pool_id, "BulletRoot", self, Faction.PLAYER_SIDE,
 				shoot.global_position, self.global_rotation + increment * i - arc_rad / 2, Vector2.ZERO,
@@ -92,28 +98,31 @@ func _pre_activate_bullet(node: Node) -> void:
 	_shootAnim()
 
 func bullet_hit_damage(bullet_body: Node):
+	var p := _ensure_player()
+	if p == null:
+		return
 	bullet_body.damage_data = DamageData.fill(bullet_body.damage_data, {
-		"knockback": player.stats.bullet_knockback,
+		"knockback": p.stats.bullet_knockback,
 		"type": GameTags.BULLET_DAMAGE,
 		"source": GameTags.SUMMONED,
 		"node": bullet_body,
 	})
 	bullet_body.apply_penetrate_dealt()
 	var luck = randf_range(0, 100)
-	if luck < player.stats.critical_luck:
+	if luck < p.stats.critical_luck:
 		bullet_body.damage_data.is_crit = true
-		bullet_body.damage_data.base_damage = max(1, round((player.stats.bullet_damage * player_damage_mult + stats.summoned_damage) * player.stats.global_damage *  player.stats.critical_damage * stats.summoned_damage_mult))
+		bullet_body.damage_data.base_damage = max(1, round((p.stats.bullet_damage * player_damage_mult + stats.summoned_damage) * p.stats.global_damage *  p.stats.critical_damage * stats.summoned_damage_mult))
 		GameEvents.emit_summoned_shot_critical(bullet_body)
 	else:
 		bullet_body.damage_data.is_crit = false
-		bullet_body.damage_data.base_damage = max(1, round((player.stats.bullet_damage * player_damage_mult + stats.summoned_damage) * player.stats.global_damage * stats.summoned_damage_mult))
+		bullet_body.damage_data.base_damage = max(1, round((p.stats.bullet_damage * player_damage_mult + stats.summoned_damage) * p.stats.global_damage * stats.summoned_damage_mult))
 		GameEvents.emit_summoned_shot_not_critical(bullet_body)
 	
-	bullet_body.penetrate = player.stats.bullet_penetrate
-	bullet_body.collision_num = player.stats.collision_num
+	bullet_body.penetrate = p.stats.bullet_penetrate
+	bullet_body.collision_num = p.stats.collision_num
 	
-	bullet_body.scale = Vector2( player.stats.bullet_scale, player.stats.bullet_scale )
-	bullet_body.kill_time = player.stats.bullet_kill_time * 10
+	bullet_body.scale = Vector2( p.stats.bullet_scale, p.stats.bullet_scale )
+	bullet_body.kill_time = p.stats.bullet_kill_time * 10
 
 func _shootAnim(dur: float = -1.0):
 	# 远端回放时用 action 携带的射速时长覆盖本机 ShootTimer，避免镜像后坐速度与拥有者不一致

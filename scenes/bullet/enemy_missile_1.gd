@@ -34,8 +34,13 @@ var track_targets: Array = []
 @onready var gpu_particles_2d = $Marker2D/GPUParticles2D
 @onready var track_box: Area2D = $TrackBox
 
+# 玩家会在换角色时被销毁重建；池化弹不得长期缓存旧引用（见 PlayerRef）。
+func _ensure_player() -> Node:
+	player = PlayerRef.ensure(self, player)
+	return player
+
 func _ready():
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 	PoolManager.add_pool(pool_id, self)
 	area_entered.connect(_on_hit_box_area_entered)
 	track_box.body_entered.connect(_on_track_box_body_entered)
@@ -114,9 +119,10 @@ func _resolve_target_position() -> Vector2:
 		if source_faction == Faction.PLAYER_SIDE:
 			has_target = false
 			return Vector2.ZERO
-		if player != null and is_instance_valid(player):
+		var p := _ensure_player()
+		if p != null:
 			has_target = true
-			return player.global_position
+			return p.global_position
 		has_target = false
 		return Vector2.ZERO
 	var nearest = track_targets[0]

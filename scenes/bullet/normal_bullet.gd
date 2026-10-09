@@ -15,6 +15,11 @@ var target_position: Vector2
 @onready var collision_shape_2d = $CollisionShape2D
 @onready var ray_cast_2d = $RayCast2D
 
+# 玩家会在换角色时被销毁重建；池化子弹不得长期缓存旧引用（见 PlayerRef）。
+func _ensure_player() -> Node:
+	player = PlayerRef.ensure(self, player)
+	return player
+
 var penetrate: int = 1 #穿透值
 var direction: Vector2 = Vector2.RIGHT
 var speed: int = 300:
@@ -38,19 +43,21 @@ var _shape_gen: int = 0
 var player: Node
 
 func _ready():
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 	direction = Vector2.RIGHT.rotated(global_rotation)
 	velocity = direction * speed
 	PoolManager.add_pool(pool_id,self)
 	manages_own_hits = true
 	_setup_self_hits()
 	if has_line:
+		var p := _ensure_player()
 		line = $Line
 		line_2 = $Line2
 		line.life_timer = 4
 		line_2.life_timer = line.life_timer
-		line.scale_mult = player.stats.bullet_scale
-		line_2.scale_mult = player.stats.bullet_scale
+		if p != null:
+			line.scale_mult = p.stats.bullet_scale
+			line_2.scale_mult = p.stats.bullet_scale
 		line.update_width()
 		line_2.update_width()
 	
@@ -99,20 +106,24 @@ func active_state():
 	self.velocity = direction * speed
 	self.visible = true
 	if has_line:
+		var p := _ensure_player()
 		line.reset()
 		line_2.reset()
 		line.is_idle = false
 		line_2.is_idle = false
 		line.life_timer = 4
 		line_2.life_timer = line.life_timer
-		line.scale_mult = player.stats.bullet_scale
-		line_2.scale_mult = player.stats.bullet_scale
+		if p != null:
+			line.scale_mult = p.stats.bullet_scale
+			line_2.scale_mult = p.stats.bullet_scale
 		line.update_width()
 		line_2.update_width()
 
 func apply_penetrate_dealt():
 	var cb: Callable = func(victim: Node, _actual_damage: float):
-		damage_data.knockback_direction = (victim.global_position - player.global_position).normalized()
+		var p := _ensure_player()
+		if p != null:
+			damage_data.knockback_direction = (victim.global_position - p.global_position).normalized()
 		bulletSmoke(global_position)
 		penetrate -= victim.stats.penetrate_resis
 		if penetrate <= 0:

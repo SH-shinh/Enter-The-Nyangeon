@@ -39,11 +39,10 @@ func touch_mode_hide():
 	visible = false
 
 func get_player():
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 
 func game_over_hide(player_dead: bool):
-	if player == null:
-		player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.ensure(self, player)
 	if player_dead and player != null and player.get("stats") != null and player.stats.hp <= 0:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		visible = false

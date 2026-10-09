@@ -28,9 +28,14 @@ var round_boss_hp_curve: Curve
 var hp_growth_curve: Curve
 var max_round: float = 20
 
+# 玩家会在换角色时被销毁重建；刷怪点长期存活，取用前统一重新解析（见 PlayerRef）。
+func _ensure_player() -> Node:
+	player = PlayerRef.ensure(self, player)
+	return player
+
 func _ready():
 	tilemap = get_tree().get_first_node_in_group("Map")
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 	round_timer = get_tree().get_first_node_in_group("RoundTime")
 	enemy_spawn_time_copy = enemy_spawn_time.duplicate()
 	update_cd()
@@ -118,9 +123,11 @@ func enemy_spawn():
 				var rand_position_num = ran.randi_range(0, cell_count) - 1
 				var rand_position = tilemap.map_to_local(cells[rand_position_num])
 				
-				while rand_position.distance_to(player.position) < 170:
-					rand_position_num = ran.randi_range(0, cell_count) - 1
-					rand_position = tilemap.map_to_local(cells[rand_position_num])
+				var p := _ensure_player()
+				if p != null:
+					while rand_position.distance_to(p.position) < 170:
+						rand_position_num = ran.randi_range(0, cell_count) - 1
+						rand_position = tilemap.map_to_local(cells[rand_position_num])
 				
 				var spawn_anim = PoolManager.get_pool("spawn_anim")
 				if spawn_anim == null or spawn_anim.is_idle == 0:

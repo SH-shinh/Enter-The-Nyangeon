@@ -32,7 +32,9 @@ func active_state():
 func apply_penetrate_dealt():
 	var cb: Callable = func(victim: Node, _actual_damage: float):
 		victim.enemy_buff_manager.apply_buff(enemy_buff, value)
-		damage_data.knockback_direction = (victim.global_position - player.global_position).normalized()
+		var p := _ensure_player()
+		if p != null:
+			damage_data.knockback_direction = (victim.global_position - p.global_position).normalized()
 		bulletSmoke(global_position)
 		if can_block:
 			penetrate -= victim.stats.penetrate_resis

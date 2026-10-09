@@ -59,7 +59,7 @@ func int():
 
 func _ready():
 	
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 	gen_item_choose()
 
 
@@ -105,6 +105,9 @@ func chose_item(attr_info):
 
 
 func _unhandled_input(event:InputEvent ) -> void:
+	player = PlayerRef.ensure(self, player)
+	if player == null:
+		return
 	
 	if Input.is_action_just_pressed("use") and use_cd.time_left == 0 and camera_2d.enabled == true:
 		

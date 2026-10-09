@@ -164,7 +164,7 @@ func apply_upgrade(upgrade:AbilityUpgrade):
 			"quantity": 1
 		}
 		
-		player = get_tree().get_first_node_in_group("Player")
+		player = PlayerRef.resolve(self)
 		if player != null:
 			var scene_path = "res://scenes/update_item/" + str(upgrade.id) + ".tscn"
 			var mod_scene := ModManager.get_scene("upgrades", str(upgrade.id))
@@ -287,6 +287,7 @@ func get_random_options() -> Array[AbilityUpgrade]:
 
 # 更新权重管理器状态
 func update_weight_manager_state():
+	player = PlayerRef.ensure(self, player)
 	if player != null:
 		weight_manager.update_player_state({
 			"health_percent": player.stats.hp / player.stats.max_hp,

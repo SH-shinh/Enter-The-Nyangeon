@@ -132,9 +132,9 @@ func add_damage_data():
 
 func _get_player() -> Node:
 	var p: Node = PlayerData.player
-	if p == null:
-		p = get_tree().get_first_node_in_group("Player")
-	return p
+	if p != null and is_instance_valid(p) and p.is_inside_tree():
+		return p
+	return PlayerRef.resolve(self)
 
 # 玩家侧爆炸是否吃「爆炸伤害」加成：类型含 EXPLOSION_DAMAGE，来源非空且属玩家侧。
 # 来源必须非空——空 source_type 会被 Faction.of_source 判成玩家方（见 docs/LEARNINGS.md）。
@@ -145,7 +145,7 @@ static func should_apply_player_explosion_bonus(damage_type: Array, source_type:
 
 # 返回应用加成后的 DamageData（复制后改写，不污染原实例）；不适用/无玩家时原样返回。
 static func apply_player_explosion_bonus(data: DamageData, player: Node) -> DamageData:
-	if data == null or player == null:
+	if data == null or player == null or not is_instance_valid(player):
 		return data
 	if not should_apply_player_explosion_bonus(data.damage_type, data.source_type):
 		return data

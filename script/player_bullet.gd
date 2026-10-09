@@ -45,8 +45,13 @@ var player: Node
 @onready var bullet_smoke: PackedScene = preload("res://scenes/bullet/bullet_smoke.tscn")
 @onready var ray_cast_2d = $RayCast2D
 
+# 玩家会在换角色时被销毁重建；池化子弹不得长期缓存旧引用（见 PlayerRef）。
+func _ensure_player() -> Node:
+	player = PlayerRef.ensure(self, player)
+	return player
+
 func _ready():
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 	direction = Vector2.RIGHT.rotated(global_rotation)
 	velocity = direction * speed
 	ray_cast_2d.target_position.x = speed * 0.0167
@@ -55,10 +60,12 @@ func _ready():
 	if manages_own_hits:
 		_setup_self_hits()
 	if line != null and line_2 != null:
+		var p := _ensure_player()
 		line.life_timer = 4
 		line_2.life_timer = line.life_timer
-		line.scale_mult = player.stats.bullet_scale
-		line_2.scale_mult = player.stats.bullet_scale
+		if p != null:
+			line.scale_mult = p.stats.bullet_scale
+			line_2.scale_mult = p.stats.bullet_scale
 		line.update_width()
 		line_2.update_width()
 	
@@ -78,7 +85,9 @@ func apply_penetrate_dealt():
 		var is_prop: bool = victim.is_in_group("SceneProp")
 		if not is_prop:
 			GameEvents.emit_player_bullet_hit_enemy(self, victim)
-			damage_data.knockback_direction = (victim.global_position - player.global_position).normalized()
+			var p := _ensure_player()
+			if p != null:
+				damage_data.knockback_direction = (victim.global_position - p.global_position).normalized()
 		bulletSmoke(global_position)
 		penetrate -= victim.stats.penetrate_resis
 		if penetrate <= 0:
@@ -135,14 +144,16 @@ func active_state():
 	if slow_down == true:
 		ACCELERATION = speed / slow_time
 	if line != null and line_2 != null:
+		var p := _ensure_player()
 		line.reset()
 		line_2.reset()
 		line.is_idle = false
 		line_2.is_idle = false
 		line.life_timer = 4
 		line_2.life_timer = line.life_timer
-		line.scale_mult = player.stats.bullet_scale
-		line_2.scale_mult = player.stats.bullet_scale
+		if p != null:
+			line.scale_mult = p.stats.bullet_scale
+			line_2.scale_mult = p.stats.bullet_scale
 		line.update_width()
 		line_2.update_width()
 	self.visible = true

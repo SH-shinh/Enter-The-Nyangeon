@@ -26,7 +26,7 @@ func _ready():
 	is_ready()
 
 func get_player():
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 
 func is_ready():
 	on_ready = true
@@ -96,6 +96,9 @@ func _physics_process(_delta):
 		return
 	
 	if pick_up == true and can_pick == true:
+		player = PlayerRef.ensure(self, player)
+		if player == null:
+			return
 		if target == null:
 			target = player
 			collision_shape_2d.set_deferred("disabled", true)
@@ -108,11 +111,15 @@ func add_coin():
 	if add_end == true:
 		return
 	add_end = true
-	var coin_value: int = ceil(coin * player.stats.coin_mult)
-	if ExtensionHooks.intercept(ExtensionHooks.coin_pickup_gate, [self, player, player.stats.coin_mult]):
+	var p := PlayerRef.ensure(self, player)
+	player = p
+	if p == null:
 		return
-	player.coin_sounds.play()
-	player.stats.coin += coin_value
+	var coin_value: int = ceil(coin * p.stats.coin_mult)
+	if ExtensionHooks.intercept(ExtensionHooks.coin_pickup_gate, [self, p, p.stats.coin_mult]):
+		return
+	p.coin_sounds.play()
+	p.stats.coin += coin_value
 	GameEvents.emit_player_pick_up_coin(self.global_position)
 	GameEvents.emit_player_coins_get(coin_value)
 

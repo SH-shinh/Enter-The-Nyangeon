@@ -54,8 +54,13 @@ func _set_shape_disabled_guarded(value: bool, gen: int) -> void:
 		return
 	collision_shape_2d.disabled = value
 
+# 玩家会在换角色时被销毁重建；池化弹不得长期缓存旧引用（见 PlayerRef）。
+func _ensure_player() -> Node:
+	player = PlayerRef.ensure(self, player)
+	return player
+
 func _ready():
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 	PoolManager.add_pool(pool_id,self)
 	hit_box.area_entered.connect(_on_area_entered)
 	hit_box.area_exited.connect(_on_area_exited)
@@ -119,9 +124,10 @@ func apply_penetrate_dealt():
 	damage_data.on_damage_dealt.append(func(victim: Node, _actual_damage: float):
 		if victim == null or not is_instance_valid(victim):
 			return
-		if player == null or not is_instance_valid(player):
+		var p := _ensure_player()
+		if p == null:
 			return
-		damage_data.knockback_direction = (victim.global_position - player.global_position).normalized()
+		damage_data.knockback_direction = (victim.global_position - p.global_position).normalized()
 	)
 
 func smoke_add():
