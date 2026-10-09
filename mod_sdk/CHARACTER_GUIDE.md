@@ -253,7 +253,8 @@ func _on_first_round() -> void:
 
 - 角色 `name` / `weapon` 是直接字符串，**不走翻译**。
 - PS 描述键为 `<char_id>_ps_0..3`（见 `ETN_player_localization.csv` 的模式，如 `momoi_ps_0..3`）。
-- ⚠️ **当前 mod 自带翻译未接入**（`TranslationServer` 只加载本体 CSV）→ mod 的 `<char_id>_ps_N` 若不并入本体 CSV 会显示**原始键**。属当前限制。
+- mod 自带翻译：在 `mod.json.entry` 脚本里用 `ModAPI.add_translation(locale, key, value)` 注入（每个 locale 各调一次）。未翻译的键会**回退到 `PlayerCard.description`**（不再显示原始键）。
+- 新增/覆盖语言（选择器中的语言项与字体）：`ModAPI.register_language(locale, display_name, opts)`，详见 `README.md` §15。
 
 ### 3.12 语音（可选）
 

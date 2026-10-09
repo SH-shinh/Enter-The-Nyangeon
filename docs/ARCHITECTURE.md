@@ -82,12 +82,12 @@ Declared in `project.godot:25-39`. **Order = `_ready()` order** (relevant: `Game
 - 机制细节与坑见 `SYSTEMS.md` §6.3、`LEARNINGS.md`。
 
 ### 1.10 LocaleFont
-- 职责：越南语（`vi_VN`）时，**只把显示本地化文本的文字控件**换成 Roboto；数字/符号/硬编码英文/CJK 一律沿用像素字。因 Godot **不支持按脚本整段字体回退**（回退仅逐字形缺字触发，见 `LEARNINGS.md`），只能运行时按节点替换字体。
-- 映射（资源 identity）：`BoutiqueBitmap9x9_1.9`→`RobotoCondensed-Light`、`BoutiqueBitmap7x7_1.7`→`RobotoCondensed-Light`、`BoutiqueBitmap9x9_Bold_1.9`→`RobotoCondensed-Bold`。
+- 职责：按当前 locale 把**显示本地化文本的文字控件**换成支持该语言的字体；数字/符号/硬编码英文/CJK 一律沿用像素字。内置 `vi_VN`→Roboto（原行为）；mod 可经 `ModAPI.register_language(locale, 显示名, {font_map, glyph_ranges, display_font})` → `LocaleFont.register_locale_fonts()` 注册任意 locale 的映射与触发区间（见 `mod_sdk/README.md` §15）。因 Godot **不支持按脚本整段字体回退**（回退仅逐字形缺字触发，见 `LEARNINGS.md`），只能运行时按节点替换字体。
+- 映射（资源 identity）：`BoutiqueBitmap9x9_1.9`→`RobotoCondensed-Light`、`BoutiqueBitmap7x7_1.7`→`RobotoCondensed-Light`、`BoutiqueBitmap9x9_Bold_1.9`→`RobotoCondensed-Bold`（内置存于 `_locale_fonts["vi_VN"]`）。
 - Roboto 缺 `♪/♩`（U+2669/U+266A）与 CJK：`_ready` 给 `ROBOTO_BODY/ROBOTO_BOLD` 设 `Font.fallbacks = [PIXEL_9/PIXEL_BOLD]`，缺字回退像素字，避免系统回退/方块。
-- 判定「需要 Roboto」（`locale_font.gd:_needs_robo`）：满足任一——① 文本是本地化键（`TranslationServer.translate(text) != text`）；② 文本含像素字缺失的越南语/拉丁扩展字符（`not pixel.has_char(cp)`，覆盖代码拼装的译文如 `talk_text.gd:8` 的 `tr()`）。否则不改。
-- 应用范围：`Label`/`RichTextLabel`/`Button`（RichTextLabel 用 `normal_font` 等 5 个条目；其余用 `font`）。记录改动前原始状态（meta `_locale_font_orig`），非 vi 精确还原。**不改** `root.theme`、不换节点自带主题。
-- 触发：`_ready` 先应用一次；`node_added` 处理动态/新场景节点；`minimum_size_changed`（文本后填时重判，覆盖初始为空的 `shop_menu.ps/ex_skill`）；`NOTIFICATION_TRANSLATION_CHANGED` 全树重扫（故 `Game.gd:261`/`langue_button.gd` **无需改动**）。
+- 判定「需要替换」（`locale_font.gd:_needs_replacement`）：满足任一——① 文本是本地化键（`TranslationServer.translate(text) != text`）；② 文本含注册 `glyph_ranges` 内且像素字缺失的字形（`not pixel.has_char(cp)`，覆盖代码拼装的译文如 `talk_text.gd:8` 的 `tr()`）。否则不改。
+- 应用范围：`Label`/`RichTextLabel`/`Button`（RichTextLabel 用 `normal_font` 等 5 个条目；其余用 `font`）。记录改动前原始状态（meta `_locale_font_orig`），无映射的 locale 精确还原。**不改** `root.theme`、不换节点自带主题。
+- 触发：`_ready` 先应用一次；`node_added` 处理动态/新场景节点；`minimum_size_changed`（文本后填时重判，覆盖初始为空的 `shop_menu.ps/ex_skill`）；`NOTIFICATION_TRANSLATION_CHANGED` 全树重扫（故 `Game`/`langue_button` 无需自行换字）。
 - 边界：主题资源内嵌字体（`ui/game_option.tscn` 的 `OptionButton/PopupMenu`、`ui/langue_button.tscn` 的 `PopupMenu`）不在替换范围，影响很小。
 - 效果：HUD/结算/记分板/属性数值等数字不变化；属性名、对白、商店页切换、设置项等本地化文本显示为 Roboto。Roboto 与像素字度量不同，个别固定宽度 Label 仍可能溢出（靠 `auto_text.gd` 兜底）。
 

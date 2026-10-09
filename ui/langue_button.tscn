@@ -31,15 +31,6 @@ theme = SubResource("Theme_j00sm")
 theme_override_fonts/font = ExtResource("1_2qpss")
 theme_override_font_sizes/font_size = 12
 selected = 0
-item_count = 4
-popup/item_0/text = "简体中文"
-popup/item_0/id = 0
-popup/item_1/text = "English"
-popup/item_1/id = 1
-popup/item_2/text = "Português"
-popup/item_2/id = 2
-popup/item_3/text = "Vietnamese"
-popup/item_3/id = 3
 
 [node name="Label" type="Label" parent="." unique_id=914159470]
 offset_left = 5.0
@@ -76,57 +67,5 @@ layout_mode = 2
 theme_override_constants/separation = 2
 alignment = 2
 
-[node name="zh_CN" type="PanelContainer" parent="touch_menu/PanelContainer/VBoxContainer" unique_id=1490094289]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 20)
-layout_mode = 2
-
-[node name="Label" type="Label" parent="touch_menu/PanelContainer/VBoxContainer/zh_CN" unique_id=1391633418]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("1_2qpss")
-theme_override_font_sizes/font_size = 12
-text = "简体中文"
-horizontal_alignment = 1
-
-[node name="EN" type="PanelContainer" parent="touch_menu/PanelContainer/VBoxContainer" unique_id=1737117757]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 20)
-layout_mode = 2
-
-[node name="Label" type="Label" parent="touch_menu/PanelContainer/VBoxContainer/EN" unique_id=1371495228]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("1_2qpss")
-theme_override_font_sizes/font_size = 12
-text = "ENGLISH"
-horizontal_alignment = 1
-
-[node name="PT" type="PanelContainer" parent="touch_menu/PanelContainer/VBoxContainer" unique_id=1395745331]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 20)
-layout_mode = 2
-
-[node name="Label" type="Label" parent="touch_menu/PanelContainer/VBoxContainer/PT" unique_id=92255121]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("1_2qpss")
-theme_override_font_sizes/font_size = 12
-text = "Português"
-horizontal_alignment = 1
-
-[node name="vi_VN" type="PanelContainer" parent="touch_menu/PanelContainer/VBoxContainer" unique_id=2084307913]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 20)
-layout_mode = 2
-
-[node name="Label" type="Label" parent="touch_menu/PanelContainer/VBoxContainer/vi_VN" unique_id=845094381]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("1_2qpss")
-theme_override_font_sizes/font_size = 12
-text = "Vietnamese"
-horizontal_alignment = 1
-
 [connection signal="item_selected" from="OptionButton" to="." method="_on_option_button_item_selected"]
 [connection signal="pressed" from="OptionButton" to="." method="_on_option_button_pressed"]
-[connection signal="gui_input" from="touch_menu/PanelContainer/VBoxContainer/zh_CN" to="." method="_on_zh_cn_gui_input"]
-[connection signal="gui_input" from="touch_menu/PanelContainer/VBoxContainer/EN" to="." method="_on_en_gui_input"]
-[connection signal="gui_input" from="touch_menu/PanelContainer/VBoxContainer/PT" to="." method="_on_pt_gui_input"]
-[connection signal="gui_input" from="touch_menu/PanelContainer/VBoxContainer/vi_VN" to="." method="_on_vi_vn_gui_input"]

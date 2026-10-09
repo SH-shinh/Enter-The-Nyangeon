@@ -5,6 +5,8 @@ extends Node
 # 约定：mod 包内资源放在 res://mods/<mod_id>/ 下；mod.json 与 pck 位于 user://mods/<mod_id>/。
 
 signal mods_changed
+# 语言列表（内置 4 种 + mod 注册）变化；ui/langue_button 监听后重建下拉/触摸菜单。
+signal languages_changed
 
 const MODS_DIR := "user://mods"
 const STATE_PATH := "user://mods/mods_state.json"
@@ -38,6 +40,14 @@ const BASE_SOCIETIES: Array[Dictionary] = [
 	{"id": "DC", "scene": "res://ui/DC_card.tscn"},
 ]
 
+# 本体语言注册表（单一来源）：语言选择器从这里生成；mod 可 register_language 追加或覆盖。
+const BASE_LANGUAGES: Array[Dictionary] = [
+	{"locale": "zh_CN", "display_name": "简体中文"},
+	{"locale": "en", "display_name": "English"},
+	{"locale": "pt", "display_name": "Português"},
+	{"locale": "vi_VN", "display_name": "Vietnamese"},
+]
+
 # id -> { dir, manifest, enabled, mounted, error }
 var _mods: Dictionary = {}
 # kind -> { id -> { "res": Resource, "scene": String, "card_scene": PackedScene, "mod": String } }
@@ -56,10 +66,13 @@ var _pending_scene_path: String = ""
 var _unlocked_applied: bool = false
 # locale -> Translation（ModAPI.add_translation 运行时注入）
 var _mod_translations: Dictionary = {}
+# [{locale, display_name, font_map, glyph_ranges, display_font}]（BASE_LANGUAGES + mod 注册/覆盖）
+var _languages: Array = []
 
 
 func _ready() -> void:
 	DirAccess.make_dir_recursive_absolute(MODS_DIR)
+	_languages = _base_languages_copy()
 	_build_reserved_ids()
 	_load_order()
 	_scan_installed()
@@ -724,6 +737,61 @@ func add_translation(locale: String, key: String, value: String) -> void:
 		_mod_translations[locale] = t
 		TranslationServer.add_translation(t)
 	_mod_translations[locale].add_message(key, value)
+
+
+# ---------------- 语言注册表 ----------------
+
+func _base_languages_copy() -> Array:
+	var out: Array = []
+	for e in BASE_LANGUAGES:
+		out.append({
+			"locale": str(e.get("locale", "")),
+			"display_name": str(e.get("display_name", "")),
+			"font_map": {},
+			"glyph_ranges": [],
+			"display_font": null,
+		})
+	return out
+
+
+# 注册/覆盖一个语言（供 ModAPI.register_language）。locale 相同则覆盖 display_name/opts。
+# opts 可选：font_map:Dictionary（像素字体→替换字体，路径或 Font）、
+#          glyph_ranges:Array（[[start,end],...]，缺失字形才触发替换）、
+#          display_font:String|Font（选择器显示名字体）。
+func register_language(locale: String, display_name: String, opts: Dictionary = {}) -> bool:
+	if locale == "":
+		push_warning("[ModManager] register_language 缺 locale")
+		return false
+	var fm = opts.get("font_map", {})
+	var gr = opts.get("glyph_ranges", [])
+	if not (fm is Dictionary):
+		fm = {}
+	if not (gr is Array):
+		gr = []
+	var entry := {
+		"locale": locale,
+		"display_name": display_name,
+		"font_map": fm,
+		"glyph_ranges": gr,
+		"display_font": opts.get("display_font", null),
+	}
+	var found := false
+	for i in _languages.size():
+		if str(_languages[i].get("locale", "")) == locale:
+			_languages[i] = entry
+			found = true
+			break
+	if not found:
+		_languages.append(entry)
+	if not fm.is_empty() or not gr.is_empty():
+		LocaleFont.register_locale_fonts(locale, fm, gr)
+	languages_changed.emit()
+	return true
+
+
+# 本地语言列表（内置在前，mod 注册/覆盖随后）：[{locale, display_name, font_map, glyph_ranges, display_font}]
+func get_languages() -> Array:
+	return _languages
 
 
 func _type_ok(kind: String, res) -> bool:

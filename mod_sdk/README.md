@@ -170,7 +170,7 @@ func _on_first_round() -> void:
     pass
 ```
 
-- `ModAPI`（`res://script/mod_api.gd`）是稳定静态门面。**只读**：`get_content(kind)` / `get_resource(kind,id)` / `get_scene(kind,id)` / `get_characters()` / `has_upgrade(id)` / `get_content_mod(kind,id)` / `get_societies()` / `get_unclaimed_characters()` / `get_unclaimed_unlocked_characters()` / `list_mods()`。**写入**：`register_content(kind,id,res,mod_id,scene_path?,card_scene_path?)`（运行期注册，走 id 前缀/冲突治理，替代直接访问 `_registry`）、`add_translation(locale,key,value)`（运行期注入翻译，`locale` 如 `zh_CN`/`en`）。
+- `ModAPI`（`res://script/mod_api.gd`）是稳定静态门面。**只读**：`get_content(kind)` / `get_resource(kind,id)` / `get_scene(kind,id)` / `get_characters()` / `has_upgrade(id)` / `get_content_mod(kind,id)` / `get_societies()` / `get_unclaimed_characters()` / `get_unclaimed_unlocked_characters()` / `list_mods()` / `get_languages()`。**写入**：`register_content(kind,id,res,mod_id,scene_path?,card_scene_path?)`（运行期注册，走 id 前缀/冲突治理，替代直接访问 `_registry`）、`add_translation(locale,key,value)`（运行期注入翻译，`locale` 如 `zh_CN`/`en`）、`register_language(locale,display_name,opts?)`（注册/覆盖一个语言，见 §15）。
 - 翻译注入示例（补 mod 自带 PS 文案）：
   ```gdscript
   func _ready() -> void:
@@ -219,3 +219,25 @@ members = Array[String](["my_mod_hero", "my_mod_leader"])
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 ```
+
+## 15. 添加语言（mod 自带翻译 + 语言选择）
+
+本体语言选择器（主菜单 / 暂停页共用 `ui/langue_button`）从 `ModManager.get_languages()` 生成，mod 可经 entry 追加或覆盖语言：
+
+- `ModAPI.register_language(locale, display_name, opts := {})`
+  - `locale`：语言代码（如 `"ja"`/`"ko"`）；与内置 `zh_CN`/`en`/`pt`/`vi_VN` 同名 = **覆盖**其显示名/字体。
+  - `display_name`：选择器中显示的名字（如 `"日本語"`）。
+  - `opts.font_map`：`{ "res://fonts/BoutiqueBitmap9x9_Bold_1.9.ttf": "res://mods/<id>/fonts/X-Bold.ttf", ... }`，把像素字体换成支持该语言的字体（键值可为 `res://` 路径或 Font）。
+  - `opts.glyph_ranges`：`[[start, end], ...]` 码点区间；文本含区间内且像素字缺失的字形时才替换（配合 `font_map`，窄触发，不动数字/符号）。
+  - `opts.display_font`：选择器中该语言显示名所用字体（`res://` 路径或 Font）。
+- 词条用 `ModAPI.add_translation(locale, key, value)` 逐条注入（每个 locale 各调一次）；未翻译的键回退到 `internationalization/locale/fallback`（默认 `en`）。
+- 示例：
+  ```gdscript
+  func _ready() -> void:
+      ModAPI.register_language("ja", "日本語", {
+          "font_map": {"res://fonts/BoutiqueBitmap9x9_Bold_1.9.ttf": "res://mods/my_mod/fonts/NotoSansJP-Bold.ttf"},
+          "glyph_ranges": [[0x3040, 0x30FF], [0x4E00, 0x9FFF]],
+      })
+      ModAPI.add_translation("ja", "mychar_hero_ps_0", "私のスキル")
+  ```
+- 边界：桌面原生下拉（PopupMenu）不支持逐项字体，仅当前选中语言按其 `display_font` 呈现；触屏自定义列表逐项正确。

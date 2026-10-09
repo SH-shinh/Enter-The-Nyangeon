@@ -53,6 +53,11 @@ static func list_mods() -> Array:
 	return ModManager.list_mods()
 
 
+# 本地语言列表：[{locale, display_name, ...}]（内置 4 种 + mod 注册/覆盖）
+static func get_languages() -> Array:
+	return ModManager.get_languages()
+
+
 # ---------------- 写入（替代直接访问 _registry/_order） ----------------
 
 # 运行期注册一条内容。mod_id 用于前缀/冲突治理；scene_path/card_scene_path 可选。
@@ -64,3 +69,9 @@ static func register_content(kind: String, id: String, res, mod_id: String, scen
 # 运行期注入一条翻译。locale 形如 "zh_CN"/"en"；供 mod 自带本地化（PS 文案等）。
 static func add_translation(locale: String, key: String, value: String) -> void:
 	ModManager.add_translation(locale, key, value)
+
+
+# 注册/覆盖一个语言（含显示名与可选字体）。locale 相同则覆盖。返回是否成功。
+# opts 可选：font_map:Dictionary、glyph_ranges:Array、display_font:String|Font。
+static func register_language(locale: String, display_name: String, opts: Dictionary = {}) -> bool:
+	return ModManager.register_language(locale, display_name, opts)
