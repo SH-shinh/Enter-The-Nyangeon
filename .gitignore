@@ -4,6 +4,9 @@
 # coop mod 构建产物（源在 mod_sdk/coop_mod/mods/）
 mod_sdk/coop_mod/build/
 
+# 本地 mod 编辑器镜像（仅本地，不入库；根限定，勿加 mod_sdk/coop_mod/mods/）
+/mods/
+
 # 生成物 / 工具 / 临时文件（不入库）
 android/build/
 addons/.godot_ai_update/
