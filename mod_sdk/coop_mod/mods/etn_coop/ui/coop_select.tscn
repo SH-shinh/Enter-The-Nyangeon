@@ -291,6 +291,7 @@ custom_minimum_size = Vector2(0, 340)
 layout_mode = 2
 
 [node name="SocietyScroll" type="ScrollContainer" parent="." unique_id=1398991834]
+clip_contents = false
 offset_left = 574.0
 offset_top = 48.0
 offset_right = 683.0

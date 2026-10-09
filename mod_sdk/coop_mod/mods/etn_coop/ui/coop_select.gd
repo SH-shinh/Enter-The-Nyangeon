@@ -20,6 +20,7 @@ const SUPPORT_CARD_SCENE := preload("res://ui/support_ui/support_shop_card.tscn"
 
 var _active_society: Node = null
 var _confirming: bool = false
+var _interactive: bool = true
 
 
 func _ready() -> void:
@@ -43,9 +44,30 @@ func play_hide() -> void:
 		_anim.play_backwards("show_anim")
 
 
-# 确认角色后本层被“已就绪/难度”遮盖：禁用其输入与动画；就绪/难度取消时再启用
+# 确认角色后本层被“已就绪/难度”遮盖。只切输入可交互性，**不改 process_mode**：
+# 设成 DISABLED 会把角色卡的 select_anim（AnimationPlayer）一并冻结，导致动画要等
+# 取消就绪才补播。就绪/难度取消时再恢复输入。
 func set_interactive(v: bool) -> void:
-	process_mode = Node.PROCESS_MODE_ALWAYS if v else Node.PROCESS_MODE_DISABLED
+	_interactive = v
+	# 重新启用（取消就绪/取消难度）时复位确认标志，否则 _on_player_card_id 会一直早退，
+	# 导致取消后无法再次选人（本层实例不会重建）。
+	if v:
+		_confirming = false
+	_set_cards_interactive(v)
+
+
+# 切换 %PlayerBox 内角色卡的输入：
+# - 官方卡（player_card.gd）：mouse_open/mouse_close 切 mouse_filter，并复位 on_select/on_touch。
+#   官方卡的选择会经 player_card_selected → mouse_close 永久置 IGNORE，而恢复用的 mouse_open
+#   只在 level_select_out 触发；coop 从不发该信号，故取消就绪时须手动恢复（否则当前社团
+#   的卡不可再选，只有切换社团重新实例化的卡能选）。
+# - mod 卡（mod_player_card.gd，Button）：无 mouse_open，退化为 disabled。
+func _set_cards_interactive(enabled: bool) -> void:
+	for card in _player_box.get_children():
+		if card.has_method("mouse_open") and card.has_method("mouse_close"):
+			card.call("mouse_open" if enabled else "mouse_close")
+		elif card is BaseButton:
+			card.disabled = not enabled
 
 
 func _build_supports() -> void:
@@ -151,6 +173,9 @@ func _report_local_support() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# 被“已就绪/难度”遮罩覆盖期间不处理输入（尤其不吞 Esc），交给上层遮罩
+	if not _interactive:
+		return
 	# 吞掉 Esc，避免弹出本体暂停菜单；房主在未选角色时按 Esc = 取消整轮选人回准备房
 	if not (event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause")):
 		return

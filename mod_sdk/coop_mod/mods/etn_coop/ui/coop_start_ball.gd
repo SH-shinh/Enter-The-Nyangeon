@@ -14,7 +14,7 @@ const HINT_FONT := preload("res://fonts/BoutiqueBitmap7x7_1.7.ttf")
 const HINT_ANIM_TIME := 0.1
 const HINT_HOLD := 2.0
 const HINT_SLIDE := 10.0
-const HINT_BASE_Y := -66.0
+const HINT_BASE_Y := -124.0
 const HINT_WIDTH := 200.0
 
 const GREEN_TEX_PATH := "res://mods/etn_coop/sprites/item/green_ball.png"
@@ -83,7 +83,7 @@ func _build_hint_label() -> void:
 	_hint_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hint_label.z_index = 20
 	_hint_label.add_theme_font_override("font", HINT_FONT)
-	_hint_label.add_theme_font_size_override("font_size", 8)
+	_hint_label.add_theme_font_size_override("font_size", 12)
 	_hint_label.add_theme_color_override("font_color", Color(1.0, 0.333, 0.333, 1.0))
 	_hint_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
 	_hint_label.add_theme_constant_override("outline_size", 4)
@@ -117,14 +117,16 @@ func _show_not_ready_hint() -> void:
 	_hint_label.position.y = HINT_BASE_Y + HINT_SLIDE
 	_hint_label.modulate.a = 0.0
 	_hint_tween = create_tween()
-	_hint_tween.set_parallel(true)
+	# 进场：位置 + 透明度并行（用 parallel() 配对；勿用全局 set_parallel(true)——
+	# 它会把紧邻其前的 tweener 一起拉进并行步，使下面的 interval 与淡出并行、表现为“不停留”）
 	_hint_tween.tween_property(_hint_label, "position:y", HINT_BASE_Y, HINT_ANIM_TIME)
-	_hint_tween.tween_property(_hint_label, "modulate:a", 1.0, HINT_ANIM_TIME)
-	_hint_tween.chain().tween_interval(HINT_HOLD)
-	_hint_tween.chain().set_parallel(true)
+	_hint_tween.parallel().tween_property(_hint_label, "modulate:a", 1.0, HINT_ANIM_TIME)
+	# 停留
+	_hint_tween.tween_interval(HINT_HOLD)
+	# 收回：位置 + 透明度并行
 	_hint_tween.tween_property(_hint_label, "position:y", HINT_BASE_Y + HINT_SLIDE, HINT_ANIM_TIME)
-	_hint_tween.tween_property(_hint_label, "modulate:a", 0.0, HINT_ANIM_TIME)
-	_hint_tween.chain().tween_callback(_hide_hint)
+	_hint_tween.parallel().tween_property(_hint_label, "modulate:a", 0.0, HINT_ANIM_TIME)
+	_hint_tween.tween_callback(_hide_hint)
 
 
 func _hide_hint() -> void:

@@ -1839,3 +1839,33 @@
 - Source / 来源: user + code
 - Date / 日期: 2026-10-09
 
+
+### [UI] 联机选人层「已确认」标志 `_confirming` 必须随 `set_interactive(true)` 复位
+- Evidence / 证据: `mods/etn_coop/ui/coop_select.gd:47-53`（`set_interactive`）、`:124-128`（`_on_player_card_id` 早退）、`mods/etn_coop/net/coop_flow.gd:153-158`（`_on_ready_cancel`）；镜像 `mod_sdk/coop_mod/mods/etn_coop/ui/coop_select.gd`
+- Notes / 说明: **现象**（user）：进入选人界面，就绪后按 ESC 取消，则无法再次选人就绪（主机/客机皆然）。**根因**：确认角色时置 `_confirming=true`；ESC 取消走 `_on_ready_cancel` → `_close_ready()` + `_set_select_interactive(true)` 重新启用本层，但选人层实例**不重建**，`_confirming` 恒为 true → `_on_player_card_id` 一直早退，不再 emit `character_confirmed`。**修法**：`set_interactive(true)` 时复位 `_confirming=false`；同一条路径覆盖「难度面板取消」的 `_on_select_cancelled`。
+- Source / 来源: user + code
+- Date / 日期: 2026-10-10
+
+### [UI] 联机开始球红字提示 Y 必须高于交互气泡顶部（气泡约占 y∈[-94,-53]）
+- Evidence / 证据: `mods/etn_coop/ui/coop_start_ball.gd:17`（`HINT_BASE_Y` 由 `-66.0` 改为 `-124.0`）、`scenes/manager/interact_prompt.gd:92-94`（`_end_y() = -bubble.size.y - 12`）、`scenes/manager/interact_prompt.tscn:71-74`（`Bubble.offset_top=-41`、`offset_bottom=0`）
+- Notes / 说明: **现象**（user）：房主未全员就绪时点绿球，红字「需要所有玩家准备」被绿球的交互气泡（「开始游戏」）挡住。**根因**：气泡 `Root.y = -h - 12 ≈ -53`（h≈41），其 `Bubble` 子节点 `offset_top=-41`、`offset_bottom=0` → 气泡世界占 y∈[-94,-53]；而提示 `HINT_BASE_Y=-66` 正落在其内，且气泡 `z_index=100`（`interaction_manager.gd:148`）> 标签 `z_index=20`，故被盖住。**修法**：`HINT_BASE_Y=-124.0`，高于气泡顶并预留字高 + 4px 描边 + 10px 下滑动画余量。
+- Source / 来源: user + code
+- Date / 日期: 2026-10-10
+
+### [UI] 联机选人层禁用 process_mode 会冻结角色卡 select_anim，应只切输入
+- Evidence / 证据: `mod_sdk/coop_mod/mods/etn_coop/ui/coop_select.gd:set_interactive`（原 `process_mode = ALWAYS/DISABLED`，现改为只切输入 + `_interactive` 守卫 `_unhandled_input`）；`ui/player_card.gd:201-221`（`add_player` 先 `emit_player_card_id` 再 `card_anim.play("select_anim")`）；`mods/etn_coop/ui/coop_select.tscn:183`（`process_mode = 3` 固定在场景里）
+- Notes / 说明: **现象**（user）：进入选人界面确认角色后「选择动画」不播放，按 ESC 取消就绪后才补播。**根因**：确认时 `emit_player_card_id` **同步**触发 `CoopFlow._on_character_confirmed` → `set_interactive(false)` 把整个选人 CanvasLayer `process_mode=DISABLED`，随后 `add_player` 才 `card_anim.play("select_anim")`——AnimationPlayer 已随整层停处理被冻结，直到取消就绪 `set_interactive(true)` 恢复后才从 t=0 补播。**修法**：`set_interactive` 不再改 `process_mode`（保持场景 `ALWAYS`，暂停下仍可交互、动画照跑），只切输入可交互性；新增 `_interactive` 标志，`_unhandled_input` 开头 `if not _interactive: return`，保证被 CoopReady(layer101)/CoopDifficulty(102) 覆盖期间**不吞 Esc**（交给上层遮罩）。确认动画此时在 68% 半透明遮罩下播放（用户选定方案 1）。
+- Source / 来源: user + code
+- Date / 日期: 2026-10-10
+
+### [UI] 官方 player_card 的 mouse_close 依赖 level_select_out 恢复，coop 取消就绪须自行 mouse_open
+- Evidence / 证据: `ui/player_card.gd:34-35,168-176`（`player_card_selected→mouse_close` 置 `mouse_filter=IGNORE`；`level_select_out→mouse_open` 恢复并复位 `on_select`/`on_touch`）；`ui/society_card.gd:33-46`（切换社团重新 `instantiate` 角色卡）；`mod_sdk/coop_mod/mods/etn_coop/ui/coop_select.gd:_set_cards_interactive`（遍历 `%PlayerBox` 调 mouse_open/mouse_close；mod `Button` 卡退化为 `disabled`）
+- Notes / 说明: **现象**（user）：取消就绪后**当前社团**的角色卡无法再选择，只有切换社团重新加载的卡能选。**根因**：官方 `player_card.gd` 在选择时经 `GameEvents.player_card_selected→mouse_close` 把所有官方卡的 `mouse_filter` 置 `IGNORE`，而恢复用的 `mouse_open` 只挂在 `level_select_out` 上；coop 流程从不发 `level_select_out` → 当前社团的卡永久不可点；切换社团会重新实例化卡（新卡默认可点）故只有新卡能用。`_confirming=false`（上一处修复）只是必要条件，挡在 `mouse_filter` 之后。**修法**：`set_interactive(true)` 遍历 `%PlayerBox` 子节点，官方卡调 `mouse_open()`（顺带播 `select_out`、复位 `on_select`/`on_touch`），mod 卡（`mod_player_card.gd`，`Button`）置 `disabled=false`；`set_interactive(false)` 对称 `mouse_close()`/`disabled=true`；两种卡用 `has_method("mouse_open")` 区分。注意官方卡与 mod 卡形态不同：官方是 `PanelContainer`+手写 gui_input，mod 是 `Button`+`pressed`。
+- Source / 来源: user + code
+- Date / 日期: 2026-10-10
+
+### [GDScript] `Tween.set_parallel(true)` 会把"紧邻其前"的 tweener 一并纳入并行步（组"并行段+间隔"须用 `parallel()`）
+- Evidence / 证据: `mod_sdk/coop_mod/mods/etn_coop/ui/coop_start_ball.gd:_show_not_ready_hint`（原 `set_parallel(true)` + `...chain().tween_interval(HOLD)` + `...chain().set_parallel(true)` → 停留失效；现改为 `tween_property(); parallel().tween_property(); tween_interval(); tween_property(); parallel().tween_property(); tween_callback()`）；引擎文档 `Tween.set_parallel()` 的 Note / `parallel()` 条目（`docs.godotengine.org` class_tween）
+- Notes / 说明: **现象**（user）：开始球"需要所有玩家准备"红字"不会停留"——进场后立刻淡出、中间间隔时段处于隐形状态。**根因**：`Tween.set_parallel(true)` 官方注释明确"**Just like with `parallel()`, the tweener added right before this method will also be part of the parallel step**"；`chain().set_parallel(true)` 会把其**前一个** tweener（即 `tween_interval(HOLD)`）拉进并行组，于是随后的淡出 `tween_property` 与这个 interval **并行同时开始**（0.1s 内淡出），interval 剩余时间都在隐形——外观即"不停留/间隔被跳过"。**修法**：不要用全局 `set_parallel(true)` + `chain()` 混搭；要"两两并行成段、段间顺序"时用 `parallel()` 逐个配对：`tp(a); parallel().tp(b)` 即 a∥b，再直接 `tp(c)` 即接在 a∥b 之后。同理 `set_parallel(true)` 若紧跟某个 tweener 也会把那个 tweener 并入其后的并行段。**通用教训**：Tween 并行/顺序混排优先用 `parallel()`（局部、无状态）而非 `set_parallel()`（全局模式 + 回头吞前一个），可避免此类隐蔽的"间隔不生效"。
+- Source / 来源: user + code
+- Date / 日期: 2026-10-10
