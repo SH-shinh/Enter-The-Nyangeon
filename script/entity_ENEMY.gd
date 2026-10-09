@@ -48,6 +48,11 @@ var in_knockback: bool = false
 
 var player: Node
 
+# 玩家会在换角色时被销毁重建；敌人是池化实体，取用前统一重新解析（见 PlayerRef）。
+func _ensure_player() -> Node:
+	player = PlayerRef.ensure(self, player)
+	return player
+
 # 路线目标（path 敌人专用）。独立于 player 存储，任何重置 player 的逻辑都不会丢掉路线。
 var route_target: Node = null
 
@@ -78,7 +83,7 @@ var convert_gauge: int = 0 #策反进度
 var _outline_base: Dictionary = {} #各描边材质的初始 width/color，策反结束后恢复用
 
 func _ready():
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 	enemy_body.clear()
 	if not is_knockback.is_connected(body_in_knockback):
 		is_knockback.connect(body_in_knockback)
@@ -260,8 +265,9 @@ func get_target_position() -> Vector2:
 	var t := get_target()
 	if t != null:
 		return t.global_position
-	if player != null:
-		return player.global_position
+	var p := _ensure_player()
+	if p != null:
+		return p.global_position
 	return global_position
 
 # 贴脸接触（enemy_body）优先；无接触则用 Targeting 的按物理帧缓存活跃敌人列表，

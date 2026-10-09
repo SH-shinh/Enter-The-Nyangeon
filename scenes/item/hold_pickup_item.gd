@@ -53,6 +53,9 @@ func _on_area_2d_body_exited(body):
 		on_pick = false
 
 func _on_pick_timer_timeout():
+	if player != null and not is_instance_valid(player):
+		player = null
+		on_pick = false
 	if player != null:
 		pick_speed = max(0.01, player.stats.pick_up_speed)
 	if on_pick == true and is_pick_up == false:
@@ -63,7 +66,8 @@ func _on_pick_timer_timeout():
 			if time_bar != null:
 				time_bar.visible = false
 			is_pick_up = true
-			_on_pickup_complete(player)
+			if player != null:
+				_on_pickup_complete(player)
 	else:
 		time_num += pick_speed
 		_update_progress()

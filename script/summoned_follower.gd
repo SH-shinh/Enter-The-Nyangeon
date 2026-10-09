@@ -143,8 +143,9 @@ func set_player_lookat(dir):
 		look_dir = null
 
 func get_direction_to_player():
-	if player != null and position.distance_to(player.position) > 50 and is_idle == 0:
-		return (player.global_position - global_position).normalized()
+	var p := _ensure_player()
+	if p != null and position.distance_to(p.position) > 50 and is_idle == 0:
+		return (p.global_position - global_position).normalized()
 	return Vector2.ZERO
 
 func jump_start():

@@ -17,10 +17,11 @@ var _saved_sprite_y: float = -17.0
 
 func tick_physics(state: int, delta: float) -> void:
 	_update_carry()
-	if is_carried:
-		sprite_2d.position.y = player.sprite_2d.position.y + (carry_sprite_gap - carry_body_offset.y)
+	var p := _ensure_player()
+	if is_carried and p != null:
+		sprite_2d.position.y = p.sprite_2d.position.y + (carry_sprite_gap - carry_body_offset.y)
 	super.tick_physics(state, delta)
-	if is_carried:
+	if is_carried and p != null:
 		var prev := global_position
 		global_position = _carry_target(delta)
 		if delta > 0.000001:
@@ -45,7 +46,8 @@ func follow_player_jump(position: Vector2) -> void:
 	super.follow_player_jump(position)
 
 func _update_carry() -> void:
-	if not carry_enabled or is_idle == 1 or not is_instance_valid(player) or not _is_aris():
+	var p := _ensure_player()
+	if not carry_enabled or is_idle == 1 or p == null or not _is_aris():
 		if is_carried:
 			_release()
 		return
@@ -54,18 +56,25 @@ func _update_carry() -> void:
 			_release()
 		return
 	# 仅在 aris 的 JUMP（起飞）状态且范围内才携带
-	if _player_in_takeoff() and global_position.distance_to(player.global_position) <= carry_trigger_distance:
+	if _player_in_takeoff() and global_position.distance_to(p.global_position) <= carry_trigger_distance:
 		_attach()
 
 func _is_aris() -> bool:
-	return player.get("is_hovering") != null
+	var p := _ensure_player()
+	return p != null and p.get("is_hovering") != null
 
 func _player_in_takeoff() -> bool:
-	var jump_timer = player.get("jump_timer")
+	var p := _ensure_player()
+	if p == null:
+		return false
+	var jump_timer = p.get("jump_timer")
 	return jump_timer != null and jump_timer.time_left > 0.0  # JUMP（起飞）期间 jump_timer 在跑
 
 func _player_on_floor() -> bool:
-	var spr: Node2D = player.get("sprite_2d")
+	var p := _ensure_player()
+	if p == null:
+		return true
+	var spr: Node2D = p.get("sprite_2d")
 	return spr == null or spr.position.y == -17.0
 
 func _attach() -> void:
@@ -86,7 +95,10 @@ func _release() -> void:
 	is_jump_request = false
 
 func _carry_target(delta: float) -> Vector2:
-	var target: Vector2 = player.global_position + carry_body_offset
+	var p := _ensure_player()
+	if p == null:
+		return global_position
+	var target: Vector2 = p.global_position + carry_body_offset
 	if carry_follow_speed > 0.0:
 		return global_position.lerp(target, clampf(carry_follow_speed * delta, 0.0, 1.0))
 	return target

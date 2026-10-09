@@ -16,10 +16,13 @@ var player
 signal round_start
 
 func _ready():
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 
 
 func exit_ui():
+	player = PlayerRef.ensure(self, player)
+	if player == null:
+		return
 	if not self.z_index == 0 and not player.z_index == 0:
 		
 		if self.z_index == 2:
@@ -41,6 +44,9 @@ func exit_ui():
 
 
 func _unhandled_input(event:InputEvent ) -> void:
+	player = PlayerRef.ensure(self, player)
+	if player == null:
+		return
 	
 	if Input.is_action_just_pressed("use") and use_cd.time_left == 0 and camera_2d.enabled == true and on_start == false:
 		

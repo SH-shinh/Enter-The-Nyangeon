@@ -87,7 +87,7 @@ func _physics_process(delta):
 	rotation = velocity.normalized().angle()
 
 func bullet_explosion():
-	if damage_data == null or player == null or not is_instance_valid(player):
+	if damage_data == null or _ensure_player() == null:
 		idle_state()
 		return
 	
@@ -114,7 +114,9 @@ func bullet_explosion():
 		idle_state()
 
 func _configure_explosion(node: Node) -> void:
-	node.explosion_range = max(1, player.stats.explosion_range * 0.8) * max(1, player.stats.bullet_scale * 0.6) * base_explosion_range
+	var p := _ensure_player()
+	if p != null:
+		node.explosion_range = max(1, p.stats.explosion_range * 0.8) * max(1, p.stats.bullet_scale * 0.6) * base_explosion_range
 	node.damage_data = damage_data.duplicate(true)
 	if not node.damage_data.damage_type.has(GameTags.EXPLOSION_DAMAGE):
 		node.damage_data.damage_type.append(GameTags.EXPLOSION_DAMAGE)

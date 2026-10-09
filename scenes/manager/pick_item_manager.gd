@@ -23,7 +23,7 @@ func _ready():
 	medical_time_num = medical_cd_num
 
 func get_player_and_map():
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 	tilemap = get_tree().get_first_node_in_group("Map")
 
 func spawn_start():
@@ -39,16 +39,19 @@ func coin_count(coins: int):
 	coin_value += coins
 
 func coin_add():
-	var coin_return_value: int = coin_value * PlayerData.coin_return * player.stats.coin_mult
-	if coin_return_value != 0:
-		player.stats.coin += coin_return_value
-		GameEvents.emit_player_coins_get(coin_return_value)
-		SoundManager.play_sfx("CoinSounds")
+	player = PlayerRef.ensure(self, player)
+	if player != null:
+		var coin_return_value: int = coin_value * PlayerData.coin_return * player.stats.coin_mult
+		if coin_return_value != 0:
+			player.stats.coin += coin_return_value
+			GameEvents.emit_player_coins_get(coin_return_value)
+			SoundManager.play_sfx("CoinSounds")
 	coin_value = 0
 
 func add_medical_kit(spawn_position: Vector2):
 	if ExtensionHooks.intercept(ExtensionHooks.medkit_spawn_gate, [self, spawn_position]):
 		return
+	player = PlayerRef.ensure(self, player)
 	if spawn_position == Vector2.ZERO and spawn_at_player and player != null:
 		spawn_position = player.global_position
 	if spawn_position == Vector2.ZERO:
@@ -67,10 +70,12 @@ func add_medical_kit(spawn_position: Vector2):
 		ExtensionHooks.notify(ExtensionHooks.on_medkit_spawned, [ins])
 
 func medical_kit_spawn():
+	player = PlayerRef.ensure(self, player)
 	if can_spawn == false:
 		return
+	var luck: float = float(player.stats.luck) if player != null else 0.0
 	if medical_time_num <= 0:
-		if randf_range(0,1000) < (player.stats.luck + pick_luck) * spawn_rate_mult:
+		if randf_range(0,1000) < (luck + pick_luck) * spawn_rate_mult:
 			pick_luck = 0
 			add_medical_kit(Vector2.ZERO)
 			medical_time_num = medical_cd_num

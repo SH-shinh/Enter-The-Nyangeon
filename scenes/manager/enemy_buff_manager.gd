@@ -37,21 +37,27 @@ func _post_ready() -> void:
 	get_player()
 
 func get_player():
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
+
+# 玩家会在换角色时被销毁重建；buff 管理器长期存活，取用前统一重新解析（见 PlayerRef）。
+func _ensure_player() -> Node:
+	player = PlayerRef.ensure(self, player)
+	return player
 
 func _can_apply() -> bool:
-	return player != null
+	return _ensure_player() != null
 
 func _can_tick() -> bool:
-	return player != null
+	return _ensure_player() != null
 
 # 施加者属性（联机客机加 buff 时随消息带上，避免 host 用自己 player 的属性结算 DOT）
 func _estat(entry: Dictionary, key: String, fallback: Variant = 0) -> Variant:
 	var s = entry.get("applier_stats", null)
 	if s is Dictionary and s.has(key):
 		return s[key]
-	if player != null and player.get("stats") != null:
-		var v = player.stats.get(key)
+	var p := _ensure_player()
+	if p != null and p.get("stats") != null:
+		var v = p.stats.get(key)
 		if v != null:
 			return v
 	return fallback
@@ -124,6 +130,7 @@ func count_chill_damage(actual_damage: int, damage_data: DamageData):
 	var entry: Dictionary = current_buff[CHILL_DOT_ID]
 	if entry["stop"] or entry["layer"] <= 0:
 		return
+	player = PlayerRef.ensure(self, player)
 	if player == null or player.get("stats") == null:
 		return
 	if body.get("stats") != null and body.stats.hp <= 0 and not body.stats.is_test_target:

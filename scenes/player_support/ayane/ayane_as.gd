@@ -29,8 +29,7 @@ func anim_end(_anim_name: String):
 
 func explosion_to_map():
 	
-	if player == null:
-		player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.ensure(self, player)
 	
 	var center = Vector2(704, 448)
 	var rx = 888  # 从中心到右顶点距离
@@ -58,20 +57,24 @@ func add_explosion(point: Vector2):
 	)
 
 func _configure_explosion(node: Node) -> void:
+	var p := PlayerRef.ensure(self, player)
+	player = p
+	if p == null:
+		return
 	node.damage_data = DamageData.fill(node.damage_data, {
-		"knockback": max(player.stats.bullet_knockback, 1),
+		"knockback": max(p.stats.bullet_knockback, 1),
 		"type": GameTags.EXPLOSION_DAMAGE,
 		"source": GameTags.EQUIP,
 		"node": self,
 	})
 	var luck = randf_range(0, 100)
-	if luck < player.stats.critical_luck:
-		node.damage_data.base_damage = max(1, (explosion_damage + player.stats.bullet_damage * 0.6) * player.stats.global_damage * player.stats.critical_damage * player.stats.equip_damage)
+	if luck < p.stats.critical_luck:
+		node.damage_data.base_damage = max(1, (explosion_damage + p.stats.bullet_damage * 0.6) * p.stats.global_damage * p.stats.critical_damage * p.stats.equip_damage)
 		node.damage_data.is_crit = true
 	else:
-		node.damage_data.base_damage = max(1, (explosion_damage + player.stats.bullet_damage * 0.6) * player.stats.global_damage * player.stats.equip_damage)
+		node.damage_data.base_damage = max(1, (explosion_damage + p.stats.bullet_damage * 0.6) * p.stats.global_damage * p.stats.equip_damage)
 		node.damage_data.is_crit = false
-	node.explosion_range = 7 * max(1, player.stats.explosion_range * 0.3)
+	node.explosion_range = 7 * max(1, p.stats.explosion_range * 0.3)
 
 func _pre_activate_explosion(node: Node) -> void:
 	node.damage_data.hit_box_center = node.global_position

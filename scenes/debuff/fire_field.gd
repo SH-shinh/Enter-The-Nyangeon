@@ -20,6 +20,11 @@ var body_group: Array[Node]
 var is_idle: int = 1
 var is_ready: bool = false
 
+# 玩家会在换角色时被销毁重建；火场长期存活，取用前统一重新解析（见 PlayerRef）。
+func _ensure_player() -> Node:
+	player = PlayerRef.ensure(self, player)
+	return player
+
 func _ready() -> void:
 	hit_box.area_entered.connect(_on_hit_box_entered)
 	hit_box.area_exited.connect(_on_hit_box_exited)
@@ -29,7 +34,7 @@ func is_on_ready():
 	is_ready = true
 	GameEvents.round_end.connect(idle_state)
 	active_state()
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 
 func idle_state():
 	is_idle = 1
@@ -84,7 +89,9 @@ func apply_fire_damage_data():
 	})
 
 func add_damage_data():
-	if !body_group.is_empty():
+	var p := _ensure_player()
+	if p == null:
+		return
 		for i in body_group:
 			if i == null or not is_instance_valid(i):
 				continue
@@ -93,7 +100,7 @@ func add_damage_data():
 				continue
 			var damage_value: int
 			if damage_count < 8:
-				damage_value = 8 * player.stats.fire_dot_layer * player.stats.dot_damage * player.stats.global_damage
+				damage_value = 8 * p.stats.fire_dot_layer * p.stats.dot_damage * p.stats.global_damage
 			else:
 				damage_count = 0
 				damage_value = body.stats.max_hp * hp_mult

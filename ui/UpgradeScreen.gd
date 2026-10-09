@@ -24,7 +24,7 @@ var menu_index: int = 0
 @onready var refresh = %Refresh
 
 func _ready():
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 	if player != null:
 		player.gun.is_shoot = false
 	GameEvents.refresh_cost_count.connect(get_refresh_cost)
@@ -199,6 +199,7 @@ func on_refresh(event: InputEvent):
 		refresh_button()
 
 func refresh_button():
+	player = PlayerRef.ensure(self, player)
 	if _closed:
 		return
 	if player != null and player.stats.usable_coin < coin_cost:
