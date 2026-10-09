@@ -172,3 +172,17 @@
 - Docs synced / 文档同步: `docs/LEARNINGS.md` 新增 `[Mod] 玩家 scene_path 必须 res://` 条目；`mod_sdk/coop_mod/README.md` 补约定。
 - Correction / 修正: `aris_armed.tres` 的 `scene_path` `uid://coyh4dj2pbd2f` → `res://scenes/player/aris_armed/aris_armed.tscn`（来源：code，符合既有用户约定）。
 - Verified / 验证: `find_symbols` 解析 `coop_net.gd` 通过（`_resolve_scene_path` 已注册）；两份副本 SHA256 一致；待双端 LAN 实机验收（客机选 aris_armed、测试房换角色镜头恢复）。
+
+---
+
+## 2026-10-09 — Generic MOD society card auto-continuation when >4 chars / 通用「MOD」社团卡按 4 个/卡自动续卡
+- Files / 涉及文件: `ui/mod_society_card.gd`, `scenes/main/menu_screen.gd`, `mods/etn_coop/ui/coop_select.gd`, `mod_sdk/coop_mod/mods/etn_coop/ui/coop_select.gd`, `docs/SYSTEMS.md`, `docs/ARCHITECTURE.md`, `docs/CONVENTIONS.md`, `docs/MOD_TESTING.md`, `docs/LEARNINGS.md`, `mod_sdk/README.md`, `mod_sdk/CHARACTER_GUIDE.md`, `mod_sdk/coop_mod/README.md`
+- Summary / 改动摘要:
+  - **根因**：通用「MOD」社团卡把全部未认领角色塞进 `PlayerCardBox`（`menu_screen.tscn` 固定宽 552 的 `HBoxContainer` + `clip_contents=true`），每张 `mod_player_card` 宽 120、恰好容 4 张；第 5 张起被裁且外层无滚动，不可选。
+  - **通用卡改造**：`ui/mod_society_card.gd` 改为 `extends "res://ui/mod_society_base.gd"`，复用 `members`/`check_group`/`populate_player_cards`，仅保留 `set_page()` 写 `Node2D/Label`（`MOD` / `MOD 2` / …）。
+  - **消费方续卡**：`menu_screen._setup_societies()` 与 `coop_select._build_societies()` 新增 `MOD_PAGE_SIZE = 4`，把 `get_unclaimed_unlocked_characters()` 按 4 切片，每片 `set("members", slice)`（须在 `add_child` 前），逐片建卡。
+  - **重建触发**：`menu_screen._current_unlocked_gids()` 的通用 token 由 `"__mod_generic__"` 改为带数量 `"__mod_generic__:<n>"`，否则解锁数变化但社团集合列表不变时 `_sync_societies()` 不重建、新页不出现。
+- Reason / 原因: 用户询问并确认——通用社团卡角色超过 4 个时不会自动续卡，期望左侧自动多建一张（`MOD` / `MOD 2` / …，仅改通用卡，mod 自带社团卡不动）。
+- Systems / 影响系统: 选人 UI（社团卡 / 角色卡 `PlayerCardBox`）、主菜单解锁动态重建、联机选人覆盖层。
+- Docs synced / 文档同步: `docs/SYSTEMS.md` §社团卡、`docs/ARCHITECTURE.md` 社团卡段、`docs/CONVENTIONS.md` 社团卡段、`docs/MOD_TESTING.md` 功能回归、`docs/LEARNINGS.md` 新增 `[Mod] 通用「MOD」社团卡按 4 个/卡自动续卡` 条目；`mod_sdk/README.md` §14、`mod_sdk/CHARACTER_GUIDE.md` §3.9、`mod_sdk/coop_mod/README.md` 社团扩展接口。
+- Verified / 验证: 临时 `test_run` 用例——`Object.set()` 写入 typed `Array[String]` 的 `members` 成功、`set_page()` 标签为 `MOD` / `MOD 2`；5 个改动脚本（含两份 coop 副本）`CACHE_MODE_IGNORE` 加载均编译通过；临时测试文件已删除。两份 coop 副本逐行一致。

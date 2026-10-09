@@ -18,6 +18,7 @@ signal player_card_clear_done
 @onready var credits_button: Button = $Node2D5/credits_button
 
 const MOD_SOCIETY_SCENE := preload("res://ui/mod_society_card.tscn")
+const MOD_PAGE_SIZE := 4
 @onready var menu_button_box = $Node2D5/menu_button_box
 
 var on_select_anim: bool = false
@@ -69,8 +70,20 @@ func _setup_societies() -> void:
 		var scene = s.get("scene")
 		if scene != null:
 			society_card_box.add_child(scene.instantiate())
-	if not ModManager.get_unclaimed_unlocked_characters().is_empty():
-		society_card_box.add_child(MOD_SOCIETY_SCENE.instantiate())
+	# 通用「MOD」社团卡：每 MOD_PAGE_SIZE 个未认领角色一张，>4 时自动续卡（MOD / MOD 2 / …）。
+	var mod_ids := _mod_generic_ids()
+	var mod_pages := int(ceil(float(mod_ids.size()) / MOD_PAGE_SIZE))
+	for p in mod_pages:
+		var card := MOD_SOCIETY_SCENE.instantiate()
+		var slice: Array[String] = []
+		for i in range(MOD_PAGE_SIZE):
+			var idx := p * MOD_PAGE_SIZE + i
+			if idx < mod_ids.size():
+				slice.append(mod_ids[idx])
+		card.set("members", slice)
+		if card.has_method("set_page"):
+			card.call("set_page", p, mod_pages)
+		society_card_box.add_child(card)
 	_society_gids = _current_unlocked_gids()
 	_default_society = _first_society()
 
@@ -86,7 +99,16 @@ func _current_unlocked_gids() -> Array:
 		if PlayerData.group.has(gid):
 			out.append(gid)
 	if not ModManager.get_unclaimed_unlocked_characters().is_empty():
-		out.append("__mod_generic__")
+		out.append("__mod_generic__:%d" % _mod_generic_ids().size())
+	return out
+
+
+# 未认领且已解锁的 mod 角色 id（通用「MOD」社团卡分组用）。
+func _mod_generic_ids() -> Array[String]:
+	var out: Array[String] = []
+	for card in ModManager.get_unclaimed_unlocked_characters():
+		if card != null:
+			out.append(str(card.id))
 	return out
 
 

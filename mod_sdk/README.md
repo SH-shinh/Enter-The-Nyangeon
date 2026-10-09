@@ -201,6 +201,7 @@ func _on_first_round() -> void:
 
 - **自带优先**：某 mod 提供 ≥1 个社团卡 → 其全部角色进入自带卡，**不再**进通用卡。
 - **否则通用**：未提供社团的 mod 的角色进入内置通用「MOD」社团卡。
+- **通用卡自动续卡**：未认领角色 >4 时，通用卡按每 4 个一张自动续卡（`MOD` / `MOD 2` / …），第 5 个起也能选到。
 - 角色选择卡同样是「自带 `card_scene` 优先，否则通用 `ui/mod_player_card.tscn`」。
 
 最小示例（`defs/societies/my_team.tscn`）：

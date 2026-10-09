@@ -10,6 +10,7 @@ signal character_confirmed(scene_path: String)
 
 const CoopNetScript := preload("res://mods/etn_coop/net/coop_net.gd")
 const MOD_SOCIETY_SCENE := preload("res://ui/mod_society_card.tscn")
+const MOD_PAGE_SIZE := 4
 const SUPPORT_CARD_SCENE := preload("res://ui/support_ui/support_shop_card.tscn")
 
 @onready var _player_box: HBoxContainer = %PlayerBox
@@ -82,7 +83,23 @@ func _build_societies() -> void:
 		if scene != null:
 			_society_box.add_child(scene.instantiate())
 	if not ModManager.get_unclaimed_unlocked_characters().is_empty():
-		_society_box.add_child(MOD_SOCIETY_SCENE.instantiate())
+		# 通用「MOD」社团卡：每 MOD_PAGE_SIZE 个未认领角色一张，>4 时自动续卡（MOD / MOD 2 / …）。
+		var mod_ids: Array[String] = []
+		for card in ModManager.get_unclaimed_unlocked_characters():
+			if card != null:
+				mod_ids.append(str(card.id))
+		var mod_pages := int(ceil(float(mod_ids.size()) / MOD_PAGE_SIZE))
+		for p in mod_pages:
+			var ins = MOD_SOCIETY_SCENE.instantiate()
+			var slice: Array[String] = []
+			for i in range(MOD_PAGE_SIZE):
+				var idx := p * MOD_PAGE_SIZE + i
+				if idx < mod_ids.size():
+					slice.append(mod_ids[idx])
+			ins.set("members", slice)
+			if ins.has_method("set_page"):
+				ins.call("set_page", p, mod_pages)
+			_society_box.add_child(ins)
 
 
 func _select_first_society() -> void:

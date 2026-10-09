@@ -509,6 +509,7 @@ mod_sdk/coop_mod/mods/etn_coop/
 - 本体 `script/mod_manager.gd` 新增 `const BASE_SOCIETIES: Array[Dictionary] = [{id, scene}...]`（GDD/ED/HSD/FTF/JTF/DC）+ `get_base_societies() -> [{scene, group_id}]`；`_build_reserved_ids()` 由它取 id。以后本体加社团只改这里一行。
 - `scenes/main/menu_screen.tscn` 删除了 6 个内联社团节点，改由 `menu_screen.gd:_setup_societies()` 从注册表**运行时生成**（**只实例化 `PlayerData.group.has(gid)` 的已解锁社团**）；玩家在商店当场解锁新社团时，`ui/character_shop_card.gd:add_character()` 末尾 `GameEvents.emit_check_data()` → `menu_screen._sync_societies()` 检测到解锁集合变化后重建社团列（同会话内即时出现）。
 - coop 选人界面同样读 `get_base_societies()`，并按解锁过滤。
+- 通用「MOD」卡**自动续卡**：未认领已解锁角色 >4 时每 4 个一张（`MOD`/`MOD 2`/…），`coop_select._build_societies()` 与主菜单 `_setup_societies()` 同逻辑（`MOD_PAGE_SIZE = 4`）。
 
 ### 角色卡“不实例化锁定项”
 - `ui/society_card.gd:populate_player_cards()` 改为先 `PackedScene.get_state()` 读根节点导出的 `player_card.id`（兼容 `uid://` 路径），`PlayerData.character.has(id)` 不满足则**不实例化**；读不到时回退“实例化→判断→释放”。`ui/mod_society_base.gd`/`mod_society_card.gd` 同样先按 id 过滤。

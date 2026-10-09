@@ -200,7 +200,7 @@ mods/<mod_id>/
   - `group_id`：带 `<mod_id>_` 前缀、全局唯一（默认解锁）。
   - `members`：`Array[String]` 本社团角色 id。
   - 含一个 `AnimationPlayer` 节点（即使为空；父类会取 `$AnimationPlayer`）。
-- 不带 → 角色进内置「MOD」通用社团卡（只收未认领角色）。
+- 不带 → 角色进内置「MOD」通用社团卡（只收未认领角色；每 4 个一张、超出自动续卡 `MOD` / `MOD 2` / …）。
 - 去重规则：某 mod 提供 ≥1 社团卡 → 其全部角色进自带卡，不进通用卡。
 
 最小示例（`defs/societies/my_team.tscn`）：

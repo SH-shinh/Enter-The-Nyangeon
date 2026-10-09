@@ -61,6 +61,7 @@
 - [ ] **角色**：MOD 社团选中 → 战斗场景为 mod 场景；`branches` 切换生效。
   - [ ] 战斗场景根 `player_card` 缺失/错 id → 注册时告警；进战斗后 HUD/暂停/结算显示与 `PlayerData.player_select`（存档/记分板键）均为注册 id（`ModManager` 已强制对齐）；`ps_card` 缺失仅告警。
 - [ ] **社团卡**：mod 自带 `defs/societies/*.tscn`（继承 `mod_society_base.gd`）→ 其 `members` 角色进自带社团卡；未带社团的 mod 角色进通用「MOD」社团卡；`group_id` 默认解锁（并入 `PlayerData.group`）；两张卡成员填充正确。
+- [ ] **通用卡自动续卡**：未认领角色 >4 时左侧出现 `MOD` / `MOD 2` / … 多张，各含 ≤4 个角色；点第 2 张能选到第 5 个起的角色；商店当场解锁角色后新增页/成员即时出现。
 - [ ] **支援**：`defs/supports/` 的支援出现在支援商店/选择界面；EX/被动可运行。
 - [ ] **道具**：`defs/upgrades/` + 同目录 `<id>.tscn` 的道具进入三选一池；拾取后效果生效；记分板装备列表能显示（`score_card`）。
 - [ ] **敌人**：`defs/enemies/`（`id == body.pool_id`）在指定 `enemy_group` 出现；生成上限正常。
