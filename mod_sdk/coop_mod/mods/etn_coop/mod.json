@@ -1,7 +1,7 @@
 {
   "id": "etn_coop",
   "name": "ETN Coop (skeleton)",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "author": "荻某人、SH",
   "description": "由荻某人的ETN联机版移植，SH移植并添加部分内容。",
   "api_version": 1,

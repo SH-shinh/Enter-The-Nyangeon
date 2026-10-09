@@ -5,6 +5,9 @@ extends EquipItem
 @onready var area_2d = $Area2D
 @onready var cd_timer = $CDTimer
 
+# 冲击波清除半径（对齐场景 Area2D 的 CircleShape2D radius=120）
+@export var clear_radius: float = 120.0
+
 var game_camera: Node
 var player: Node
 
@@ -24,6 +27,8 @@ func clear_enemy_bullet(player: Node):
 	cd_timer.start()
 	SoundManager.play_sfx("EquipSounds2")
 	animation_player.play("new_animation")
+	# 联机：通知 mod 做 host 权威半径清除（未装 mod 时为空 Callable，无副作用）
+	ExtensionHooks.notify(ExtensionHooks.on_enemy_bullet_clear, [area_2d.global_position, clear_radius])
 
 func center_position():
 	if animation_player.is_playing():

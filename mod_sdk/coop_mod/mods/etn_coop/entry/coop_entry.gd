@@ -16,6 +16,7 @@ const OptionButtonScene := preload("res://ui/option_button.tscn")
 const CoopOptionPageScene := preload("res://mods/etn_coop/ui/coop_option_page.tscn")
 const CoopI18n := preload("res://mods/etn_coop/i18n/coop_i18n.gd")
 const MENU_FONT := preload("res://fonts/BoutiqueBitmap9x9_1.9.ttf")
+const DownedIndicatorScript := preload("res://mods/etn_coop/ui/coop_downed_indicator.gd")
 
 var _coop = null
 var _overlay = null
@@ -25,6 +26,7 @@ var _scoreboard: Node = null
 var _chat: Node = null
 var _flow: Node = null
 var _room_label: Node = null
+var _downed_indicator: Node = null
 var _dev_netcheck_lines: PackedStringArray = PackedStringArray()
 
 
@@ -56,6 +58,9 @@ func _ready() -> void:
 	_chat = ChatScene.instantiate()
 	_chat.name = "CoopChat"
 	get_tree().root.add_child(_chat)
+	_downed_indicator = DownedIndicatorScript.new()
+	_downed_indicator.name = "CoopDownedIndicator"
+	get_tree().root.add_child(_downed_indicator)
 	ExtensionHooks.populate_menu_buttons = Callable(self, "_populate_menu_buttons")
 	ExtensionHooks.populate_option_pages = Callable(self, "_populate_option_pages")
 	GameEvents.menu_button.connect(_on_menu_button)

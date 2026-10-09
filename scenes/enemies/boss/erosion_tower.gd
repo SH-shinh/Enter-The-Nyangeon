@@ -62,7 +62,11 @@ func _net_boss_visual(fn_name: String) -> void:
 
 
 func _on_network_boss_event(event_name: String, data: Dictionary) -> void:
-	if not has_meta("network_remote_enemy"):
+	# 自身或父节点（塔组）带远端标记均视为镜像：network_remote_enemy 只打在塔组根，子塔据此判定
+	var remote: bool = has_meta("network_remote_enemy")
+	if not remote and get_parent() != null:
+		remote = get_parent().has_meta("network_remote_enemy")
+	if not remote:
 		return
 	if event_name != "erosion_tower_visual":
 		return

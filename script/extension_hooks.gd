@@ -92,6 +92,9 @@ var on_pickup_spawned: Callable = Callable()
 # 角色专属一次性事件（通知，参数 [player, event_name: StringName, event_data: Dictionary]）：
 # 如 EX/拍地等瞬时技能表现，供 mod 广播、其它端 player.apply_network_character_event 回放
 var on_character_event: Callable = Callable()
+# 受伤类道具（救生圈等）触发「清除周围敌人子弹」通知（参数 [position: Vector2, radius: float]）：
+# 供 mod 做 host 权威半径清除；未注入时本体 Area2D 逻辑不变
+var on_enemy_bullet_clear: Callable = Callable()
 # 升级结束：本机已消费「mod 已封面」状态（通知，无参）：mod 可清自身 flag，避免下次误跳过封面
 var on_round_upgrade_cover_consumed: Callable = Callable()
 

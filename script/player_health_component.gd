@@ -37,6 +37,9 @@ func _armor_reduction() -> float:
 func take_damage(damage_data: HealthChangeData):
 	if is_invincible:
 		return
+	# 联机倒地等待救援：完全免除伤害/击退/受击反馈（owner 即玩家根；单机 is_downed 恒 false）
+	if owner != null and is_instance_valid(owner) and owner.get("is_downed") == true:
+		return
 	
 	if _is_friendly_fire(damage_data):
 		return

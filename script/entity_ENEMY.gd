@@ -207,6 +207,9 @@ func _select_target() -> Node:
 	var nearest := get_nearest_player()
 	if nearest != null:
 		return nearest
+	# 兜底 player 若已倒地（联机等待救援）则不再作为目标
+	if player != null and is_instance_valid(player) and not _is_valid_player_target(player):
+		return null
 	return player
 
 # 最近存活玩家：单机/客机扫 "Player"；host 额外扫 "RemotePlayer"（远端镜像）。按物理帧缓存。

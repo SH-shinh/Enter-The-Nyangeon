@@ -176,6 +176,13 @@ func apply_network_character_state(state: int) -> void:
 		if c.has_method("apply_network_character_state"):
 			c.call("apply_network_character_state", state)
 
+# 联机可选：角色专属逐帧视觉（如跟随 sprite 的持续粒子/偏移）。镜像端每帧调用，
+# 只准写视觉节点；默认转发子节点 PS（具体角色可覆写整段）。
+func apply_network_character_visual(sprite_y: float, delta: float) -> void:
+	for c in get_children():
+		if c.has_method("apply_network_character_visual"):
+			c.call("apply_network_character_visual", sprite_y, delta)
+
 func get_network_heading_direction() -> Vector2:
 	return Vector2.ZERO
 

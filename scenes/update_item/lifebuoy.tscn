@@ -162,7 +162,7 @@ libraries/ = SubResource("AnimationLibrary_1wsmk")
 position = Vector2(0, -17)
 scale = Vector2(1.01328e-05, 1.01328e-05)
 collision_layer = 0
-collision_mask = 65536
+collision_mask = 128
 monitoring = false
 monitorable = false
 

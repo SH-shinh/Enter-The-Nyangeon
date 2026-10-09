@@ -67,7 +67,12 @@ func game_add_support():
 		get_tree().get_first_node_in_group("PlayerRoot").add_child(ins)
 	var ui_ins = support_ui.instantiate()
 	ui_ins.support_card = game_support
-	var game_ui = get_tree().get_first_node_in_group("GameUI")
+	# 优先本地玩家的 GameUI：联机下远端镜像也在 "GameUI" 组（被 mod 隐藏），
+	# get_first_node_in_group 可能命中镜像 → 支援 HUD 挂到隐藏层。联机镜像已移出 "Player" 组。
+	var local_player = get_tree().get_first_node_in_group("Player")
+	var game_ui = local_player.get("game_ui") if (local_player != null and is_instance_valid(local_player)) else null
+	if game_ui == null or not is_instance_valid(game_ui):
+		game_ui = get_tree().get_first_node_in_group("GameUI")
 	if game_ui != null and is_instance_valid(game_ui) and game_ui.get("support_box") != null:
 		game_ui.support_box.add_child(ui_ins)
 	else:

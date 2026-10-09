@@ -141,6 +141,7 @@ func boss_enter_anim():
 	GameEvents.emit_pause_lock(false)
 
 func boss_death_anim():
+	_net_boss_visual("boss_death_anim")
 	death_anim.play("death_anim")
 	# 镜像只播动画，不做相机/暂停演出
 	if has_meta("network_remote_enemy"):
@@ -554,6 +555,11 @@ func on_dead():
 	boss_death_anim()
 
 func _coin_drops():
+	# 远端镜像：不本地生成奖励金币（host 权威同步），但保留死亡动画后自释放
+	if has_meta("network_remote_enemy"):
+		await death_anim.animation_finished
+		queue_free()
+		return
 	var coin_box = coins.instantiate()
 	var p_box = pyroxenes.instantiate()
 	coin_box.global_position = self.global_position

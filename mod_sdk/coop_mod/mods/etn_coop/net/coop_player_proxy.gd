@@ -28,6 +28,7 @@ var applied_character_state: int = -1
 var target_heading: Vector2 = Vector2.ZERO
 var current_visual_state: int = -1
 var can_apply_character_state: bool = false
+var can_apply_character_visual: bool = false
 var can_apply_heading: bool = false
 
 var player: Node = null
@@ -247,6 +248,8 @@ func _apply_visual_state(delta: float) -> void:
 	if can_apply_character_state and applied_character_state != target_character_state:
 		applied_character_state = target_character_state
 		player.call("apply_network_character_state", target_character_state)
+	if can_apply_character_visual:
+		player.call("apply_network_character_visual", target_sprite_y, delta)
 	if can_apply_heading and target_heading != Vector2.ZERO:
 		player.call("apply_network_heading_direction", target_heading)
 
@@ -299,14 +302,19 @@ func _cache_references() -> void:
 	if player.get("long_hair") != null:
 		has_long_hair = bool(player.get("long_hair"))
 	can_apply_character_state = player.has_method("apply_network_character_state")
+	can_apply_character_visual = player.has_method("apply_network_character_visual")
 	can_apply_heading = player.has_method("apply_network_heading_direction")
 
 
 func _disable_local_nodes() -> void:
 	if camera_2d != null:
 		camera_2d.enabled = false
+		# 远端相机也移出全局组：防本体 get_first_node_in_group("PlayerCamera")（lifebuoy/yukari_doll）命中镜像
+		camera_2d.remove_from_group("PlayerCamera")
 	if game_ui != null:
 		game_ui.visible = false
+		# 远端 GameUI 移出全局组：防 SupportData.game_add_support 命中隐藏镜像 UI（支援 HUD 不显示）
+		game_ui.remove_from_group("GameUI")
 	if player_canvas_layer != null:
 		player_canvas_layer.visible = false
 

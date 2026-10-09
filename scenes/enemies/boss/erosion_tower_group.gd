@@ -24,6 +24,29 @@ var attack_type: int = 1
 # 防止 is_dead 与状态机 DEAD 双路触发导致重复结算
 var _dead_started: bool = false
 
+# 联机：塔组可视动画态广播（host 发、镜像回放）
+var _net_visual_replaying: bool = false
+
+func _ready() -> void:
+	GameEvents.boss_event.connect(_on_network_boss_event)
+
+func _net_boss_visual(fn_name: String) -> void:
+	if _net_visual_replaying:
+		return
+	GameEvents.emit_boss_event("erosion_tower_group_visual", {"fn": fn_name})
+
+func _on_network_boss_event(event_name: String, data: Dictionary) -> void:
+	if not has_meta("network_remote_enemy"):
+		return
+	if event_name != "erosion_tower_group_visual":
+		return
+	var fn: String = str(data.get("fn", ""))
+	if fn == "" or not has_method(fn):
+		return
+	_net_visual_replaying = true
+	call(fn)
+	_net_visual_replaying = false
+
 func active_state():
 	_dead_started = false
 	await get_tree().create_timer(0.1).timeout
@@ -111,30 +134,36 @@ func boss_dead(tower: ErosionTower):
 	if stats.hp <= 0:
 		_dead_started = true
 		GameEvents.emit_boss_round_end()
-		tower.animation_player_1.process_mode = Node.PROCESS_MODE_ALWAYS
-		tower.animation_player_2.process_mode = Node.PROCESS_MODE_ALWAYS
-		tower.animation_player_3.process_mode = Node.PROCESS_MODE_ALWAYS
-		animation_player.play("death_anim")
-		# 镜像只播动画，不做相机/暂停演出
-		if has_meta("network_remote_enemy"):
-			self.visible = false
-			for i in tower_group:
-				i.idle_state.call_deferred()
-			return
+		boss_death_anim(tower)
+
+
+func boss_death_anim(tower: Node = null) -> void:
+	_net_boss_visual("boss_death_anim")
+	# 死亡演出期间保持子塔动画常开（黑幕暂停下仍播）
+	for i in tower_group:
+		if i != null and is_instance_valid(i):
+			i.animation_player_1.process_mode = Node.PROCESS_MODE_ALWAYS
+			i.animation_player_2.process_mode = Node.PROCESS_MODE_ALWAYS
+			i.animation_player_3.process_mode = Node.PROCESS_MODE_ALWAYS
+	animation_player.play("death_anim")
+	# 镜像只播动画，不做相机/暂停演出；塔组由死亡动画 method 轨 _coin_drops 自释放
+	if has_meta("network_remote_enemy"):
+		return
+	if tower != null:
 		camera_marker.position = tower.position + Vector2(0, -64)
-		GameEvents.emit_camera_move(camera_marker, true)
-		GameEvents.emit_ui_visible(false)
-		GameEvents.emit_pause_lock(true)
-		get_tree().paused = true
-		await animation_player.animation_finished
-		GameEvents.emit_camera_reset()
-		GameEvents.emit_ui_visible(true)
-		get_tree().paused = false
-		GameEvents.emit_pause_lock(false)
-		GameEvents.emit_enemy_dead_position(self.global_position)
-		self.visible = false
-		for i in tower_group:
-			i.idle_state.call_deferred()
+	GameEvents.emit_camera_move(camera_marker, true)
+	GameEvents.emit_ui_visible(false)
+	GameEvents.emit_pause_lock(true)
+	get_tree().paused = true
+	await animation_player.animation_finished
+	GameEvents.emit_camera_reset()
+	GameEvents.emit_ui_visible(true)
+	get_tree().paused = false
+	GameEvents.emit_pause_lock(false)
+	GameEvents.emit_enemy_dead_position(self.global_position)
+	self.visible = false
+	for i in tower_group:
+		i.idle_state.call_deferred()
 
 func boss_enter_anim():
 	for i in tower_group:
@@ -170,6 +199,11 @@ func count_max_hp():
 	count_now_hp()
 
 func _coin_drops():
+	# 远端镜像：不本地生成奖励金币（host 权威同步），保留死亡动画后自释放
+	if has_meta("network_remote_enemy"):
+		await animation_player.animation_finished
+		queue_free()
+		return
 	var coin_box = coins.instantiate()
 	var p_box = pyroxenes.instantiate()
 	coin_box.global_position = self.global_position

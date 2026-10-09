@@ -236,3 +236,12 @@ func apply_network_character_state(state: int) -> void:
 		jet_particles_r.emitting = hovering
 	if jet_particles_l != null:
 		jet_particles_l.emitting = hovering
+
+
+# 联机：逐帧随镜像 sprite 同步喷气粒子位置（state 只在变化时回调，承载不了连续位移）
+func apply_network_character_visual(_sprite_y: float, _delta: float) -> void:
+	var y: float = sprite_2d.position.y + 5.0
+	if jet_particles_r != null:
+		jet_particles_r.position.y = y
+	if jet_particles_l != null:
+		jet_particles_l.position.y = y

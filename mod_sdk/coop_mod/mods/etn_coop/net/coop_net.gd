@@ -28,7 +28,7 @@ const DEFAULT_BATTLE_SCENE: String = "res://scenes/main/main.tscn"
 const MENU_SCENE: String = "res://scenes/main/menu_screen.tscn"
 # 协议/版本握手：不一致直接拒绝。RPC 契约变更时必须递增 PROTOCOL_VERSION。
 const PROTOCOL_VERSION: int = 2
-const MOD_VERSION: String = "0.1.4"
+const MOD_VERSION: String = "0.1.5"
 const HELLO_TIMEOUT_MSEC: int = 5000
 # 客机：发出 _client_hello 后等待 _hello_accept 的上限；超时视为握手失败（旧房主/版本不匹配）
 const HELLO_ACCEPT_TIMEOUT_MSEC: int = 6000
@@ -1738,6 +1738,7 @@ func install_hooks() -> void:
 	ExtensionHooks.on_visual_activated = Callable(self, "_on_visual_activated")
 	ExtensionHooks.on_pickup_spawned = Callable(self, "_on_pickup_spawned")
 	ExtensionHooks.on_character_event = Callable(self, "_on_character_event")
+	ExtensionHooks.on_enemy_bullet_clear = Callable(self, "_on_enemy_bullet_clear")
 	ExtensionHooks.on_round_upgrade_cover_consumed = Callable(self, "_on_round_upgrade_cover_consumed")
 	ExtensionHooks.local_player_change_gate = Callable(self, "_gate_local_player_change")
 	ExtensionHooks.pause_visibility = Callable(self, "_on_pause_visibility")
@@ -1751,6 +1752,7 @@ func install_hooks() -> void:
 	GameEvents.test_room_reset.connect(_on_local_test_room_reset)
 	GameEvents.ability_upgrade_added.connect(_on_local_ability_upgrade_added)
 	GameEvents.player_is_hurt.connect(_on_local_player_hurt)
+	GameEvents.game_over.connect(_on_game_over_hide_motion)
 	GameEvents.player_projectile_hit.connect(_on_any_projectile_hit)
 	GameEvents.player_gun_shoot.connect(_on_local_gun_shoot)
 	GameEvents.boss_round_start.connect(_on_boss_round_start)
@@ -2998,6 +3000,60 @@ func _on_projectile_despawned(bullet: Node) -> void:
 			rpc_id(1, "_server_despawn_visual_effect", effect_id)
 
 
+# ---------------- 受伤类道具（救生圈）清弹：host 权威半径清除 ----------------
+# lifebuoy._on_equip 的 GameEvents.player_is_hurt → clear_enemy_bullet 触发时，经 ExtensionHooks.on_enemy_bullet_clear
+# 通知到这里：本机即时清（host 端即权威；客机端清自己的视觉副本），非 host 再请求 host 权威清（借既有 despawn 广播传遍各端）。
+# 只清敌方侧普通弹（group EnemyBullet + bullet_clear）与导弹（同组、无 bullet_clear → idle_state）；激光/狙击/爆炸 AoE 不在该组，天然不清。
+const MAX_ENEMY_BULLET_CLEAR_RADIUS: float = 200.0
+const MAX_ENEMY_BULLET_CLEAR_ORIGIN_DIST: float = 400.0
+
+
+func _on_enemy_bullet_clear(pos: Vector2, radius: float) -> void:
+	if not is_finite(pos.x) or not is_finite(pos.y):
+		return
+	radius = clampf(radius, 0.0, MAX_ENEMY_BULLET_CLEAR_RADIUS)
+	_clear_enemy_projectiles_near(pos, radius)
+	if is_lan_game and not multiplayer.is_server():
+		rpc_id(1, "_server_enemy_bullet_clear", pos, radius)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _server_enemy_bullet_clear(pos: Vector2, radius: float) -> void:
+	if not multiplayer.is_server() or not _server_sender_ok():
+		return
+	if not is_finite(pos.x) or not is_finite(pos.y):
+		return
+	if not _rate_allow_tokens(multiplayer.get_remote_sender_id(), "lbclear", 2.0, 2.0):
+		return
+	radius = clampf(radius, 0.0, MAX_ENEMY_BULLET_CLEAR_RADIUS)
+	# 归属校验：只允许清发送者玩家附近的子弹，防客机清远处
+	var sender = player_by_peer_id.get(multiplayer.get_remote_sender_id())
+	if sender == null or not is_instance_valid(sender):
+		return
+	if sender.global_position.distance_to(pos) > MAX_ENEMY_BULLET_CLEAR_ORIGIN_DIST:
+		return
+	_clear_enemy_projectiles_near(pos, radius)
+
+
+func _clear_enemy_projectiles_near(pos: Vector2, radius: float) -> void:
+	var r2: float = radius * radius
+	for b in get_tree().get_nodes_in_group("EnemyBullet"):
+		if b == null or not is_instance_valid(b):
+			continue
+		if not (b is Node2D):
+			continue
+		if b.get("source_faction") != null and int(b.source_faction) != Faction.ENEMY_SIDE:
+			continue
+		if b.get("is_idle") != null and int(b.is_idle) == 1:
+			continue
+		if (b as Node2D).global_position.distance_squared_to(pos) > r2:
+			continue
+		if b.has_method("bullet_clear"):
+			b.call("bullet_clear")
+		elif b.has_method("idle_state"):
+			b.call("idle_state")
+
+
 # ---------------- 命中表现按来源广播（拥有者产出，其它端复刻） ----------------
 
 # 玩家子弹命中敌人瞬间（拥有者）→ 按子弹类型广播对应子弹烟给其它端。
@@ -3402,6 +3458,11 @@ func _show_motion_down() -> void:
 func _hide_motion_down() -> void:
 	if _motion != null and is_instance_valid(_motion):
 		_motion.call("hide_down")
+
+
+# 结算（game over，胜/负）时清除本地倒地黑白遮罩；game_over_page 自身按胜负的 grayscale 不受影响
+func _on_game_over_hide_motion(_player_dead: bool) -> void:
+	_hide_motion_down()
 
 
 # ---------------- 角色事件（近战 / 换弹） ----------------
@@ -4588,6 +4649,11 @@ func get_local_display_name() -> String:
 	return str(settings.player_id)
 
 
+# 任意 peer 的显示名（自定义名 / 默认 PlayerN）；供屏边倒地指示等 UI 取用。
+func get_display_name_for(peer_id: int) -> String:
+	return _display_name_for(peer_id)
+
+
 # 加入顺序编号：{1} ∪ get_peers() ∪ {self} 去重升序，index+1（主机=1，依次 2/3/4）。
 func _join_index_of(peer_id: int) -> int:
 	if not _has_peer():
@@ -5326,6 +5392,20 @@ func _dev_health_desc(tag: String, player: Node) -> String:
 
 
 # 连接 is_dead（ONE_SHOT）。复活后（沙包 spawn_hp 会 dead_lock=false）需重连。
+# Boss 死亡演出较长（death_anim 约 3.5s）：镜像回收延后，避免死亡动画/音效刚起就被 queue_free。
+const BOSS_DEATH_DESPAWN_SEC: float = 4.0
+
+
+func _schedule_boss_despawn(net_id: int, delay: float) -> void:
+	if not _net_connected():
+		return
+	# process_always=true：Boss 死亡黑幕期间本端 get_tree().paused 仍能计时
+	await get_tree().create_timer(delay, true, false, true).timeout
+	if not _net_connected():
+		return
+	rpc("_despawn_enemy_remote", net_id)
+
+
 func _connect_enemy_dead(enemy: Node) -> void:
 	if enemy == null or not is_instance_valid(enemy):
 		return
@@ -5363,8 +5443,14 @@ func _on_server_enemy_dead(enemy: Node) -> void:
 		_connect_enemy_dead(enemy)
 		return
 	_add_team_kill(int(last_attacker_by_net_id.get(net_id, multiplayer.get_unique_id())))
+	var boss: bool = str(enemy_scene_by_net_id.get(net_id, "")).contains("/boss/")
 	_forget_enemy_net_id(net_id)
-	rpc("_despawn_enemy_remote", net_id)
+	if boss:
+		# Boss 死亡有较长演出（death_anim ~3.5s）：延后回收镜像，让客机播完死亡动画/音效。
+		# 镜像多已由死亡动画 method 轨 _coin_drops 自释放；此 rpc 为幂等兜底。
+		_schedule_boss_despawn(net_id, BOSS_DEATH_DESPAWN_SEC)
+	else:
+		rpc("_despawn_enemy_remote", net_id)
 
 
 @rpc("authority", "call_remote", "reliable")
