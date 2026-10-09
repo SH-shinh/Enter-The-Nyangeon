@@ -7,7 +7,6 @@ var rail_group: Array = []
 
 var color_num: int
 
-var player: Node
 var equip_luck: int
 
 var equip_mult: float

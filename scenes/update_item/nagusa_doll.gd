@@ -5,7 +5,6 @@ extends EquipItem
 
 @export var chill_layer_cap: int = 5
 
-var player: Node
 var doll: Node
 var add_layer: int = 1
 var ring: Node

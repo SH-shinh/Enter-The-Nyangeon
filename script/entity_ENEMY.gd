@@ -161,7 +161,7 @@ func create_damage_data():
 		"node": self,
 	}
 	if faction == Faction.PLAYER_SIDE:
-		cfg["damage"] = DamageRouter.converted_damage(player, self)
+		cfg["damage"] = DamageRouter.converted_damage(_ensure_player(), self)
 		cfg["source"] = GameTags.CONVERTED
 	else:
 		cfg["damage"] = stats.Enemy_damage
@@ -213,9 +213,10 @@ func _select_target() -> Node:
 	if nearest != null:
 		return nearest
 	# 兜底 player 若已倒地（联机等待救援）则不再作为目标
-	if player != null and is_instance_valid(player) and not _is_valid_player_target(player):
+	var p := _ensure_player()
+	if p != null and not _is_valid_player_target(p):
 		return null
-	return player
+	return p
 
 # 最近存活玩家：单机/客机扫 "Player"；host 额外扫 "RemotePlayer"（远端镜像）。按物理帧缓存。
 var _nearest_player_cache: Node = null
@@ -525,9 +526,7 @@ func settle_converted_clear() -> int:
 	if not is_converted():
 		return 0
 	GameEvents.emit_enemy_dead_score(stats.score)
-	var p: Node = player
-	if p == null:
-		p = get_tree().get_first_node_in_group("Player")
+	var p := _ensure_player()
 	if p == null or p.get("stats") == null or stats.Enemy_coin <= 0:
 		return 0
 	var coin_value: int = int(ceil(stats.Enemy_coin * p.stats.coin_mult))

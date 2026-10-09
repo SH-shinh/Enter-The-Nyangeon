@@ -92,26 +92,26 @@ func add_damage_data():
 	var p := _ensure_player()
 	if p == null:
 		return
-		for i in body_group:
-			if i == null or not is_instance_valid(i):
-				continue
-			var body = i.owner
-			if body == null or not is_instance_valid(body):
-				continue
-			var damage_value: int
-			if damage_count < 8:
-				damage_value = 8 * p.stats.fire_dot_layer * p.stats.dot_damage * p.stats.global_damage
-			else:
-				damage_count = 0
-				damage_value = body.stats.max_hp * hp_mult
-				if body.is_in_group("BOSS"):
-					damage_value = body.stats.max_hp * 0.01
-			hit_box.damage_data.base_damage = damage_value
-			hit_box.damage_data.flags.append(GameTags.TRUE_DAMAGE)
-			i.hit_received.emit(hit_box.damage_data)
-			if is_instance_valid(body) and body.get("enemy_buff_manager") != null:
-				body.enemy_buff_manager.apply_buff(enemy_buff, value)
-			damage_count += 1
+	for i in body_group:
+		if i == null or not is_instance_valid(i):
+			continue
+		var body = i.owner
+		if body == null or not is_instance_valid(body):
+			continue
+		var damage_value: int
+		if damage_count < 8:
+			damage_value = 8 * p.stats.fire_dot_layer * p.stats.dot_damage * p.stats.global_damage
+		else:
+			damage_count = 0
+			damage_value = body.stats.max_hp * hp_mult
+			if body.is_in_group("BOSS"):
+				damage_value = body.stats.max_hp * 0.01
+		hit_box.damage_data.base_damage = damage_value
+		hit_box.damage_data.flags.append(GameTags.TRUE_DAMAGE)
+		i.hit_received.emit(hit_box.damage_data)
+		if is_instance_valid(body) and body.get("enemy_buff_manager") != null:
+			body.enemy_buff_manager.apply_buff(enemy_buff, value)
+		damage_count += 1
 
 func _on_hit_box_entered(hurtbox: Area2D):
 	if hurtbox == null or not is_instance_valid(hurtbox):

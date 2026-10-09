@@ -1,6 +1,5 @@
 extends EquipItem
 
-var player: Node
 
 var equip_luck: int = 10
 var equip_cd: int = 0

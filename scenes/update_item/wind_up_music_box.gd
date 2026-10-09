@@ -9,7 +9,6 @@ extends EquipItem
 @onready var add_buff_timer = $AddBuffTimer
 
 var value: Array
-var player: Node
 
 func _on_equip():
 	player = get_tree().get_first_node_in_group("Player")

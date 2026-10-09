@@ -69,7 +69,7 @@ func _ready() -> void:
 	mat.shader = LASER_SHADER
 	line_2d.material = mat
 	line_2d_2.material = mat
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 	animation_player.animation_finished.connect(_on_animation_finished)
 
 

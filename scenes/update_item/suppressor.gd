@@ -7,8 +7,8 @@ func _on_equip():
 	PlayerData.bullet_damage_mult += 0.15
 	PlayerData.bullet_knockback_mult -= 0.1
 	PlayerData.bullet_recoil_mult -= 0.1
-	var player = get_tree().get_first_node_in_group("Player")
-	player.gun.fire_sounds.pitch_scale *= 0.7
+	if player != null:
+		player.gun.fire_sounds.pitch_scale *= 0.7
 
 	muzzle_group = get_tree().get_nodes_in_group("Muzzle")
 	for i in muzzle_group:

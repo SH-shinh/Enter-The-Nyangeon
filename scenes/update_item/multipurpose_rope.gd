@@ -1,7 +1,6 @@
 extends EquipItem
 
 var equip_luck: int = 20
-var player: Node
 
 func pick_coin(coin: Node):
 	var luck = randf_range(0,200)

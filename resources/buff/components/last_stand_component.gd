@@ -74,7 +74,7 @@ func _teardown() -> void:
 	if PlayerData != null and PlayerData.has_method("update_player_ability"):
 		PlayerData.life_num_add = first_life_num
 		# player 为 null 说明尚未进入/已离开对局，跳过重算。
-		if PlayerData.player != null:
+		if PlayerData.player != null and is_instance_valid(PlayerData.player):
 			PlayerData.update_player_ability()
 
 func on_timeout(_entry: Dictionary) -> void:

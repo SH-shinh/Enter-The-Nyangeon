@@ -13,7 +13,6 @@ extends EquipItem
 @onready var hit_box = $Node2D/HitBox
 
 var value: Array =[]
-var player: Node
 
 func _process(delta):
 	if node_2d_2.visible == true:

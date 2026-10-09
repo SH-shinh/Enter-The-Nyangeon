@@ -23,6 +23,11 @@ var dir_v: Vector2
 
 var player: Node
 
+# 玩家会在换角色时被销毁重建；该派生体长期存活，取用前统一重新解析（见 PlayerRef）。
+func _ensure_player() -> Node:
+	player = PlayerRef.ensure(self, player)
+	return player
+
 var velocity: Vector2
 var body_group: Array[Node]
 
@@ -37,7 +42,7 @@ var _net_target_rot: float = 0.0
 var _net_target_scale: Vector2 = Vector2.ONE
 
 func _ready():
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 	GameEvents.global_time_count.connect(time_count)
 	area_entered.connect(_on_area_entered)
 	area_exited.connect(_on_area_exited)
@@ -80,6 +85,11 @@ func _physics_process(delta):
 		dir_v.x = -dir.y
 		dir_v.y = dir.x
 	else:
+		player = _ensure_player()
+		if player == null:
+			idle_state()
+			is_go_back.emit()
+			return
 		dir_v = (player.global_position - self.global_position).normalized()
 		if global_position.distance_to(player.global_position) < 15:
 			idle_state()
@@ -98,6 +108,9 @@ func time_count():
 	add_damage_data()
 
 func apply_melee_damage_data():
+	player = _ensure_player()
+	if player == null:
+		return
 	damage_data = DamageData.fill(damage_data, {
 		"knockback": max(player.stats.bullet_knockback + 50, 1),
 		"direction": Vector2.RIGHT.rotated(global_rotation),
@@ -156,6 +169,9 @@ func _on_fly_timer_timeout():
 func _on_area_2d_body_entered(body):
 	
 	if body.is_in_group("Enemy"):
+		player = _ensure_player()
+		if player == null:
+			return
 		var hit_direction = (body.position - player.position).normalized()
 		body.hurt_damage = max(1, equip_damage * player.stats.equip_damage * player.stats.global_damage)
 		body.hurt_knockback = player.stats.bullet_knockback * 1.5

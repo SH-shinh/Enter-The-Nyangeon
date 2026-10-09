@@ -13,7 +13,6 @@ const BASE_COOLDOWN: float = 5.0
 const MIN_COOLDOWN: float = 1.0
 
 var game_camera: Node
-var player: Node
 var doll: Node
 
 func _process(_delta):

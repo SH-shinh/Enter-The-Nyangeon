@@ -1,6 +1,5 @@
 extends EquipItem
 
-var player: Node
 var health_num: int = 3
 var enemy_body:Array = []
 var health_cd: int = 0

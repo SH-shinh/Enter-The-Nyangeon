@@ -4,7 +4,6 @@ extends EquipItem
 @onready var cherino_matryoshka_icon = preload("res://scenes/update_item/cherino_matryoshka_icon.tscn")
 @onready var range_explosion_anim = $RangeExplosion
 
-var player: Node
 var explosion_num: int = 0
 var group: Array = []
 

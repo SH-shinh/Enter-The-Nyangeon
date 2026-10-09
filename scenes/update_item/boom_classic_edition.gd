@@ -1,6 +1,5 @@
 extends EquipItem
 
-var player: Node
 var hp_mult: float = 0.1
 
 func _on_equip():

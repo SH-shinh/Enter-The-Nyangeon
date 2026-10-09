@@ -7,7 +7,6 @@ extends EquipItem
 @onready var fuel_tank_icon: PackedScene = preload("res://scenes/update_item/fuel_tank_icon.tscn")
 var group: Array
 var value: Array
-var player: Node
 var add_layer: int = 1
 
 func _on_equip():

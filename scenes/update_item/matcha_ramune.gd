@@ -2,7 +2,6 @@ extends EquipItem
 
 @export var enemy_buff: Buff
 
-var player: Node
 var base_explosion_range: float = 3.0
 var explosion_damage: int = 1
 @onready var explosion_ins: PackedScene = preload("res://script/explosion_damage.tscn")

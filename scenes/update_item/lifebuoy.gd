@@ -9,7 +9,6 @@ extends EquipItem
 @export var clear_radius: float = 120.0
 
 var game_camera: Node
-var player: Node
 
 func _process(delta):
 	center_position()

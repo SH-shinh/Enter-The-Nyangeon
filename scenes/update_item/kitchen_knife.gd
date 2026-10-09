@@ -1,6 +1,5 @@
 extends EquipItem
 
-var player: Node
 var equip_damage: int = 45
 var equip_knockback: int
 var damage_cd: int = 0

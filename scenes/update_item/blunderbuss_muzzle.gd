@@ -4,7 +4,6 @@ extends EquipItem
 @onready var fire_damage: PackedScene = preload("res://script/fire_damage.tscn")
 @onready var shoot_fire_1 = $ShootFire1
 var group: Array
-var player: Node
 var fire_num: int = 1
 var damage_group: Array[Node]
 var index: int = 0

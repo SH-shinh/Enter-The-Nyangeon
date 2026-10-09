@@ -66,7 +66,7 @@ var target_position: Vector2 = Vector2.ZERO
 
 func _ready():
 	enemy_body.clear()
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 	tilemap = get_tree().get_first_node_in_group("Map")
 	is_knockback.connect(body_in_knockback)
 	PoolManager.add_pool(pool_id, self)

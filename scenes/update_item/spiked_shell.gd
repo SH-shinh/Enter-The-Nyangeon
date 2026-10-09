@@ -5,7 +5,6 @@ extends EquipItem
 @onready var hit_box = $AnimatedSprite2D/HitBox
 @onready var collision_shape_2d = $AnimatedSprite2D/HitBox/CollisionShape2D
 
-var player: Node
 
 var damage_cd: int = 0
 var equip_damage: int = 0

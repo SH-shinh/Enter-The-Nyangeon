@@ -3,7 +3,6 @@ extends EquipItem
 const HEAL_CD: float = 0.03
 
 var equip_luck: int = 10
-var player: Node
 var _cd: float = 0.0
 
 func _on_equip():

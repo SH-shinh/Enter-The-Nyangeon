@@ -78,7 +78,7 @@ func first_round():
 	PoolManager.get_buff_box()
 
 func get_player():
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 
 func enemy_clear_unit():
 	var total_coin: int = 0
@@ -133,7 +133,9 @@ func backlayer_clear_unit():
 			textures.queue_free()
 
 func player_portal_unit():
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.ensure(self, player)
+	if player == null:
+		return
 	player.position = battle_room.position
 
 func boss_bgm():

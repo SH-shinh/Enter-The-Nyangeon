@@ -12,7 +12,6 @@ const DAMAGE_PER_LEVEL: int = 20
 
 @export var field_cap: int = 12
 
-var player: Node
 var doll: Node
 var field_group: Array[Node] = []
 var pool_index: int = 0

@@ -94,14 +94,13 @@ func _take_damage_internal(damage_data: HealthChangeData, suppress_feedback: boo
 			and not converted_hit.flags.has(GameTags.TRUE_DAMAGE) \
 			and raw_damage > 0:
 		
-		raw_damage *= PlayerData.player.stats.dot_damage
-		
-		if converted_hit.damage_type.has(GameTags.MELEE_DAMAGE):
-			raw_damage = max(1, int(round(raw_damage * PlayerData.kick_damage_mult)))
 		var crit_player: Node = PlayerData.player
-		if crit_player == null:
-			crit_player = get_tree().get_first_node_in_group("Player")
+		if crit_player == null or not is_instance_valid(crit_player):
+			crit_player = PlayerRef.resolve(self)
 		if crit_player != null and crit_player.get("stats") != null:
+			raw_damage *= crit_player.stats.dot_damage
+			if converted_hit.damage_type.has(GameTags.MELEE_DAMAGE):
+				raw_damage = max(1, int(round(raw_damage * PlayerData.kick_damage_mult)))
 			var is_crit_hit: bool = randf_range(0, 100) < crit_player.stats.critical_luck
 			converted_hit.is_crit = is_crit_hit
 			if is_crit_hit:

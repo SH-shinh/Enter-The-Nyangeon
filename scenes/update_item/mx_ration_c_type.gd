@@ -2,7 +2,6 @@ extends EquipItem
 
 signal value_count_change
 
-var player: Node
 @onready var value_count: int = 0:
 	set(v):
 		v = max(0, v)

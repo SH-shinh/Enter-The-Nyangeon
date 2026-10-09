@@ -6,7 +6,6 @@ extends EquipItem
 const BASE_CHANCE: float = 10.0          # 0 luck 时的触发概率(%)
 const LUCK_CHANCE_PER_100: float = 40.0  # 每 100 luck 增加的百分点
 
-var player: Node
 
 func _setup():
 	player = get_tree().get_first_node_in_group("Player")

@@ -1,6 +1,5 @@
 extends EquipItem
 
-var player: Node
 var health_num: float = 0.01
 @onready var health_cd_timer = $HealthCDTimer
 @onready var cd_delay_timer = $CDDelayTimer

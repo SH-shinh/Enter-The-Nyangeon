@@ -5,6 +5,12 @@ signal get_target
 var dir: Vector2 = Vector2.ZERO
 
 var player: Node
+
+# 玩家会在换角色时被销毁重建；该派生体长期存活，取用前统一重新解析（见 PlayerRef）。
+func _ensure_player() -> Node:
+	player = PlayerRef.ensure(self, player)
+	return player
+
 var equip_speed: int = 120
 var equip_range: float = 1.0
 var speed: int = 120
@@ -19,7 +25,7 @@ var pick_group: Array = []
 @onready var canvas_group = $Node2D/CanvasGroup
 
 func _ready():
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 	_on_get_target()
 	GameEvents.screen_changed.connect(outline_changed)
 	GameEvents.global_time_count.connect(time_count)
@@ -38,6 +44,7 @@ func outline_changed(n: float):
 
 func _physics_process(delta):
 	
+	player = _ensure_player()
 	if target == null:
 		return
 	if target == player:
@@ -74,6 +81,7 @@ func sort_item():
 		)
 
 func _on_get_target():
+	player = _ensure_player()
 	if coin_group.size() != 0:
 		target = coin_group[0]
 	else:

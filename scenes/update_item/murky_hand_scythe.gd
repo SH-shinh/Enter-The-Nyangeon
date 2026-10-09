@@ -11,7 +11,6 @@ var back_num: int = 1
 var kill_num: int = 0
 var update_num: int = 100
 
-var player: Node
 var scythe_group: Array[Node]
 
 func _on_equip():

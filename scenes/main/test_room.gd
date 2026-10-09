@@ -39,7 +39,7 @@ func reset_data():
 	_reset_token += 1
 	var token := _reset_token
 	GameEvents.emit_round_end()
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 	if player == null:
 		# LAN：本地玩家由 change_scene 延迟 add_child，0.1s 时可能尚未入组；
 		# 有界等待后再完成本房初始化，避免跳过 reset_date/get_player_base_ability
@@ -48,7 +48,7 @@ func reset_data():
 			await get_tree().process_frame
 			if token != _reset_token:
 				return
-			player = get_tree().get_first_node_in_group("Player")
+			player = PlayerRef.resolve(self)
 			if player != null:
 				break
 		if player == null or token != _reset_token:

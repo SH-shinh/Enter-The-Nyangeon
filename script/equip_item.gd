@@ -8,6 +8,16 @@ extends Node2D
 var item_id: String
 var num: int = 0
 
+# 玩家引用：跨帧自动刷新，避免长期缓存换角色后已释放的实例（见 PlayerRef）。
+# 子类直接读写 `player` 即可，无需自己重新解析；子类不得再声明 `var player`（会与基类成员冲突）。
+var _player: Node
+var player: Node:
+	get:
+		_player = PlayerRef.ensure(self, _player)
+		return _player
+	set(value):
+		_player = value
+
 func _ready() -> void:
 	item_id = _get_item_id()
 	_on_equip()

@@ -4,7 +4,6 @@ extends EquipItem
 @onready var cd_timer = $CDTimer
 @onready var animation_player = $Node2D/AnimationPlayer
 
-var player: Node
 var max_health: int
 var health_count: int = 0
 

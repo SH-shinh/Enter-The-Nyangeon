@@ -8,7 +8,6 @@ extends EquipItem
 
 var color_num: int
 
-var player: Node
 var equip_luck: int = 0
 var equip_damage: int = 0
 

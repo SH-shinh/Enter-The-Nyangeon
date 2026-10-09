@@ -11,6 +11,11 @@ extends EnemyGun
 
 var player: Node
 
+# 玩家会在换角色时被销毁重建；炮台长期存活，取用前统一重新解析（见 PlayerRef）。
+func _ensure_player() -> Node:
+	player = PlayerRef.ensure(self, player)
+	return player
+
 var source_faction: int = Faction.ENEMY_SIDE
 
 func shoot_bullet():
@@ -31,7 +36,7 @@ func add_tank_bullet():
 		source_faction = Faction.PLAYER_SIDE
 	else:
 		source_faction = Faction.ENEMY_SIDE
-	var target: Node = body.get_target() if body != null else player
+	var target: Node = body.get_target() if body != null else _ensure_player()
 	if target == null:
 		return
 	for i in gun_shoot_num:
@@ -46,7 +51,6 @@ func add_tank_bullet():
 		tank_bullet_ins.active_state()
 
 func gun_shot():
-	if player == null:
-		player = get_tree().get_first_node_in_group("Player")
+	player = _ensure_player()
 	shoot_bullet()
 	shoot_end.emit()

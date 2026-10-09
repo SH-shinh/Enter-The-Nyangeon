@@ -31,7 +31,7 @@ var first_position: Vector2 = Vector2.ZERO
 #var charge_cd_timer: Timer
 
 func _ready():
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 	enemy_body.clear()
 	is_knockback.connect(body_in_knockback)
 	stats.hp_changed.connect(hp_bar_update)

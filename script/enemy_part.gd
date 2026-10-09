@@ -29,7 +29,7 @@ var _kb_targets: Array[HurtBox] = []
 var _knockback_cd: float = 0.0
 
 func _ready():
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 	if stats != null and not stats.is_dead.is_connected(_on_enemy_stats_is_dead):
 		stats.is_dead.connect(_on_enemy_stats_is_dead)
 	if knockback_hit_box == null:

@@ -2,7 +2,6 @@ extends EquipItem
 
 @onready var animation_player = $Node2D/AnimationPlayer
 
-var player: Node
 
 var dely_time: int = 1
 

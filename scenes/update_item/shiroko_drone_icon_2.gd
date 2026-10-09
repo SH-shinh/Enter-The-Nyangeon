@@ -21,6 +21,11 @@ var can_shoot: bool = true
 
 var player: Node
 
+# 玩家会在换角色时被销毁重建；该派生体长期存活，取用前统一重新解析（见 PlayerRef）。
+func _ensure_player() -> Node:
+	player = PlayerRef.ensure(self, player)
+	return player
+
 @onready var shiroko_drone = $%ShirokoDrone
 @onready var shoot_cd_timer = $ShootCDTimer
 @onready var shoot_interval_timer = $ShootIntervalTimer
@@ -30,7 +35,7 @@ var player: Node
 @onready var missile = preload("res://scenes/update_item/shiro_missile.tscn")
 
 func _ready():
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 	shot_missile.connect(missile_hurt_damage)
 	GameEvents.enemy_damage_taken.connect(extra_shoot)
 	GameEvents.screen_changed.connect(outline_changed)
@@ -39,6 +44,9 @@ func outline_changed(n: float):
 	$CanvasGroup.material.set_shader_parameter("outline_width", n)
 
 func _physics_process(delta):
+	player = _ensure_player()
+	if player == null:
+		return
 	dir = player.global_position
 	dir2 = (dir - global_position).normalized()
 	speed = min(650, global_position.distance_to(dir) * 1.3 * global_position.distance_to(dir) / 100)
@@ -77,6 +85,9 @@ func apply_network_visual_rotation(rot: float, delta: float) -> void:
 	shiroko_drone.v = rot
 
 func missile_hurt_damage(bullet_body: Node):
+	player = _ensure_player()
+	if player == null:
+		return
 	bullet_body.damage_data = DamageData.fill(bullet_body.damage_data, {
 		"knockback": player.stats.bullet_knockback,
 		"type": GameTags.EXPLOSION_DAMAGE,
@@ -101,6 +112,9 @@ func auto_shot():
 	can_shoot = false
 
 func _shoot_missile():
+	player = _ensure_player()
+	if player == null:
+		return
 	shoot_interval_timer.start()
 	if player.stats.bullet_count == 1:
 		shoot_position.rotation = is_look_at.angle()

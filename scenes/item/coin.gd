@@ -110,11 +110,11 @@ func _physics_process(_delta):
 func add_coin():
 	if add_end == true:
 		return
-	add_end = true
 	var p := PlayerRef.ensure(self, player)
-	player = p
 	if p == null:
 		return
+	add_end = true
+	player = p
 	var coin_value: int = ceil(coin * p.stats.coin_mult)
 	if ExtensionHooks.intercept(ExtensionHooks.coin_pickup_gate, [self, p, p.stats.coin_mult]):
 		return

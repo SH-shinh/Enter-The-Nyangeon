@@ -2,7 +2,6 @@ extends EquipItem
 
 @onready var floating = preload("res://ui/floating_text.tscn")
 
-var player: Node
 
 var coin_num: int = 0
 var add_coin: int = 1

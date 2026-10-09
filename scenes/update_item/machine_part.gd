@@ -1,7 +1,6 @@
 extends EquipItem
 
 var summoned_manager: Node
-var player: Node
 
 var hurt_resis_mult: float = 0.05
 var resis_count: float = 0

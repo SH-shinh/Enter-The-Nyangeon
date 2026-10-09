@@ -17,10 +17,15 @@ var damage_data: DamageData
 var crosshair_pos: Vector2
 var player: Node
 
+# 玩家会在换角色时被销毁重建；取用前统一重新解析（见 PlayerRef）。
+func _ensure_player() -> Node:
+	player = PlayerRef.ensure(self, player)
+	return player
+
 var flags: Array[String]
 
 func _ready():
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 	if shoot_at_once == true:
 		shoot_bullet()
 	GameEvents.crosshair_position.connect(get_crosshair_pos)
@@ -29,6 +34,9 @@ func get_crosshair_pos(crosshair_position: Vector2):
 	crosshair_pos = crosshair_position * get_canvas_transform()
 
 func shoot_bullet():
+	player = _ensure_player()
+	if player == null:
+		return
 	if bullet_count == 1:
 		var direction: Vector2 = global_position \
 				.direction_to(crosshair_pos) \
@@ -60,6 +68,9 @@ func shoot_bullet():
 		call_deferred("queue_free")
 
 func _configure_bullet(node: Node) -> void:
+	player = _ensure_player()
+	if player == null:
+		return
 	node.speed = bullet_speed
 	node.penetrate = bullet_penetrate
 	node.collision_num = collision_num
@@ -74,6 +85,9 @@ func _configure_bullet_multi(node: Node) -> void:
 	_configure_bullet(node)
 
 func _post_bullet(node: Node) -> void:
+	player = _ensure_player()
+	if player == null:
+		return
 	if !flags.is_empty():
 		for i in flags:
 			player.flags.append(i)

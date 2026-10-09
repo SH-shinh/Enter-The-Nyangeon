@@ -3,7 +3,6 @@ extends EquipItem
 @onready var floating = preload("res://ui/floating_text.tscn")
 
 var coin: int = 0
-var player: Node
 var reload_num: int = 0
 
 func _on_equip():

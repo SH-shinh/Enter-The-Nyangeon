@@ -31,7 +31,7 @@ func _ready() -> void:
 	_build_bubble()
 
 func _refresh_player() -> void:
-	player = get_tree().get_first_node_in_group("Player")
+	player = PlayerRef.resolve(self)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if current == null or not is_instance_valid(current):
@@ -118,7 +118,9 @@ func _hide_prompt() -> void:
 func _is_blocked() -> bool:
 	if get_tree().paused:
 		return true
-	if player != null and player.get("can_control") != null and player.can_control == false:
+	if player == null or not is_instance_valid(player):
+		return true
+	if player.get("can_control") != null and player.can_control == false:
 		return true
 	return false
 

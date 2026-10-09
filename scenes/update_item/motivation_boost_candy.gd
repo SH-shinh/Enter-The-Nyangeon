@@ -1,6 +1,5 @@
 extends EquipItem
 
-var player: Node
 
 var cd_time: int = 0
 var delay_time: int = 0

@@ -2,7 +2,6 @@ extends EquipItem
 
 var kei_velocity: float = 0.003
 var dir: Vector2
-var player: Node
 
 @onready var marker_2d = $Marker2D
 @onready var kei = $Path2D/PathFollow2D/Kei

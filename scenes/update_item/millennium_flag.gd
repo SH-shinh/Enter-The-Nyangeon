@@ -10,7 +10,6 @@ var group: Array = []
 @export var buff_value: float
 @export var buff_erase_timer: float
 
-var player: Node
 var equip_luck: int = 5
 
 func _on_equip():

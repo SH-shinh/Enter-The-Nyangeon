@@ -2,7 +2,6 @@ extends EquipItem
 
 var player_luck: int = 0
 var luck_add: int = 0
-var player: Node
 
 func _on_equip():
 	player = get_tree().get_first_node_in_group("Player")

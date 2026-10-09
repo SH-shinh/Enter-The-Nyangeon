@@ -1,6 +1,5 @@
 extends EquipItem
 
-var player: Node
 
 @onready var floating_text_scene: PackedScene = preload("res://ui/floating_text.tscn")
 

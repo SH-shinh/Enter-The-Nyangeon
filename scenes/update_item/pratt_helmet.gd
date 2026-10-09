@@ -3,7 +3,6 @@ extends EquipItem
 @onready var pratt_helmet_icon = preload("res://scenes/update_item/pratt_helmet_icon.tscn")
 @onready var player_bullet_launcher = $PlayerBulletLauncher
 
-var player: Node
 var shoot_num: int = 7
 var bullet_num: int = 2
 var is_stop: bool = false

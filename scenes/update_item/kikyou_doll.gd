@@ -1,6 +1,5 @@
 extends EquipItem
 
-var player: Node
 var poison_damage: int
 var damage_mult: float = 0.4
 var group: Array = []

@@ -11,7 +11,6 @@ signal dot_count_change
 		dot_count_change.emit()
 
 var bullet_count: float = 0
-var player: Node
 
 func _on_equip():
 	player = get_tree().get_first_node_in_group("Player")

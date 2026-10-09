@@ -10,7 +10,6 @@ var group: Array = []
 @export var buff_value: float
 @export var buff_erase_timer: float
 
-var player: Node
 
 func _on_equip():
 	player = get_tree().get_first_node_in_group("Player")

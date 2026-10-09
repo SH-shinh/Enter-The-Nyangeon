@@ -5,7 +5,6 @@ extends EquipItem
 @export var buff_value: float
 @export var buff_erase_timer: float
 
-var player: Node
 var value: Array
 
 func _on_equip():

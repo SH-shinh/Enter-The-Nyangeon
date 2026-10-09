@@ -8,7 +8,6 @@ extends EquipItem
 @onready var student_council_hard_hat_icon = preload("res://scenes/update_item/student_council_hard_hat_icon.tscn")
 @onready var animation_player = $Node2D/AnimationPlayer
 
-var player: Node
 var value: Array
 
 func _on_equip():
