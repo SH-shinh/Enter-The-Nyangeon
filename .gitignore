@@ -3,3 +3,13 @@
 
 # coop mod 构建产物（源在 mod_sdk/coop_mod/mods/）
 mod_sdk/coop_mod/build/
+
+# 生成物 / 工具 / 临时文件（不入库）
+android/build/
+addons/.godot_ai_update/
+addons/godot_ai/
+**/~RF*.TMP
+*.TMP
+outline_test.tscn
+test_upgrade.*
+skills-lock.json
