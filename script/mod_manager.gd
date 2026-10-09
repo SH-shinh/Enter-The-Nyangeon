@@ -12,7 +12,8 @@ const ORDER_PATH := "user://mods/mods_order.json"
 const API_VERSION := 1
 # zip 导入上限（防恶意/误打包的超大包）
 const IMPORT_MAX_FILES := 2000
-const IMPORT_MAX_BYTES := 256 * 1024 * 1024
+const IMPORT_MAX_MB := 256
+const IMPORT_MAX_BYTES := IMPORT_MAX_MB * 1024 * 1024
 
 # kind -> 期望的 class_name（用于类型校验）
 const KIND_CLASS := {
@@ -1070,7 +1071,7 @@ func import_zip(zip_path: String) -> Dictionary:
 		if total > IMPORT_MAX_BYTES:
 			zr.close()
 			_clear_dir(dest)
-			return {"ok": false, "error": "解压体积超限（>%d MB）" % (IMPORT_MAX_BYTES / 1048576)}
+			return {"ok": false, "error": "解压体积超限（>%d MB）" % IMPORT_MAX_MB}
 		var wf := FileAccess.open(out_path, FileAccess.WRITE)
 		if wf:
 			wf.store_buffer(data)
@@ -1085,16 +1086,16 @@ func _clear_dir(path: String) -> void:
 	if d == null:
 		return
 	d.list_dir_begin()
-	var name := d.get_next()
-	while name != "":
-		if name != "." and name != "..":
-			var full := path.path_join(name)
+	var fname := d.get_next()
+	while fname != "":
+		if fname != "." and fname != "..":
+			var full := path.path_join(fname)
 			if d.current_is_dir():
 				_clear_dir(full)
 				DirAccess.remove_absolute(full)
 			else:
 				DirAccess.remove_absolute(full)
-		name = d.get_next()
+		fname = d.get_next()
 	d.list_dir_end()
 
 

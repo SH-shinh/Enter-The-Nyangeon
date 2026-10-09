@@ -10,6 +10,7 @@ addons/.godot_ai_update/
 addons/godot_ai/
 **/~RF*.TMP
 *.TMP
+addons/godot-rapier2d/bin/~*
 outline_test.tscn
 test_upgrade.*
 skills-lock.json

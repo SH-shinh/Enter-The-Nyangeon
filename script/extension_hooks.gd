@@ -130,42 +130,42 @@ var _hooks: Dictionary = {}
 
 
 # 注册命名钩子；priority 越大越先调用。同回调重复注册忽略。
-func add_hook(name: StringName, cb: Callable, priority: int = 0) -> void:
+func add_hook(hook_name: StringName, cb: Callable, priority: int = 0) -> void:
 	if not cb.is_valid():
 		return
-	if not _hooks.has(name):
-		_hooks[name] = []
-	for h in _hooks[name]:
+	if not _hooks.has(hook_name):
+		_hooks[hook_name] = []
+	for h in _hooks[hook_name]:
 		if h.cb == cb:
 			return
-	_hooks[name].append({"cb": cb, "priority": priority})
-	_hooks[name].sort_custom(func(a, b): return int(a.priority) > int(b.priority))
+	_hooks[hook_name].append({"cb": cb, "priority": priority})
+	_hooks[hook_name].sort_custom(func(a, b): return int(a.priority) > int(b.priority))
 
 
-func remove_hook(name: StringName, cb: Callable) -> void:
-	if not _hooks.has(name):
+func remove_hook(hook_name: StringName, cb: Callable) -> void:
+	if not _hooks.has(hook_name):
 		return
-	_hooks[name] = _hooks[name].filter(func(h): return h.cb != cb)
+	_hooks[hook_name] = _hooks[hook_name].filter(func(h): return h.cb != cb)
 
 
-func has_hook(name: StringName) -> bool:
-	return _hooks.has(name) and not _hooks[name].is_empty()
+func has_hook(hook_name: StringName) -> bool:
+	return _hooks.has(hook_name) and not _hooks[hook_name].is_empty()
 
 
 # 接管类命名钩子：按 priority 依次调用，任一返回 true 即短路并返回 true。
-func run_hooks(name: StringName, args: Array = []) -> bool:
-	if not _hooks.has(name):
+func run_hooks(hook_name: StringName, args: Array = []) -> bool:
+	if not _hooks.has(hook_name):
 		return false
-	for h in _hooks[name]:
+	for h in _hooks[hook_name]:
 		if h.cb.is_valid() and bool(h.cb.callv(args)):
 			return true
 	return false
 
 
 # 通知类命名钩子：按 priority 全部调用。
-func notify_hooks(name: StringName, args: Array = []) -> void:
-	if not _hooks.has(name):
+func notify_hooks(hook_name: StringName, args: Array = []) -> void:
+	if not _hooks.has(hook_name):
 		return
-	for h in _hooks[name]:
+	for h in _hooks[hook_name]:
 		if h.cb.is_valid():
 			h.cb.callv(args)
