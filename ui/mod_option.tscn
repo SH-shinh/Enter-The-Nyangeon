@@ -271,6 +271,17 @@ theme_override_fonts/font = ExtResource("3_font7")
 theme_override_font_sizes/font_size = 16
 text = "mod_import"
 
+[node name="UninstallBtn" type="Button" parent="Scroll/Content/Buttons" unique_id=743692819]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+theme = SubResource("Theme_btn")
+theme_override_colors/font_outline_color = Color(0.136826, 0.136826, 0.136826, 1)
+theme_override_constants/outline_size = 5
+theme_override_fonts/font = ExtResource("3_font7")
+theme_override_font_sizes/font_size = 16
+text = "mod_uninstall"
+
 [node name="ScrollContainer" type="ScrollContainer" parent="Scroll/Content" unique_id=740221431]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 274)

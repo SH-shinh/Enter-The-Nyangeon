@@ -11,6 +11,8 @@ signal languages_changed
 const MODS_DIR := "user://mods"
 const STATE_PATH := "user://mods/mods_state.json"
 const ORDER_PATH := "user://mods/mods_order.json"
+# 卸载时因 pck 被占用/目录只读而未能删除的 mod id，下次启动挂载前再删。
+const PENDING_UNINSTALL_PATH := "user://mods/.pending_uninstall.json"
 const API_VERSION := 1
 # zip 导入上限（防恶意/误打包的超大包）
 const IMPORT_MAX_FILES := 2000
@@ -75,6 +77,7 @@ func _ready() -> void:
 	_languages = _base_languages_copy()
 	_build_reserved_ids()
 	_load_order()
+	_process_pending_uninstalls()
 	_scan_installed()
 	_mount_enabled()
 	_scan_content()
@@ -979,6 +982,41 @@ func has_society_mod(mod_id: String) -> bool:
 	return false
 
 
+# 本体角色：扫描 res://resources/player/*.tres（含分支形态，如 aris_armed），列空回退 all_player.tres。
+func get_base_characters() -> Array:
+	var out: Array = []
+	var seen: Dictionary = {}
+	for f in ResourceLoader.list_directory("res://resources/player"):
+		if not f.ends_with(".tres") or f.ends_with(".remap"):
+			continue
+		var r = load("res://resources/player/%s" % f)
+		if r is PlayerCard and not seen.has(r.id):
+			seen[r.id] = true
+			out.append(r)
+	if out.is_empty():
+		var group = load("res://resources/player/all_player.tres")
+		if group != null and group.get("player_group") != null:
+			for card in group.player_group:
+				if card != null and not seen.has(card.id):
+					seen[card.id] = true
+					out.append(card)
+	return out
+
+
+# 本体游戏模式：扫描 res://resources/game_mode/*.tres。
+func get_base_game_modes() -> Array:
+	var out: Array = []
+	var seen: Dictionary = {}
+	for f in ResourceLoader.list_directory("res://resources/game_mode"):
+		if not f.ends_with(".tres") or f.ends_with(".remap"):
+			continue
+		var r = load("res://resources/game_mode/%s" % f)
+		if r is GameMode and not seen.has(r.game_mode_id):
+			seen[r.game_mode_id] = true
+			out.append(r)
+	return out
+
+
 # 未被任何 mod 社团卡认领的 mod 角色（供默认通用社团卡使用）。
 func get_unclaimed_characters() -> Array:
 	var out: Array = []
@@ -1138,6 +1176,33 @@ func set_enabled(id: String, on: bool) -> void:
 	mods_changed.emit()
 
 
+# 卸载一个 mod：禁用 + 从注册表移除 + 删除其在所有 mod 根下的目录。
+# pck 已挂载无法运行期卸载，故本会话内容仍生效、重启后完全移除；删除失败（占用/只读）留待下次启动删除。
+# 返回 {ok, id, deleted, restart_required, error?}。
+func uninstall(id: String) -> Dictionary:
+	if id == "" or not _mods.has(id):
+		return {"ok": false, "error": "not_installed"}
+	var was_mounted: bool = bool(_mods[id].get("mounted", false))
+	_mods[id]["enabled"] = false
+	_mods.erase(id)
+	_resolved_order.erase(id)
+	_save_state()
+	var deleted := _delete_mod_dirs(id)
+	var pending := _read_pending()
+	if deleted:
+		pending.erase(id)
+	else:
+		pending[id] = true
+	_write_pending(pending)
+	mods_changed.emit()
+	return {
+		"ok": true,
+		"id": id,
+		"deleted": deleted,
+		"restart_required": was_mounted,
+	}
+
+
 # ---------------- zip 导入 ----------------
 
 func import_zip(zip_path: String) -> Dictionary:
@@ -1221,3 +1286,84 @@ func _bad_entry(f: String) -> bool:
 	if f.length() > 1 and f[1] == ":":
 		return true
 	return false
+
+
+# ---------------- 卸载 / 待删 ----------------
+
+# 删除该 id 在所有 mod 根下的目录；返回是否全部删除成功（不存在的根不算失败）。
+func _delete_mod_dirs(id: String) -> bool:
+	var all_ok := true
+	for root in _mod_dirs():
+		var p := str(root).path_join(id)
+		if not DirAccess.dir_exists_absolute(p):
+			continue
+		if not _delete_dir_recursive(p):
+			all_ok = false
+	return all_ok
+
+
+# 递归删除目录（先删内容再删目录）；仅允许删除 mod 根之下的路径。
+func _delete_dir_recursive(path: String) -> bool:
+	if not _path_under_mod_roots(path):
+		push_warning("[ModManager] 拒绝删除非 mod 目录：%s" % path)
+		return false
+	if not DirAccess.dir_exists_absolute(path):
+		return true
+	var d := DirAccess.open(path)
+	if d == null:
+		return false
+	d.list_dir_begin()
+	var fname := d.get_next()
+	while fname != "":
+		if fname != "." and fname != "..":
+			var full := path.path_join(fname)
+			if d.current_is_dir():
+				_delete_dir_recursive(full)
+			else:
+				DirAccess.remove_absolute(full)
+		fname = d.get_next()
+	d.list_dir_end()
+	DirAccess.remove_absolute(path)
+	return not DirAccess.dir_exists_absolute(path)
+
+
+# 路径是否位于某个 mod 根之下（根本身返回 false，避免误删整根）。
+func _path_under_mod_roots(path: String) -> bool:
+	var p := path.simplify_path().trim_suffix("/")
+	for root in _mod_dirs():
+		var r := str(root).simplify_path().trim_suffix("/")
+		if p == r:
+			return false
+		if p.begins_with(r + "/"):
+			return true
+	return false
+
+
+func _read_pending() -> Dictionary:
+	if not FileAccess.file_exists(PENDING_UNINSTALL_PATH):
+		return {}
+	var parsed = JSON.parse_string(FileAccess.get_file_as_string(PENDING_UNINSTALL_PATH))
+	return parsed if parsed is Dictionary else {}
+
+
+func _write_pending(pending: Dictionary) -> void:
+	if pending.is_empty():
+		if FileAccess.file_exists(PENDING_UNINSTALL_PATH):
+			DirAccess.remove_absolute(PENDING_UNINSTALL_PATH)
+		return
+	var f := FileAccess.open(PENDING_UNINSTALL_PATH, FileAccess.WRITE)
+	if f:
+		f.store_string(JSON.stringify(pending, "\t"))
+		f.close()
+
+
+# 启动时（挂载前）删除上次卸载时被占用/只读而未能删除的目录。
+func _process_pending_uninstalls() -> void:
+	var pending := _read_pending()
+	if pending.is_empty():
+		return
+	var remaining: Dictionary = {}
+	for id in pending.keys():
+		if not _delete_mod_dirs(str(id)):
+			remaining[id] = true
+	_write_pending(remaining)

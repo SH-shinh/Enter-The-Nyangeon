@@ -1,7 +1,8 @@
 extends OptionMenu
 
 # MOD 管理页：列出已安装 mod（名字 + 可选 icon + 启用开关），支持拖动 / 上下箭头调整顺序、
-# 导入 zip；悬停 / 点按行显示描述 tooltip。顺序与启停一样下次重启生效（pck 挂载后不可卸载）。
+# 导入 zip、卸载（删除运行目录 + 清理状态；pck 挂载后运行期不可卸载 → 本会话仍生效，重启完全移除）。
+# 悬停 / 点按行显示描述 tooltip。顺序与启停一样下次重启生效。
 
 const TOGGLE := preload("res://ui/option_toggle.tscn")
 const ROW_FONT := preload("res://fonts/BoutiqueBitmap9x9_1.9.ttf")
@@ -13,6 +14,7 @@ const ACCENT := Color(0.815686, 0.701961, 0.0235294, 1)
 @onready var list_scroll: ScrollContainer = %ScrollContainer
 @onready var status_label: Label = %Status
 @onready var import_btn: Button = %ImportBtn
+@onready var uninstall_btn: Button = %UninstallBtn
 @onready var up_btn: TextureButton = %UpBtn
 @onready var down_btn: TextureButton = %DownBtn
 @onready var drag_layer: Control = %DragLayer
@@ -22,6 +24,7 @@ const ACCENT := Color(0.815686, 0.701961, 0.0235294, 1)
 @onready var tip_desc: Label = %TipDesc
 
 var _file_dialog: FileDialog
+var _confirm: ConfirmationDialog
 var _pending_restart: bool = false
 var _selected_id: String = ""
 var _icon_cache: Dictionary = {}
@@ -46,6 +49,12 @@ func _ready() -> void:
 	_file_dialog.file_selected.connect(_on_zip_selected)
 	add_child(_file_dialog)
 	import_btn.pressed.connect(_on_import_pressed)
+	uninstall_btn.pressed.connect(_on_uninstall_pressed)
+	_confirm = ConfirmationDialog.new()
+	_confirm.ok_button_text = tr("mod_uninstall")
+	_confirm.cancel_button_text = tr("mod_cancel")
+	add_child(_confirm)
+	_confirm.confirmed.connect(_on_uninstall_confirmed)
 	up_btn.pressed.connect(func(): _move_selected(-1))
 	down_btn.pressed.connect(func(): _move_selected(1))
 	list_scroll.gui_input.connect(_on_list_scroll_gui_input)
@@ -267,6 +276,8 @@ func _update_arrows() -> void:
 	var idx := _selected_index()
 	up_btn.disabled = idx <= 0
 	down_btn.disabled = idx < 0 or idx >= list_box.get_child_count() - 1
+	if uninstall_btn != null:
+		uninstall_btn.disabled = (_selected_id == "")
 
 
 func _current_ids() -> Array:
@@ -450,3 +461,39 @@ func _on_zip_selected(path: String) -> void:
 	else:
 		status_label.text = tr("mod_import_fail") % str(r.get("error", ""))
 	_refresh()
+
+
+func _on_uninstall_pressed() -> void:
+	if _selected_id == "":
+		status_label.text = tr("mod_uninstall_select")
+		return
+	var name := _mod_display_name(_selected_id)
+	_confirm.dialog_text = tr("mod_uninstall_confirm") % name
+	_confirm.popup_centered()
+
+
+func _on_uninstall_confirmed() -> void:
+	var id := _selected_id
+	if id == "":
+		return
+	var name := _mod_display_name(id)
+	var r := ModManager.uninstall(id)
+	_selected_id = ""
+	_refresh()
+	if not r.get("ok", false):
+		status_label.text = tr("mod_uninstall_fail") % str(r.get("error", ""))
+		return
+	if r.get("deleted", false):
+		status_label.text = tr("mod_uninstall_ok") % name
+	else:
+		status_label.text = tr("mod_uninstall_pending")
+	if r.get("restart_required", false):
+		_pending_restart = true
+		status_label.text += "  " + tr("mod_restart_notice")
+
+
+func _mod_display_name(id: String) -> String:
+	for m in ModManager.list_mods():
+		if str(m.id) == id:
+			return str(m.name)
+	return id

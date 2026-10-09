@@ -124,7 +124,7 @@ layer N = bit `1<<(N-1)`：
 - **解锁方式**：`PlayerCard.unlock_mode`（枚举 `auto`/`shop`）。`auto`（默认）自动解锁；`shop` 需配同名 `defs/shop_characters/<id>.tres`（`CharacterCard`）付费获得，缺条目注册告警。`branches` 各自声明。
 - **加载位置**：`user://mods/`（Windows `%APPDATA%\Godot\app_userdata\Enter The Nyangeon\mods\`）；桌面另加 exe 同目录 `mods/`（便携，只读，`user://` 优先）。
 - **导出设置**（mod 工程）：用 `mod_sdk/setup_mod_project.ps1 -Project <副本>` 注入 `ModPack` 预设（并自动设 `editor/export/convert_text_resources_to_binary=false`）；预设 `export_filter="all_resources"` + `exclude_filter` 排除本体目录（pck 只含 `res://mods/**`）+ 双纹理（`s3tc_bptc`/`etc2_astc`）+ `encrypt_pck=false`。打包见 `mod_sdk/build_mod.ps1`。
-- **导入**：游戏内 option 面板「MOD」页签导入 zip；pck 挂载后不可卸载，启停靠重启。
+- **导入**：游戏内 option 面板「MOD」页签导入 zip；pck 挂载后不可卸载，启停/卸载均重启生效。**卸载**：面板选中行「卸载」→ 二次确认 → 删除 `user://mods/<id>/`（及 exe 旁 `mods/<id>/`）并清理 `mods_state.json`；若文件被占用/目录只读删不掉，则写 `user://mods/.pending_uninstall.json`，下次启动挂载前删除。
 - **补丁/依赖（P0.5）**：`mods/<id>/patches/*.json` 声明式改注册表（`replace/add/remove/inherit`，`target` 形如 `kind:id`，缺 target 跳过）；`mod.json` 的 `dependencies`/`conflicts`/`load_order`/`overrides` 决定加载顺序、停用与覆盖。用户可在 MOD 页签拖动 / 选中后用上下箭头调整顺序，存 `user://mods/mods_order.json`（`get_order()`/`set_order()`；优先于 `load_order` 作同级 tie-break，依赖/冲突仍强约束），重启生效。
 - **敌人波次**：`defs/enemies/*.tres` 自动注册（校验 `EnemyCard.id` == `body` 根 `pool_id`）；`mod.json` 的 `enemy_group`（默认 `lv1`；可取 `lv1..lv20`/`lv_endless`/`lv_endless_boss`）指定加入的波次组，`enemy_waves` 可显式给 `[{scene, group}]`（否则由 `defs/enemies/` 自动构造一波）。
 - **entry / 深度修改（P4）**：`mod.json.entry`（Node 脚本）启动时实例化；用 `ModAPI`（`script/mod_api.gd`，静态门面）+ `GameEvents` 挂流程；`api_version` 高于本体会被跳过；`replace_files=true` 可覆盖入口场景（`main.tscn`；用 `ModPackReplace` 预设，见 `mod_sdk/README.md` §13）。游戏模式/关卡内容放 `defs/game_modes/`、`defs/levels/`，自动进入选择 UI，行为由 entry 脚本实现。

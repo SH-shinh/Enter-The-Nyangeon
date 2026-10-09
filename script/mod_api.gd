@@ -78,6 +78,16 @@ static func get_base_societies() -> Array:
 	return ModManager.get_base_societies()
 
 
+# 本体角色（扫描 res://resources/player，含分支形态）
+static func get_base_characters() -> Array:
+	return ModManager.get_base_characters()
+
+
+# 本体游戏模式（扫描 res://resources/game_mode）
+static func get_base_game_modes() -> Array:
+	return ModManager.get_base_game_modes()
+
+
 # 用户自定义 mod 顺序（user://mods/mods_order.json）
 static func get_order() -> Array:
 	return ModManager.get_order()

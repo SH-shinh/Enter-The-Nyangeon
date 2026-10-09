@@ -27,6 +27,7 @@ signal delete_confirmed(record: Dictionary)
 
 const gamemode_card_p: PackedScene = preload("res://ui/gamemode_card.tscn")
 const item_card_p: PackedScene = preload("res://ui/upgrade_item_card.tscn")
+const NULL_PICTURE: Texture2D = preload("res://sprites/player_support/null_picture.png")
 
 var record: Dictionary
 var level: Level
@@ -91,66 +92,113 @@ func _on_no_pressed() -> void:
 	del_anim.play_backwards("hover_anim")
 
 func load_resources(path: String) -> Resource:
-	var load_resource := load("res://resources/" + path + ".tres")
-	return load_resource
+	var p := "res://resources/" + path + ".tres"
+	if not ResourceLoader.exists(p):
+		return null
+	return load(p)
+
+# 解析记录引用的资源：优先 ModManager（本体+mod），再回退本体路径（回退不存在则静默返回 null）。
+func _resolve(kind: StringName, id: String, dir: String) -> Resource:
+	if id == "":
+		return null
+	var r = ModManager.get_resource(str(kind), id)
+	if r != null:
+		return r
+	return load_resources("%s/%s" % [dir, id])
+
+func _resolve_gamemode(id: String) -> Resource:
+	if id == "":
+		return null
+	var r = ModManager.get_resource("game_modes", id)
+	if r != null:
+		return r
+	var p := "res://resources/game_mode/%s_mode.tres" % id
+	if not ResourceLoader.exists(p):
+		return null
+	return load(p)
 
 func load_all_gamemode():
-	if !record["game_mode"].is_empty():
-		for i in record["game_mode"]:
-			gamemode_group.append(load_resources("game_mode/" + i + "_mode"))
-		
-		for n in gamemode_group:
-			var ins := gamemode_card_p.instantiate()
-			gamemode_box.add_child(ins)
-			ins.set_gamemode_card(n)
+	if record["game_mode"].is_empty():
+		return
+	for i in record["game_mode"]:
+		var gm = _resolve_gamemode(str(i))
+		if gm == null:
+			push_warning("[score_card] 记录引用的模式已不存在：%s" % i)
+			continue
+		var ins := gamemode_card_p.instantiate()
+		gamemode_box.add_child(ins)
+		ins.set_gamemode_card(gm)
 
 func load_all_equip():
 	equip_group = record["equip"].values()
-	if !equip_group.is_empty():
-		for i in equip_group:
-			var equip_data = ModManager.get_resource("upgrades", str(i["upgrade_id"]))
-			if equip_data == null:
-				equip_data = load_resources("upgrades/" + i["upgrade_id"])
-			var ins := item_card_p.instantiate()
-			equip_box.add_child(ins)
-			ins.set_up_item_card(equip_data)
-			if i["quantity"] > 1:
-				ins.item_quantity.text = str(int(i["quantity"]))
+	if equip_group.is_empty():
+		return
+	for i in equip_group:
+		var uid := str(i["upgrade_id"])
+		var equip_data = ModManager.get_resource("upgrades", uid)
+		if equip_data == null:
+			equip_data = load_resources("upgrades/" + uid)
+		if equip_data == null:
+			push_warning("[score_card] 记录引用的道具已不存在：%s" % uid)
+			continue
+		var ins := item_card_p.instantiate()
+		equip_box.add_child(ins)
+		ins.set_up_item_card(equip_data)
+		if i["quantity"] > 1:
+			ins.item_quantity.text = str(int(i["quantity"]))
 
 func load_record_data():
-	if !record.is_empty():
-		level = load_resources("level/" + record["level"])
-		player_card = load_resources("player/" + record["player"])
-		if record["support"] == null or record["support"] == "null":
-			support_card = load_resources("support/" + "null_support")
-		else:
-			support_card = load_resources("support/" + record["support"])
-		
+	if record.is_empty():
+		return
+	# 关卡：解析失败则显示原 id，不访问 null
+	level = _resolve(&"levels", str(record["level"]), "level")
+	if level != null:
 		level_name.text = level.level_name
 		level_name.set("theme_override_colors/font_color", level.level_name_color)
 		level_color.color = level.level_color
-		player_id.text = record["player_id"]
+	else:
+		level_name.text = str(record["level"])
+	# 角色：解析失败用 null_picture 占位、显示原 id
+	player_card = _resolve(&"characters", str(record["player"]), "player")
+	if player_card != null:
 		player_sprite.texture = LazyTexture.load_uncached(player_card.sprite_path)
-		support_sprite.texture = LazyTexture.load_uncached(support_card.character_sprite_path)
-		if record["is_win"] == true:
-			player_sprite.frame = 0
-			support_sprite.frame = 0
-		else:
-			player_sprite.frame = 3
-			support_sprite.frame = 3
 		player_name.text = player_card.id
+	else:
+		player_sprite.texture = NULL_PICTURE
+		player_name.text = str(record["player"])
+	# 支援：空/null 直接 null_support；已卸载 mod 支援解析失败也回退 null_support
+	var support_id := ""
+	if record["support"] != null:
+		support_id = str(record["support"])
+	if support_id == "" or support_id == "null":
+		support_card = null
+	else:
+		support_card = _resolve(&"supports", support_id, "support")
+	if support_card == null:
+		support_card = load_resources("support/null_support")
+	if support_card != null:
+		support_sprite.texture = LazyTexture.load_uncached(support_card.character_sprite_path)
 		support_name.text = support_card.support_name2
-		date.text = (str(int(record["date"]["year"]))
-			+ " " + str(int(record["date"]["month"]))
-			+ "/" + str(int(record["date"]["day"]))
-			+ " " + str(int(record["date"]["hour"]))
-			+ ":" + str(int(record["date"]["minute"]))
-			+ ":" + str(int(record["date"]["second"])))
-		score_num.text = str(int(record["score"]))
-		round_num.text = str(int(record["round"]))
-		defeats_num.text = str(int(record["defeats"]))
-		coins_num.text = str(int(record["coins"]))
-		time_num.text = str(record["time"])
-		
-		load_all_gamemode()
-		load_all_equip()
+	else:
+		support_sprite.texture = NULL_PICTURE
+		support_name.text = support_id
+	player_id.text = str(record["player_id"])
+	if record["is_win"] == true:
+		player_sprite.frame = 0
+		support_sprite.frame = 0
+	else:
+		player_sprite.frame = 3
+		support_sprite.frame = 3
+	date.text = (str(int(record["date"]["year"]))
+		+ " " + str(int(record["date"]["month"]))
+		+ "/" + str(int(record["date"]["day"]))
+		+ " " + str(int(record["date"]["hour"]))
+		+ ":" + str(int(record["date"]["minute"]))
+		+ ":" + str(int(record["date"]["second"])))
+	score_num.text = str(int(record["score"]))
+	round_num.text = str(int(record["round"]))
+	defeats_num.text = str(int(record["defeats"]))
+	coins_num.text = str(int(record["coins"]))
+	time_num.text = str(record["time"])
+	load_all_gamemode()
+	load_all_equip()

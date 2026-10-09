@@ -13,7 +13,21 @@ func _ready() -> void:
 	gamemode_changed.connect(update_h_box)
 
 func add_gamemode_button():
-	if !gamemode_group.is_empty():
+	# 本体（扫描 resources/game_mode）+ mod 模式，按 game_mode_id 去重
+	var modes: Array[GameMode] = []
+	var seen := {}
+	for n in ModManager.get_base_game_modes():
+		if n != null and not seen.has(n.game_mode_id):
+			seen[n.game_mode_id] = true
+			modes.append(n)
+	for n in ModManager.get_content("game_modes"):
+		if n != null and not seen.has(n.game_mode_id):
+			seen[n.game_mode_id] = true
+			modes.append(n)
+	if modes.is_empty():
+		modes = gamemode_group
+	gamemode_group = modes
+	if not gamemode_group.is_empty():
 		for n in gamemode_group:
 			var ins := character_card.instantiate()
 			ins.button_type = "gamemode"

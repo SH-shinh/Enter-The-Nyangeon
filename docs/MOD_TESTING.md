@@ -39,6 +39,8 @@
 - [ ] **便携目录**：把 `<id>.pck` + `mod.json` 放到 **exe 同目录 `mods/<id>/`**，启动后同样加载。
 - [ ] **优先级**：同 id 同时存在于 `user://mods/` 与 exe 同目录时，`user://` 胜（看日志告警）。
 - [ ] **覆盖场景**：用 `ModPackReplace` 预设构建（`setup_mod_project.ps1 -Replace` + `build_mod.ps1 -Preset ModPackReplace`，`mod.json` 置 `replace_files=true`）覆盖 `res://scenes/main/main.tscn` 后，进入战斗用的是 mod 版本。
+- [ ] **卸载**：MOD 页签选中一个 mod → 点「卸载」→ 二次确认 → 列表移除；**重启后** `user://mods/<id>/` 已删除、`mods_state.json` 无该 id、内容（角色/社团）消失。
+- [ ] **卸载占用**：运行中 pck 被占用 / 便携目录只读导致删不掉时 → 提示「下次启动删除」；**重启后**目录确实被清除（`user://mods/.pending_uninstall.json` 已清空）。
 
 ## 3. Android 真机
 
@@ -66,6 +68,9 @@
 - [ ] **道具**：`defs/upgrades/` + 同目录 `<id>.tscn` 的道具进入三选一池；拾取后效果生效；记分板装备列表能显示（`score_card`）。
 - [ ] **敌人**：`defs/enemies/`（`id == body.pool_id`）在指定 `enemy_group` 出现；生成上限正常。
 - [ ] **游戏模式**：`defs/game_modes/` 出现在模式选择；选中后 `PlayerData.game_mode` 含该 id；entry 脚本应用行为。
+- [ ] **记分板筛选（mod）**：角色筛选含本体（含 `ako`/`chinatsu`/`aris_armed`）+ mod 角色；模式筛选含本体 + mod 模式；按 id 过滤正确。
+- [ ] **记分板记录（mod）**：用 mod 角色/道具/模式/关卡打完一局 → 记分板记录立绘/名称/装备/模式图标正常显示。
+- [ ] **移除 mod 后旧记录**：卸载该 mod 后打开记分板 → 记录**不报错**（角色立绘=占位 `null_picture` + 显示原 id；模式卡/道具卡跳过；关卡显示原 id），不崩溃。
 - [ ] **关卡**：`defs/levels/` 出现在选关列表；点击进入 `main.tscn` 且数值（hp/damage/reward）生效。
 - [ ] **entry 脚本**：启动时实例化；`ModAPI` 可用；`GameEvents` 挂钩生效。
 

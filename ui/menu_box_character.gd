@@ -12,8 +12,20 @@ func _ready() -> void:
 
 func add_character_button():
 	if character_group.is_empty():
-		for i in player_group.player_group:
-			character_group.append(i)
+		# 本体（扫描 resources/player，含分支形态）+ mod 角色，按 id 去重
+		var seen := {}
+		for i in ModManager.get_base_characters():
+			if i != null and not seen.has(i.id):
+				seen[i.id] = true
+				character_group.append(i)
+		for i in ModManager.get_characters():
+			if i != null and not seen.has(i.id):
+				seen[i.id] = true
+				character_group.append(i)
+		# 兜底：本体扫描不可用且有场景导出的 player_group
+		if character_group.is_empty() and player_group != null:
+			for i in player_group.player_group:
+				character_group.append(i)
 	
 	if !character_group.is_empty():
 		for n in character_group:

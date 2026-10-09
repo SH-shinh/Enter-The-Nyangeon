@@ -130,3 +130,10 @@ mod_tag_error,[错误：%s],[Error: %s],[Erro: %s],[Lỗi: %s]
 mod_tag_unmounted,[未挂载],[Not mounted],[Não montado],[Chưa gắn]
 mod_reorder_hint,拖动或选中后用上下箭头调整顺序,Drag or select then use the up/down arrows to reorder,Arraste ou selecione e use as setas para reordenar,Kéo hoặc chọn rồi dùng mũi tên lên/xuống để sắp xếp lại
 coop_special_thanks,ETN联机版作者,ETN Co-op Author,Autor da Versão Co-op do ETN,Tác giả bản Co-op ETN
+mod_uninstall,卸载,Uninstall,Desinstalar,Gỡ cài đặt
+mod_uninstall_confirm,确定卸载 %s 吗？需重启生效,Uninstall %s? Restart required,Desinstalar %s? Requer reiniciar,Gỡ cài đặt %s? Cần khởi động lại
+mod_uninstall_select,请先选择一个 Mod,Select a mod first,Selecione um mod primeiro,Chọn một mod trước
+mod_uninstall_ok,已卸载 %s（重启后完全移除）,Uninstalled %s (removed after restart),%s desinstalado (removido após reiniciar),Đã gỡ %s (xóa hoàn toàn sau khởi động lại)
+mod_uninstall_fail,卸载失败 %s,Uninstall failed %s,Falha ao desinstalar %s,Gỡ cài đặt thất bại %s
+mod_uninstall_pending,文件被占用 将在下次启动时删除,File in use; deleted on next launch,Arquivo em uso; excluído na próxima inicialização,Tệp đang dùng; sẽ xóa ở lần khởi động sau
+mod_cancel,取消,Cancel,Cancelar,Hủy
