@@ -63,7 +63,7 @@ func reset_data():
 	label.text = "T" + str(t_num)
 	upgrade.mouse_filter = 0
 
-func _process(delta):
+func _process(_delta):
 	if on_text_follow == true:
 		if on_touch == false:
 			text_follow.global_position = get_global_mouse_position()
@@ -113,34 +113,37 @@ func touch_out():
 		node_2d_3.visible = false
 		text_follow.visible = false
 
+func touch_button():
+	if on_touch == false:
+		GameEvents.emit_player_card_touch()
+		await get_tree().create_timer(0.1).timeout
+		on_touch = true
+		SoundManager.play_sfx("ButtonSounds2")
+		$Node2D/upgrade/AnimationPlayer.play("mouse_in")
+		$Node2D/upgrade/Node2D/ColorRect/AnimationPlayer.play("hammer_anim")
+		on_text_follow = true
+		if t_num > 0:
+			node_2d_3.visible = true
+		text_follow.visible = true
+		
+	else:
+		
+		if t_num >= 20:
+			$Node2D/upgrade/AnimationPlayer.play("coin_lack")
+			return
+		
+		if player.stats.usable_coin < coin_cost:
+			$Node2D/upgrade/AnimationPlayer.play("coin_lack")
+		else:
+			SoundManager.play_sfx("ButtonSounds")
+			GameEvents.emit_player_coins_cost(coin_cost)
+			item_upgrade()
+			add_ability()
+
 func mouse_selected(event: InputEvent):
 	
 	if event as InputEventScreenTouch and event.pressed:
-		if on_touch == false:
-			GameEvents.emit_player_card_touch()
-			await get_tree().create_timer(0.1).timeout
-			on_touch = true
-			SoundManager.play_sfx("ButtonSounds2")
-			$Node2D/upgrade/AnimationPlayer.play("mouse_in")
-			$Node2D/upgrade/Node2D/ColorRect/AnimationPlayer.play("hammer_anim")
-			on_text_follow = true
-			if t_num > 0:
-				node_2d_3.visible = true
-			text_follow.visible = true
-			
-		else:
-			
-			if t_num >= 20:
-				$Node2D/upgrade/AnimationPlayer.play("coin_lack")
-				return
-			
-			if player.stats.usable_coin < coin_cost:
-				$Node2D/upgrade/AnimationPlayer.play("coin_lack")
-			else:
-				SoundManager.play_sfx("ButtonSounds")
-				GameEvents.emit_player_coins_cost(coin_cost)
-				item_upgrade()
-				add_ability()
+		touch_button()
 	
 	if event.is_action_pressed("shoot"):
 		
@@ -180,38 +183,38 @@ func item_text_get():
 	if t_num < 20:
 		if !equip_card.value_1.is_empty():
 			if equip_card.value_1[t_num + 1] > 0:
-				equip_text.text = "+" + str( equip_card.value_1[t_num + 1] ) + tr(equip_card.value_1_name)
+				equip_text.text = "+" + str( int(equip_card.value_1[t_num + 1]) ) + tr(equip_card.value_1_name)
 			else:
-				equip_text.text = "-" + str( equip_card.value_1[t_num + 1] ) + tr(equip_card.value_1_name)
+				equip_text.text = "-" + str( int(equip_card.value_1[t_num + 1]) ) + tr(equip_card.value_1_name)
 			text_1 = equip_text.text + "  "
 		if !equip_card.value_2.is_empty():
 			if equip_card.value_2[t_num + 1] > 0:
 				if equip_card.value_2[t_num + 1] < 1:
-					equip_text.text = text_1 + "+" + str( equip_card.value_2[t_num + 1] * 100 ) + "%" + tr(equip_card.value_2_name)
+					equip_text.text = text_1 + "+" + str( int(equip_card.value_2[t_num + 1] * 100) ) + "%" + tr(equip_card.value_2_name)
 				else:
 					if equip_card.value_2_name == "player_critical":
-						equip_text.text = text_1 + "+" + str( equip_card.value_2[t_num + 1] ) + "%" + tr(equip_card.value_2_name)
+						equip_text.text = text_1 + "+" + str( int(equip_card.value_2[t_num + 1]) ) + "%" + tr(equip_card.value_2_name)
 					else:
-						equip_text.text = text_1 + "+" + str( equip_card.value_2[t_num + 1] ) + tr(equip_card.value_2_name)
+						equip_text.text = text_1 + "+" + str( int(equip_card.value_2[t_num + 1]) ) + tr(equip_card.value_2_name)
 			elif equip_card.value_2[t_num + 1] < 0:
-				equip_text.text = text_1 + str( equip_card.value_2[t_num + 1] * 100 ) + "%" + tr(equip_card.value_2_name)
+				equip_text.text = text_1 + str( int(equip_card.value_2[t_num + 1] * 100) ) + "%" + tr(equip_card.value_2_name)
 			text_2 = equip_text.text + "  "
 		if !equip_card.value_3.is_empty():
 			if equip_card.value_3[t_num + 1] > 0:
 				if equip_card.value_3[t_num + 1] < 1:
 					if equip_card.value_3_name == "player_damage_taken":
-						equip_text.text = text_2 + "-" + str( equip_card.value_3[t_num + 1] * 100 ) + "%" + tr(equip_card.value_3_name)
+						equip_text.text = text_2 + "-" + str( int(equip_card.value_3[t_num + 1] * 100) ) + "%" + tr(equip_card.value_3_name)
 					elif equip_card.value_3_name == "player_reload_speed":
-						equip_text.text = text_2 + "+" + str(  (1 - equip_card.value_3[t_num + 1]) * 100 ) + "%" + tr(equip_card.value_3_name)
+						equip_text.text = text_2 + "+" + str(  int((1 - equip_card.value_3[t_num + 1]) * 100) ) + "%" + tr(equip_card.value_3_name)
 					elif equip_card.value_3_name == "player_coin_refund":
-						equip_text.text = text_2 + "+" + str( equip_card.value_3[t_num + 1] * 100 ) + "%" + tr(equip_card.value_3_name)
+						equip_text.text = text_2 + "+" + str( int(equip_card.value_3[t_num + 1] * 100) ) + "%" + tr(equip_card.value_3_name)
 				else:
 					if equip_card.value_3_name == "player_damage_taken":
-						equip_text.text = text_2 + "-" + str( equip_card.value_3[t_num + 1] ) + "%" + tr(equip_card.value_3_name)
+						equip_text.text = text_2 + "-" + str( int(equip_card.value_3[t_num + 1]) ) + "%" + tr(equip_card.value_3_name)
 					else:
-						equip_text.text = text_2 + "+" + str( equip_card.value_3[t_num + 1] ) + tr(equip_card.value_3_name)
+						equip_text.text = text_2 + "+" + str( int(equip_card.value_3[t_num + 1]) ) + tr(equip_card.value_3_name)
 			elif equip_card.value_3[t_num + 1] < 0:
-				equip_text.text = text_2 + str( equip_card.value_3[t_num + 1] * 100 ) + "%" + tr(equip_card.value_3_name)
+				equip_text.text = text_2 + str( int(equip_card.value_3[t_num + 1]) * 100 ) + "%" + tr(equip_card.value_3_name)
 		
 	else:
 		equip_text.text = "已到达升级上限"
@@ -245,41 +248,41 @@ func item_text_count():
 	
 	if !equip_card.value_1.is_empty():
 		if value_1 >= 0:
-			equip_t_2.text = "+" + str( value_1 ) + tr(equip_card.value_1_name)
+			equip_t_2.text = "+" + str( int(value_1) ) + tr(equip_card.value_1_name)
 		else:
-			equip_t_2.text = "-" + str( value_1 ) + tr(equip_card.value_1_name)
+			equip_t_2.text = "-" + str( int(value_1) ) + tr(equip_card.value_1_name)
 		text_1_c = equip_t_2.text + "  "
 	if !equip_card.value_2.is_empty():
 		if value_2 >= 0:
 			if value_2 < 1 or equip_card.value_2_name == "player_pickup_range":
 				if equip_card.value_2_name != "player_armor":
-					equip_t_2.text = text_1_c + "+" + str( value_2 * 100 ) + "%" + tr(equip_card.value_2_name)
+					equip_t_2.text = text_1_c + "+" + str( int(value_2 * 100) ) + "%" + tr(equip_card.value_2_name)
 			else:
 				if equip_card.value_2_name == "player_critical":
-					equip_t_2.text = text_1_c + "+" + str( value_2 ) + "%" + tr(equip_card.value_2_name)
+					equip_t_2.text = text_1_c + "+" + str( int(value_2) ) + "%" + tr(equip_card.value_2_name)
 				else:
-					equip_t_2.text = text_1_c + "+" + str( value_2 ) + tr(equip_card.value_2_name)
+					equip_t_2.text = text_1_c + "+" + str( int(value_2) ) + tr(equip_card.value_2_name)
 		elif value_2 < 0:
-			equip_t_2.text = text_1_c + str( value_2 * 100 ) + "%" + tr(equip_card.value_2_name)
+			equip_t_2.text = text_1_c + str( int(value_2 * 100) ) + "%" + tr(equip_card.value_2_name)
 		text_2_c = equip_t_2.text + "  "
 	if !equip_card.value_3.is_empty():
 		if value_3 >= 0:
 			if value_3 < 1 or equip_card.value_3_name == "player_pickup_range":
 				if equip_card.value_3_name == "player_damage_daken":
-					equip_t_2.text = text_2_c + "-" + str( value_3 * 100 ) + "%" + tr(equip_card.value_3_name)
+					equip_t_2.text = text_2_c + "-" + str( int(value_3 * 100) ) + "%" + tr(equip_card.value_3_name)
 				elif equip_card.value_3_name == "player_reload_speed":
-					equip_t_2.text = text_2_c + "+" + str( round(value_3 * 100) ) + "%" + tr(equip_card.value_3_name)
+					equip_t_2.text = text_2_c + "+" + str( round(int(value_3 * 100)) ) + "%" + tr(equip_card.value_3_name)
 				elif equip_card.value_3_name == "player_coin_refund":
-					equip_t_2.text = text_2_c + "+" + str( round(value_3 * 100) ) + "%" + tr(equip_card.value_3_name)
+					equip_t_2.text = text_2_c + "+" + str( round(int(value_3 * 100)) ) + "%" + tr(equip_card.value_3_name)
 			elif equip_card.value_3_name == "player_reload_speed":
-					equip_t_2.text = text_2_c + "+" + str( round(value_3 * 100) ) + "%" + tr(equip_card.value_3_name)
+					equip_t_2.text = text_2_c + "+" + str( round(int(value_3 * 100)) ) + "%" + tr(equip_card.value_3_name)
 			else:
 				if equip_card.value_3_name == "player_critical":
-					equip_t_2.text = text_2_c + "+" + str( value_3 ) + "%" + tr(equip_card.value_3_name)
+					equip_t_2.text = text_2_c + "+" + str( int(value_3) ) + "%" + tr(equip_card.value_3_name)
 				else:
-					equip_t_2.text = text_2_c + "+" + str( value_3 ) + tr(equip_card.value_3_name)
+					equip_t_2.text = text_2_c + "+" + str( int(value_3) ) + tr(equip_card.value_3_name)
 		elif value_3 < 0:
-			equip_t_2.text = text_2_c + str( value_3 * 100 ) + "%" + tr(equip_card.value_3_name)
+			equip_t_2.text = text_2_c + str( int(value_3 * 100) ) + "%" + tr(equip_card.value_3_name)
 
 func smoke_anim():
 	var ins = smoke.instantiate()
@@ -294,7 +297,7 @@ func item_upgrade():
 	cost_mult += 0.3
 	cost_count()
 	item_text_get()
-	var v = round((t_num + 1) / 2)
+	var v = round(int(float(t_num + 1) / float(2)))
 	if icon_num != v:
 		icon_num = v
 		smoke_anim()

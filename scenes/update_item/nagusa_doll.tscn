@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://cy2dt6jrrd005"]
+
+[ext_resource type="Script" uid="uid://v7nkw0tsk4wf" path="res://scenes/update_item/nagusa_doll.gd" id="1_script"]
+
+[node name="nagusa_doll" type="Node2D" unique_id=286765902]
+script = ExtResource("1_script")

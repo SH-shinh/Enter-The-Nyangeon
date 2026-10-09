@@ -17,6 +17,7 @@ var debt_round: int = 0
 var item_count: int = 0
 var damage_count: float = 0
 var time_damage: float = 0
+var coin_gate: float = 0.0
 
 func _ready():
 	GameEvents.round_start.connect(add_debt_buff)
@@ -28,10 +29,11 @@ func ps_upgrade(t_num: int):
 	now_t = t_num
 	
 	if now_t == 1:
-		buff_erase_timer += 1
+		coin_gate = 1.0
 	elif now_t == 2:
 		PlayerData.bullet_shoot_time_mult += 0.25
 		PlayerData.update_player_ability()
+		add_item_global_damage()
 	elif now_t == 3:
 		PlayerData.player_ability_changed.connect(shoot_time_damage)
 		PlayerData.bullet_shoot_time_mult += 0.25
@@ -49,9 +51,10 @@ func add_item_global_damage():
 	PlayerData.update_player_ability()
 
 func shoot_time_damage():
-	if time_damage != PlayerData.bullet_shoot_time_mult:
+	var target: float = max(0.0, PlayerData.bullet_shoot_time_mult - 1.0)
+	if time_damage != target:
 		PlayerData.bullet_damage_mult -= time_damage
-		time_damage = PlayerData.bullet_shoot_time_mult
+		time_damage = target
 		PlayerData.bullet_damage_mult += time_damage
 		PlayerData.update_player_ability()
 
@@ -59,7 +62,7 @@ func add_debt_buff():
 	if stats.coin < 0:
 		if debt_round < 5:
 			debt_round += 1
-		value = [buff_layer, debt_round, buff_erase_timer]
+		value = [buff_layer, debt_round, buff_erase_timer, coin_gate]
 		for i in debt_round:
 			player.player_buff_manager.apply_buff(player_buff, value)
 	else:

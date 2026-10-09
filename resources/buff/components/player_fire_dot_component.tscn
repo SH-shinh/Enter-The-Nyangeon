@@ -1,0 +1,57 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://resources/buff/components/player_fire_dot_component.gd" id="1_pfd"]
+[ext_resource type="Texture2D" uid="uid://brv03dvygp4nl" path="res://sprites/particle/smoke.png" id="2_smk"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_ohqsi"]
+blend_mode = 1
+
+[sub_resource type="Gradient" id="Gradient_s0uab"]
+colors = PackedColorArray(0.986042, 0, 0.161949, 1, 1, 0.478092, 0.317409, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_uxgfc"]
+gradient = SubResource("Gradient_s0uab")
+
+[sub_resource type="Gradient" id="Gradient_4tunp"]
+offsets = PackedFloat32Array(0, 0.729508, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0.877049, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_na0vc"]
+gradient = SubResource("Gradient_4tunp")
+
+[sub_resource type="Curve" id="Curve_y2wkx"]
+_data = [Vector2(0, 0.901099), 0.0, 0.0, 0, 0, Vector2(1, 0), -5.24476, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_geikn"]
+curve = SubResource("Curve_y2wkx")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_g2whf"]
+particle_flag_disable_z = true
+emission_shape_scale = Vector3(5, 1, 1)
+angle_min = -45.0
+angle_max = 45.0
+direction = Vector3(0, -1, 0)
+spread = 20.0
+initial_velocity_min = 11.24
+initial_velocity_max = 179.78
+gravity = Vector3(0, -500, 0)
+scale_max = 2.5
+scale_curve = SubResource("CurveTexture_geikn")
+color = Color(0.928689, 0, 0.275706, 1)
+color_ramp = SubResource("GradientTexture1D_na0vc")
+color_initial_ramp = SubResource("GradientTexture1D_uxgfc")
+hue_variation_max = 0.05
+
+[node name="PlayerFireDotComponent" type="Node2D"]
+script = ExtResource("1_pfd")
+
+[node name="DotTimer" type="Timer" parent="."]
+wait_time = 0.2
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+material = SubResource("CanvasItemMaterial_ohqsi")
+amount = 16
+process_material = SubResource("ParticleProcessMaterial_g2whf")
+texture = ExtResource("2_smk")
+lifetime = 0.2

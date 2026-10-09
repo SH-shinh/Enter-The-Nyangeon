@@ -1,20 +1,21 @@
-[gd_scene load_steps=63 format=3 uid="uid://midmfbllng1n"]
+[gd_scene format=3 uid="uid://midmfbllng1n"]
 
-[ext_resource type="Script" path="res://scenes/player/momoi/momoi.gd" id="1_e0uyb"]
+[ext_resource type="Script" uid="uid://ci8narxcxkq0w" path="res://script/player.gd" id="1_e0uyb"]
 [ext_resource type="Resource" uid="uid://ftukm13pdwxy" path="res://resources/player/mashiro.tres" id="2_0knwh"]
 [ext_resource type="Resource" uid="uid://dos3mykmex0r2" path="res://resources/player/PS/mashiro_ps.tres" id="3_hmlc8"]
 [ext_resource type="PackedScene" uid="uid://b78jo1set8q45" path="res://script/follow.tscn" id="4_ugtxo"]
 [ext_resource type="PackedScene" uid="uid://bdo12rjvieur7" path="res://scenes/shadow/shadow.tscn" id="5_j3m3s"]
 [ext_resource type="PackedScene" uid="uid://ceydnirh2w7yb" path="res://scenes/player/smoke.tscn" id="6_564nc"]
-[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="7_3fe4a"]
+[ext_resource type="Shader" uid="uid://bqypa5578tm8a" path="res://shaders/sprite_outline.gdshader" id="7_3fe4a"]
 [ext_resource type="Texture2D" uid="uid://bcw3y5t1t7bhk" path="res://sprites/player/mashiro/mashiro_halo.png" id="8_370ca"]
 [ext_resource type="Texture2D" uid="uid://bfhwtbfjqifyr" path="res://sprites/player/mashiro/mashiro.png" id="9_4h7c8"]
 [ext_resource type="PackedScene" uid="uid://wffnchsknkba" path="res://script/hat.tscn" id="10_uovkr"]
 [ext_resource type="PackedScene" uid="uid://d0cq1vh58rknj" path="res://scenes/weapon/manifestation_of_justice/manifestation_of_justice.tscn" id="11_uk1t4"]
 [ext_resource type="PackedScene" uid="uid://dfdk1q5mpw3mh" path="res://scenes/bullet/kasumi_bullet.tscn" id="12_4sq1c"]
 [ext_resource type="Texture2D" uid="uid://b5nbmcnfshgb8" path="res://sprites/particle/circular_1.png" id="13_8y7sw"]
-[ext_resource type="Script" path="res://scenes/player/StateMachine.gd" id="13_o6jn1"]
-[ext_resource type="Script" path="res://script/Stats.gd" id="14_4mv8h"]
+[ext_resource type="Script" uid="uid://e2gvf56eu6jb" path="res://scenes/player/StateMachine.gd" id="13_o6jn1"]
+[ext_resource type="Script" uid="uid://c5wxmcve7xpca" path="res://script/Stats.gd" id="14_4mv8h"]
+[ext_resource type="Script" uid="uid://cog8pvonoqtxu" path="res://script/hurt_box.gd" id="14_s21iv"]
 [ext_resource type="AudioStream" uid="uid://5rnyiqxeiusa" path="res://sounds/RunSounds.wav" id="15_xrrbw"]
 [ext_resource type="AudioStream" uid="uid://b6t6pjb3evtw4" path="res://sounds/jump.wav" id="16_13efp"]
 [ext_resource type="AudioStream" uid="uid://bqqs4akeispjg" path="res://sounds/OnHit.wav" id="17_5ep4f"]
@@ -26,12 +27,13 @@
 [ext_resource type="PackedScene" uid="uid://d1gmjbadbxsjp" path="res://scenes/game_camera/gamecamera.tscn" id="23_y1hqx"]
 [ext_resource type="PackedScene" uid="uid://ccbfmsfn7ay8r" path="res://script/kick.tscn" id="24_k344f"]
 [ext_resource type="PackedScene" uid="uid://voxip8vojin" path="res://scenes/manager/player_buff_manager.tscn" id="25_cxpqu"]
-[ext_resource type="Script" path="res://scenes/player/mashiro/mashiro_ps.gd" id="25_ktttd"]
+[ext_resource type="Script" uid="uid://qgh01x1g8t15" path="res://scenes/player/mashiro/mashiro_ps.gd" id="25_ktttd"]
 [ext_resource type="PackedScene" uid="uid://c620jv6qq2f8w" path="res://scenes/player/t_hp_count.tscn" id="26_ipxhr"]
 [ext_resource type="PackedScene" uid="uid://cj4iw28dlmh7j" path="res://scenes/bullet/mashiro_sniper_bullet.tscn" id="26_sew1t"]
 [ext_resource type="AudioStream" uid="uid://dojwsbwhfwme6" path="res://sounds/87043__runnerpack__weapappear.wav" id="28_pr0kb"]
 [ext_resource type="Resource" uid="uid://d2wkri87ihp73" path="res://resources/buff/player_buff/charge_up_buff.tres" id="28_xajts"]
 [ext_resource type="PackedScene" uid="uid://ctwk5mjht6otl" path="res://scenes/player/mashiro/cross_bullet.tscn" id="29_pnkv6"]
+[ext_resource type="Script" uid="uid://crtabh2xwunne" path="res://script/player_health_component.gd" id="34_2o2ku"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_l238d"]
 radius = 7.0
@@ -99,7 +101,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_laq4o")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 13.0
 }, {
@@ -107,7 +109,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_4cr4e")
 }],
-"loop": true,
+"loop": 1,
 "name": &"jump",
 "speed": 5.0
 }, {
@@ -124,7 +126,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_37vqr")
 }],
-"loop": true,
+"loop": 1,
 "name": &"run",
 "speed": 13.0
 }]
@@ -149,6 +151,7 @@ emission_ring_axis = Vector3(0, 0, 1)
 emission_ring_height = 0.0
 emission_ring_radius = 20.0
 emission_ring_inner_radius = 20.0
+emission_ring_cone_angle = 90.0
 angle_min = -45.0
 angle_max = 45.0
 inherit_velocity_ratio = 0.16
@@ -188,11 +191,6 @@ height = 2.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_4tsyc"]
 radius = 35.0
-
-[sub_resource type="Environment" id="Environment_64vlg"]
-background_mode = 3
-glow_enabled = true
-glow_strength = 0.7
 
 [sub_resource type="Animation" id="Animation_quqct"]
 resource_name = "Invincible frame"
@@ -252,8 +250,8 @@ tracks/2/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_apy7m"]
 _data = {
-"Invincible frame": SubResource("Animation_quqct"),
-"RESET": SubResource("Animation_54v52")
+&"Invincible frame": SubResource("Animation_quqct"),
+&"RESET": SubResource("Animation_54v52")
 }
 
 [sub_resource type="Animation" id="Animation_btd8x"]
@@ -314,11 +312,11 @@ tracks/1/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_y8tsq"]
 _data = {
-"RESET": SubResource("Animation_btd8x"),
-"kick_anim": SubResource("Animation_kssmf")
+&"RESET": SubResource("Animation_btd8x"),
+&"kick_anim": SubResource("Animation_kssmf")
 }
 
-[node name="mashiro" type="CharacterBody2D" node_paths=PackedStringArray("stats") groups=["Player"]]
+[node name="mashiro" type="CharacterBody2D" unique_id=1435272650 node_paths=PackedStringArray("stats") groups=["Player"]]
 collision_mask = 256
 motion_mode = 1
 platform_floor_layers = 4294967040
@@ -328,22 +326,22 @@ ps_card = ExtResource("3_hmlc8")
 stats = NodePath("Stats")
 player_color = Color(0.897987, 0.242636, 0.314446, 1)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1626989117]
 position = Vector2(0, -6)
 shape = SubResource("CircleShape2D_l238d")
 
-[node name="Follow" parent="." instance=ExtResource("4_ugtxo")]
+[node name="Follow" parent="." unique_id=1249768020 instance=ExtResource("4_ugtxo")]
 
-[node name="Shadow" parent="." instance=ExtResource("5_j3m3s")]
+[node name="Shadow" parent="." unique_id=86653601 instance=ExtResource("5_j3m3s")]
 scale = Vector2(0.445313, 0.445313)
 
-[node name="GPUParticles2D" parent="." instance=ExtResource("6_564nc")]
+[node name="GPUParticles2D" parent="." unique_id=1583712641 instance=ExtResource("6_564nc")]
 emitting = false
 
-[node name="Graphics" type="Node2D" parent="."]
+[node name="Graphics" type="Node2D" parent="." unique_id=1293922259]
 unique_name_in_owner = true
 
-[node name="Halo" type="Sprite2D" parent="Graphics"]
+[node name="Halo" type="Sprite2D" parent="Graphics" unique_id=796267383]
 unique_name_in_owner = true
 material = SubResource("ShaderMaterial_5mtds")
 position = Vector2(-10, -32)
@@ -351,7 +349,7 @@ rotation = 0.47822
 scale = Vector2(0.254, 0.276)
 texture = ExtResource("8_370ca")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Graphics"]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Graphics" unique_id=711237605]
 unique_name_in_owner = true
 material = SubResource("ShaderMaterial_dunnt")
 position = Vector2(0, -17)
@@ -361,77 +359,80 @@ autoplay = "idle"
 frame_progress = 0.565153
 flip_h = true
 
-[node name="HaloRoot" type="Node2D" parent="Graphics/AnimatedSprite2D"]
+[node name="HaloRoot" type="Node2D" parent="Graphics/AnimatedSprite2D" unique_id=1133105472]
 unique_name_in_owner = true
 position = Vector2(-9, -28)
 
-[node name="Hat" parent="Graphics/AnimatedSprite2D" instance=ExtResource("10_uovkr")]
+[node name="Hat" parent="Graphics/AnimatedSprite2D" unique_id=1127426624 instance=ExtResource("10_uovkr")]
 position = Vector2(1, -12)
 
-[node name="Gun" parent="Graphics" node_paths=PackedStringArray("stats") instance=ExtResource("11_uk1t4")]
+[node name="Gun" parent="Graphics" unique_id=1984926417 node_paths=PackedStringArray("stats") instance=ExtResource("11_uk1t4")]
 unique_name_in_owner = true
 position = Vector2(0, -8)
 stats = NodePath("../../Stats")
 bullet = ExtResource("12_4sq1c")
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="Graphics/Gun"]
+[node name="GPUParticles2D" type="GPUParticles2D" parent="Graphics/Gun" unique_id=467910604]
 position = Vector2(31.71, -0.705)
 emitting = false
 amount = 32
-process_material = SubResource("ParticleProcessMaterial_iic7p")
 lifetime = 0.5
 trail_enabled = true
 trail_lifetime = 0.1
+process_material = SubResource("ParticleProcessMaterial_iic7p")
 
-[node name="GPUParticles2D2" type="GPUParticles2D" parent="Graphics/Gun"]
+[node name="GPUParticles2D2" type="GPUParticles2D" parent="Graphics/Gun" unique_id=1003876729]
 position = Vector2(31.7, -0.71)
 emitting = false
-process_material = SubResource("ParticleProcessMaterial_um5wh")
 texture = ExtResource("13_8y7sw")
 lifetime = 0.05
+process_material = SubResource("ParticleProcessMaterial_um5wh")
 
-[node name="HitBox" type="Area2D" parent="." groups=["PlayerBox"]]
+[node name="HurtBox" type="Area2D" parent="." unique_id=291116857 node_paths=PackedStringArray("body") groups=["PlayerBox"]]
 collision_layer = 2048
 collision_mask = 1160
+script = ExtResource("14_s21iv")
+body = NodePath("..")
+is_player = true
 
-[node name="HitboxShape" type="CollisionShape2D" parent="HitBox"]
+[node name="HurtboxShape" type="CollisionShape2D" parent="HurtBox" unique_id=1300312458]
 position = Vector2(0, -8)
 rotation = 1.5708
 shape = SubResource("CapsuleShape2D_dqk1k")
 debug_color = Color(3.18866e-06, 0.0816588, 0.291816, 0.42)
 
-[node name="PickBox" type="Area2D" parent="."]
+[node name="PickBox" type="Area2D" parent="." unique_id=1285626439]
 collision_layer = 0
 collision_mask = 64
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="PickBox"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PickBox" unique_id=194688333]
 position = Vector2(0, -11)
 shape = SubResource("CircleShape2D_4tsyc")
 debug_color = Color(0.724221, 0.462988, 0.32265, 0.42)
 
-[node name="FlyTimer" type="Timer" parent="."]
+[node name="FlyTimer" type="Timer" parent="." unique_id=1927597336]
 wait_time = 0.3
 one_shot = true
 
-[node name="JumpTimer" type="Timer" parent="."]
+[node name="JumpTimer" type="Timer" parent="." unique_id=440015805]
 wait_time = 0.1
 one_shot = true
 
-[node name="JumpCDTimer" type="Timer" parent="."]
+[node name="JumpCDTimer" type="Timer" parent="." unique_id=2041082563]
 one_shot = true
 
-[node name="RunSoundsTimer" type="Timer" parent="."]
+[node name="RunSoundsTimer" type="Timer" parent="." unique_id=1982845144]
 wait_time = 0.2
 one_shot = true
 
-[node name="InvincibleFrame" type="Timer" parent="."]
+[node name="InvincibleFrame" type="Timer" parent="." unique_id=380739438]
 wait_time = 0.5
 one_shot = true
 
-[node name="StateMachine" type="Node" parent="."]
+[node name="StateMachine" type="Node" parent="." unique_id=605442315]
 script = ExtResource("13_o6jn1")
 
-[node name="Stats" type="Node" parent="."]
+[node name="Stats" type="Node" parent="." unique_id=862648437]
 script = ExtResource("14_4mv8h")
 MAX_SPEED = 135
 max_hp = 43
@@ -445,48 +446,43 @@ reload_timer = 1.8
 critical_damage = 2.0
 shake_mult = 3.0
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_64vlg")
-
-[node name="RunSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="RunSounds" type="AudioStreamPlayer2D" parent="." unique_id=930508225]
 process_mode = 3
 stream = ExtResource("15_xrrbw")
 volume_db = -6.0
 bus = &"SFX"
 
-[node name="JumpSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="JumpSounds" type="AudioStreamPlayer2D" parent="." unique_id=10178372]
 process_mode = 3
 stream = ExtResource("16_13efp")
 bus = &"SFX"
 
-[node name="OnHitSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="OnHitSounds" type="AudioStreamPlayer2D" parent="." unique_id=1143177571]
 process_mode = 3
 stream = ExtResource("17_5ep4f")
 volume_db = 8.0
 bus = &"SFX"
 
-[node name="CoinSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="CoinSounds" type="AudioStreamPlayer2D" parent="." unique_id=1866194400]
 process_mode = 3
 stream = ExtResource("18_6gdqo")
 volume_db = -2.0
 bus = &"SFX"
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_apy7m")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=556355159]
+libraries/ = SubResource("AnimationLibrary_apy7m")
 
-[node name="GameUI" parent="." node_paths=PackedStringArray("player", "stats") instance=ExtResource("19_86hhk")]
+[node name="GameUI" parent="." unique_id=1220264384 node_paths=PackedStringArray("player", "stats") instance=ExtResource("19_86hhk")]
 player = NodePath("..")
 stats = NodePath("../Stats")
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=2011275995]
 layer = 3
 
-[node name="PauseScreen" parent="CanvasLayer" instance=ExtResource("20_n8u0i")]
+[node name="PauseScreen" parent="CanvasLayer" unique_id=1956840053 instance=ExtResource("20_n8u0i")]
 visible = false
 
-[node name="JumpCDBar" type="TextureProgressBar" parent="."]
+[node name="JumpCDBar" type="TextureProgressBar" parent="." unique_id=803960555]
 visible = false
 z_index = 20
 offset_left = -16.0
@@ -500,50 +496,51 @@ value = 0.355
 texture_under = ExtResource("21_k10pe")
 texture_progress = ExtResource("22_vu05e")
 
-[node name="Camera2D" parent="." instance=ExtResource("23_y1hqx")]
+[node name="Camera2D" parent="." unique_id=1303448703 instance=ExtResource("23_y1hqx")]
 offset = Vector2(0, -15)
 
-[node name="Kick" parent="." node_paths=PackedStringArray("player") instance=ExtResource("24_k344f")]
+[node name="Kick" parent="." unique_id=725399527 node_paths=PackedStringArray("player") instance=ExtResource("24_k344f")]
 position = Vector2(0, -16)
 player = NodePath("..")
 
-[node name="mashiro_ps" type="Node2D" parent="." node_paths=PackedStringArray("player", "stats", "gun")]
+[node name="mashiro_ps" type="Node2D" parent="." unique_id=1136041058 node_paths=PackedStringArray("stats", "player", "gun")]
 script = ExtResource("25_ktttd")
-player = NodePath("..")
-stats = NodePath("../Stats")
-gun = NodePath("../Graphics/Gun")
 sniper_bullet = ExtResource("26_sew1t")
 player_buff = ExtResource("28_xajts")
 buff_layer = 10
 buff_value = 0.35
 buff_erase_timer = 999.0
 cross_bullet = ExtResource("29_pnkv6")
+stats = NodePath("../Stats")
+player = NodePath("..")
+gun = NodePath("../Graphics/Gun")
 
-[node name="ChargeUP" type="Timer" parent="mashiro_ps"]
+[node name="ChargeUP" type="Timer" parent="mashiro_ps" unique_id=667863374]
 wait_time = 0.5
 one_shot = true
 
-[node name="HoldTimer" type="Timer" parent="mashiro_ps"]
+[node name="HoldTimer" type="Timer" parent="mashiro_ps" unique_id=1700167784]
 wait_time = 0.2
 
-[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="mashiro_ps"]
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="mashiro_ps" unique_id=1421353280]
 stream = ExtResource("28_pr0kb")
 pitch_scale = 1.5
 bus = &"SFX"
 
-[node name="AnimationPlayer2" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_y8tsq")
-}
+[node name="AnimationPlayer2" type="AnimationPlayer" parent="." unique_id=1031743756]
+libraries/ = SubResource("AnimationLibrary_y8tsq")
 
-[node name="PlayerBuffManager" parent="." instance=ExtResource("25_cxpqu")]
+[node name="PlayerBuffManager" parent="." unique_id=685835065 instance=ExtResource("25_cxpqu")]
 
-[node name="T_HP_Count" parent="." node_paths=PackedStringArray("stats") instance=ExtResource("26_ipxhr")]
+[node name="T_HP_Count" parent="." unique_id=2065046759 node_paths=PackedStringArray("stats") instance=ExtResource("26_ipxhr")]
 stats = NodePath("../Stats")
 
-[connection signal="is_health" from="." to="." method="_on_is_health"]
+[node name="HealthComponent" type="Node" parent="." unique_id=517276266 node_paths=PackedStringArray("stats", "hurt_box")]
+script = ExtResource("34_2o2ku")
+stats = NodePath("../Stats")
+hurt_box = NodePath("../HurtBox")
+
 [connection signal="is_hurt" from="." to="." method="_on_is_hurt"]
-[connection signal="body_entered" from="HitBox" to="." method="_on_hit_box_body_entered"]
 [connection signal="area_entered" from="PickBox" to="." method="_on_pick_box_area_entered"]
 [connection signal="timeout" from="JumpCDTimer" to="." method="_on_jump_cd_timer_timeout"]
 [connection signal="pick_up_range_changed" from="Stats" to="." method="_on_stats_pick_up_range_changed"]

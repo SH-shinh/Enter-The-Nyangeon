@@ -9,3 +9,5 @@ id = "hurt_invalid_buff"
 icon = ExtResource("1_3kukj")
 name = "伤害无效"
 description = ""
+modifiers = Array[Dictionary]([{"key": "hurt_invalid_add", "mode": "add", "source": "value"}])
+consume_event = "hurt_invalid_changed"

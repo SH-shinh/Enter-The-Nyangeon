@@ -1,6 +1,6 @@
-[gd_scene load_steps=10 format=3 uid="uid://5a8isooy823m"]
+[gd_scene format=3 uid="uid://5a8isooy823m"]
 
-[ext_resource type="Script" path="res://scenes/weapon/Unique_Idea/unique_idea.gd" id="1_srrjf"]
+[ext_resource type="Script" uid="uid://ll1l3uf862v7" path="res://script/player_gun.gd" id="1_srrjf"]
 [ext_resource type="Texture2D" uid="uid://cds6ep3ct561y" path="res://scenes/weapon/Red_Rector/red_rector.png" id="2_nuexf"]
 [ext_resource type="PackedScene" uid="uid://5xnka7kne7w" path="res://script/picatinny_rail.tscn" id="3_penih"]
 [ext_resource type="PackedScene" uid="uid://bjvr1nuwo7ish" path="res://script/muzzle.tscn" id="4_iqvmg"]
@@ -53,51 +53,89 @@ tracks/1/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_w0ptx"]
 _data = {
-"RESET": SubResource("Animation_yiltc"),
-"reload": SubResource("Animation_sw87n")
+&"RESET": SubResource("Animation_yiltc"),
+&"reload": SubResource("Animation_sw87n")
 }
 
-[node name="Red_Rector" type="Node2D"]
+[sub_resource type="Animation" id="Animation_tqh52"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0.6, 0.6)]
+}
+
+[sub_resource type="Animation" id="Animation_bqj5q"]
+resource_name = "fire"
+length = 0.3
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0.45, 1), Vector2(0.6, 0.6)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_j8n5m"]
+_data = {
+&"RESET": SubResource("Animation_tqh52"),
+&"fire": SubResource("Animation_bqj5q")
+}
+
+[node name="Red_Rector" type="Node2D" unique_id=1981837391]
 script = ExtResource("1_srrjf")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=552063466]
 position = Vector2(5, -2)
 scale = Vector2(0.6, 0.6)
 texture = ExtResource("2_nuexf")
 
-[node name="PicatinnyRail" parent="Sprite2D" instance=ExtResource("3_penih")]
+[node name="PicatinnyRail" parent="Sprite2D" unique_id=1894904075 instance=ExtResource("3_penih")]
 position = Vector2(2, -9)
 scale = Vector2(1.66667, 1.66667)
 
-[node name="Muzzle" parent="Sprite2D" instance=ExtResource("4_iqvmg")]
+[node name="Muzzle" parent="Sprite2D" unique_id=1313996300 instance=ExtResource("4_iqvmg")]
 position = Vector2(17, -5.5)
 scale = Vector2(1.66667, 1.66667)
 
-[node name="ShootPosition" type="Marker2D" parent="."]
+[node name="ShootPosition" type="Marker2D" parent="." unique_id=1434043818]
 position = Vector2(15.18, -5.305)
 
-[node name="ShootTimer" type="Timer" parent="."]
+[node name="ShootTimer" type="Timer" parent="." unique_id=1878044676]
 wait_time = 0.2
 one_shot = true
 
-[node name="FireSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="FireSounds" type="AudioStreamPlayer2D" parent="." unique_id=2022001344]
 process_mode = 3
 stream = ExtResource("5_p8i46")
 volume_db = 8.0
 pitch_scale = 1.3
 bus = &"SFX"
 
-[node name="ReloadAnim" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_w0ptx")
-}
+[node name="ReloadAnim" type="AnimationPlayer" parent="." unique_id=1588582673]
+libraries/ = SubResource("AnimationLibrary_w0ptx")
 
-[node name="AmmoReloadTimer" type="Timer" parent="."]
+[node name="AmmoReloadTimer" type="Timer" parent="." unique_id=1295914106]
 wait_time = 0.5
 one_shot = true
 
-[node name="ReloadSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="ReloadSounds" type="AudioStreamPlayer2D" parent="." unique_id=418034516]
 process_mode = 3
 stream = ExtResource("6_kh6uu")
 volume_db = 8.0
 bus = &"SFX"
+
+[node name="FireAnim" type="AnimationPlayer" parent="." unique_id=1589557231]
+libraries/ = SubResource("AnimationLibrary_j8n5m")

@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://demvgehlk38fg"]
+[gd_scene format=3 uid="uid://demvgehlk38fg"]
 
-[ext_resource type="Script" path="res://scenes/update_item/peroro_feather.gd" id="1_dtcml"]
+[ext_resource type="Script" uid="uid://cmm0o6i6b1j3l" path="res://scenes/update_item/peroro_feather.gd" id="1_dtcml"]
 
 [node name="PeroroFeather" type="Node2D"]
 script = ExtResource("1_dtcml")

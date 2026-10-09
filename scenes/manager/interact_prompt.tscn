@@ -1,0 +1,103 @@
+[gd_scene format=3 uid="uid://b8hgqpau5hxw0"]
+
+[ext_resource type="Script" uid="uid://dy1kt0sa7vi5a" path="res://scenes/manager/interact_prompt.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://jcqmwo1t8vv0" path="res://ui/ui.png" id="2_ui"]
+[ext_resource type="Texture2D" uid="uid://c6w50o6d383vq" path="res://ui/button_touch_icon.png" id="3_61v8i"]
+[ext_resource type="Texture2D" uid="uid://b3jpq0uep13uy" path="res://ui/button_e_icon.png" id="3_key"]
+[ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="4_font"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_key0"]
+atlas = ExtResource("3_key")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_key1"]
+atlas = ExtResource("3_key")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_key"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_key0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_key1")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7r7hs"]
+atlas = ExtResource("3_61v8i")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kduf8"]
+atlas = ExtResource("3_61v8i")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_4d5jw"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7r7hs")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kduf8")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_prompt"]
+texture = ExtResource("2_ui")
+texture_margin_left = 6.0
+texture_margin_top = 6.0
+texture_margin_right = 6.0
+texture_margin_bottom = 6.0
+region_rect = Rect2(36, 34, 25, 27)
+
+[sub_resource type="Theme" id="Theme_prompt"]
+PanelContainer/styles/panel = SubResource("StyleBoxTexture_prompt")
+
+[node name="InteractPrompt" type="Node2D" unique_id=1148837337]
+script = ExtResource("1_script")
+key_icon_frames = SubResource("SpriteFrames_key")
+touch_icon_frames = SubResource("SpriteFrames_4d5jw")
+
+[node name="Root" type="Node2D" parent="." unique_id=1520751009]
+
+[node name="Bubble" type="PanelContainer" parent="Root" unique_id=600970469]
+offset_left = -34.0
+offset_top = -41.0
+offset_right = 34.0
+mouse_filter = 2
+theme = SubResource("Theme_prompt")
+
+[node name="VBox" type="VBoxContainer" parent="Root/Bubble" unique_id=201629685]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="use_name" type="Label" parent="Root/Bubble/VBox" unique_id=2110257618]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.188235, 0.188235, 0.188235, 1)
+theme_override_colors/font_shadow_color = Color(0.824175, 0.927159, 0.267976, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_fonts/font = ExtResource("4_font")
+theme_override_font_sizes/font_size = 14
+text = "道具选择"
+horizontal_alignment = 1
+
+[node name="IconHolder" type="Control" parent="Root/Bubble/VBox" unique_id=363285880]
+custom_minimum_size = Vector2(12, 12)
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+
+[node name="Icon" type="AnimatedSprite2D" parent="Root/Bubble/VBox/IconHolder" unique_id=321985074]
+position = Vector2(5, 7)
+sprite_frames = SubResource("SpriteFrames_key")
+autoplay = "default"

@@ -1,0 +1,50 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://ui/damage_freq_slider.gd" id="1_dfq"]
+[ext_resource type="Texture2D" uid="uid://jcqmwo1t8vv0" path="res://ui/ui.png" id="2_ui"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jitan"]
+atlas = ExtResource("2_ui")
+region = Rect2(2, 49, 10, 12)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1p4do"]
+atlas = ExtResource("2_ui")
+region = Rect2(3, 49, 10, 12)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_6uvyt"]
+texture = ExtResource("2_ui")
+expand_margin_top = 2.0
+expand_margin_bottom = 2.0
+region_rect = Rect2(2, 35, 9, 6)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_fbmyu"]
+texture = ExtResource("2_ui")
+expand_margin_top = 2.0
+expand_margin_bottom = 2.0
+region_rect = Rect2(2, 35, 9, 6)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ekpx8"]
+texture = ExtResource("2_ui")
+texture_margin_left = 1.0
+texture_margin_top = 3.0
+texture_margin_right = 1.0
+texture_margin_bottom = 3.0
+expand_margin_top = 2.0
+expand_margin_bottom = 2.0
+region_rect = Rect2(19, 35, 11, 6)
+
+[sub_resource type="Theme" id="Theme_dfq"]
+HSlider/icons/grabber = SubResource("AtlasTexture_jitan")
+HSlider/icons/grabber_highlight = SubResource("AtlasTexture_1p4do")
+HSlider/styles/grabber_area = SubResource("StyleBoxTexture_6uvyt")
+HSlider/styles/grabber_area_highlight = SubResource("StyleBoxTexture_fbmyu")
+HSlider/styles/slider = SubResource("StyleBoxTexture_ekpx8")
+
+[node name="DamageFreqSlider" type="HSlider"]
+offset_right = 180.0
+offset_bottom = 16.0
+theme = SubResource("Theme_dfq")
+max_value = 4.0
+step = 1.0
+value = 4.0
+script = ExtResource("1_dfq")

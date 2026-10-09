@@ -15,6 +15,9 @@ func idle_state():
 	self.global_position = Vector2.ZERO
 
 func active_state():
+	if not PoolManager.fx_allowed(&"hit_spark"):
+		idle_state()
+		return
 	is_idle = 0
 	self.visible = true
 	animation_player.play("new_animation")

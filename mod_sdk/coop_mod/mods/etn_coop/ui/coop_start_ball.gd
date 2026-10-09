@@ -53,8 +53,8 @@ func _apply_green_frames() -> void:
 		at.region = Rect2(r.x, r.y, 64, 64)
 		frames.add_frame("default", at)
 	sprite_2d.sprite_frames = frames
-	sprite_2d.frame = 0
-	sprite_2d.frame_progress = 0.0
+	sprite_2d.play("default")
+	sprite_2d.frame = randi_range(0, 19)
 
 
 func _load_green_texture() -> Texture2D:

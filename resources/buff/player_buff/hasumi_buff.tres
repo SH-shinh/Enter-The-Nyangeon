@@ -9,5 +9,6 @@ id = "hasumi_buff"
 icon = ExtResource("1_jur7a")
 name = "暴击buff"
 ability = ""
-remove_by_layer = false
+remove_by_layer = true
 description = ""
+modifiers = Array[Dictionary]([{"key": "crit_luck_add", "mode": "add", "source": "value"}])

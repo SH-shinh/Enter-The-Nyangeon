@@ -11,15 +11,37 @@ var player: Node
 
 func _ready():
 	GameEvents.get_player.connect(get_player)
+	GameEvents.round_start.connect(reset_position)
+	Game.game_mode_changed.connect(_release_all)
+	visibility_changed.connect(_on_visibility_changed)
 
 func get_player():
 	player = get_tree().get_first_node_in_group("Player")
+
+func reset_position():
+	_release_all()
+	global_position = rest_pos
+
+func _release_all():
+	finger_index = -1
+
+func _on_visibility_changed():
+	if not is_visible_in_tree():
+		_release_all()
+
+func _notification(what):
+	if what == NOTIFICATION_EXIT_TREE or what == NOTIFICATION_APPLICATION_FOCUS_OUT or what == NOTIFICATION_APPLICATION_PAUSED or what == NOTIFICATION_PAUSED:
+		_release_all()
 
 func _input(event: InputEvent):
 	
 	var st := event as InputEventScreenTouch
 	
 	if st:
+		if st.canceled:
+			if st.index == finger_index:
+				_release_all()
+			return
 		
 		#Input.action_press("fire")
 		

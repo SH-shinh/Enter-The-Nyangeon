@@ -1,6 +1,6 @@
 # ETN Coop Mod（骨架）
 
-> 当前版本 **0.1.1**；最低支持本体 **v0.5.1.2-test 及以上**（版本比较忽略 `-test` 等后缀）。
+> 当前版本 **0.1.2**；最低支持本体 **v0.5.1.2-test 及以上**（版本比较忽略 `-test` 等后缀）。
 
 联机以 **mod 形式注入**，本体零改动（仅通过 `ExtensionHooks` 挂接）。当前进度：**传输层 + 玩家/敌人/召唤物同步 + 敌人伤害权威 + 子弹与爆炸/特效广播 + 金币共享 + 倒地救援/团队流程 + 场景切换广播 + 主菜单 COOP 按钮（置于 QUIT 之上）+ 联机覆盖层（option 菜单式布局，页签复用 `option_button.tscn` 绿色高亮，4 语）+ 开房后自动进准备房（测试房作为准备房）+ 开始球/选人/就绪/房主难度流程 + 玩家 ID 常驻顶部 + LAN 全员选定握手 + 出生点居中 + 测试场菜单 get_player 修复 + 玩家 ID 输入/持久化 + 头顶名牌同步 + 房间聊天室（右侧小窗，回车/手机按钮 + 升级页按钮）**。
 
@@ -105,7 +105,7 @@ mod_sdk/coop_mod/mods/etn_coop/
   - 本地玩家也挂轻量 `CoopPlayerProxy`（本地分支仅缓存/meta，不注册进 `player_by_peer_id` 以免被 `_reset_player_sync` 误释放）。
 - 与联机版 0.4.1.3 的进一步对齐（**纯 mod 侧 + 少量本体最小 hook**）：
   - **救援服务端校验**：`_server_try_revive` 增加「请求者≠目标、双方倒地状态、请求者存活、距离≤96」；`RESCUE_RADIUS`→96；复活补 `stats.player_dead=false`（`set_downed_state(false)` 复位 `player_stop`）。
-  - **团队 game over**：`_gate_game_over` 团队判定（单人倒地不结束；全员倒地/主动投降(false) 才结束）；`_force_team_game_over_authoritative`/`_server_request_team_game_over`；host 自己最后倒地也触发；`paused=false` + 去重。
+  - **团队 game over**：`_gate_game_over` 团队判定（单人倒地不结束；全员倒地才结束，由 host 的 `_check_team_game_over`/`_force_team_game_over_authoritative` 触发）；host 自己最后倒地也触发；`paused=false` + 去重。（2026-10-08 变更：`_server_request_team_game_over` 已忽略——客机主动退出不再结束整局，见「退出 / 断线 / 失败反馈」。）
   - **升级复活**：`GameEvents.round_upgrade` → host 满血统一复活倒地队友。
   - **返回菜单广播**：`change_scene(path,"")` → host `rpc("_remote_return_to_menu")`（并修掉此前 host 等待死锁）。
   - **近战/换弹通道**：本体 `ExtensionHooks.on_player_melee/on_player_reload`（在 `kick.gd`/`player_gun.gd` 调用点 notify）→ mod 广播 + 远端回放动画/音效。
@@ -121,26 +121,26 @@ mod_sdk/coop_mod/mods/etn_coop/
 
 ## 网络补偿：快照缓冲插值 / 自适应延迟 / 快照分频（2026-10-07）
 - **快照缓冲**（新增 `net/coop_snapshot_buffer.gd`）：远端实体（敌人/玩家/召唤物）`apply_snapshot` 只入缓冲；`_physics_process` 用 `render_t = 本地now - interp_delay` 采样 → 两快照间线性插值；早于首条取首条；晚于末条按末速度**外推**（**缓入衰减**：越接近上限速度越小，消除过冲回弹），上限 `EXTRAP_MAX_MS=120` 后**冻结**；单帧位移 > `TELEPORT_DIST=220` 视为传送 → 清缓冲瞬移（避免横穿地图的插值滑行）并置 `teleported`。另维护**实测快照间隔（EMA）**供延迟估计。
-- **自适应延迟**：`interp_delay = clamp(max(2×快照间隔, 1.8×实测快照间隔(EMA), rtt/2 + 2×jitter), 0.05, 0.20)`（`SnapshotBuffer.compute_delay`）。RTT/抖动**常开采集**（`_diag_ping` 已与 F9 HUD 解耦；`net_rtt_ms`/`net_jitter_ms`）。
+- **自适应延迟**：`interp_delay = clamp(max(2×快照间隔, 1.8×实测快照间隔(EMA), rtt/2 + 2×jitter), 0.05, 0.20)`（`SnapshotBuffer.compute_delay`）。RTT/抖动**常开采集**（`_diag_ping` 已与 F4 HUD 解耦；`net_rtt_ms`/`net_jitter_ms`）。
 - **传送残影**：`net/coop_dash_ghost.gd`——硬校正/传送（缓冲清空）时在旧位置生成一个 `Sprite2D` 残影（取当前帧贴图，0.25s 淡出后释放），降低瞬移突兀感。
 - **快照分频**：敌人快照 8Hz→**15Hz**（`ENEMY_SNAPSHOT_INTERVAL=0.066`）；`_send_enemy_snapshot` 按「距最近玩家」分频（近 `≤420` 每 tick、中 `≤900` 每 2 tick、远 每 3 tick），hp 变化（受伤/死亡）立即发，保留位置/速度 epsilon 变化检测 + 600ms 心跳。召唤物上报 12.5Hz→15Hz；玩家状态仍 20Hz。
 - **敌人快照分包**：`_send_enemy_snapshot` 按 `ENEMY_SNAPSHOT_ENTITY_LIMIT=32`（运行期可 `--coop-devsnapbatch=<n>` 覆盖）切包发送，避免单包 >ENet MTU 被整包丢弃（unreliable 不重组）导致该帧所有敌人一起卡顿；接收端无需改。
 - **子弹延迟补偿（仅直线弹）**：`_spawn_one_visual` → `_compensate_bullet_spawn` 按单向延迟 `clamp(rtt/2,0,250ms)` 把直线弹生成位置沿朝向前推 `speed*delay`、并把 `kill_time`（0.1s tick）扣 `delay*10`；**仅匀速直行弹**生效，`homing`/`slow_down`/`decay_time`/`can_r`/`collision_num` 弹原样（前推会失真）。
 - **硬校正**：仅越界（敌人/召唤 128、玩家 96）时瞬移 + 清缓冲；普通情形由插值兜底（消除橡皮筋）。
-- **调试/压测**：F9 HUD 增 `jitter` 与 `comp extrap/snap`；`--coop-devnetlag=N`（接收端按 N% 丢弃敌人快照）压测缓冲/外推；`dev status` 附 `ext=/snap=` 计数。
-- **命中轻量校验**（保持客户端权威，favor-the-shooter）：客户端命中转发 host 时附**受害者位置**；host `_server_enemy_hit` 增加校验——目标存活（`hp>0`）、攻击者→敌人距离 ≤ `HIT_VALIDATE_MAX_DIST=2400`、**回滚合理性**（客户端所见位置 vs host 位置历史中最接近 `now-(rtt/2+插值延迟)` 的点，偏差 > `HIT_VALIDATE_TOL=200` 才拒；客户端位置为 `(0,0)` 视为未同步则跳过）。仅拦明显异常；`net_hits_accepted/rejected` 计入 F9 HUD 与 `dev status`（`hit=ok/rej`）。
+- **调试/压测**：F4 HUD 增 `jitter` 与 `comp extrap/snap`；`--coop-devnetlag=N`（接收端按 N% 丢弃敌人快照）压测缓冲/外推；`dev status` 附 `ext=/snap=` 计数。
+- **命中轻量校验**（保持客户端权威，favor-the-shooter）：客户端命中转发 host 时附**受害者位置**；host `_server_enemy_hit` 增加校验——目标存活（`hp>0`）、攻击者→敌人距离 ≤ `HIT_VALIDATE_MAX_DIST=2400`、**回滚合理性**（客户端所见位置 vs host 位置历史中最接近 `now-(rtt/2+插值延迟)` 的点，偏差 > `HIT_VALIDATE_TOL=200` 才拒；客户端位置为 `(0,0)` 视为未同步则跳过）。仅拦明显异常；`net_hits_accepted/rejected` 计入 F4 HUD 与 `dev status`（`hit=ok/rej`）。
 - **压测回归工具**：`--coop-devsim=lat=<ms>,jit=<ms>,loss=<pct>`（作用于收到的敌人快照：按概率丢包 + 延迟/抖动投递队列）；`--coop-devsimreport` 每 2s 打印 `sim-report`（role/rtt/jitter/extrap_rate/hard_snaps/extrap_events/snap_sends/snap_entities/带宽）；`--coop-devautoquit=<sec>` 优雅退出以刷新 stdout。脚本 `mod_sdk/coop_sim_regression.ps1` 跑一组条件、解析 `sim-report` 并断言（出现 `SCRIPT ERROR` 或 `extrap_rate`/`extrap_events` 超阈值即失败，退出码非 0）。
 - **取舍（本轮未改）**：远端实体引入 ~50–200ms 自适应渲染延迟；命中仍**客户端权威**（仅加轻量校验）、玩家受伤仍本地「伤害洞」结算，未做服务器回滚 hitreg。
 
 ## 连接体验与信息面板（LAN 发现 / 版本握手 / 队友 HUD / 战绩）
 - **LAN 房间发现**（`net/coop_lan_discovery.gd`，常驻于 `CoopNet`）：独立 UDP，`DISCOVERY_PORT=24592`；host 开服后每 1s 广播 JSON（`{magic:ETN_COOP, pv, name, port, players, max, mode, game_version}`），**只发不收、绑临时端口**；client 在 LAN 页自动 `browse_start()` 收包、按 `ip:port` 去重、`2.5s` 超时剔除。`ui/coop_menu.gd` 在 `JoinRow` 下动态构建房间列表（点击即填 IP 并加入）。同机自测兜底：额外单播一份到 `127.0.0.1:24592`。
-- **版本/协议握手**（`coop_net.gd`）：`PROTOCOL_VERSION` + `MOD_VERSION` + `Game.version_number`；client 连接后 `rpc_id(1,"_client_hello",...)`，host 校验，不一致 `_hello_reject(reason)` 并**延迟 0.5s 再踢**（立即 disconnect 会丢可靠包）；`_on_peer_connected` 不再立即发 lobby/roster，改由握手通过后 `_accept_peer` 执行；未握手连接 5s 超时踢除。i18n `coop_version_mismatch`。版本比较（`_versions_equal`）按**数字段**进行、**忽略 `-test` 等后缀**，故 `v0.5.1.2-test` 与 `v0.5.1.2` 视为同版本、可互通。
-- **实时战绩面板（可编辑场景）**：`ui/coop_scoreboard.tscn`（+ 行模板 `ui/coop_scoreboard_row.tscn`，脚本 `ui/coop_scoreboard.gd`）。按住 `coop_scoreboard`（运行时注册，默认 `Tab`/手柄 Back）显示，居中、无压暗底，行按伤害降序。**静态布局（面板/标题/表头/列宽/字体/颜色/位置）全在 `.tscn` 里，可直接在编辑器手动调整**；脚本只负责输入、按 `CoopNet.team_stats` 实例化行并填 `%Name/%Kills/%Damage/%Coins`（伤害/击杀/金币大数用 **K/M/B/T 缩写**：1 位小数去尾零 + 进位保护，如 `999950→1M`）。
-- **战绩数据（host 权威）**：按 peer 累计 `team_stats={kills,damage,coins}`——伤害在 `_on_server_enemy_damage_taken`（本地命中）与 `_server_enemy_hit`（客机转发命中，`suppress_feedback=true` 不发 `damage_taken` 故需单列）两处累加；击杀在 `_on_server_enemy_dead` 按 `last_attacker_by_net_id` 归属；每 1s `_remote_team_stats` 广播。i18n `coop_sb_*`。
+- **版本/协议握手**（`coop_net.gd`）：`PROTOCOL_VERSION` + `MOD_VERSION` + `Game.version_number`；client 连接后 `rpc_id(1,"_client_hello",...)`，host 校验，不一致 `_hello_reject(reason)` 并**延迟 0.5s 再踢**（立即 disconnect 会丢可靠包）；`_on_peer_connected` 不再立即发 lobby/roster，改由握手通过后 `_accept_peer` 执行；未握手连接 5s 超时踢除。i18n `coop_version_mismatch`。版本比较（`_versions_equal`）按**数字段**进行、**忽略 `-test` 等后缀**，故 `v0.5.1.2-test` 与 `v0.5.1.2` 视为同版本、可互通。**2026-10-08 加固**：`PROTOCOL_VERSION` 1→2（RPC 契约变更即递增）；host 现在**真正校验 `MOD_VERSION`**（此前 README 声称但代码漏项）；客机发 `_client_hello` 后 `HELLO_ACCEPT_TIMEOUT_MSEC=6000` 内收不到 `_hello_accept`/有效 `_hello_reject` → 关闭并提示 `coop_status_handshake_timeout`；`_hello_reject(reason: String = "")` 默认参兼容旧房主 0 参 reject。**中继重复加入**：客户端 `create_relay_room`/`join_relay_room` 有 in-flight 防抖（`is_connect_in_flight()`）+ 菜单按钮锁定，`coop_relay_peer._close` 先发 `leave_room`；服务端 `E:\QQfw\js\服务端5.0.py` 维护 `Room.pending`、同 token 覆盖去重、`alloc_peer_id` 复用空出的 id、容量含 pending、只对已准入 peer 广播 `peer_disconnected`。
+- **实时战绩面板（可编辑场景）**：`ui/coop_scoreboard.tscn`（+ 行模板 `ui/coop_scoreboard_row.tscn`，脚本 `ui/coop_scoreboard.gd`）。按住 `coop_scoreboard`（运行时注册，默认 `Tab`/手柄 Back）显示，居中、无压暗底，行按伤害降序。**静态布局（面板/标题/表头/列宽/字体/颜色/位置）全在 `.tscn` 里，可直接在编辑器手动调整**；脚本只负责输入、按 `CoopNet.team_stats` 实例化行并填 `%Name/%Kills/%Damage/%Coins`（大数缩写规则：**伤害 ≥1000 起**；**击杀 ≥10万、金币 ≥100万** 才用 **K/M/B/T**——低于阈值显示完整数字；1 位小数去尾零 + 进位保护，如 `999950→1M`。阈值按列宽估算：击杀列 60px、金币列 70px，`BoutiqueBitmap9x9 @ font_size 8` 数字约 4.8px/位）。**移动端联动 + 左移避让（2026-10-08）**：移动端无 `coop_scoreboard` 按键，改为**点开聊天（输入态 `is_composing()`）时一起显示战绩**（对方消息触发的 peek 不触发，避免干扰）；当聊天窗显示时（`is_window_visible()`），战绩栏整层经 `CanvasLayer.offset` 按两者实际尺寸**左移**——用 `_center.size` + `_panel.size` 推未偏移右缘，右缘不越过聊天窗左缘（留 `CHAT_GAP=6px`，重叠 ≤0 不移动），**双端均生效**。聊天接口 `is_composing()`/`is_window_visible()`/`get_window_rect()` 由 `coop_chat.gd` 提供。
+- **战绩数据（host 权威）**：按 peer 累计 `team_stats={kills,damage,coins}`——伤害在 `_on_server_enemy_damage_taken`（本地命中）与 `_server_enemy_hit`（客机转发命中，`suppress_feedback=true` 不发 `damage_taken` 故需单列）两处累加；击杀在 `_on_server_enemy_dead` 按 `last_attacker_by_net_id` 归属；每 1s `_remote_team_stats` 广播。i18n `coop_sb_*`。**行生命周期（2026-10-08）**：① **加入即建行**——`_accept_peer`（握手通过）与 `_on_first_round_add`（host）调 `_ensure_team_stat(pid)` + `_broadcast_team_stats()`，准备房有玩家进来即出现 0 行（周期广播 `battle_active` 在准备房已为 true，数值实时更新）；② **房主正式开始清零**——`_broadcast_roster()`（房主选关/开战唯一出口）调 `_reset_team_stats()`：清空 `team_stats` 后按当前 `multiplayer.get_peers()` 重建**全员 0 行**并广播，准备房/测试房累计不带入正式关卡；③ 掉线仍**保留行**（`:882` 注释，配合重连；不重连的幽灵行会在下次正式开始清零时按当前 peers 重建而消失）。
   - **金币 = 各玩家「各自获取」**（不再显示全员相同的共享总额）：`_broadcast_team_stats` 不再把 `coins` 覆盖为共享总额。归属来源两类——① **共享金币拾取**归**拾取者**：host 在 `_do_shared_coin_pickup` 记 `get_unique_id()`，client 拾取经 `_server_pickup_coin` 记 `get_remote_sender_id()`（经 `_add_team_coins`）；② **个人金币加成**（满血医疗箱转金币 / coin_return / chocolate_coin / atlantis medal / 策反清场结算）都经既有 `GameEvents.player_coins_get` 发出 → `_on_local_coins_get` 上报 host 归属本人。二者靠 `_applying_shared_coin` 抑制标记区分：`_apply_shared_coin_local` 发 `player_coins_get` 前打标记、发后清除，故共享拾取不会被个人通道重复计入（**零本体改动**）。
 - **自测**：`--coop-devdiscover`（只浏览进程，打印 `dev-discover rooms=N`）；`--coop-devbadver`（模拟版本不一致，验证被拒）；`dev status` 附 `team=`。
-- **调试窗口开关（OPTION 页，供手机无 F9）**：`ui/coop_menu.tscn` 的 OPTION 页**拉杆下方**新增 `RowDebugHud`（`Label` + 复用 `res://ui/option_toggle.tscn` 开关，样式同本体 FullScreen/Shake/VSync：18×18、不横向拉伸、无 ON/OFF 文本），持久化到 `coop_settings` 的 `[debug] debug_hud`；`entry` 启动即按存档 `set_shown`。菜单经组 `CoopNetDebugHud` 查找 HUD。F9 / `--coop-devhud` 仍保留。
-- **调试 HUD 外观**：`ui/net_debug_hud.gd` 改为**顶部居中**（`PRESET_CENTER_TOP` + `GROW_DIRECTION_BOTH` + `offset_top=12`）、字号 **8**；提示文案 `(F9/菜单关闭)`。
+- **调试窗口开关（OPTION 页，供手机无 F4）**：`ui/coop_menu.tscn` 的 OPTION 页**拉杆下方**新增 `RowDebugHud`（`Label` + 复用 `res://ui/option_toggle.tscn` 开关，样式同本体 FullScreen/Shake/VSync：18×18、不横向拉伸、无 ON/OFF 文本），持久化到 `coop_settings` 的 `[debug] debug_hud`；`entry` 启动即按存档 `set_shown`。菜单经组 `CoopNetDebugHud` 查找 HUD。F4 / `--coop-devhud` 仍保留。
+- **调试 HUD 外观**：`ui/net_debug_hud.gd` 改为**顶部居中**（`PRESET_CENTER_TOP` + `GROW_DIRECTION_BOTH` + `offset_top=12`）、字号 **8**；提示文案 `(F4/菜单关闭)`。
 
 ## 后续（未实现 / 已知限制）
 
@@ -155,7 +155,7 @@ mod_sdk/coop_mod/mods/etn_coop/
 - 手机上中继服务器地址不要填 `127.0.0.1`（那是手机自己）；用实际服务器（如 `mc.yqst.top:32085`）。
 
 ## 退出 / 断线 / 失败反馈
-- 暂停 `Quit → Yes`：**正常关卡** → 团队 game over 页；**测试房** → 回标题。实现：`_gate_game_over` 在 LAN 下**不再抑制**（host 权威 `_force_team_game_over_authoritative`，client `rpc_id(1,_server_request_team_game_over)`）；玩家死亡仍由 `player_death_gate`（`_gate_player_death`）单独接管，不受影响。
+- 暂停 `Quit → Yes`（**2026-10-08 语义变更**）：**房主** → 全员结算（host 权威 `_force_team_game_over_authoritative` 广播给各客机）；**客机** → **只结算自己**：`_gate_game_over` 客机分支走 `_schedule_client_leave_local`（本地照常播 game over 结算页 + deferred 断开联机），host 与其余玩家正常继续。**测试房** → 回标题。`_server_request_team_game_over` 入口保留但**一律忽略**（防已握手客机绕过 gate 直接结束整局）。玩家死亡仍由 `player_death_gate`（`_gate_player_death`）单独接管为倒地，不受影响；`round_manager` 的最大回合/全灭结束在客机被 `round_end_proceed_gate` 挡掉，仅 host 触发。
 - **客机看不到主机**：host 在收到客机 `_client_scene_ready` 后补发 `_client_sync_roster` + 已存在敌人/召唤物（对齐联机版 `_mark_scene_ready`），确保客机场景就绪后再生成主机镜像。
 - **relay 失败可见**：`coop_relay_peer` 在 WS 未连上即关闭 / 初始连接超时（10s）时 `emit relay_error`；`coop_net.close_connection(silent=true)` 避免失败状态被 “offline” 覆盖；覆盖层显示失败原因并复位，不再静默卡“创建中”。
 - 已知未处理：客机非正常退出后主机侧镜像可能**短暂保留**（ENet 超时前），无“重连保留”机制，超时后应随 `_on_peer_disconnected` 释放；若长期不消失再排查。
@@ -289,7 +289,7 @@ mod_sdk/coop_mod/mods/etn_coop/
 
 ### #3 网络诊断 HUD
 - `_update_network_diagnostics`：每 `0.5s` ping/pong 估 RTT、丢包与子弹/特效收发速率；`get_network_debug_text()` / `get_network_quality_debug_text()`。
-- `ui/net_debug_hud.gd`：**代码构建** CanvasLayer + 半透明 Label；`entry/coop_entry.gd` 常驻创建，**F9** 切换，开关联动 `set_network_diag_enabled`；`--coop-devhud` 自测。
+- `ui/net_debug_hud.gd`：**代码构建** CanvasLayer + 半透明 Label；`entry/coop_entry.gd` 常驻创建，**F4** 切换，开关联动 `set_network_diag_enabled`；`--coop-devhud` 自测。
 
 ### 验证
 - 双进程 LAN：`--coop-devpreplaced` 客机 `dev preplaced#0 predicted=1 pending=999` → host 权威后镜像回满 `hp#0=35 count=10`；HUD `rtt=7ms loss=0%`；综合回归无 `SCRIPT ERROR`/`Invalid`/`Lambda`/`previously freed`。
@@ -488,7 +488,7 @@ mod_sdk/coop_mod/mods/etn_coop/
 - `ui/coop_start_ball.tscn`（`instance` `res://scenes/yellow_ball.tscn` + 脚本 `coop_start_ball.gd`）：绿色开始球。**运动/碰撞/交互完全复用本体**（可被玩家与其它球推动、悬停描边、气泡提示），仅覆写 `prompt`/`interact`。气泡「开始游戏」。由 `CoopFlow` 在 test_room 的 `YSort` 下生成（组 `CoopStartBall` 去重）。
   - **大厅准备门槛**：非房主互动 → `CoopNet.toggle_local_ready()` 切换自己的「已准备」；房主互动 → `are_all_players_ready()`（**不含房主**，无客机即 true）成立则 `request_begin_select()`，否则在球气泡上方弹红字 `coop_players_not_ready`（0.1s 自下而上淡入 → 停 2s → 收回）。
   - **「已准备」显示**：`net/coop_name_tag.gd` 在玩家名牌上方建子标签 `ReadyTag`（`tr("coop_prepared")`，字体/字号同名牌 `BoutiqueBitmap7x7`/8）；`set_ready(bool)` 0.1s 自下而上淡入 / 倒放收回；子标签随名牌每帧定位（含跳跃同步）。联网同步：`CoopNet.lobby_ready_by_peer` + `toggle_local_ready`/`_server_lobby_ready`/`_remote_lobby_ready`（幂等）；进入选人 `_clear_lobby_ready()` 清空并广播，断线/回准备房/开战亦重置。
-  - **染绿方式（贴图 + 运行时建帧）**：贴图随 mod 打包 `res://mods/etn_coop/sprites/item/green_ball.png`；因 mod pck 的 png 无导入资源，`coop_start_ball.gd:_ready` 用 `load()`（编辑器内命中）否则 `Image.load_png_from_buffer` 取图，再按**与本体黄球完全一致的 20 个 atlas 区域、相同顺序**构建 `SpriteFrames` 赋给 `$Sprite2D`。保留本体 `sprite_outline` 材质（`set_highlight` 高亮正常）。不再依赖本体 `res://sprites/item/green_ball.png`。
+  - **染绿方式（贴图 + 运行时建帧）**：贴图随 mod 打包 `res://mods/etn_coop/sprites/item/green_ball.png`；因 mod pck 的 png 无导入资源，`coop_start_ball.gd:_ready` 用 `load()`（编辑器内命中）否则 `Image.load_png_from_buffer` 取图，再按**与本体黄球完全一致的 20 个 atlas 区域、相同顺序**构建 `SpriteFrames` 赋给 `$Sprite2D`。**注意 `AnimatedSprite2D.set_sprite_frames()` 内部会 `stop()`**（不可依赖场景 `autoplay`，其只在 ready 触发一次），赋值后必须 `play("default")` 否则贴图冻结不滚动；起始帧取 `randi_range(0,19)` 对齐本体 `ball.gd`。保留本体 `sprite_outline` 材质（`set_highlight` 高亮正常）。不再依赖本体 `res://sprites/item/green_ball.png`。
 - `ui/coop_select.tscn` + `coop_select.gd`：选人覆盖层。**静态布局在场景**（可在编辑器调），脚本动态填充，且**只读取玩家已解锁内容、不实例化锁定项**：
   - 社团：来自本体注册表 `ModManager.get_base_societies()`（单一来源，见下）+ `get_mod_societies()` + MOD 通用卡；实例化前按 `PlayerData.group.has(gid)` 过滤。
   - 角色：复用 `ui/society_card.gd:populate_player_cards()`（已改为**先读卡内 `player_card.id` 再决定实例化**，只实例化 `PlayerData.character.has(id)` 的角色）。
@@ -531,7 +531,7 @@ mod_sdk/coop_mod/mods/etn_coop/
   - **自动显示（PEEK）**：`_on_chat_received` 在窗口关闭（含淡出中）时 → `_peek_show()`：显示面板、**不聚焦/不占用控件**（不显示鼠标、不冻结玩家、游玩无感）、**背景与输入框透明度 0.4**（消息文字保持满不透明）、滚到底、**2 秒后淡出**（peek 期间每条新消息重置计时；淡出中再来消息亦重置重显）。PEEK 下按回车/点按钮 → `_refocus()` 升格为输入态（恢复满不透明 + 占用 + 聚焦）。
   - **不拦截鼠标 / 隐藏滚动条**：`_ready` 递归把面板子树 `mouse_filter=IGNORE`（永不吞鼠标点击，输入靠程序聚焦；游玩期不挡开火）；`Scroll.vertical_scroll_mode=3`（SHOW_NEVER，不显示拉条，程序滚动仍可用）。
   - **游戏结束后保留窗口**：`_on_game_over` 不再隐藏（仅清 `_upgrade_active`），结算/团队结束页仍可聊天、新消息仍 peek。
-  - **手机按钮**：`TextureButton` 30×30、`texture_normal=res://ui/scoreboard_icon.png`、铺满 30×30、无边框、**半透明 `modulate.a=0.45`（恒定，无悬停反馈）**，挂到**本地玩家** `$GameUI/AmmoPosition` 右侧（战斗与准备房均显示；换人/重生后自动重挂）。
+  - **手机按钮**：`TextureButton` 30×30、`texture_normal=res://ui/scoreboard_icon.png`、铺满 30×30、无边框、**半透明 `modulate.a=0.45`（恒定，无悬停反馈）**，挂到**本地玩家** `$GameUI/AmmoPosition` 右侧（战斗与准备房均显示；换人/重生后自动重挂）。移动端无 `Tab`：点此按钮开聊时**战绩栏一并显示**（见「实时战绩面板」节的移动端联动/左移避让）。
   - **升级页按钮（第二个，场景节点）**：`ui/coop_chat.tscn` 的 `%UpgradeChatButton`（同为 30×30/0.45/`mouse_filter=IGNORE`，挂在 `CoopChat` 层 → 盖在升级页 `layer=2` 之上），初始 `position=(590,268)`（红框处，**编辑器可直接改**）。`coop_chat.gd` 监听 `round_upgrade`→`_upgrade_active=true`、`round_upgrade_end`/`round_upgrade_closing`/`round_start`/`game_over`→`false`；`_process` 里 `visible = _upgrade_active and is_lan_game and 本地玩家有效`（兼容升级页「刷新」重建——刷新不重发 `round_upgrade` 但仍处升级阶段，按钮保持）。**本体 `UpgradeScreen` 背景不透明且 layer=2，会盖住玩家 `GameUI`(layer=1) 里的 HUD 按钮，故升级页必须用这个上层按钮。**
   - **点击门控（防游玩误触 / 升级页可点）**：两按钮均 `mouse_filter=IGNORE`（**纯显示，不接收 GUI 鼠标事件、不吞游玩期鼠标**），点击由 `coop_chat._input` 手动命中判定——`InputEventScreenTouch`（命中矩形）**始终可激活**；`InputEventMouseButton` 左键在**指针空闲**时可激活（`_pointer_free() = _is_open or Input.mouse_mode==MOUSE_MODE_VISIBLE`）。游玩期准星把鼠标设为 `CONFINED_HIDDEN` → 鼠标不处理也不 consume（不挡瞄准/开火、不误触开窗）；升级页/暂停等鼠标 `VISIBLE` 时桌面可点。`_last_touch_frame` 守卫忽略触摸模拟出的鼠标事件，避免双触发。
   - **Enter 行为**：LAN 下回车始终归聊天（升级页回车=开聊/发送，**不**触发升级页的 `ui_accept`）；升级页确认走空格/手柄 A/鼠标点「继续」。
@@ -577,6 +577,56 @@ mod_sdk/coop_mod/mods/etn_coop/
 - **内容/颜色**：纯数字 `"%dms" % round(rtt)`（无样本时 `--`）；颜色按 `CoopNet.get_network_quality_debug_text()`（复用现有阈值 `rtt<60&loss<2` → good / `rtt<140&loss<8` → fair / 其余 poor）映射 **绿/黄/红**。数据源 `CoopNet.get_network_timing()["rtt"]`，`_process` 节流 0.3s 刷新，仅变化时写入。
 - **实现**：`ui/coop_chat.gd`（`_make_ping_label`/`_hide_ping`/`_refresh_pings`/`_apply_ping_label`；`_ensure_button`/`_ensure_upgrade_button` 同步显隐）+ `ui/coop_chat.tscn`（`UpgradePingLabel` 节点 + 7x7 字体 ext_resource）。
 
+## 加固（2026-10-08）
+
+- **敌人重登记 net_id 泄漏**：池化敌人再次激活会重新 `register_enemy_spawn`，原实现只 `remove_meta("net_id")` 后写新 id，旧 `enemy_by_net_id`/`enemy_scene_by_net_id`/`enemy_proxy_by_net_id` 条目残留 → 快照对同一敌人重复发包、跨回合 O(回合数) 增长。新增 `_forget_enemy_net_id()` 统一清 7 张表；重登记前按旧 id 清理；`_attach_enemy_proxy` 复用分支重跑 `setup` 刷新 `net_id`；死亡/失效/回合清理均改走该助手。
+- **Relay 开房握手期心跳误判**：relay 主机在 `room_created` 前 `get_unique_id()==0`、`is_server()==false`，心跳走客户端分支，>8s 未收 `_host_heartbeat` 即弹回主菜单。修：`_network_heartbeat` 在 peer 非空后加 `multiplayer.multiplayer_peer.get_connection_status() != CONNECTION_CONNECTED → return`（注意该方法在 `MultiplayerPeer` 上，不在 `SceneMultiplayer`）。
+- **`any_peer` 信任边界加固**：对客机传入的资源路径做白名单（`res://` + 前缀 `res://scenes//script//resources//mods/`，buff 限 `res://resources/buff/*.tres`，玩家场景限 `res://scenes/player/`+`res://mods/`，禁 `..`/反斜杠，`item_id` 限 `[a-z0-9_]`）；对伤害/策反/金币/pyroxenes 做 sanity 上限（`2^50`）、buff 数值限 3 项并 clamp；对玩家状态做非有限值拒绝 + 数值 clamp；对 `summoned_action/state`、`summoned_buff` 校验 owner==sender、`support_ex` 强制 owner=sender、`pickup_coin` 以 host 记录币值为准、`medkit_taken` 要求已知 net_id。保持 host 权威语义与单机/主机自身路径不变。
+- **断线残留清理（#4）**：`_on_peer_disconnected` 追加清倒地/救援进度（`down_peer_ids`/`_rescue_progress`/`_rescue_rescuer_count`，host 广播收起气泡）、道具常驻图标（`_clear_peer_item_visuals`）、选人记录（`selected_player_scene_by_peer`）；host 广播 despawn 该 peer 拥有的召唤物（`_despawn_peer_summons_networked`），client 本地清镜像；host 末尾 `_check_team_game_over()`。**刻意保留** `team_stats`/`player_name_by_peer`/`last_attacker_by_net_id` 到本局结束（记分板行与击杀归属延续）。`_server_update_rescue` 目标失效时补 `down_peer_ids.erase` 防空转。
+- **握手门控（#5）**：新增 `_server_sender_ok()`（`_handshaked_peers.has(get_remote_sender_id())`），加在所有服务端 `any_peer` handler 的 `is_server()` 检查之后（约 43 处；`_client_hello` 为握手入口、`_diag_ping` 仅 host 分支门控、`_remote_item_visual` 因经引擎 relay 在客户端也需执行故不加）。效果：LAN 未握手连接仍由 `disconnect_peer` 踢除；**Relay 无法踢单个逻辑 peer**（协议无 `kick_peer` 帧），改用此门控保证被拒/未握手 peer 即使 socket 未断也无法调用权威 RPC。`coop_relay_peer._disconnect_peer` 补注释说明。
+- **退出期释放（#7）**：`_notification` 拆分为 `WM_CLOSE_REQUEST`（完整 `close_connection`）与 `EXIT_TREE/PREDELETE`（最小释放：仅 `transport.peer.close()` + 置空，不跑 `_reset_run_state`），并守卫退出期 `multiplayer` 可能为 null；`close_connection` 的 `_reset_run_state()` 加 `get_tree() != null` 守卫。
+- **镜像一致性**：补齐镜像 `mods/etn_coop/ui/coop_chat.tscn` 的 `UpgradePingLabel.mouse_filter = 2`（与打包源对齐）；用「剥离 `uid`/`unique_id` 后逐行比较」确认两处 `.gd/.tscn/.json` **功能内容一致**（`.uid`/`unique_id` 为编辑器产物，不作为一致性判据）。
+- **信任边界补漏（1–9）**：
+  1. `_client_scene_ready` 补 `_server_sender_ok()` 门控（此前漏，未握手 peer 可换取 roster/敌人/召唤列表）。
+  2. 视觉批量 `_server_visual_effect_batch`/`_server_visual_bullet_batch`/`_server_visual_bullet_reliable_batch` 加 `batch.size() > BULLET_BATCH_LIMIT*2 → return`（防超大数组 DoS）。
+  3. 医疗箱支援：`_server_player_support` 用 `_sanitize_support_mods`（仅 `rate_mult∈[1,2]`、`at_player:bool`、`on_take_spawn∈{0,1}`），`support_id` 限长 32，并广播消毒后的 mods；`_refresh_medkit_mods` 兜底 `min(2.0, rate)`（此前文档称「上限 2.0」但代码未夹）。
+  4. `_server_apply_enemy_buff`：施加者属性经 `_sanitize_applier_stats`（白名单 4 键 + clamp），`source_id` 限长 64。
+  5. `_server_boss_pattern_event` 的 `event_data` 经 `_sanitize_event_data`。
+  6. buff 路径白名单扩为 `SAFE_BUFF_PREFIXES`（`res://resources/buff/` + `res://mods/`），避免误挡 mod 自定义 buff。
+  7. `_server_enemy_hit` 对 `victim_pos` 做 `is_finite` 校验（非有限视为未同步，跳过回滚校验）。
+  8. `_client_hello` 的 `game_ver` 限长 32（防超长串撑 `_version_parts`）。
+  9. `_server_summoned_state` 的 `state`/`facing` clamp（`state∈[-1,8]`、`facing∈{-1,1}`）。
+- **退出语义与反滥用（10–13，2026-10-08）**：
+  - **#10 客机退出只结算自己**：`_gate_game_over` 客机分支改为 `_schedule_client_leave_local`（本地照常 game over 结算页 + deferred 断开联机）；房主退出才全员结算；`_server_request_team_game_over` 保留但忽略（防绕过）。验证：仅 client `--coop-devpause` 触发退出 → client `client left run (self-settle)`、host `peer disconnected` 后 `battle=true`/`remotes=0`/`enemies=10` 继续。
+  - **#11（已知残留，未修）**：`_remote_item_visual` 为 `any_peer` 且经引擎 `server_relay` 直达 client，客机可伪造 `owner_peer` 在他人镜像上刷图标（纯视觉）。彻底修需改走 host 中转；本轮按决定保持现状。
+  - **#12 反滥用限频**：新增 `_rate_allow(peer,cat,max)`（1s 固定窗口）+ `_count_summons_owned_by` + `MAX_SUMMONS_PER_PEER=32`；应用于 `_server_shared_pyroxenes_gain`(5/s)、`_server_coin_gain`(8/s)、`_server_pickup_coin`(12/s)、`_server_medkit_taken`(6/s)、`_server_chat`(4/s)、`_server_register_summoned`(每 peer 召唤数上限)。另加**令牌桶** `_rate_allow_tokens(peer,cat,rate/s,burst)`（平滑、允许小突发）覆盖会**被 host 转发放大**的高频通道：`_server_receive_player_state`(45/s,burst15)、`_server_summoned_state`(按 net_id 30/s,burst6)、`_server_player_gun_shoot`(60/s,20)、`_server_player_hurt`(60/s,20)、`_server_hit_sfx`(60/s,20)、视觉批 `_server_visual_*_batch`(300/s,30)。上限均为合法频率 ≥2×，正常不触发；reliable 的 `_server_enemy_hit`（丢=丢伤害）**不限频**。断线/复位清 `_rpc_bucket`。
+  - **#13 镜像坐标限幅**：`_server_receive_player_state` 用 `MapBounds.nearest_inside(position)` 夹回地图内（hull 未就绪时原样返回），防止客机谎报图外坐标拉仇恨。
+- **视觉通道加固（V1–V6，2026-10-08）**：此前视觉通道被当作"纯表现"，接收端只校验路径前缀，客户端可控 `eb(伤害洞)/dmg`、`method/pre_method`、`grp`、`pr` 全部键与任意 `res://scenes/**` 场景 → 可对 host/全体玩家造成任意伤害、调用任意方法、实例化敌方/Boss 场景。修法：
+  - **V1 伤害洞**：`_server_visual_bullet_batch`/`_reliable_batch` 逐条经 `_sanitize_bullet_entry`，**强制 `eb=false` 并清零 `dmg/kb`**（客机来源恒不开洞；敌方弹伤害洞只由 host 的 `_spawn_visual_bullet_batch` 产生），转发给其余端也是净化 entry；`_open_player_damage_hole` 对 damage/knockback 加 `MAX_DAMAGE_HOLE/MAX_KNOCKBACK_HOLE` 兜底。
+  - **V2 方法/父组注入**：`method`/`pre` 限白名单 `SAFE_VISUAL_METHODS={"","active_state","smoke_anim"}`、`grp` 限 `SAFE_VISUAL_GROUPS`（排除 EnemiesRoot/PlayerRoot）；`_server_visual_node` 与 `_remote_visual_node`（新增 `no_hole` 参数）同样处理。
+  - **V3 场景收敛**：视觉通道场景路径改专用白名单 `SAFE_VISUAL_SCENE_PREFIXES`（bullet/debuff/update_item/item/script:explosion|small_explosion|spawn_anim/mods），排除 enemies/player/manager/main。
+  - **V4 属性注入**：接收端 `pr` 仅保留 `BULLET_PROP_NAMES`/`EFFECT_PROP_NAMES` 键（此前只有发送端白名单）。
+  - **V5/V6 限频**：`_server_visual_node`(60/s,20)、`_server_despawn_visual_bullet/effect`(120/s,40) 加令牌桶。
+  - **召唤动作通道**：`_server_summoned_action` 的 `fx_scene` 仍按前缀校验但新增 `no_hole=true` 透传给 `_remote_summoned_action`（客机来源不开放伤害洞）。
+  - `_visual_reject_count` 并入 `dev status` 的 `rej=` 便于回归断言。**A 方案残留**：`res://scenes/update_item/` 效果场景在接收端仍会运行其脚本（仅清碰撞），因 V1/V2/V4 已封堵且无碰撞伤害，风险可接受。
+- **崩溃/隐患修复（H1–H6，2026-10-08）**：
+  - **H1 召唤通道注入活敌**：`_server_register_summoned` 原用 `SAFE_REMOTE_SCENE_PREFIXES`（含 `res://scenes/enemies/`），`_spawn_summoned_local` 又在 `_disable_remote_simulation` 之后调 `active_state()`（本体 `entity_ENEMY.active_state()` 会重开物理/AI/StateMachine、`register_active_enemy`、`global_time_count.connect`）→ 客机可让 host 生成会动的敌人并留下悬空信号连接。修：召唤场景改专用白名单 `SAFE_SUMMON_SCENE_PREFIXES`（`res://scenes/summoned/`、`player_support/kei/kei_summoned.tscn`、`update_item/utaha_turret(_body)`/`shiroko_drone_body`/`robotic_vacuum_cleaner_body`、`res://mods/`）；并在 `active_state()` 后调 `CoopSummonedProxy.disable_mirror_sim()` 再次停用镜像模拟。
+  - **H2 buff 类型未校验**：`_server_apply_enemy_buff`/`_remote_enemy_buff`/`_remote_player_buff`/`_apply_summoned_buff_local` 的 `load(buff_path)` 后加 `if not (buff is Buff): return`（防非 Buff 资源喂 `apply_buff`/`BuffRouter` 触发运行期类型错误）。
+  - **H3 `Engine.time_scale` 裸写**：`ui/motion_down_screen.gd` 改走 `GameEvents.request_slow("coop_down",0.1,0.5)` / `end_slow`，不再直接写 `Engine.time_scale`（与其它慢放互不覆盖）。
+  - **H4** aura 视觉 `_apply_support_aura_visual` 的 `load(path)` 加 `PackedScene` 判空。
+  - **H5** `coop_relay_peer._on_control` 的 `join_prepared.peers` 加 `is Array` + 元素 `is Dictionary` 校验。
+  - **H6 死链修复（本体接线）**：`player_buff_apply/remove_interceptor` 原本体从未调用；在 `script/buff_router.gd` 的 `apply_buff`/`remove_buff`/`remove_source` 接入 `ExtensionHooks.intercept(...)`（未装 mod 返回 false，零回归）。使 kei/serina 光环对远端玩家镜像的 buff 能转交其归属端。
+  - 顺带修：`tree_exiting` 回调（`_on_summoned_tree_exiting`/`_on_visual_node_tree_exiting`）在场景拆除时 `multiplayer` 可能为 null 的崩溃（加判空）。
+- **回归**：双进程 headless LAN（`--coop-host` / `--coop-join=127.0.0.1` + `--coop-devbattle --coop-devpreplaced --coop-devbuff --coop-devbullet --coop-deveffect`）host `visuals=5 effects=5 rej=0`、`remotes=1`、`enemies=10`、零 `SCRIPT ERROR`/`Invalid`/`previously freed`；`--coop-devselflaser` host `hp 72→50`（合法伤害洞不受影响）；`--coop-devsummon` 召唤 `summons=1`（新召唤白名单不误挡）；`--coop-devmotion` `time_scale=1.0`；另跑「客户端中途退出（`--coop-devautoquit`）」host `remotes=0`、记分板行保留、零错误；「版本不一致（`--coop-devbadver`）」拒绝+自断+零错误；「仅 client 暂停退出」host 继续；pck 已重打包（43 files）。
 
 
 
+
+
+
+## 召唤物固有等级 / 友方近战击退（2026-10-08）
+
+- **固有等级系统（本体）**：等级从 utaha 角色被动改为召唤物自身固有属性。`Summoned.add_summon_exp(amount, source_id, damage_add_override)` 为统一来源入口（utaha 近战 / 未来道具），`set_summon_level`/`add_summon_level` 供道具直接给级；配置在 `SummonedStats`（`level_enabled` 默认 true、`level_damage_add=6`、`level_up_exp_base=3`、`level_exp_growth=10`、`max_level`）。每级加成写 `stats.summoned_damage_add`（与召唤物 buff 同路叠加）；`damage_add_override>0` 覆盖固有值（utaha `up_v` 6，被动升级后 12 覆盖 6）。
+- **头顶显示**：`scenes/summoned/summon_level_display.tscn`（外观复刻旧 UtahaPS 进度节点），对象池 `summon_level_display`（`PoolManager.IDLE_LIMITS` 16），`Summoned._ready` 取用并 `bind`，跟随 `LevelDisplayAnchor`（Marker2D，挂 `%AnimatedSprite2D` 下随跳跃上下；缺失回退固定高度）。旧 UtahaPS 进度节点保留隐藏。
+- **镜像友方近战击退 + 升级（mod）**：`CoopSummonedProxy._enable_melee_detect()` 把镜像召唤物 `HurtBox` 恢复为「探测专用」（`layer=8192`、`monitorable=true`、`monitoring=false`、形状启用），本机近战即可命中队友召唤物镜像。新钩子 `summoned_damage_interceptor`（友方近战转发拥有者 `_server_summoned_melee_kb`/`_remote_summoned_melee_kb`；其它镜像伤害丢弃）与 `summoned_upgrade_interceptor`（转发 `_server_summoned_upgrade`/`_remote_summoned_upgrade`，拥有者 `add_summon_exp`）。拥有者 `summon_level_changed` → `_on_local_summon_level_changed` → host 直发 / client 经 `_server_summoned_level_state` 中继 → 各端 `apply_network_summon_level_state`。
+- **注意**：镜像 `HurtBox` 恢复可探测后，敌方爆炸/激光/盾/狙击（掩码含 `summoned_box`）也会命中镜像，故 `SummonedHealthComponent.take_damage` 顶部闸门必须丢弃「非友方近战」的镜像伤害，否则 `max_hp<=0` 分支会误伤本机玩家。两份副本（`mods/` 镜像 + `mod_sdk/` 源码）已同步。

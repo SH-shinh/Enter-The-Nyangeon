@@ -23,8 +23,8 @@ func smoke_reset():
 	animation_player.play("RESET")
 
 func smoke_anim():
+	if not PoolManager.fx_allowed(&"bullet_smoke"):
+		idle_state()
+		return
 	active_state()
 	animation_player.play("new_animation")
-
-func remove_pool():
-	FloatingPool.remove_se_2_pool(self)

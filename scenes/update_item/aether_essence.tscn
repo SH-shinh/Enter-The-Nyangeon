@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://s7wstnboargs"]
+[gd_scene format=3 uid="uid://s7wstnboargs"]
 
-[ext_resource type="Script" path="res://scenes/update_item/aether_essence.gd" id="1_1h450"]
+[ext_resource type="Script" uid="uid://co6qn2wh65usq" path="res://scenes/update_item/aether_essence.gd" id="1_1h450"]
 
 [node name="aether_essence" type="Node2D"]
 script = ExtResource("1_1h450")

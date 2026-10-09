@@ -1,8 +1,9 @@
-[gd_scene load_steps=9 format=3 uid="uid://b1la0ecuas7n2"]
+[gd_scene format=3 uid="uid://b1la0ecuas7n2"]
 
 [ext_resource type="Texture2D" uid="uid://dcdfpkuwxmvxf" path="res://sprites/particle/fire-0001.png" id="1_ona8n"]
-[ext_resource type="Script" path="res://scenes/enemies/enemy_fire_field.gd" id="1_wiyoa"]
+[ext_resource type="Script" uid="uid://bfnbjnp4jfqav" path="res://scenes/enemies/enemy_fire_field.gd" id="1_wiyoa"]
 [ext_resource type="Resource" uid="uid://b71qgg62orgs2" path="res://resources/buff/player_buff/player_fire_dot.tres" id="2_cench"]
+[ext_resource type="Resource" uid="uid://ddlwsbdn8hn6j" path="res://resources/buff/enemy_buff/fire_dot.tres" id="3_fdot"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_hiacl"]
 radius = 18.0
@@ -32,28 +33,25 @@ color_initial_ramp = SubResource("GradientTexture1D_1ranw")
 anim_speed_min = 1.0
 anim_speed_max = 1.0
 
-[node name="enemy_fire_field" type="Node2D"]
+[node name="enemy_fire_field" type="Area2D" unique_id=975731992]
+collision_layer = 0
+collision_mask = 2048
+monitorable = false
 script = ExtResource("1_wiyoa")
 pool_id = "enemy_fire_field"
 self_life = 10
 player_buff = ExtResource("2_cench")
+enemy_buff = ExtResource("3_fdot")
 buff_layer = 1
 buff_value = 1.0
 buff_erase_timer = 1.0
 
-[node name="Area2D" type="Area2D" parent="."]
-collision_layer = 0
-collision_mask = 2048
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1855551217]
 shape = SubResource("CircleShape2D_hiacl")
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=1296717463]
 material = SubResource("CanvasItemMaterial_l05pv")
 amount = 24
-process_material = SubResource("ParticleProcessMaterial_8ad5u")
 texture = ExtResource("1_ona8n")
 explosiveness = 0.1
-
-[connection signal="area_shape_entered" from="Area2D" to="." method="_on_area_2d_area_shape_entered"]
-[connection signal="area_shape_exited" from="Area2D" to="." method="_on_area_2d_area_shape_exited"]
+process_material = SubResource("ParticleProcessMaterial_8ad5u")

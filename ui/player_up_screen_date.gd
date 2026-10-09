@@ -14,13 +14,17 @@ var player: Node
 func _ready():
 	GameEvents.ability_upgrade_added.connect(add_player_up_item_card)
 	GameEvents.round_upgrade.connect(show_player_date)
+	GameEvents.round_upgrade_closing.connect(hide_player_date)
 	GameEvents.round_start.connect(hide_player_date)
 	GameEvents.round_num_changed.connect(next_round_num)
 	GameEvents.get_player.connect(get_player)
 
 func get_player():
 	player = get_tree().get_first_node_in_group("Player")
-	player.stats.coin_changed.connect(update_coin)
+	if player == null:
+		return
+	if not player.stats.coin_changed.is_connected(update_coin):
+		player.stats.coin_changed.connect(update_coin)
 
 func update_coin():
 	coin.text = str(player.stats.coin)
@@ -36,7 +40,7 @@ func show_player_date():
 func hide_player_date():
 	self.visible = false
 
-func add_player_up_item_card(upgrade: AbilityUpgrade, current_upgrade: Dictionary):
+func add_player_up_item_card(upgrade: AbilityUpgrade, _current_upgrade: Dictionary):
 	var has_card = current_card.has(upgrade.id)
 	if !has_card:
 		current_card[upgrade.id] = {

@@ -39,7 +39,7 @@ static func create_lan_client(ip: String, port: int):
 	return t
 
 
-static func create_relay(server_url: String, room_code: String, role: String):
+static func create_relay(server_url: String, room_code: String, role: String, token: String = ""):
 	var t = new()
 	var clean_room: String = sanitize_room_code(room_code)
 	if clean_room == "" and role != HOST_ROLE:
@@ -49,9 +49,9 @@ static func create_relay(server_url: String, room_code: String, role: String):
 	var url: String = build_relay_url(server_url)
 	var err: Error
 	if role == HOST_ROLE:
-		err = relay.create_relay_host(url, "Player")
+		err = relay.create_relay_host(url, "Player", token)
 	else:
-		err = relay.join_relay_room(url, clean_room, "Player")
+		err = relay.join_relay_room(url, clean_room, "Player", token)
 	if err != OK:
 		t.status_message = "Relay failed: %s (%s)" % [_error_to_text(err), url]
 		return t

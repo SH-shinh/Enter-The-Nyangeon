@@ -1,18 +1,16 @@
-extends Node2D
-
-@export var stats: Stats
+extends PlayerPS
 
 @onready var fire_field = preload("res://scenes/debuff/fire_field.tscn")
 
 var value: Array
 var fire_group: Array[Node]
 var ps_luck: int = 20
-var now_t:int
 var index: int = 0
 
 func _ready():
 	GameEvents.player_ps_upgrade.connect(ps_upgrade)
 	PlayerData.set_player.connect(set_playerdata)
+	player.damage_types.append(GameTags.FIRE_DAMAGE)
 
 func ps_upgrade(t_num: int):
 	now_t = t_num

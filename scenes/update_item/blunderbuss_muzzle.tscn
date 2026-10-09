@@ -1,6 +1,9 @@
-[gd_scene load_steps=2 format=3 uid="uid://cpatta8cpvs5s"]
+[gd_scene format=3 uid="uid://cpatta8cpvs5s"]
 
-[ext_resource type="Script" path="res://scenes/update_item/blunderbuss_muzzle.gd" id="1_5ge1y"]
+[ext_resource type="Script" uid="uid://bvji1si1dlu5w" path="res://scenes/update_item/blunderbuss_muzzle.gd" id="1_5ge1y"]
+[ext_resource type="PackedScene" uid="uid://b4mmucyoxoasw" path="res://scenes/bullet/shoot_fire_1.tscn" id="2_sldlv"]
 
-[node name="BlunderbussMuzzle" type="Node2D"]
+[node name="BlunderbussMuzzle" type="Node2D" unique_id=92380614]
 script = ExtResource("1_5ge1y")
+
+[node name="ShootFire1" parent="." unique_id=840915831 instance=ExtResource("2_sldlv")]

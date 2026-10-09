@@ -1,0 +1,372 @@
+[gd_scene format=3 uid="uid://bijrpmymep5x3"]
+
+[ext_resource type="Script" uid="uid://sou4x6gnykm2" path="res://script/option_menu.gd" id="1_y7sjt"]
+[ext_resource type="Texture2D" uid="uid://jcqmwo1t8vv0" path="res://ui/ui.png" id="2_akpcx"]
+[ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="3_80dm5"]
+[ext_resource type="Script" uid="uid://dkwqr377cp5yf" path="res://script/auto_text.gd" id="4_sxlkp"]
+[ext_resource type="Texture2D" uid="uid://c2br53jqbonxw" path="res://ui/mouse_icon.png" id="5_otg03"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_qoqbr"]
+texture = ExtResource("2_akpcx")
+texture_margin_left = 1.0
+texture_margin_top = 1.0
+texture_margin_right = 1.0
+texture_margin_bottom = 1.0
+expand_margin_left = 2.0
+expand_margin_right = 1.0
+region_rect = Rect2(44, 12, 8, 8)
+
+[sub_resource type="Theme" id="Theme_kaebt"]
+PanelContainer/styles/panel = SubResource("StyleBoxTexture_qoqbr")
+
+[sub_resource type="Animation" id="Animation_0kbik"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 0)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".:scale")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1e-05, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_md8oj"]
+resource_name = "controls_in"
+length = 0.1
+step = 0.01
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.03, 0.07),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".:scale")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.07, 0.1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(1e-05, 1), Vector2(1.1, 1), Vector2(1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_fut0m"]
+_data = {
+&"RESET": SubResource("Animation_0kbik"),
+&"option_in": SubResource("Animation_md8oj")
+}
+
+[node name="Controls" type="Control" unique_id=696497334]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 3
+anchors_preset = 0
+scale = Vector2(1e-05, 1)
+script = ExtResource("1_y7sjt")
+option_id = "option_controls"
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=1987998065]
+layout_mode = 0
+offset_left = 239.0
+offset_top = 74.0
+offset_right = 255.0
+offset_bottom = 94.0
+theme = SubResource("Theme_kaebt")
+
+[node name="Label" type="Label" parent="PanelContainer" unique_id=2078356822]
+layout_mode = 2
+text = "W"
+horizontal_alignment = 1
+
+[node name="PanelContainer2" type="PanelContainer" parent="." unique_id=319289262]
+layout_mode = 0
+offset_left = 239.0
+offset_top = 96.0
+offset_right = 255.0
+offset_bottom = 116.0
+theme = SubResource("Theme_kaebt")
+
+[node name="Label" type="Label" parent="PanelContainer2" unique_id=737811627]
+layout_mode = 2
+text = "S"
+horizontal_alignment = 1
+
+[node name="PanelContainer3" type="PanelContainer" parent="." unique_id=1046246173]
+layout_mode = 0
+offset_left = 218.0
+offset_top = 96.0
+offset_right = 234.0
+offset_bottom = 116.0
+theme = SubResource("Theme_kaebt")
+
+[node name="Label" type="Label" parent="PanelContainer3" unique_id=1718142499]
+layout_mode = 2
+text = "A"
+horizontal_alignment = 1
+
+[node name="PanelContainer4" type="PanelContainer" parent="." unique_id=2009816902]
+layout_mode = 0
+offset_left = 260.0
+offset_top = 96.0
+offset_right = 276.0
+offset_bottom = 116.0
+theme = SubResource("Theme_kaebt")
+
+[node name="Label" type="Label" parent="PanelContainer4" unique_id=108536725]
+layout_mode = 2
+text = "D"
+horizontal_alignment = 1
+
+[node name="PanelContainer5" type="PanelContainer" parent="." unique_id=1081446981]
+layout_mode = 0
+offset_left = 218.0
+offset_top = 154.0
+offset_right = 302.0
+offset_bottom = 174.0
+theme = SubResource("Theme_kaebt")
+
+[node name="Label" type="Label" parent="PanelContainer5" unique_id=1493137896]
+layout_mode = 2
+text = "  SPACE  "
+horizontal_alignment = 1
+
+[node name="PanelContainer6" type="PanelContainer" parent="." unique_id=933907518]
+layout_mode = 0
+offset_left = 464.0
+offset_top = 78.0
+offset_right = 480.0
+offset_bottom = 98.0
+theme = SubResource("Theme_kaebt")
+
+[node name="Label" type="Label" parent="PanelContainer6" unique_id=1906688759]
+layout_mode = 2
+text = "R"
+horizontal_alignment = 1
+
+[node name="PanelContainer7" type="PanelContainer" parent="." unique_id=2008388674]
+layout_mode = 0
+offset_left = 550.0
+offset_top = 78.0
+offset_right = 566.0
+offset_bottom = 98.0
+theme = SubResource("Theme_kaebt")
+
+[node name="Label" type="Label" parent="PanelContainer7" unique_id=1742597263]
+layout_mode = 2
+text = "F"
+horizontal_alignment = 1
+
+[node name="Label6" type="Label" parent="." unique_id=1902892383]
+layout_mode = 0
+offset_left = 501.0
+offset_top = 53.0
+offset_right = 616.0
+offset_bottom = 75.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 4
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("3_80dm5")
+theme_override_font_sizes/font_size = 15
+text = "controls_ex"
+horizontal_alignment = 1
+script = ExtResource("4_sxlkp")
+base_font_size = 15
+base_size_y = 22.0
+base_size_x = 115.0
+min_font_size = 9
+
+[node name="Label5" type="Label" parent="." unique_id=1436840673]
+layout_mode = 0
+offset_left = 415.0
+offset_top = 53.0
+offset_right = 530.0
+offset_bottom = 75.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 4
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("3_80dm5")
+theme_override_font_sizes/font_size = 15
+text = "controls_reload"
+horizontal_alignment = 1
+script = ExtResource("4_sxlkp")
+base_font_size = 15
+base_size_y = 22.0
+base_size_x = 115.0
+min_font_size = 9
+
+[node name="Label" type="Label" parent="." unique_id=428562576]
+layout_mode = 0
+offset_left = 287.0
+offset_top = 94.0
+offset_right = 402.0
+offset_bottom = 116.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 4
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("3_80dm5")
+theme_override_font_sizes/font_size = 15
+text = "controls_move"
+horizontal_alignment = 1
+script = ExtResource("4_sxlkp")
+base_font_size = 15
+base_size_y = 22.0
+base_size_x = 115.0
+min_font_size = 9
+
+[node name="Label2" type="Label" parent="." unique_id=1728190069]
+layout_mode = 0
+offset_left = 287.0
+offset_top = 154.0
+offset_right = 399.0
+offset_bottom = 176.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 4
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("3_80dm5")
+theme_override_font_sizes/font_size = 15
+text = "controls_jump"
+horizontal_alignment = 1
+script = ExtResource("4_sxlkp")
+base_font_size = 15
+base_size_y = 22.0
+base_size_x = 112.0
+min_font_size = 9
+
+[node name="TextureRect" type="TextureRect" parent="." unique_id=1401999314]
+layout_mode = 0
+offset_left = 491.0
+offset_top = 146.0
+offset_right = 531.0
+offset_bottom = 186.0
+texture = ExtResource("5_otg03")
+
+[node name="Label3" type="Label" parent="." unique_id=1147247499]
+layout_mode = 0
+offset_left = 422.0
+offset_top = 125.0
+offset_right = 543.0
+offset_bottom = 147.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 4
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("3_80dm5")
+theme_override_font_sizes/font_size = 15
+text = "controls_shoot"
+horizontal_alignment = 1
+script = ExtResource("4_sxlkp")
+base_font_size = 15
+base_size_y = 22.0
+base_size_x = 121.0
+min_font_size = 9
+
+[node name="Label4" type="Label" parent="." unique_id=575684923]
+layout_mode = 0
+offset_left = 481.0
+offset_top = 125.0
+offset_right = 602.0
+offset_bottom = 147.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 4
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("3_80dm5")
+theme_override_font_sizes/font_size = 15
+text = "controls_melee"
+horizontal_alignment = 1
+script = ExtResource("4_sxlkp")
+base_font_size = 15
+base_size_y = 22.0
+base_size_x = 121.0
+min_font_size = 9
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1368560398]
+libraries/ = SubResource("AnimationLibrary_fut0m")

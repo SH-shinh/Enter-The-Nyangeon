@@ -8,4 +8,6 @@ script = ExtResource("2_83v5i")
 id = "gatling_speed_buff"
 icon = ExtResource("1_lvgdb")
 name = "加特林射击减速buff"
+is_debuff = true
 description = ""
+modifiers = Array[Dictionary]([{"key": "speed_mult", "mode": "add", "source": "value"}])

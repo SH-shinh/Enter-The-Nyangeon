@@ -1,15 +1,17 @@
-[gd_scene load_steps=31 format=3 uid="uid://b5qdmjfk1e306"]
+[gd_scene format=3 uid="uid://b5qdmjfk1e306"]
 
-[ext_resource type="Script" path="res://scenes/enemies/tester_automaton_shield.gd" id="1_74mte"]
+[ext_resource type="Script" uid="uid://ce44lat17oeed" path="res://scenes/enemies/tester_automaton_shield.gd" id="1_74mte"]
 [ext_resource type="PackedScene" uid="uid://bdo12rjvieur7" path="res://scenes/shadow/shadow.tscn" id="2_yhsoc"]
-[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="3_brf87"]
+[ext_resource type="Shader" uid="uid://bqypa5578tm8a" path="res://shaders/sprite_outline.gdshader" id="3_brf87"]
 [ext_resource type="Texture2D" uid="uid://be5nap8v052d5" path="res://sprites/enemies/droid_helmet.png" id="4_gxvag"]
 [ext_resource type="PackedScene" uid="uid://bp3ef5vy10bbo" path="res://scenes/enemies/enemy_gun_6.tscn" id="5_0dwpc"]
-[ext_resource type="Script" path="res://script/EnemyStateMachine.gd" id="6_xufb3"]
-[ext_resource type="Script" path="res://script/EnemyStats.gd" id="7_v1ks7"]
+[ext_resource type="Script" uid="uid://b8e2jlmuhbtm5" path="res://script/EnemyStateMachine.gd" id="6_xufb3"]
+[ext_resource type="Script" uid="uid://b36s5d5e3v3h4" path="res://script/EnemyStats.gd" id="7_v1ks7"]
 [ext_resource type="PackedScene" uid="uid://bwix1bf5g1mjh" path="res://script/death_anim.tscn" id="8_5vjc2"]
 [ext_resource type="PackedScene" uid="uid://dcixivms2uc75" path="res://script/enemy_hurt_floating_text.tscn" id="9_r4pqm"]
 [ext_resource type="PackedScene" uid="uid://btl1l8a33rp5b" path="res://scenes/manager/enemy_buff_manager.tscn" id="10_ybrjh"]
+[ext_resource type="Script" uid="uid://cgyde7ws002vo" path="res://script/health_component.gd" id="11_t6jka"]
+[ext_resource type="Script" uid="uid://cog8pvonoqtxu" path="res://script/hurt_box.gd" id="12_5v7a3"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_jqf8s"]
 resource_local_to_scene = true
@@ -81,7 +83,7 @@ animations = [{
 "duration": 1.2,
 "texture": SubResource("AtlasTexture_dydy2")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 12.0
 }, {
@@ -110,7 +112,7 @@ animations = [{
 "duration": 0.8,
 "texture": SubResource("AtlasTexture_uvgwp")
 }],
-"loop": true,
+"loop": 1,
 "name": &"run",
 "speed": 12.0
 }]
@@ -139,19 +141,22 @@ animations = [{
 "duration": 3.0,
 "texture": SubResource("AtlasTexture_3w6oi")
 }],
-"loop": true,
+"loop": 1,
 "name": &"default",
 "speed": 12.0
 }]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_c5l7y"]
-radius = 15.0
-height = 52.0
+radius = 19.0
+height = 46.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_ckc1p"]
 radius = 13.0384
 
-[node name="droid_helmet_smg" type="CharacterBody2D" node_paths=PackedStringArray("stats", "sprite_2d", "graphics", "collision_shape_2d", "enemy_buff_manager") groups=["Enemy"]]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vwti1"]
+size = Vector2(48, 58)
+
+[node name="droid_helmet_smg" type="CharacterBody2D" unique_id=889981008 node_paths=PackedStringArray("stats", "sprite_2d", "graphics", "collision_shape_2d", "enemy_buff_manager") groups=["Enemy"]]
 collision_layer = 8
 collision_mask = 256
 motion_mode = 1
@@ -170,12 +175,12 @@ graphics = NodePath("Graphics")
 collision_shape_2d = NodePath("CollisionShape2D")
 enemy_buff_manager = NodePath("EnemyBuffManager")
 
-[node name="Graphics" type="Node2D" parent="."]
+[node name="Graphics" type="Node2D" parent="." unique_id=2098104358]
 
-[node name="shadow" parent="Graphics" instance=ExtResource("2_yhsoc")]
+[node name="shadow" parent="Graphics" unique_id=17974522 instance=ExtResource("2_yhsoc")]
 scale = Vector2(1.125, 1.125)
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Graphics"]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Graphics" unique_id=1574427285]
 material = SubResource("ShaderMaterial_jqf8s")
 position = Vector2(0, -24)
 sprite_frames = SubResource("SpriteFrames_48apu")
@@ -184,7 +189,7 @@ autoplay = "idle"
 frame_progress = 0.701544
 flip_h = true
 
-[node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="Graphics"]
+[node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="Graphics" unique_id=958254688]
 material = SubResource("ShaderMaterial_ldkw1")
 position = Vector2(0, -43)
 sprite_frames = SubResource("SpriteFrames_ihbqm")
@@ -192,56 +197,76 @@ autoplay = "default"
 frame_progress = 0.647598
 flip_h = true
 
-[node name="Gun" parent="Graphics" node_paths=PackedStringArray("stats") instance=ExtResource("5_0dwpc")]
+[node name="Gun" parent="Graphics" unique_id=1218685894 node_paths=PackedStringArray("stats") instance=ExtResource("5_0dwpc")]
 position = Vector2(-21, -24)
 stats = NodePath("../../EnemyStats")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=680425736]
 position = Vector2(0, -27)
 shape = SubResource("CapsuleShape2D_c5l7y")
 
-[node name="StateMachine" type="Node" parent="."]
+[node name="StateMachine" type="Node" parent="." unique_id=756883384]
 script = ExtResource("6_xufb3")
 
-[node name="EnemyStats" type="Node" parent="."]
+[node name="EnemyStats" type="Node" parent="." unique_id=1414248717]
 script = ExtResource("7_v1ks7")
 score = 120
 max_hp = 300
-knockback_resis = 800
+knockback_resis = 60
 penetrate_resis = 5
 Enemy_damage = 12
 Enemy_coin = 10
 MAX_SPEED = 100
 SPEED_TIME = 0.2
-weigth_mult = 0.5
+weigth = 50.0
+convert_resist = 40
+convert_threshold = 600
 
-[node name="DeathAnim" parent="." node_paths=PackedStringArray("stats") instance=ExtResource("8_5vjc2")]
+[node name="DeathAnim" parent="." unique_id=1374986567 node_paths=PackedStringArray("stats") instance=ExtResource("8_5vjc2")]
 stats = NodePath("../EnemyStats")
 y_position = 24
 
-[node name="Area2D" type="Area2D" parent="."]
+[node name="Area2D" type="Area2D" parent="." unique_id=96435061]
 collision_layer = 0
 collision_mask = 8
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=591355193]
 position = Vector2(0, -14)
 shape = SubResource("CircleShape2D_ckc1p")
 
-[node name="EnemyHurtFloatingText" parent="." instance=ExtResource("9_r4pqm")]
+[node name="EnemyHurtFloatingText" parent="." unique_id=1786347972 node_paths=PackedStringArray("health_component") instance=ExtResource("9_r4pqm")]
+health_component = NodePath("../HealthComponent")
 
-[node name="EnemyBuffManager" parent="." instance=ExtResource("10_ybrjh")]
+[node name="EnemyBuffManager" parent="." unique_id=1646611797 node_paths=PackedStringArray("health_component") instance=ExtResource("10_ybrjh")]
+health_component = NodePath("../HealthComponent")
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=2132750670]
 offset_left = -10.0
 offset_top = -71.0
 offset_right = 30.0
 offset_bottom = -45.0
 scale = Vector2(0.5, 0.5)
 
-[node name="BuffBox" type="HBoxContainer" parent="MarginContainer"]
+[node name="BuffBox" type="HBoxContainer" parent="MarginContainer" unique_id=221148171]
 unique_name_in_owner = true
 layout_mode = 2
 alignment = 1
+
+[node name="HealthComponent" type="Node" parent="." unique_id=1949122304 node_paths=PackedStringArray("stats", "hurt_box")]
+script = ExtResource("11_t6jka")
+stats = NodePath("../EnemyStats")
+hurt_box = NodePath("../HurtBox")
+
+[node name="HurtBox" type="Area2D" parent="." unique_id=1022079771 node_paths=PackedStringArray("body")]
+position = Vector2(0, -19)
+collision_layer = 16384
+collision_mask = 163840
+script = ExtResource("12_5v7a3")
+body = NodePath("..")
+
+[node name="HurtBoxShape2D" type="CollisionShape2D" parent="HurtBox" unique_id=1770331280]
+position = Vector2(0, -10)
+shape = SubResource("RectangleShape2D_vwti1")
 
 [connection signal="shoot_end" from="Graphics/Gun" to="." method="_on_gun_shoot_end"]
 [connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]

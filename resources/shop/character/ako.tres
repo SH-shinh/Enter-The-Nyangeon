@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CharacterCard" format=3 uid="uid://cljrnmvrd4y1b"]
+
+[ext_resource type="Texture2D" uid="uid://dhol5kko8375y" path="res://ui/school/GEHENNA_icon.png" id="2_kgge4"]
+[ext_resource type="Script" uid="uid://c0xho6kcxb134" path="res://resources/shop/character/character_card.gd" id="3_3s2pn"]
+[ext_resource type="Texture2D" uid="uid://vkorsddirkrp" path="res://ui/weapon/HG_icon.png" id="4_kb4fe"]
+
+[resource]
+script = ExtResource("3_3s2pn")
+cost = 6
+name_1 = "AMAU"
+name_2 = "AKO"
+character_sprite_path = "res://sprites/player/ako/ako_picture.png"
+weapon_name = "HOT SHOT"
+weapon_type_name = "HG"
+weapon_icon = ExtResource("4_kb4fe")
+school_name = "GEHENNA"
+school_icon = ExtResource("2_kgge4")
+id = "ako"
+group = "DC"

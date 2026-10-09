@@ -12,8 +12,10 @@ func _ready() -> void:
 
 func touch_input(event: InputEvent):
 	if event as InputEventScreenTouch and event.pressed:
+		option_button.accept_event()
 		SoundManager.play_sfx("ButtonSounds")
 		open_touch_menu()
+		
 
 func open_touch_menu():
 	on_touch = true
@@ -32,6 +34,8 @@ func _set_button(langue: String):
 			option_button.selected = 1
 		"pt":
 			option_button.selected = 2
+		"vi_VN":
+			option_button.selected = 3
 
 func _on_option_button_item_selected(index: int) -> void:
 	var n: int
@@ -47,6 +51,10 @@ func _on_option_button_item_selected(index: int) -> void:
 		2:
 			Game.game_language = "pt"
 			TranslationServer.set_locale("pt")
+			Game.save_config()
+		3:
+			Game.game_language = "vi_VN"
+			TranslationServer.set_locale("vi_VN")
 			Game.save_config()
 
 
@@ -72,4 +80,11 @@ func _on_pt_gui_input(event: InputEvent) -> void:
 	if event as InputEventScreenTouch and event.pressed:
 		option_button.selected = 2
 		_on_option_button_item_selected(2)
+		close_touch_menu()
+
+
+func _on_vi_vn_gui_input(event):
+	if event as InputEventScreenTouch and event.pressed:
+		option_button.selected = 3
+		_on_option_button_item_selected(3)
 		close_touch_menu()

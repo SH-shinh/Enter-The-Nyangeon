@@ -5,6 +5,8 @@ signal count_exp_changed
 signal cost_changed
 signal support_lv_up(lv: int)
 
+const EXP_PER_PYROXENE := 200
+
 @export var exp_curve: Curve
 @export var support_pool: Array[SupportCard]
 @export var support_ui: PackedScene
@@ -51,29 +53,43 @@ func _ready() -> void:
 	count_max_exp()
 
 func reset_game_support():
-	
-	if game_support != null:
-		if !support_data.has(game_support.support_id):
-			game_support = null_support
+	if game_support == null or !support_data.has(game_support.support_id):
+		game_support = null_support
 
 func game_add_support():
-	if game_support.support_id == "null":
+	if game_support == null or game_support.support_id == "null":
 		return
 	if game_support.support_pack != null:
 		var ins = game_support.support_pack.instantiate()
 		ins.global_position = Vector2(704, 448)
+		if "support_card" in ins:
+			ins.support_card = game_support
 		get_tree().get_first_node_in_group("PlayerRoot").add_child(ins)
 	var ui_ins = support_ui.instantiate()
 	ui_ins.support_card = game_support
-	get_tree().get_first_node_in_group("GameUI").support_box.add_child(ui_ins)
-	var ability_value = PlayerData.get(game_support.ability_id) + now_count_ability
-	PlayerData.set(game_support.ability_id, ability_value)
-	PlayerData.update_player_ability()
+	var game_ui = get_tree().get_first_node_in_group("GameUI")
+	if game_ui != null and is_instance_valid(game_ui) and game_ui.get("support_box") != null:
+		game_ui.support_box.add_child(ui_ins)
+	else:
+		push_warning("game_add_support: GameUI/support_box 缺失，跳过支援 UI 挂载")
 	now_cost = 0
 
+func _total_exp_to_lv(lv: int) -> int:
+	var total := 0.0
+	for i in range(1, lv):
+		total += EXP_PER_PYROXENE * max(exp_curve.sample(float(i) / 100.0), 1.0)
+	return int(round(total))
+
 func count_max_exp():
-	for i in range(1, 100):
-		max_exp += 200 * max(exp_curve.sample(i / 100.0), 1)
+	max_exp = _total_exp_to_lv(100)
+
+func get_upgrade_max_stones() -> int:
+	if now_support == null or now_support.support_id == "null" or now_lv <= 0:
+		return 0
+	var remaining = max_exp - now_exp
+	if remaining <= 0:
+		return 0 if now_lv >= now_support.max_lv else 1
+	return int(ceil(float(remaining) / float(EXP_PER_PYROXENE)))
 
 func emit_support_lv_up(lv: int):
 	support_lv_up.emit(lv)
@@ -86,6 +102,7 @@ func add_new_data(support_card: SupportCard):
 			"LV": 1,
 			"exp": 0
 		}
+		Game.save_playerdata()
 
 func save_data():
 	if now_support.support_id == "null":
@@ -155,13 +172,8 @@ func count_exp():
 		return
 	
 	if now_lv > 0:
-		var last_exp = 0
-		if now_lv == 1:
-			last_exp = 0
-		else:
-			for i in range(1, now_lv):
-				last_exp += 200 * max(exp_curve.sample(i / 100.0), 1)
-		next_exp = 200 * max(exp_curve.sample(now_lv / 100.0), 1)
+		var last_exp: int = _total_exp_to_lv(now_lv)
+		next_exp = _total_exp_to_lv(now_lv + 1) - last_exp
 		now_count_exp = now_exp - last_exp
 		now_count_ability = now_support.pa_value.sample(now_lv / 100.0)
 		ex_cost = now_support.ex_cost

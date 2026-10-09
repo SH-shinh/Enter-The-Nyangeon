@@ -1,6 +1,5 @@
-[gd_resource type="Resource" script_class="CharacterCard" load_steps=5 format=3 uid="uid://qmlghvpdgb55"]
+[gd_resource type="Resource" script_class="CharacterCard" load_steps=4 format=3 uid="uid://qmlghvpdgb55"]
 
-[ext_resource type="Texture2D" uid="uid://cll7qvtayxx38" path="res://sprites/player/mashiro/mashiro_picture.png" id="1_qd0p7"]
 [ext_resource type="Texture2D" uid="uid://cbjlpvdao7j88" path="res://ui/school/TRINITY_icon.png" id="2_ab7oy"]
 [ext_resource type="Script" path="res://resources/shop/character/character_card.gd" id="3_vi3qr"]
 [ext_resource type="Texture2D" uid="uid://cx8itc7xr021t" path="res://ui/weapon/SR_icon.png" id="4_qnfgk"]
@@ -10,7 +9,7 @@ script = ExtResource("3_vi3qr")
 cost = 6
 name_1 = "SHIZUYAMA"
 name_2 = "MASHIRO"
-character_sprite = ExtResource("1_qd0p7")
+character_sprite_path = "res://sprites/player/mashiro/mashiro_picture.png"
 weapon_name = "MANIFESTATION JUSTICE"
 weapon_type_name = "SR"
 weapon_icon = ExtResource("4_qnfgk")

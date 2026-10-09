@@ -1,39 +1,39 @@
-extends CharacterBody2D
+class_name SummonedBullet
+extends HitBox
 
-signal enemy_body_get(body: Node)
 signal in_idle
 
 @export var pool_id: String = "normal_bullet"
 @export var can_r: bool = false
 @export var r_speed: int = 50
 @export var has_line: bool = false
+
 var acceleration: Vector2 = Vector2.ZERO
 var target_position: Vector2
 
 @onready var bullet_smoke: PackedScene = preload("res://scenes/bullet/bullet_smoke_2.tscn")
-@onready var area_2d = $Area2D
-@onready var collision_shape_2d = $Area2D/CollisionShape2D
-@onready var collision_shape_2d_2 = $Area2D/CollisionShape2D
+@onready var collision_shape_2d = $CollisionShape2D
+@onready var ray_cast_2d = $RayCast2D
 
 var penetrate: int = 1 #穿透值
 var direction: Vector2 = Vector2.RIGHT
-var speed: int = 300
+var speed: int = 300:
+	set(v):
+		speed = v
+		_refresh_ray_length()
 var collision_num: int = 0 #反弹次数
-var bullet_damage: int = 0
-var bullet_knockback: int = 0
-var append_damage: int = 0 #追加伤害
 var kill_time: int = 110
-var is_critical: bool = false
-var is_summoned_shoot: bool = false
 var is_ready: bool = false
 var line: Line2D
 var line_2: Line2D
+
+var velocity: Vector2
 
 var is_player_shoot: bool = false
 
 var is_idle: int = 1
 
-var cd_time: int = 0
+var _shape_gen: int = 0
 
 var player: Node
 
@@ -42,6 +42,8 @@ func _ready():
 	direction = Vector2.RIGHT.rotated(global_rotation)
 	velocity = direction * speed
 	PoolManager.add_pool(pool_id,self)
+	manages_own_hits = true
+	_setup_self_hits()
 	if has_line:
 		line = $Line
 		line_2 = $Line2
@@ -55,14 +57,18 @@ func _ready():
 	is_on_ready()
 
 func idle_state():
+	if is_idle == 0:
+		ExtensionHooks.notify(ExtensionHooks.on_projectile_despawned, [self])
 	is_idle = 1
+	set_physics_process(false)
 	if GameEvents.global_time_count.is_connected(_on_bullet_kill_timer_timeout):
 		GameEvents.global_time_count.disconnect(_on_bullet_kill_timer_timeout)
+	_clear_self_hits()
+	_request_shape_disabled(true)
 	in_idle.emit()
-	is_critical = false
-	is_summoned_shoot = false
 	can_r = false
 	target_position = Vector2.ZERO
+	ray_cast_2d.enabled = false
 	self.visible = false
 	self.global_position = Vector2.ZERO
 	self.velocity = Vector2.ZERO
@@ -81,9 +87,15 @@ func active_state():
 		return
 	
 	is_idle = 0
+	set_physics_process(true)
+	acceleration = Vector2.ZERO
+	_clear_self_hits()
 	if !GameEvents.global_time_count.is_connected(_on_bullet_kill_timer_timeout):
 		GameEvents.global_time_count.connect(_on_bullet_kill_timer_timeout)
 	direction = Vector2.RIGHT.rotated(global_rotation)
+	rotation = direction.angle()
+	ray_cast_2d.enabled = true
+	_request_shape_disabled(false)
 	self.velocity = direction * speed
 	self.visible = true
 	if has_line:
@@ -98,35 +110,55 @@ func active_state():
 		line.update_width()
 		line_2.update_width()
 
+func apply_penetrate_dealt():
+	var cb: Callable = func(victim: Node, _actual_damage: float):
+		damage_data.knockback_direction = (victim.global_position - player.global_position).normalized()
+		bulletSmoke(global_position)
+		penetrate -= victim.stats.penetrate_resis
+		if penetrate <= 0:
+			if collision_num > 0:
+				direction = Vector2.RIGHT.rotated(global_rotation + randf_range(0.7, 1.3) * PI)
+				velocity = direction * speed
+				collision_num -= 1
+			else:
+				GameEvents.emit_summoned_bullet_free_position(self.global_position)
+				idle_state()
+	damage_data.on_damage_dealt.append(cb)
+
 func _physics_process(delta):
 	
 	if is_idle == 1:
 		return
 	
+	_tick_self_hits(delta)
 	
-	var collisionResult = get_last_slide_collision()
-	if collisionResult :
-		if collision_num > 0:
-			collision_num -= 1
-			velocity = velocity.bounce(collisionResult.get_normal())
-			close_shape_2()
-		
-		else:
-			bulletSmoke(collisionResult)
-			GameEvents.emit_summoned_bullet_free_position(self.global_position)
-			idle_state()
+	if ray_cast_2d.is_colliding():
+		var collider = ray_cast_2d.get_collider()
+		if collider.is_in_group("BulletWall"):
+			var collision_position: Vector2 = ray_cast_2d.get_collision_point()
+			global_position = collision_position
+			if collision_num > 0:
+				collision_num -= 1
+				velocity = IsoProjection.bounce(velocity, ray_cast_2d.get_collision_normal())
+				rotation = velocity.angle()
+			
+			else:
+				bulletSmoke(collision_position)
+				GameEvents.emit_summoned_bullet_free_position(self.global_position)
+				idle_state()
 	
 	if can_r == true:
 		r_move(delta)
 	
-	move_and_slide()
-	rotation = velocity.normalized().angle()
+	global_position += velocity * delta
 
 func r_move(delta: float):
-	direction = (target_position - self.global_position).normalized() * speed
-	acceleration += (direction - velocity).normalized() * r_speed
+	direction = (target_position - self.global_position).normalized()
+	acceleration += (direction * speed - velocity).normalized() * r_speed
 	velocity += acceleration * delta
 	velocity = velocity.limit_length(speed)
+	if velocity != Vector2.ZERO:
+		rotation = velocity.angle()
 
 func smoke_add():
 	
@@ -137,77 +169,31 @@ func smoke_add():
 	
 	return ins
 
-func bulletSmoke(collisionResult):
+func bulletSmoke(smoke_position: Vector2):
 	var ins = smoke_add()
-	
-	ins.global_position = collisionResult.get_position()
+	ins.global_position = smoke_position
 	ins.scale = self.scale
 	ins.smoke_anim()
 
-func _on_area_2d_body_entered(body):
-	if is_idle == 1:
-		return
-	
-	if body.is_in_group("Enemy"):
-		enemy_body_get.emit(body)
-		var hit_direction = (body.position - player.position).normalized()
-		
-		GameEvents.emit_enemy_body(body,self)
-		if is_summoned_shoot == true:
-			GameEvents.emit_summoned_bullet_hit_enemy(self, body)
-			if is_critical == true:
-				GameEvents.emit_summoned_critical_hit_enemy(body)
-				body.is_critical_hit = true
-		body.hurt_damage = bullet_damage
-		body.hurt_knockback = bullet_knockback
-		body.hurt_direction = hit_direction
-		
-		penetrate = max(0, penetrate - body.stats.penetrate_resis)
-		
-		if body.stats.hp <= bullet_damage:
-			GameEvents.emit_summoned_bullet_kill_enemy(self)
-		
-		var ins = smoke_add()
-		ins.global_position = position
-		ins.scale = self.scale
-		ins.smoke_anim()
-		
-		body.emit_signal("is_hurt")
-		
-		close_shape()
-		
-		if penetrate <= 0:
-			
-			if collision_num > 0:
-				direction = Vector2.RIGHT.rotated(global_rotation + randf_range(0.7, 1.3) * PI)
-				velocity = direction * speed
-				collision_num -= 1
-				close_shape()
-			else:
-				GameEvents.emit_summoned_bullet_free_position(self.global_position)
-				idle_state()
-		
+# speed 变更时同步射线长度：避免“active_state 之后才设 speed”导致穿墙/漏判。
+func _refresh_ray_length() -> void:
+	if ray_cast_2d != null:
+		ray_cast_2d.target_position.x = speed * 0.0167
 
-func time_count():
-	if cd_time > 0:
-		cd_time -= 1
-		if cd_time <= 0:
-			if GameEvents.global_time_count.is_connected(time_count):
-				GameEvents.global_time_count.disconnect(time_count)
-			collision_shape_2d.set_deferred("disabled",false)
-			collision_shape_2d_2.set_deferred("disabled",false)
+# 统一形状启停出口：自增代数并延迟写入，作废同帧残留的旧延迟调用，
+# 避免在物理 query flush 期直接写 Area2D 形状（area_set_shape_disabled 报错）。
+func _request_shape_disabled(value: bool) -> void:
+	_shape_gen += 1
+	call_deferred("_set_shape_disabled_guarded", value, _shape_gen)
 
 func close_shape():
-	collision_shape_2d.set_deferred("disabled",true)
-	cd_time = 1
-	if !GameEvents.global_time_count.is_connected(time_count):
-		GameEvents.global_time_count.connect(time_count)
+	pass
 
-func close_shape_2():
-	collision_shape_2d_2.set_deferred("disabled",true)
-	cd_time = 1
-	if !GameEvents.global_time_count.is_connected(time_count):
-		GameEvents.global_time_count.connect(time_count)
+# gen 校验：作废「命中后回池、又在同帧被复用」时残留的延迟关闭。
+func _set_shape_disabled_guarded(value: bool, gen: int) -> void:
+	if gen != _shape_gen:
+		return
+	collision_shape_2d.disabled = value
 
 func _on_bullet_kill_timer_timeout():
 	if is_idle == 1:

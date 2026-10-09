@@ -1,6 +1,6 @@
-[gd_scene load_steps=12 format=3 uid="uid://bvavqapcuk6kp"]
+[gd_scene format=3 uid="uid://bvavqapcuk6kp"]
 
-[ext_resource type="Script" path="res://scenes/update_item/follow_icon.gd" id="1_q1pxj"]
+[ext_resource type="Script" uid="uid://cgbhjohas2mdv" path="res://scenes/update_item/follow_icon.gd" id="1_q1pxj"]
 [ext_resource type="Texture2D" uid="uid://eythaic0cwcn" path="res://sprites/update_item/ancient_battery_icon.png" id="2_yvvkk"]
 [ext_resource type="PackedScene" uid="uid://b78jo1set8q45" path="res://script/follow.tscn" id="3_1u1op"]
 
@@ -69,7 +69,7 @@ _data = {
 "new_animation": SubResource("Animation_vkygx")
 }
 
-[node name="AncientBatteryIcon" type="CharacterBody2D"]
+[node name="AncientBatteryIcon" type="Node2D"]
 script = ExtResource("1_q1pxj")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]

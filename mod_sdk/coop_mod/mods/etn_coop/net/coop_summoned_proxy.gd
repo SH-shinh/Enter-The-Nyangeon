@@ -26,6 +26,9 @@ var despawn_sent: bool = false
 var _buffer = SnapshotBuffer.new()
 var _last_extrap: bool = false
 
+# 召唤物 box 物理层（project.godot 第 14 层 summoned_box = 8192）
+const SUMMONED_BOX_LAYER: int = 8192
+
 var summoned: Node = null
 var summoned_body: CharacterBody2D = null
 var has_velocity_property: bool = false
@@ -70,7 +73,8 @@ func _on_summoned_tree_exiting() -> void:
 	if despawn_sent or net_id < 0:
 		return
 	despawn_sent = true
-	if multiplayer.multiplayer_peer == null:
+	# 场景拆除（回菜单/切换）时本节点可能已不在树内，multiplayer 为 null，需判空
+	if not is_inside_tree() or multiplayer == null or multiplayer.multiplayer_peer == null:
 		return
 	var coop = CoopNetScript.instance
 	if coop != null and is_instance_valid(coop):
@@ -200,12 +204,42 @@ func _disable_remote_simulation() -> void:
 	summoned.set_process_input(false)
 	summoned.set_process_unhandled_input(false)
 	_disable_damage_nodes(summoned)
+	_enable_melee_detect(summoned)
 	_disable_support_scripts(summoned)
 	var state_machine: Node = summoned.get_node_or_null("StateMachine")
 	if state_machine != null:
 		state_machine.set_physics_process(false)
 	if summoned.get("can_move") != null:
 		summoned.can_move = false
+
+
+# 镜像召唤物的 HurtBox 改为「探测专用」：保留 summoned_box 层 + monitorable，
+# 让本机近战 HitBox 能检测到它（转发击退/升级给拥有者）；monitoring 关掉，
+# 避免镜像本地跑接触/无敌帧逻辑（伤害由 SummonedHealthComponent 顶部闸门接管）。
+func _enable_melee_detect(root: Node) -> void:
+	var hb: Node = _find_own_hurt_box(root)
+	if hb == null:
+		return
+	hb.set_collision_layer(SUMMONED_BOX_LAYER)
+	hb.set_collision_mask(0)
+	hb.set_deferred("monitorable", true)
+	hb.set_deferred("monitoring", false)
+	for shape in hb.find_children("*", "CollisionShape2D", true, false):
+		shape.set_deferred("disabled", false)
+
+
+func _find_own_hurt_box(root: Node) -> Node:
+	for n in root.find_children("*", "Area2D", true, false):
+		if n is HurtBox and n.owner == root:
+			return n
+	return null
+
+
+# 供 CoopNet 在镜像 active_state()（会重开物理/AI/StateMachine）之后再次停用
+func disable_mirror_sim() -> void:
+	if summoned == null or not is_instance_valid(summoned):
+		return
+	_disable_remote_simulation()
 
 
 # 远端镜像上的支援主动（如 kei_as 的 SupportAS）不得参与本机支援逻辑/充能

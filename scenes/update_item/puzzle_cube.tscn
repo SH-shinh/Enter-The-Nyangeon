@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://boj1wiwhn6bva"]
+[gd_scene format=3 uid="uid://boj1wiwhn6bva"]
 
-[ext_resource type="Script" path="res://scenes/update_item/puzzle_cube.gd" id="1_qlai3"]
+[ext_resource type="Script" uid="uid://dxosa7nbg4tep" path="res://scenes/update_item/puzzle_cube.gd" id="1_5fpi8"]
 
-[node name="puzzle_cube" type="Node2D"]
-script = ExtResource("1_qlai3")
+[node name="puzzle_cube" type="Node2D" unique_id=2109878886]
+script = ExtResource("1_5fpi8")

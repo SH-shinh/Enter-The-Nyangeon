@@ -1,10 +1,12 @@
-extends CharacterBody2D
+extends Node2D
 
 var dir: Vector2 = Vector2.ZERO
 
 var speed: float
 var accel: float
 var speed_time: float = 0.1
+
+var velocity: Vector2 = Vector2.ZERO
 
 var follow_mark: Marker2D
 
@@ -34,4 +36,4 @@ func _physics_process(delta):
 	elif velocity.x < 0:
 		sprite_2d.scale.x = -1
 	
-	move_and_slide()
+	global_position += velocity * delta

@@ -4,6 +4,8 @@ extends Node
 @onready var spawn_timer = $SpawnTimer
 
 @export var medical_cd_num: int = 10
+@export var spawn_at_player: bool = false #true 时医疗箱必定生成在玩家脚下（支援 serina）
+@export var spawn_rate_mult: float = 1.0 #生成概率乘区（阈值加成，支援 serina 覆写为 2.0）
 var medical_time_num: int = 0
 var can_spawn: bool = false
 var tilemap = null
@@ -45,6 +47,10 @@ func coin_add():
 	coin_value = 0
 
 func add_medical_kit(spawn_position: Vector2):
+	if ExtensionHooks.intercept(ExtensionHooks.medkit_spawn_gate, [self, spawn_position]):
+		return
+	if spawn_position == Vector2.ZERO and spawn_at_player and player != null:
+		spawn_position = player.global_position
 	if spawn_position == Vector2.ZERO:
 		var ran = RandomNumberGenerator.new()
 		var cells: Array = tilemap.get_used_cells(0)
@@ -53,16 +59,18 @@ func add_medical_kit(spawn_position: Vector2):
 		var ins = medical_kit.instantiate()
 		ins.global_position = rand_position
 		get_tree().get_first_node_in_group("CoinRoot").add_child(ins)
+		ExtensionHooks.notify(ExtensionHooks.on_medkit_spawned, [ins])
 	else:
 		var ins = medical_kit.instantiate()
 		ins.global_position = spawn_position
 		get_tree().get_first_node_in_group("CoinRoot").add_child(ins)
+		ExtensionHooks.notify(ExtensionHooks.on_medkit_spawned, [ins])
 
 func medical_kit_spawn():
 	if can_spawn == false:
 		return
 	if medical_time_num <= 0:
-		if randf_range(0,1000) < player.stats.luck + pick_luck:
+		if randf_range(0,1000) < (player.stats.luck + pick_luck) * spawn_rate_mult:
 			pick_luck = 0
 			add_medical_kit(Vector2.ZERO)
 			medical_time_num = medical_cd_num

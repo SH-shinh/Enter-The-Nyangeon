@@ -1,0 +1,119 @@
+[gd_scene format=3 uid="uid://04atg674fej0"]
+
+[ext_resource type="Script" uid="uid://tfn0oipyb5y" path="res://scenes/update_item/sugar_cube_steam.gd" id="1_steam"]
+[ext_resource type="Texture2D" uid="uid://dhn03ktw4tjrd" path="res://sprites/particle/smoke_sprite_1.png" id="2_ur5d2"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_3ed33"]
+particles_animation = true
+particles_anim_h_frames = 12
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="Gradient" id="Gradient_steam_init"]
+colors = PackedColorArray(0.86, 0.9, 0.95, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_steam_init"]
+gradient = SubResource("Gradient_steam_init")
+
+[sub_resource type="Gradient" id="Gradient_steam_fade"]
+offsets = PackedFloat32Array(0.3, 1)
+colors = PackedColorArray(1, 1, 1, 0.85, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_steam_fade"]
+gradient = SubResource("Gradient_steam_fade")
+
+[sub_resource type="Curve" id="Curve_vgkly"]
+_data = [Vector2(0, 0), 0.0, 4.0404496, 0, 0, Vector2(0.8413794, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_steam_scale"]
+curve = SubResource("Curve_vgkly")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_steam"]
+lifetime_randomness = 0.4
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 8.0
+angle_min = -44.99999
+angle_max = 45.00001
+direction = Vector3(0, -1, 0)
+spread = 180.0
+initial_velocity_min = 30.0
+initial_velocity_max = 120.0
+gravity = Vector3(0, -30, 0)
+damping_min = 20.0
+damping_max = 30.0
+scale_min = 0.4
+scale_max = 0.9
+scale_curve = SubResource("CurveTexture_steam_scale")
+color_ramp = SubResource("GradientTexture1D_steam_fade")
+color_initial_ramp = SubResource("GradientTexture1D_steam_init")
+anim_speed_min = 0.19999999
+anim_speed_max = 0.5
+
+[sub_resource type="Animation" id="Animation_steam_reset"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("GPUParticles2D:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_steam_new"]
+resource_name = "new_animation"
+length = 0.6
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("GPUParticles2D:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.4),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.6),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"idle_state"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_steam"]
+_data = {
+&"RESET": SubResource("Animation_steam_reset"),
+&"new_animation": SubResource("Animation_steam_new")
+}
+
+[node name="SugarCubeSteam" type="Node2D" unique_id=1436298719]
+script = ExtResource("1_steam")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=1660766318]
+material = SubResource("CanvasItemMaterial_3ed33")
+emitting = false
+amount = 14
+texture = ExtResource("2_ur5d2")
+lifetime = 0.6
+one_shot = true
+explosiveness = 1.0
+process_material = SubResource("ParticleProcessMaterial_steam")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=199269474]
+libraries/ = SubResource("AnimationLibrary_steam")

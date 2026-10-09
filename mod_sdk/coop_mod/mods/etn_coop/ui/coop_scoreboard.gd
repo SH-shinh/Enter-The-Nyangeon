@@ -8,10 +8,20 @@ extends CanvasLayer
 const CoopNetScript := preload("res://mods/etn_coop/net/coop_net.gd")
 const RowScene := preload("res://mods/etn_coop/ui/coop_scoreboard_row.tscn")
 const ACTION := "coop_scoreboard"
+const CHAT_GAP: float = 6.0  # 战绩栏与聊天窗之间的最小间隙(px)
+
+# 击杀/金币的缩写阈值：低于阈值显示完整数字，达到/超过才用 K/M/B/T。
+# 按列宽估算（击杀列 60px、金币列 70px，BoutiqueBitmap9x9 @ font_size 8 数字约 4.8px/位）。
+const KILLS_ABBREV_AT := 100000
+const COINS_ABBREV_AT := 1000000
 
 @onready var _rows: VBoxContainer = %Rows
+@onready var _center: Control = $Center
+@onready var _panel: PanelContainer = $Center/Panel
 
 var _sig: String = ""
+var _chat: Node = null
+var _mobile: bool = OS.has_feature("mobile")
 
 
 func _ready() -> void:
@@ -28,12 +38,41 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	var coop = CoopNetScript.instance
-	var show: bool = Input.is_action_pressed(ACTION) \
-			and coop != null and is_instance_valid(coop) and bool(coop.is_lan_game)
+	var active: bool = coop != null and is_instance_valid(coop) and bool(coop.is_lan_game)
+	var show: bool = false
+	if active:
+		if Input.is_action_pressed(ACTION):
+			show = true
+		elif _mobile:
+			# 移动端无 coop_scoreboard 按键：点开聊天（输入态）时一起显示战绩。
+			var chat := _get_chat()
+			show = chat != null and bool(chat.call("is_composing"))
 	if visible != show:
 		visible = show
 	if show:
 		_refresh(coop)
+		_apply_chat_offset()
+	else:
+		offset = Vector2.ZERO
+
+
+func _get_chat() -> Node:
+	if _chat == null or not is_instance_valid(_chat):
+		_chat = get_tree().root.get_node_or_null("CoopChat")
+	return _chat
+
+
+# 聊天窗显示时整层左移，使战绩面板右缘不遮挡聊天窗左缘（双端生效）。
+# 移动距离按两者实际尺寸算：未偏移时面板右缘 - 聊天窗左缘 + 间隙。
+func _apply_chat_offset() -> void:
+	var chat := _get_chat()
+	if chat == null or not bool(chat.call("is_window_visible")):
+		offset = Vector2.ZERO
+		return
+	# 用布局尺寸推未偏移右缘，避免读取受 offset 影响的位置导致反馈增长。
+	var unshifted_right: float = _center.size.x * 0.5 + _panel.size.x * 0.5
+	var crect: Rect2 = chat.call("get_window_rect")
+	offset = Vector2(-maxf(0.0, unshifted_right + CHAT_GAP - crect.position.x), 0.0)
 
 
 func _refresh(coop) -> void:
@@ -53,9 +92,9 @@ func _refresh(coop) -> void:
 		var row = RowScene.instantiate()
 		_rows.add_child(row)
 		_set_text(row, "%Name", str(coop.call("_display_name_for", int(pid))))
-		_set_text(row, "%Kills", _fmt_num(int(d.get("kills", 0))))
+		_set_text(row, "%Kills", _fmt_num(int(d.get("kills", 0)), KILLS_ABBREV_AT))
 		_set_text(row, "%Damage", _fmt_num(int(d.get("damage", 0))))
-		_set_text(row, "%Coins", _fmt_num(int(d.get("coins", 0))))
+		_set_text(row, "%Coins", _fmt_num(int(d.get("coins", 0)), COINS_ABBREV_AT))
 
 
 func _set_text(row: Node, unique_path: String, value: String) -> void:
@@ -64,11 +103,12 @@ func _set_text(row: Node, unique_path: String, value: String) -> void:
 		(n as Label).text = value
 
 
-# 大数缩写：<1000 原样；否则 K/M/B/T（1 位小数、去尾随 .0，含进位保护）
-static func _fmt_num(n: int) -> String:
+# 大数缩写：<abbrev_at 原样；否则 K/M/B/T（1 位小数、去尾随 .0，含进位保护）
+# 默认阈值 1000（伤害沿用）；击杀/金币传入更高阈值。
+static func _fmt_num(n: int, abbrev_at: int = 1000) -> String:
 	if n < 0:
 		n = 0
-	if n < 1000:
+	if n < abbrev_at:
 		return str(n)
 	var units: Array[String] = ["K", "M", "B", "T"]
 	var v: float = float(n)

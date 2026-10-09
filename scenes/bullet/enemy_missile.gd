@@ -20,7 +20,7 @@ func render_sprites():
 		add_child(next_sprite)
 	texture = null
 
-func _physics_process(delta):
+func _physics_process(_delta):
 	if rotate_sprites:
 		for sprite in get_children():
 			sprite.rotation = v

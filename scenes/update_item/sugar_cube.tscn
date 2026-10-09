@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://cemtvpj6qbrn1"]
+
+[ext_resource type="Script" uid="uid://cxl57ywfr4enr" path="res://scenes/update_item/sugar_cube.gd" id="1_sugarcube"]
+
+[node name="sugar_cube" type="Node2D" unique_id=870336854]
+script = ExtResource("1_sugarcube")

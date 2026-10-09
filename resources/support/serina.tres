@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="SupportCard" format=3 uid="uid://dw3tjw6r82qlr"]
+
+[ext_resource type="Texture2D" uid="uid://bpjl66bj27fkk" path="res://sprites/player_support/serina/serina_picture_halo.png" id="1_halo"]
+[ext_resource type="AudioStream" uid="uid://bkplrqgmnaoet" path="res://sounds/voice/serina/Serina_ExSkill_Level_1.ogg" id="3_8my3a"]
+[ext_resource type="Texture2D" uid="uid://dm2jqck1klx08" path="res://sprites/player_support/serina/tactical_therapy.png" id="3_icon"]
+[ext_resource type="AudioStream" uid="uid://bl8njbus8dg5c" path="res://sounds/voice/serina/Serina_ExSkill_2.ogg" id="4_6fed3"]
+[ext_resource type="Script" uid="uid://cfk5elvy16xk6" path="res://resources/support/support_card.gd" id="4_script"]
+[ext_resource type="AudioStream" uid="uid://db02ka3gtruit" path="res://sounds/voice/serina/Serina_ExSkill_Level_3.ogg" id="5_mivg7"]
+[ext_resource type="PackedScene" uid="uid://cs3neavnkxtnq" path="res://scenes/player_support/serina/serina.tscn" id="5_pack"]
+[ext_resource type="AudioStream" uid="uid://hw1t5108hp3l" path="res://sounds/voice/serina/Serina_Growup_1.ogg" id="6_jiw4l"]
+[ext_resource type="AudioStream" uid="uid://dgddsxhskyr8i" path="res://sounds/voice/serina/Serina_Growup_2.ogg" id="7_eii26"]
+[ext_resource type="AudioStream" uid="uid://chh1ngvbd68u7" path="res://sounds/voice/serina/Serina_Growup_3.ogg" id="8_qbnsa"]
+[ext_resource type="AudioStream" uid="uid://fx0pn181ks4i" path="res://sounds/voice/serina/Serina_Growup_4.ogg" id="9_qja5k"]
+
+[sub_resource type="Curve" id="Curve_serina"]
+_limits = [0.01, 0.5, 0.0, 1.0]
+_data = [Vector2(0, 0.01), 0.0, 0.75, 0, 0, Vector2(1, 0.5), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[resource]
+script = ExtResource("4_script")
+character_sprite_path = "res://sprites/player_support/serina/serina_picture.png"
+character_halo = ExtResource("1_halo")
+weapon_icon = ExtResource("3_icon")
+support_id = "serina"
+support_name = "SUMI SERINA"
+support_name2 = "SERINA"
+weapon_name = "TACTICAL THERAPY"
+ex_cost = 60
+pa_ability = "player_heal_mult"
+ability_id = "heal_mult_add"
+pa_value = SubResource("Curve_serina")
+support_pack = ExtResource("5_pack")
+ex_voice = Array[AudioStream]([ExtResource("3_8my3a"), ExtResource("4_6fed3"), ExtResource("5_mivg7")])
+lv_voice = Array[AudioStream]([ExtResource("6_jiw4l"), ExtResource("7_eii26"), ExtResource("8_qbnsa"), ExtResource("9_qja5k")])

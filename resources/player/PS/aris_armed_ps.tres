@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PSCard" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/player/PS/ps_card.gd" id="1_ps"]
+[ext_resource type="Texture2D" path="res://sprites/weapon/Supernova_Abi_Eshuhs_Sword_of_Light.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_ps")
+weapon_icon = ExtResource("2_icon")
+t_level = Array[String](["普通射击命中敌人回复1点能量。", "能量条上限+25，待机能量回复+5/秒。", "能量条上限+50，待机能量回复+10/秒。", "能量条上限+75，待机能量回复+15/秒。"])

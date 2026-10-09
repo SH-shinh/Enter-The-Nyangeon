@@ -1,26 +1,14 @@
-extends Node2D
+extends EquipItem
 
-var num: int
 var kill_num: int = 0
 
-func _ready():
-	first_activation()
-	GameEvents.ability_upgrade_added.connect(on_upgrade_added)
-	GameEvents.enemy_dead_hurt_damage.connect(kill_num_count)
-
-func first_activation():
+func _on_equip():
 	PlayerData.max_hp_add += 5
-	PlayerData.update_player_ability()
-	
 
-func on_upgrade_added(upgrade: AbilityUpgrade, current_upgrade: Dictionary):
-	if upgrade.id != "chill_cake":
-		return
-	if current_upgrade["chill_cake"]["quantity"] == 1:
-		return
-	num = current_upgrade["chill_cake"]["quantity"]
+func _setup():
+	GameEvents.enemy_damage_taken_dead.connect(kill_num_count)
 
-func kill_num_count(_hurt_damage: int):
+func kill_num_count(_final_damage: int, _damage_data: DamageData, _body_path: NodePath):
 	kill_num += 1
 	if kill_num >= 80:
 		kill_num = 0

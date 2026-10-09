@@ -21,13 +21,19 @@ var shoot_cd_max = 25
 
 var attack_type: int = 1
 
+# 防止 is_dead 与状态机 DEAD 双路触发导致重复结算
+var _dead_started: bool = false
+
 func active_state():
+	_dead_started = false
 	await get_tree().create_timer(0.1).timeout
 	update_tower()
 	count_max_hp()
 	boss_enter_anim()
-	stats.hp_changed.connect(count_hp)
-	GameEvents.global_time_count.connect(time_count)
+	if not stats.hp_changed.is_connected(count_hp):
+		stats.hp_changed.connect(count_hp)
+	if not GameEvents.global_time_count.is_connected(time_count):
+		GameEvents.global_time_count.connect(time_count)
 
 func count_hp():
 	if stats.hp <= stats.max_hp * 0.5:
@@ -51,13 +57,26 @@ func stop_shoot():
 	for i in tower_group:
 		i.can_shoot = false
 
-func attack_state(type: int):
+func attack_state(_type: int):
 	shoot_time = shoot_time_max
 	match attack_type:
 		1:
 			attack_type_1()
 		2:
 			attack_type_2()
+	# 激光塔开火时，窗口自动抬升以覆盖其完整生命周期（预警+出光+淡出），
+	# 让激光只受自身 life_time 约束；非激光攻击仍维持 shoot_time_max。
+	shoot_time = max(shoot_time, _active_attack_ticks())
+
+func _active_attack_ticks() -> int:
+	var t: int = shoot_time_max
+	for tower in tower_group:
+		if tower == null or not is_instance_valid(tower) or not tower.can_shoot:
+			continue
+		for launcher in tower.launcher_pool_1:
+			if launcher != null and is_instance_valid(launcher):
+				t = max(t, launcher.total_active_ticks())
+	return t
 
 func attack_type_1():
 	var rand_group: Array
@@ -76,7 +95,8 @@ func attack_type_2():
 func update_tower():
 	tower_group = [tower_1, tower_2, tower_3]
 	for i in tower_group:
-		i.stats.hp_changed.connect(count_now_hp)
+		if not i.stats.hp_changed.is_connected(count_now_hp):
+			i.stats.hp_changed.connect(count_now_hp)
 		i.stats.max_hp_mult = stats.max_hp_mult
 		i.stats.Enemy_damage_mult = stats.Enemy_damage_mult
 		i.stats.Enemy_bullet_damage_mult = stats.Enemy_bullet_damage_mult
@@ -84,20 +104,33 @@ func update_tower():
 		i.active_state()
 
 func boss_dead(tower: ErosionTower):
+	# 聚合血量依赖子塔 hp_changed 时序；结算前强制重算，且只结算一次
+	count_now_hp()
+	if _dead_started:
+		return
 	if stats.hp <= 0:
+		_dead_started = true
 		GameEvents.emit_boss_round_end()
 		tower.animation_player_1.process_mode = Node.PROCESS_MODE_ALWAYS
 		tower.animation_player_2.process_mode = Node.PROCESS_MODE_ALWAYS
 		tower.animation_player_3.process_mode = Node.PROCESS_MODE_ALWAYS
 		animation_player.play("death_anim")
+		# 镜像只播动画，不做相机/暂停演出
+		if has_meta("network_remote_enemy"):
+			self.visible = false
+			for i in tower_group:
+				i.idle_state.call_deferred()
+			return
 		camera_marker.position = tower.position + Vector2(0, -64)
 		GameEvents.emit_camera_move(camera_marker, true)
 		GameEvents.emit_ui_visible(false)
+		GameEvents.emit_pause_lock(true)
 		get_tree().paused = true
 		await animation_player.animation_finished
 		GameEvents.emit_camera_reset()
 		GameEvents.emit_ui_visible(true)
 		get_tree().paused = false
+		GameEvents.emit_pause_lock(false)
 		GameEvents.emit_enemy_dead_position(self.global_position)
 		self.visible = false
 		for i in tower_group:
@@ -105,12 +138,17 @@ func boss_dead(tower: ErosionTower):
 
 func boss_enter_anim():
 	for i in tower_group:
-		i.tower_dead.connect(boss_dead)
+		if not i.tower_dead.is_connected(boss_dead):
+			i.tower_dead.connect(boss_dead)
 		i.animation_player_3.process_mode = Node.PROCESS_MODE_ALWAYS
 		i.animation_player_3.play("enter_anim")
+	self.visible = true
+	# 镜像只播动画，不做相机/暂停演出（否则镜像本地 pause 整棵树）
+	if has_meta("network_remote_enemy"):
+		return
 	GameEvents.emit_camera_move(camera_marker, true)
 	GameEvents.emit_ui_visible(false)
-	self.visible = true
+	GameEvents.emit_pause_lock(true)
 	get_tree().paused = true
 	await tower_1.animation_player_3.animation_finished
 	for i in tower_group:
@@ -118,6 +156,7 @@ func boss_enter_anim():
 	GameEvents.emit_camera_reset()
 	GameEvents.emit_ui_visible(true)
 	get_tree().paused = false
+	GameEvents.emit_pause_lock(false)
 	attack_state(attack_type)
 
 func count_now_hp():

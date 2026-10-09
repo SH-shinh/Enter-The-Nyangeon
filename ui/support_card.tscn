@@ -1,6 +1,5 @@
-[gd_scene load_steps=13 format=3 uid="uid://dqh12dynptucj"]
+[gd_scene load_steps=12 format=3 uid="uid://dqh12dynptucj"]
 
-[ext_resource type="Texture2D" uid="uid://dukre71u1l6r7" path="res://sprites/player_support/kei/kei_picture.png" id="1_kcjq6"]
 [ext_resource type="Script" path="res://ui/support_card.gd" id="1_sib48"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_abf18"]
@@ -142,7 +141,6 @@ color = Color(0.223529, 0.223529, 0.223529, 1)
 texture_filter = 2
 position = Vector2(19, 74)
 scale = Vector2(0.2, 0.2)
-texture = ExtResource("1_kcjq6")
 flip_h = true
 hframes = 4
 

@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://4nlgukfmyd6h"]
+[gd_scene format=3 uid="uid://4nlgukfmyd6h"]
 
-[ext_resource type="Script" path="res://scenes/update_item/voodoo_doll.gd" id="1_e5lop"]
+[ext_resource type="Script" uid="uid://djmnp718ef5gw" path="res://scenes/update_item/voodoo_doll.gd" id="1_e5lop"]
 
 [node name="voodoo_doll" type="Node2D"]
 script = ExtResource("1_e5lop")

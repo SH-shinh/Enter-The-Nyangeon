@@ -1,4 +1,4 @@
-extends CharacterBody2D
+extends HitBox
 
 var dir: Vector2
 var dir2: Vector2
@@ -25,6 +25,7 @@ var is_idle: int = 1
 var is_ready: bool = false
 
 var target: Vector2 = Vector2.ZERO
+var velocity: Vector2
 
 @export var r_speed: int = 80
 @export var pool_id: String = "shiro_missile"
@@ -42,13 +43,29 @@ func _ready():
 	velocity = dir_v * speed
 	PoolManager.add_pool(pool_id,self)
 	is_on_ready()
+	area_entered.connect(_on_hit_box_area_entered)
 
 func is_on_ready():
 	is_ready = true
 	active_state()
 
 func idle_state():
+	if is_idle == 0:
+		ExtensionHooks.notify(ExtensionHooks.on_projectile_despawned, [self])
 	add_explosion()
+	is_idle = 1
+	if GameEvents.global_time_count.is_connected(time_count):
+		GameEvents.global_time_count.disconnect(time_count)
+	is_critical = false
+	gpu_particles_2d.emitting = false
+	enemy_body.clear()
+	target = Vector2.ZERO
+	self.visible = false
+	self.global_position = Vector2.ZERO
+	self.velocity = Vector2.ZERO
+
+# 远端纯视觉克隆专用销毁：复位但不生成爆炸（爆炸由拥有者广播，走特效通道，避免重复）
+func visual_idle_state():
 	is_idle = 1
 	if GameEvents.global_time_count.is_connected(time_count):
 		GameEvents.global_time_count.disconnect(time_count)
@@ -66,6 +83,7 @@ func active_state():
 		return
 	
 	is_idle = 0
+	acceleration = Vector2.ZERO
 	if !GameEvents.global_time_count.is_connected(time_count):
 		GameEvents.global_time_count.connect(time_count)
 	dir_v = Vector2.RIGHT.rotated(global_rotation)
@@ -102,57 +120,55 @@ func _physics_process(delta):
 		velocity += acceleration * delta
 	velocity = velocity.limit_length(speed)
 	
-	move_and_slide()
-	
+	global_position += velocity * delta
 	missile.v = velocity.normalized().angle()
 
 func sort_enemy():
 	if enemy_body.size() != 0:
+		for i in range(enemy_body.size() - 1, -1, -1):
+			if enemy_body[i] == null or not is_instance_valid(enemy_body[i]):
+				enemy_body.remove_at(i)
 		enemy_body.sort_custom(
 			func(x, y):
 				return x.global_position.distance_to(self.global_position) < y.global_position.distance_to(self.global_position)
 		)
 
-func _on_hit_box_body_entered(body):
+func _on_hit_box_area_entered(hurt_box: Area2D):
 	
 	if is_idle == 1:
 		return
 	
-	if body.is_in_group("Enemy"):
-		
-		#add_explosion()
-		
-		GameEvents.call_deferred("emit_equip_hit_enemy", body, self)
+	if hurt_box is HurtBox:
 		idle_state.call_deferred()
 
 func add_explosion():
-	var ins = PoolManager.get_pool("player_explosion")
-	var add_ins: bool = false
-	if ins == null or ins.is_idle == 0:
-		ins = missile_explosion.instantiate()
-		add_ins = true
-	
-	ins.global_position = marker_2d.global_position
-	ins.explosion_damage = equip_damage
-	ins.explosion_knockback = equip_knockback
-	ins.explosion_range = explosion_range
-	ins.is_critical = is_critical
-	ins.is_equip_shoot = true
-	
-	ins.active_state()
-	if add_ins == true:
-		get_tree().get_first_node_in_group("BulletRoot").call_deferred("add_child",ins)
-	
-	ins.is_explosion.call_deferred()
+	ProjectileSpawner.spawn_core(
+		missile_explosion, "player_explosion", "BulletRoot", self, Faction.PLAYER_SIDE,
+		marker_2d.global_position, 0.0, Vector2.ZERO,
+		false, true, true,
+		Callable(self, "_configure_explosion"),
+		Callable(),
+		Callable(self, "_post_explosion")
+	)
+
+func _configure_explosion(node: Node) -> void:
+	node.damage_data = damage_data.duplicate(true)
+	node.explosion_range = explosion_range
+
+func _post_explosion(node: Node) -> void:
+	node.is_explosion()
 
 func _on_track_box_body_entered(body):
 	if body.is_in_group("Enemy"):
 		enemy_body.append(body)
 	sort_enemy()
-	target = enemy_body[0].global_position
+	if not enemy_body.is_empty() and is_instance_valid(enemy_body[0]):
+		target = enemy_body[0].global_position
 	close_shape()
 
 func _on_track_box_body_exited(body):
+	if body == null or not is_instance_valid(body):
+		return
 	if body.is_in_group("Enemy")  and enemy_body.has(body):
 		enemy_body.remove_at(enemy_body.find(body))
 	sort_enemy()

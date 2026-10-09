@@ -1,6 +1,5 @@
-[gd_resource type="Resource" script_class="CharacterCard" load_steps=5 format=3 uid="uid://dlnu1vbup6xo5"]
+[gd_resource type="Resource" script_class="CharacterCard" load_steps=4 format=3 uid="uid://dlnu1vbup6xo5"]
 
-[ext_resource type="Texture2D" uid="uid://dhvm7i37msrpi" path="res://sprites/player/hasumi/hasumi_picture.png" id="1_t2vle"]
 [ext_resource type="Texture2D" uid="uid://cbjlpvdao7j88" path="res://ui/school/TRINITY_icon.png" id="2_3bdp8"]
 [ext_resource type="Script" path="res://resources/shop/character/character_card.gd" id="3_b5xdu"]
 [ext_resource type="Texture2D" uid="uid://cx8itc7xr021t" path="res://ui/weapon/SR_icon.png" id="4_ccmin"]
@@ -10,7 +9,7 @@ script = ExtResource("3_b5xdu")
 cost = 6
 name_1 = "HANEKAWA"
 name_2 = "HASUMI"
-character_sprite = ExtResource("1_t2vle")
+character_sprite_path = "res://sprites/player/hasumi/hasumi_picture.png"
 weapon_name = "IMPALEMENT"
 weapon_type_name = "SR"
 weapon_icon = ExtResource("4_ccmin")

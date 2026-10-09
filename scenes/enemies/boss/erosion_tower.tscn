@@ -1,13 +1,13 @@
-[gd_scene load_steps=55 format=3 uid="uid://dehu7mvw1ir6b"]
+[gd_scene format=3 uid="uid://dehu7mvw1ir6b"]
 
 [ext_resource type="Texture2D" uid="uid://dahko8vp10m28" path="res://sprites/enemies/erosion_tower.png" id="1_l02we"]
-[ext_resource type="Script" path="res://scenes/enemies/boss/erosion_tower.gd" id="1_pq7u7"]
-[ext_resource type="Shader" path="res://shaders/screen_outline.gdshader" id="2_a78i6"]
-[ext_resource type="Shader" path="res://shaders/ripple.gdshader" id="2_hqljs"]
+[ext_resource type="Script" uid="uid://b0jrfd3n6osbn" path="res://scenes/enemies/boss/erosion_tower.gd" id="1_pq7u7"]
+[ext_resource type="Shader" uid="uid://cmu3hnm13h23n" path="res://shaders/screen_outline.gdshader" id="2_a78i6"]
+[ext_resource type="Shader" uid="uid://rry417ngh5r8" path="res://shaders/ripple.gdshader" id="2_hqljs"]
 [ext_resource type="Resource" uid="uid://cn7dwpiy4cj0n" path="res://resources/buff/enemy_buff/defense_buff.tres" id="2_plb8c"]
 [ext_resource type="PackedScene" uid="uid://bdo12rjvieur7" path="res://scenes/shadow/shadow.tscn" id="2_t64ec"]
-[ext_resource type="Script" path="res://script/EnemyStats.gd" id="3_fb04k"]
-[ext_resource type="Script" path="res://script/EnemyStateMachine.gd" id="4_s8x44"]
+[ext_resource type="Script" uid="uid://b36s5d5e3v3h4" path="res://script/EnemyStats.gd" id="3_fb04k"]
+[ext_resource type="Script" uid="uid://b8e2jlmuhbtm5" path="res://script/EnemyStateMachine.gd" id="4_s8x44"]
 [ext_resource type="AudioStream" uid="uid://ct011bmyfjnsb" path="res://sounds/flamethrower.wav" id="5_val63"]
 [ext_resource type="AudioStream" uid="uid://cjt6o0owarrg" path="res://sounds/mobile_suit1.wav" id="6_csg4x"]
 [ext_resource type="PackedScene" uid="uid://u30xiq6ajqci" path="res://scenes/bullet/launcher/laser_launcher.tscn" id="7_g5dcy"]
@@ -15,13 +15,15 @@
 [ext_resource type="PackedScene" uid="uid://mtusmj2be5ae" path="res://scenes/bullet/launcher/static_bullet_1.tscn" id="8_kssfk"]
 [ext_resource type="PackedScene" uid="uid://dcixivms2uc75" path="res://script/enemy_hurt_floating_text.tscn" id="9_2xpei"]
 [ext_resource type="PackedScene" uid="uid://dicoj2g1eo667" path="res://scenes/bullet/launcher/enemy_spawn_launcher.tscn" id="9_vngcc"]
-[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="10_65n73"]
-[ext_resource type="Script" path="res://scenes/enemies/boss/lock_hp.gd" id="10_or2yj"]
+[ext_resource type="Script" uid="uid://c2yv0iuw6g8oh" path="res://resources/enemy/enemy.gd" id="10_65n73"]
+[ext_resource type="Script" uid="uid://r63pwqh87b5q" path="res://scenes/enemies/boss/lock_hp.gd" id="10_or2yj"]
 [ext_resource type="Resource" uid="uid://bo5aojm81wiil" path="res://resources/enemy/enhanced_sweeper.tres" id="11_v74eu"]
 [ext_resource type="Resource" uid="uid://dwgipm2sx68ue" path="res://resources/enemy/tester_automaton_rl.tres" id="12_vo08q"]
 [ext_resource type="Resource" uid="uid://1wrnoropoerp" path="res://resources/enemy/tester_automaton_shield.tres" id="13_fk6rq"]
 [ext_resource type="Texture2D" uid="uid://ccv20w8histyb" path="res://sprites/particle/explosion_0001.png" id="21_pobol"]
 [ext_resource type="AudioStream" uid="uid://bpb8yo6cu206y" path="res://sounds/game_explosion.wav" id="22_d3aca"]
+[ext_resource type="Script" uid="uid://cgyde7ws002vo" path="res://script/health_component.gd" id="23_bc6mi"]
+[ext_resource type="Script" uid="uid://cog8pvonoqtxu" path="res://script/hurt_box.gd" id="24_1ka41"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_5ebmp"]
 blend_mode = 1
@@ -65,6 +67,7 @@ shader = ExtResource("2_a78i6")
 shader_parameter/outline_width = 0.0
 shader_parameter/outline_color = Color(1, 1, 1, 1)
 shader_parameter/flash_opacity = 0.0
+shader_parameter/design_size = Vector2(640, 360)
 
 [sub_resource type="Animation" id="Animation_16yq3"]
 length = 0.001
@@ -100,8 +103,8 @@ tracks/0/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_nwfrb"]
 _data = {
-"RESET": SubResource("Animation_16yq3"),
-"attack_anim": SubResource("Animation_itsvp")
+&"RESET": SubResource("Animation_16yq3"),
+&"attack_anim": SubResource("Animation_itsvp")
 }
 
 [sub_resource type="Animation" id="Animation_uvsqd"]
@@ -157,9 +160,9 @@ tracks/0/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_7gslm"]
 _data = {
-"RESET": SubResource("Animation_uvsqd"),
-"dead": SubResource("Animation_glpnq"),
-"idle": SubResource("Animation_v6lwf")
+&"RESET": SubResource("Animation_uvsqd"),
+&"dead": SubResource("Animation_glpnq"),
+&"idle": SubResource("Animation_v6lwf")
 }
 
 [sub_resource type="Animation" id="Animation_v5p20"]
@@ -1194,12 +1197,12 @@ tracks/11/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_rq8e4"]
 _data = {
-"RESET": SubResource("Animation_v5p20"),
-"attack_anim": SubResource("Animation_nvqmh"),
-"dead": SubResource("Animation_jf3wp"),
-"defense_mod": SubResource("Animation_3w4ib"),
-"enter_anim": SubResource("Animation_w3agu"),
-"idle": SubResource("Animation_o6ghw")
+&"RESET": SubResource("Animation_v5p20"),
+&"attack_anim": SubResource("Animation_nvqmh"),
+&"dead": SubResource("Animation_jf3wp"),
+&"defense_mod": SubResource("Animation_3w4ib"),
+&"enter_anim": SubResource("Animation_w3agu"),
+&"idle": SubResource("Animation_o6ghw")
 }
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_onemw"]
@@ -1358,12 +1361,12 @@ tracks/4/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_rjo8i"]
 _data = {
-"RESET": SubResource("Animation_fvojt"),
-"defense_shield_anim": SubResource("Animation_lx0r2")
+&"RESET": SubResource("Animation_fvojt"),
+&"defense_shield_anim": SubResource("Animation_lx0r2")
 }
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_tlihc"]
-size = Vector2(51, 80)
+size = Vector2(51, 41)
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_xnowk"]
 particles_animation = true
@@ -1383,7 +1386,13 @@ scale_min = 0.5
 anim_speed_min = 1.0
 anim_speed_max = 1.0
 
-[node name="ErosionTower" type="CharacterBody2D" node_paths=PackedStringArray("launcher_pool_1", "stats", "sprite_2d", "graphics", "collision_shape_2d", "enemy_buff_manager") groups=["BOSS", "Enemy"]]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wkqv1"]
+size = Vector2(66, 128)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_soft_erosion"]
+radius = 65.0
+
+[node name="ErosionTower" type="CharacterBody2D" unique_id=1315271021 node_paths=PackedStringArray("launcher_pool_1", "stats", "sprite_2d", "graphics", "collision_shape_2d", "enemy_buff_manager") groups=["BOSS", "Enemy"]]
 collision_layer = 8
 collision_mask = 256
 motion_mode = 1
@@ -1400,62 +1409,60 @@ graphics = NodePath("Graphics")
 collision_shape_2d = NodePath("CollisionShape2D")
 enemy_buff_manager = NodePath("EnemyBuffManager")
 
-[node name="Sprite2D" parent="." instance=ExtResource("2_t64ec")]
+[node name="Sprite2D" parent="." unique_id=1087871424 instance=ExtResource("2_t64ec")]
 scale = Vector2(1.3, 1.3)
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=401121373]
 process_mode = 3
 material = SubResource("CanvasItemMaterial_5ebmp")
 position = Vector2(0, -100)
 emitting = false
 amount = 20
-process_material = SubResource("ParticleProcessMaterial_a33ex")
 lifetime = 0.2
+process_material = SubResource("ParticleProcessMaterial_a33ex")
 
-[node name="Graphics" type="CanvasGroup" parent="."]
+[node name="Graphics" type="CanvasGroup" parent="." unique_id=1359748873]
 material = SubResource("ShaderMaterial_3qc73")
 
-[node name="Sprite2D5" type="Sprite2D" parent="Graphics"]
+[node name="Sprite2D5" type="Sprite2D" parent="Graphics" unique_id=1985248033]
 position = Vector2(0, -60)
 texture = ExtResource("1_l02we")
 hframes = 8
 vframes = 3
 frame = 4
 
-[node name="Sprite2D2" type="Sprite2D" parent="Graphics"]
+[node name="Sprite2D2" type="Sprite2D" parent="Graphics" unique_id=403302192]
 position = Vector2(0, -121)
 texture = ExtResource("1_l02we")
 hframes = 8
 vframes = 3
 frame = 1
 
-[node name="Sprite2D4" type="Sprite2D" parent="Graphics"]
+[node name="Sprite2D4" type="Sprite2D" parent="Graphics" unique_id=652876184]
 position = Vector2(0, -22)
 texture = ExtResource("1_l02we")
 hframes = 8
 vframes = 3
 frame = 3
 
-[node name="Sprite2D6" type="Sprite2D" parent="Graphics"]
+[node name="Sprite2D6" type="Sprite2D" parent="Graphics" unique_id=2076706374]
 position = Vector2(0, -75)
 texture = ExtResource("1_l02we")
 hframes = 8
 vframes = 3
 frame = 20
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="Graphics/Sprite2D6"]
-libraries = {
-"": SubResource("AnimationLibrary_nwfrb")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Graphics/Sprite2D6" unique_id=1929676289]
+libraries/ = SubResource("AnimationLibrary_nwfrb")
 speed_scale = 2.0
 
-[node name="Sprite2D" type="Sprite2D" parent="Graphics"]
+[node name="Sprite2D" type="Sprite2D" parent="Graphics" unique_id=707210598]
 position = Vector2(0, -122)
 texture = ExtResource("1_l02we")
 hframes = 8
 vframes = 3
 
-[node name="ColorRect" type="ColorRect" parent="Graphics/Sprite2D"]
+[node name="ColorRect" type="ColorRect" parent="Graphics/Sprite2D" unique_id=89462120]
 show_behind_parent = true
 clip_children = 1
 offset_left = -10.0
@@ -1464,7 +1471,7 @@ offset_right = 9.0
 offset_bottom = 11.0
 color = Color(0.0980392, 0.0980392, 0.0980392, 1)
 
-[node name="Sprite2D" type="Sprite2D" parent="Graphics/Sprite2D"]
+[node name="Sprite2D" type="Sprite2D" parent="Graphics/Sprite2D" unique_id=722442030]
 show_behind_parent = true
 position = Vector2(0, 6)
 texture = ExtResource("1_l02we")
@@ -1472,42 +1479,38 @@ hframes = 8
 vframes = 3
 frame = 13
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="Graphics/Sprite2D"]
-libraries = {
-"": SubResource("AnimationLibrary_7gslm")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Graphics/Sprite2D" unique_id=99604928]
+libraries/ = SubResource("AnimationLibrary_7gslm")
 speed_scale = 0.7
 
-[node name="Sprite2D3" type="Sprite2D" parent="Graphics"]
+[node name="Sprite2D3" type="Sprite2D" parent="Graphics" unique_id=661720737]
 position = Vector2(0, -95)
 texture = ExtResource("1_l02we")
 hframes = 8
 vframes = 3
 frame = 2
 
-[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="." unique_id=927307204]
 process_mode = 3
 stream = ExtResource("5_val63")
 volume_db = 5.0
 
-[node name="AudioStreamPlayer2D2" type="AudioStreamPlayer2D" parent="."]
+[node name="AudioStreamPlayer2D2" type="AudioStreamPlayer2D" parent="." unique_id=1834705976]
 process_mode = 3
 stream = ExtResource("6_csg4x")
 volume_db = 5.0
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_rq8e4")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=2135304580]
+libraries/ = SubResource("AnimationLibrary_rq8e4")
 
-[node name="defense_mod" type="Node2D" parent="."]
+[node name="defense_mod" type="Node2D" parent="." unique_id=1092507390]
 visible = false
 
-[node name="Node2D" type="Node2D" parent="defense_mod"]
+[node name="Node2D" type="Node2D" parent="defense_mod" unique_id=267701638]
 position = Vector2(0, -44)
 scale = Vector2(0.9, 0.9)
 
-[node name="TextureRect" type="TextureRect" parent="defense_mod/Node2D"]
+[node name="TextureRect" type="TextureRect" parent="defense_mod/Node2D" unique_id=2073222404]
 material = SubResource("ShaderMaterial_onemw")
 offset_left = -96.0
 offset_top = -96.0
@@ -1516,7 +1519,7 @@ offset_bottom = 96.0
 mouse_filter = 2
 texture = SubResource("GradientTexture2D_51gkn")
 
-[node name="TextureRect2" type="TextureRect" parent="defense_mod/Node2D"]
+[node name="TextureRect2" type="TextureRect" parent="defense_mod/Node2D" unique_id=1718069670]
 modulate = Color(1, 1, 1, 0)
 offset_left = -95.6667
 offset_top = -95.6667
@@ -1525,79 +1528,112 @@ offset_bottom = 96.3333
 mouse_filter = 2
 texture = SubResource("GradientTexture2D_ct3ay")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="defense_mod"]
-libraries = {
-"": SubResource("AnimationLibrary_rjo8i")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="defense_mod" unique_id=322740912]
+libraries/ = SubResource("AnimationLibrary_rjo8i")
 
-[node name="EnemyStats" type="Node" parent="."]
+[node name="EnemyStats" type="Node" parent="." unique_id=1427373969]
 script = ExtResource("3_fb04k")
 score = 25000
 max_hp = 18000
-knockback_resis = 10000000
+knockback_resis = 100
 penetrate_resis = 10000
+Enemy_Knockback = 400
 Enemy_damage = 5
 Enemy_bullet_damage = 12
 Enemy_coin = 600
 MAX_SPEED = 0
 SPEED_TIME = 0.2
-weigth_mult = 0.0
+weigth = 100000.0
+convertible = false
+convert_resist = 90
+convert_threshold = 2000
 
-[node name="LockHP" type="Node" parent="EnemyStats" node_paths=PackedStringArray("stats")]
+[node name="LockHP" type="Node" parent="EnemyStats" unique_id=1542200275 node_paths=PackedStringArray("stats")]
 script = ExtResource("10_or2yj")
 stats = NodePath("..")
 lock_hp = Array[float]([0.25, 0.5, 0.75])
 
-[node name="StateMachine" type="Node" parent="."]
+[node name="StateMachine" type="Node" parent="." unique_id=1904511162]
 script = ExtResource("4_s8x44")
 
-[node name="EnemyBuffManager" parent="." instance=ExtResource("8_4rtn2")]
+[node name="EnemyBuffManager" parent="." unique_id=1913125027 instance=ExtResource("8_4rtn2")]
 
-[node name="EnemyHurtFloatingText" parent="." instance=ExtResource("9_2xpei")]
+[node name="EnemyHurtFloatingText" parent="." unique_id=1109546010 node_paths=PackedStringArray("health_component") instance=ExtResource("9_2xpei")]
+health_component = NodePath("../HealthComponent")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(-0.5, -40)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1331081020]
+position = Vector2(-0.5, -20.5)
 shape = SubResource("RectangleShape2D_tlihc")
 
-[node name="laser_launcher" type="Node2D" parent="."]
+[node name="laser_launcher" type="Node2D" parent="." unique_id=1380664139]
 position = Vector2(0, -62)
 
-[node name="laser_launcher" parent="laser_launcher" instance=ExtResource("7_g5dcy")]
-max_rotation_speed = 60.0
+[node name="laser_launcher" parent="laser_launcher" unique_id=1473161428 instance=ExtResource("7_g5dcy")]
+max_rotation_speed = 22.0
+life_time = 120
 
-[node name="laser_launcher2" parent="laser_launcher" instance=ExtResource("7_g5dcy")]
+[node name="laser_launcher2" parent="laser_launcher" unique_id=491461555 instance=ExtResource("7_g5dcy")]
 laser_quantity = 6
 laser_arc = 300.0
-max_rotation_speed = 30.0
+max_rotation_speed = 15.0
+life_time = 150
 
-[node name="StaticBullet1" parent="." instance=ExtResource("8_kssfk")]
+[node name="StaticBullet1" parent="." unique_id=899714070 node_paths=PackedStringArray("stats") instance=ExtResource("8_kssfk")]
 position = Vector2(0, -62)
+stats = NodePath("../EnemyStats")
 
-[node name="enemy_spawn_launcher" parent="." instance=ExtResource("9_vngcc")]
+[node name="enemy_spawn_launcher" parent="." unique_id=1336920531 instance=ExtResource("9_vngcc")]
 enemy = Array[ExtResource("10_65n73")]([ExtResource("11_v74eu"), ExtResource("12_vo08q"), ExtResource("13_fk6rq")])
 enemy_spawn_num = Array[int]([12, 8, 5])
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1276279039]
 offset_left = -10.0
 offset_top = -177.0
 offset_right = 30.0
 offset_bottom = -151.0
 scale = Vector2(0.5, 0.5)
 
-[node name="BuffBox" type="HBoxContainer" parent="MarginContainer"]
+[node name="BuffBox" type="HBoxContainer" parent="MarginContainer" unique_id=845934572]
 unique_name_in_owner = true
 layout_mode = 2
 alignment = 1
 
-[node name="GPUParticles2D2" type="GPUParticles2D" parent="."]
+[node name="GPUParticles2D2" type="GPUParticles2D" parent="." unique_id=1271379946]
 material = SubResource("CanvasItemMaterial_xnowk")
 position = Vector2(0, -48)
 emitting = false
 amount = 6
-process_material = SubResource("ParticleProcessMaterial_37hqc")
 texture = ExtResource("21_pobol")
+process_material = SubResource("ParticleProcessMaterial_37hqc")
 
-[node name="explosion" type="AudioStreamPlayer2D" parent="."]
+[node name="explosion" type="AudioStreamPlayer2D" parent="." unique_id=344663337]
 process_mode = 3
 stream = ExtResource("22_d3aca")
 bus = &"SFX"
+
+[node name="HealthComponent" type="Node" parent="." unique_id=183120367 node_paths=PackedStringArray("stats", "hurt_box")]
+script = ExtResource("23_bc6mi")
+stats = NodePath("../EnemyStats")
+hurt_box = NodePath("../HurtBox")
+
+[node name="HurtBox" type="Area2D" parent="." unique_id=1728338823 node_paths=PackedStringArray("body")]
+position = Vector2(0, -19)
+collision_layer = 16384
+collision_mask = 163840
+script = ExtResource("24_1ka41")
+body = NodePath("..")
+
+[node name="HurtBoxShape2D" type="CollisionShape2D" parent="HurtBox" unique_id=765695013]
+position = Vector2(0, -45)
+shape = SubResource("RectangleShape2D_wkqv1")
+
+[node name="SoftCollisionArea" type="Area2D" parent="." unique_id=1012153963]
+collision_layer = 0
+collision_mask = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SoftCollisionArea" unique_id=1073669263]
+position = Vector2(0, -19)
+shape = SubResource("CircleShape2D_soft_erosion")
+
+[connection signal="body_entered" from="SoftCollisionArea" to="." method="_on_area_2d_body_entered"]
+[connection signal="body_exited" from="SoftCollisionArea" to="." method="_on_area_2d_body_exited"]

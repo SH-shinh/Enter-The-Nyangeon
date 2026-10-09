@@ -21,9 +21,16 @@ var _active_tab: Node = null
 var _room_list: VBoxContainer = null
 var _room_keys: Array = []
 var _browsing: bool = false
+# 覆盖层内所有可交互控件；新增按钮/输入/开关必须登记此处（_set_buttons_enabled 只恢复名单内的 mouse_filter）。
+var _interactive_controls: Array[Control] = []
 
 @onready var _panel: PanelContainer = $Panel
 @onready var _ip_input: LineEdit = %IpInput
+@onready var _port_input: LineEdit = %PortInput
+@onready var _public_ip_input: LineEdit = %PublicIpInput
+@onready var _public_ip_clear: Button = %PublicIpClear
+@onready var _manual_ip_hint: Label = %ManualIpHint
+@onready var _coop_option: Node = %CoopOption
 @onready var _join_button: Button = %JoinButton
 @onready var _host_button: Button = %HostButton
 @onready var _mode_subtitle_label: Label = %ModeSubtitleLabel
@@ -43,13 +50,8 @@ var _browsing: bool = false
 @onready var _option_panel: VBoxContainer = %OptionPanel
 @onready var _player_id_input: LineEdit = %PlayerIdInput
 @onready var _player_id_confirm: Button = %PlayerIdConfirm
-@onready var _remote_effect_slider: HSlider = %RemoteEffectFreq
-@onready var _remote_flash_slider: HSlider = %RemoteFlashFreq
-@onready var _remote_text_slider: HSlider = %RemoteTextFreq
-@onready var _remote_effect_value: Label = %RemoteEffectFreqValue
-@onready var _remote_flash_value: Label = %RemoteFlashFreqValue
-@onready var _remote_text_value: Label = %RemoteTextFreqValue
-@onready var _debug_hud_toggle = %DebugHudToggle
+@onready var _addr_lan_toggle = %LanAddrToggle
+@onready var _addr_public_toggle = %PublicAddrToggle
 @onready var lan: PanelContainer = %LAN
 @onready var relay: PanelContainer = %Relay
 @onready var option: PanelContainer = %Option
@@ -70,6 +72,11 @@ func _ready() -> void:
 	_host_button.gui_input.connect(_on_host_gui_input)
 	_join_button.gui_input.connect(_on_join_gui_input)
 	_ip_input.gui_input.connect(_on_ip_input_gui_input)
+	_port_input.gui_input.connect(_on_port_input_gui_input)
+	_public_ip_input.gui_input.connect(_on_public_ip_input_gui_input)
+	_public_ip_input.text_submitted.connect(_on_public_ip_submitted)
+	_public_ip_input.focus_exited.connect(_on_public_ip_focus_exited)
+	_public_ip_clear.pressed.connect(_on_public_ip_clear_pressed)
 	_relay_server_input.gui_input.connect(_on_relay_server_input_gui_input)
 	_relay_room_input.gui_input.connect(_on_relay_room_input_gui_input)
 	_relay_create_button.gui_input.connect(_on_relay_create_gui_input)
@@ -94,19 +101,20 @@ func _ready() -> void:
 	_load_banner_texture()
 	_setup_return_button()
 	animation_player.animation_finished.connect(_on_page_anim_finished)
-	_remote_effect_slider.value_changed.connect(_on_remote_effect_value_changed)
-	_remote_flash_slider.value_changed.connect(_on_remote_flash_value_changed)
-	_remote_text_slider.value_changed.connect(_on_remote_text_value_changed)
-	_debug_hud_toggle.toggled.connect(_on_debug_hud_toggled)
+	_addr_lan_toggle.toggled.connect(_on_lan_addr_toggled)
+	_addr_public_toggle.toggled.connect(_on_public_addr_toggled)
 	_player_id_confirm.pressed.connect(_on_player_id_confirm_pressed)
 	_player_id_input.text_submitted.connect(_on_player_id_text_submitted)
 	_player_id_input.gui_input.connect(_on_player_id_input_gui_input)
 	_player_id_confirm.gui_input.connect(_on_player_id_confirm_gui_input)
 	_player_id_notice = MobileNoticeScene.instantiate()
 	add_child(_player_id_notice)
-	_refresh_option_sliders()
 	_refresh_player_id_input()
+	_refresh_lan_port_input()
+	_refresh_addr_mode()
+	_refresh_manual_ip()
 	_build_room_list()
+	_build_interactive_controls()
 
 	visible = false
 	panel_animator.play("panel_option_out")
@@ -144,6 +152,7 @@ func _process(_delta: float) -> void:
 			_room_keys = []
 	if _browsing and coop != null and is_instance_valid(coop):
 		_refresh_room_list(coop)
+	_refresh_manual_ip_hint(coop)
 
 
 func _refresh_room_list(coop: Node) -> void:
@@ -168,12 +177,14 @@ func _refresh_room_list(coop: Node) -> void:
 		var b := Button.new()
 		b.text = "%s  %d/%d" % [str(r.get("name", "")), int(r.get("players", 0)), int(r.get("max", 0))]
 		b.tooltip_text = "%s:%d" % [str(r.get("ip", "")), int(r.get("port", 0))]
-		b.pressed.connect(_on_room_pressed.bind(str(r.get("ip", ""))))
+		b.pressed.connect(_on_room_pressed.bind(str(r.get("ip", "")), int(r.get("port", 0))))
 		_room_list.add_child(b)
 
 
-func _on_room_pressed(ip: String) -> void:
+func _on_room_pressed(ip: String, port: int) -> void:
 	_ip_input.text = ip
+	if _port_input != null and port > 0 and port <= 65535:
+		_port_input.text = str(port)
 	_on_join_pressed()
 
 
@@ -279,9 +290,10 @@ func _get_nav_items() -> Array[Control]:
 		items.append(_relay_room_input)
 		items.append(_relay_join_button)
 	elif _selected_mode == CoopPanelMode.OPTION:
-		items.append(_remote_effect_slider)
-		items.append(_remote_flash_slider)
-		items.append(_remote_text_slider)
+		if _coop_option != null and is_instance_valid(_coop_option) and _coop_option.has_method("get_interactive_controls"):
+			for c in _coop_option.call("get_interactive_controls"):
+				if c is Control:
+					items.append(c)
 	return items
 
 
@@ -343,6 +355,8 @@ func on_coop_selected() -> void:
 	if get_viewport() != null:
 		get_viewport().gui_release_focus()
 	_set_buttons_enabled(true)
+	if _coop_option != null and is_instance_valid(_coop_option) and _coop_option.has_method("refresh"):
+		_coop_option.call("refresh")
 	_play_in()
 	nav_index = 0
 	if Game.control_mode == 2 and not _get_nav_items().is_empty():
@@ -356,18 +370,30 @@ func out_coop_selected() -> void:
 	_play_out()
 
 
+# 集中登记覆盖层内所有可交互控件（新增按钮/输入/开关必须加到这里，否则会被下面
+# 的「后代统一 IGNORE」流程留在不可点击状态——UPnP 开关/端口框曾因此点不动）。
+func _build_interactive_controls() -> void:
+	_interactive_controls = [
+		_host_button, _join_button, _ip_input, _port_input,
+		_public_ip_input, _public_ip_clear,
+		_relay_server_input, _relay_room_input, _relay_create_button, _relay_join_button, _saki_server_button,
+		option, _player_id_input, _player_id_confirm,
+		_addr_lan_toggle, _addr_public_toggle,
+	]
+	# 可复用 coop 选项内容（滑条/开关/自检按钮）也登记进白名单
+	if _coop_option != null and is_instance_valid(_coop_option) and _coop_option.has_method("get_interactive_controls"):
+		for c in _coop_option.call("get_interactive_controls"):
+			if c != null and is_instance_valid(c):
+				_interactive_controls.append(c)
+
+
 func _set_buttons_enabled(enabled: bool) -> void:
 	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for child in _panel.find_children("*", "Control", true, false):
 		child.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var controls: Array[Control] = [
-		_host_button, _join_button, _ip_input,
-		_relay_server_input, _relay_room_input, _relay_create_button, _relay_join_button, _saki_server_button,
-		option, _player_id_input, _player_id_confirm, _remote_effect_slider, _remote_flash_slider, _remote_text_slider,
-		_debug_hud_toggle,
-	]
-	for c in controls:
-		c.mouse_filter = Control.MOUSE_FILTER_STOP if enabled else Control.MOUSE_FILTER_IGNORE
+	for c in _interactive_controls:
+		if c != null and is_instance_valid(c):
+			c.mouse_filter = Control.MOUSE_FILTER_STOP if enabled else Control.MOUSE_FILTER_IGNORE
 
 
 func _play_in() -> void:
@@ -384,14 +410,50 @@ func _on_host_pressed() -> void:
 	var coop = CoopNetScript.instance
 	# 开房成功后 CoopNet 自动进入准备房（测试房）
 	if coop != null:
-		coop.host_game()
+		var port: int = _parse_port()
+		coop.call("host_game", port)
 
 
 func _on_join_pressed() -> void:
 	SoundManager.play_sfx("ButtonSounds")
 	var coop = CoopNetScript.instance
+	if coop == null:
+		return
+	# 支持直接粘贴 "主机:端口"（内网穿透地址常带端口）：拆出端口回填并覆盖 PortInput
+	var raw: String = _ip_input.text.strip_edges()
+	var parsed: Dictionary = coop.call("parse_host_port", raw)
+	var host: String = str(parsed.get("host", raw))
+	var p: int = int(parsed.get("port", -1))
+	if p > 0 and p <= 65535 and _port_input != null:
+		_port_input.text = str(p)
+	coop.call("join_game", host, _parse_port())
+
+
+# 端口解析：1–65535；空/非法回退默认；持久化最近一次可用值。
+func _parse_port() -> int:
+	var fallback: int = int(CoopNetScript.DEFAULT_PORT)
+	var text: String = _port_input.text.strip_edges() if _port_input != null else ""
+	var port: int = fallback
+	if text.is_valid_int():
+		port = int(text)
+	if port < 1 or port > 65535:
+		port = fallback
+	var coop = CoopNetScript.instance
 	if coop != null:
-		coop.join_game(_ip_input.text)
+		var s = coop.get("settings")
+		if s != null and int(s.get("lan_port")) != port:
+			s.call("apply_lan_port", port)
+	return port
+
+
+func _refresh_lan_port_input() -> void:
+	var coop = CoopNetScript.instance
+	var port: int = int(CoopNetScript.DEFAULT_PORT)
+	if coop != null:
+		var s = coop.get("settings")
+		if s != null:
+			port = int(s.get("lan_port"))
+	_port_input.text = str(port)
 
 
 func _select_mode(mode: int, play_sound: bool = true) -> void:
@@ -421,7 +483,8 @@ func _set_selected_mode(mode: int, play_sound: bool = true) -> void:
 		CoopPanelMode.OPTION:
 			_mode_subtitle_label.text = "coop_mode_subtitle_option"
 			_set_status(_lan_status_message, "OPTION")
-			_refresh_option_sliders()
+			if _coop_option != null and is_instance_valid(_coop_option) and _coop_option.has_method("refresh"):
+				_coop_option.call("refresh")
 	_update_mode_visuals(mode)
 
 
@@ -476,23 +539,45 @@ func _on_relay_create_pressed() -> void:
 	var coop = CoopNetScript.instance
 	if coop == null:
 		return
+	# 进行中时忽略重复点击，避免创建多条连接/多个房间
+	if coop.is_connect_in_flight():
+		return
 	var result: String = str(coop.create_relay_room(_relay_server_input.text))
 	if result == "":
 		_relay_room_code_label.text = "coop_room_code_empty"
 		return
 	# 建房成功后 CoopNet 自动进入准备房（测试房）
 	_relay_room_code_label.text = "coop_room_code_creating"
+	_set_relay_busy(true)
 
 
 func _on_relay_room_created(room_code: String) -> void:
 	_relay_room_code_label.text = tr("coop_room_code_value") % room_code
+	_set_relay_busy(false)
 
 
 func _on_relay_join_pressed() -> void:
 	SoundManager.play_sfx("ButtonSounds")
 	var coop = CoopNetScript.instance
-	if coop != null:
-		coop.join_relay_room(_relay_server_input.text, _relay_room_input.text)
+	if coop == null:
+		return
+	# 进行中时忽略重复点击：否则每次点击都会新建连接，被中继当作新成员反复排序
+	if coop.is_connect_in_flight():
+		return
+	if coop.join_relay_room(_relay_server_input.text, _relay_room_input.text):
+		_set_relay_busy(true)
+
+
+# 中继连接进行中：禁用建房/加入按钮与输入，避免重复触发
+func _set_relay_busy(busy: bool) -> void:
+	if _relay_join_button != null:
+		_relay_join_button.disabled = busy
+	if _relay_create_button != null:
+		_relay_create_button.disabled = busy
+	if _relay_server_input != null:
+		_relay_server_input.editable = not busy
+	if _relay_room_input != null:
+		_relay_room_input.editable = not busy
 
 
 func _on_saki_server_pressed() -> void:
@@ -533,40 +618,105 @@ func mouse_out_option() -> void:
 		option_option_player.play_backwards("on_select")
 
 
-# ---------------- OPTION 页：其它玩家攻击特效频率 ----------------
+# ---------------- LAN 页：房间标识地址类型（公网/局域网，互斥开关） ----------------
 
-func _coop_settings():
+func _refresh_addr_mode() -> void:
 	var coop = CoopNetScript.instance
-	if coop == null:
-		return null
-	return coop.settings
+	var mode: int = int(coop.get("room_address_mode")) if coop != null else 0
+	_addr_lan_toggle.set_on(mode == 0, false)
+	_addr_public_toggle.set_on(mode == 1, false)
 
 
-func _refresh_option_sliders() -> void:
-	var s = _coop_settings()
-	var ef: int = int(s.remote_effect_freq) if s != null else 4
-	var ff: int = int(s.remote_flash_freq) if s != null else 4
-	var tf: int = int(s.remote_text_freq) if s != null else 4
-	_remote_effect_slider.set_value_no_signal(ef)
-	_remote_flash_slider.set_value_no_signal(ff)
-	_remote_text_slider.set_value_no_signal(tf)
-	_remote_effect_value.text = _freq_value_text(ef)
-	_remote_flash_value.text = _freq_value_text(ff)
-	_remote_text_value.text = _freq_value_text(tf)
-	var dh: bool = bool(s.debug_hud) if s != null else false
-	var hud = get_tree().get_first_node_in_group("CoopNetDebugHud")
-	if hud != null and is_instance_valid(hud):
-		dh = bool(hud.visible)
-	_debug_hud_toggle.call("set_on", dh, false)
+func _on_lan_addr_toggled(on: bool) -> void:
+	if on:
+		_apply_addr_mode(0)
+	else:
+		# 不允许两个都关：忽略关闭，恢复选中
+		_addr_lan_toggle.set_on(true)
 
 
-func _on_debug_hud_toggled(on: bool) -> void:
-	var s = _coop_settings()
-	if s != null:
-		s.apply_debug_hud(on)
-	var hud = get_tree().get_first_node_in_group("CoopNetDebugHud")
-	if hud != null and is_instance_valid(hud) and hud.has_method("set_shown"):
-		hud.call("set_shown", on)
+func _on_public_addr_toggled(on: bool) -> void:
+	if not on:
+		# 不允许两个都关：忽略关闭，恢复选中
+		_addr_public_toggle.set_on(true)
+		return
+	# 选中公网即保持（不再因暂无公网地址而回退到局域网）
+	_apply_addr_mode(1)
+
+
+# 应用地址类型：始终保持用户所选，不因暂无公网地址而回退（提示由 set_room_address_mode 负责）
+func _apply_addr_mode(mode: int) -> void:
+	var coop = CoopNetScript.instance
+	if coop != null:
+		coop.call("set_room_address_mode", mode)
+	_addr_lan_toggle.set_on(mode == 0)
+	_addr_public_toggle.set_on(mode == 1)
+
+
+# ---------------- LAN 页：手动公网 IP ----------------
+
+func _refresh_manual_ip() -> void:
+	var coop = CoopNetScript.instance
+	var text: String = ""
+	if coop != null:
+		text = str(coop.get("manual_public_ip"))
+	if _public_ip_input != null and _public_ip_input.text != text:
+		_public_ip_input.text = text
+
+
+func _submit_manual_ip() -> void:
+	var coop = CoopNetScript.instance
+	if coop == null or _public_ip_input == null:
+		return
+	var text: String = _public_ip_input.text.strip_edges()
+	var ok: bool = bool(coop.call("set_manual_public_ip", _public_ip_input.text))
+	if not ok:
+		# 非法输入：回填当前有效值
+		_refresh_manual_ip()
+		if _player_id_notice != null and is_instance_valid(_player_id_notice):
+			_player_id_notice.call("notice", "coop_manual_ip_invalid")
+		return
+	# A：手填非空公网 IP 且当前为局域网 → 自动切到公网，房间标识立即用它
+	if text != "" and int(coop.get("room_address_mode")) == 0:
+		_apply_addr_mode(1)
+
+
+func _on_public_ip_submitted(_text: String) -> void:
+	_submit_manual_ip()
+
+
+func _on_public_ip_focus_exited() -> void:
+	_submit_manual_ip()
+
+
+func _on_public_ip_clear_pressed() -> void:
+	SoundManager.play_sfx("ButtonSounds")
+	var coop = CoopNetScript.instance
+	if coop != null:
+		coop.call("clear_manual_public_ip")
+	if _public_ip_input != null:
+		_public_ip_input.text = ""
+
+
+func _on_public_ip_input_gui_input(event: InputEvent) -> void:
+	if event as InputEventScreenTouch and event.pressed:
+		_public_ip_input.grab_focus()
+		DisplayServer.virtual_keyboard_show(_public_ip_input.text)
+		_public_ip_input.accept_event()
+
+
+# UPnP 自动映射失败且未手填时，显示「请手动填入公网 IP」提示
+func _refresh_manual_ip_hint(coop) -> void:
+	if _manual_ip_hint == null:
+		return
+	var show: bool = false
+	if coop != null and is_instance_valid(coop) and bool(coop.is_lan_game) and bool(coop.call("is_upnp_enabled")):
+		var status: String = str(coop.get("upnp_status"))
+		var manual: String = str(coop.get("manual_public_ip"))
+		if (status == "no_gateway" or status == "map_failed") and manual == "":
+			show = true
+	if _manual_ip_hint.visible != show:
+		_manual_ip_hint.visible = show
 
 
 # ---------------- OPTION 页：玩家 ID ----------------
@@ -600,43 +750,6 @@ func _submit_player_id() -> void:
 		_player_id_notice.call("notice", "coop_player_id_saved" if ok else "coop_player_id_too_long")
 
 
-func _on_remote_effect_value_changed(value: float) -> void:
-	var idx: int = clampi(int(round(value)), 0, 4)
-	var s = _coop_settings()
-	if s != null:
-		s.apply_remote_effect(idx)
-	_remote_effect_value.text = _freq_value_text(idx)
-
-
-func _on_remote_flash_value_changed(value: float) -> void:
-	var idx: int = clampi(int(round(value)), 0, 4)
-	var s = _coop_settings()
-	if s != null:
-		s.apply_remote_flash(idx)
-	_remote_flash_value.text = _freq_value_text(idx)
-
-
-func _on_remote_text_value_changed(value: float) -> void:
-	var idx: int = clampi(int(round(value)), 0, 4)
-	var s = _coop_settings()
-	if s != null:
-		s.apply_remote_text(idx)
-	_remote_text_value.text = _freq_value_text(idx)
-
-
-func _freq_value_text(idx: int) -> String:
-	match idx:
-		0:
-			return "0% · " + tr("damage_freq_off")
-		1:
-			return "25% · ×4"
-		2:
-			return "50% · ×3"
-		3:
-			return "75% · ×2"
-	return "100% · ×1"
-
-
 func _on_player_id_input_gui_input(event: InputEvent) -> void:
 	if event as InputEventScreenTouch and event.pressed:
 		_player_id_input.grab_focus()
@@ -667,6 +780,13 @@ func _on_ip_input_gui_input(event: InputEvent) -> void:
 		_ip_input.grab_focus()
 		DisplayServer.virtual_keyboard_show(_ip_input.text)
 		_ip_input.accept_event()
+
+
+func _on_port_input_gui_input(event: InputEvent) -> void:
+	if event as InputEventScreenTouch and event.pressed:
+		_port_input.grab_focus()
+		DisplayServer.virtual_keyboard_show(_port_input.text)
+		_port_input.accept_event()
 
 
 func _on_relay_server_input_gui_input(event: InputEvent) -> void:
@@ -704,6 +824,9 @@ func _on_connection_status_changed(message: String) -> void:
 		_lan_status_message = message
 		_set_status(message, "LAN")
 	var coop = CoopNetScript.instance
+	if coop != null:
+		# 连接进行中锁定 / 握手完成或失败后解锁，避免重复点击被中继当作新成员排序
+		_set_relay_busy(coop.is_connect_in_flight())
 	if coop != null and coop.relay_room_code != "":
 		_relay_room_code_label.text = tr("coop_room_code_value") % coop.relay_room_code
 	if message.begins_with("Hosting"):
@@ -729,24 +852,27 @@ func _set_status(message: String, prefix: String = "LAN") -> void:
 func _update_local_ip_label(host_message: String = "") -> void:
 	if _local_ip_label == null:
 		return
+	var coop = CoopNetScript.instance
 	var address_text := host_message
 	if address_text.begins_with("Hosting "):
 		address_text = address_text.trim_prefix("Hosting ")
+	# 已 UPnP 映射：优先显示公网地址（客机填这个直连）
+	var ext: String = str(coop.get("external_address")) if coop != null else ""
+	if ext != "":
+		var port: int = int(coop.call("get_lan_port"))
+		_local_ip_label.text = tr("coop_public_ip_format") % ("%s:%d" % [ext, port])
+		return
 	var displayed := address_text if address_text != "" else _get_local_ip_summary()
 	_local_ip_label.text = tr("coop_your_ip_format") % displayed
 
 
 func _get_local_ip_summary() -> String:
-	var addresses: Array[String] = []
-	for address in IP.get_local_addresses():
-		if address.contains(":"):
-			continue
-		if address == "127.0.0.1" or address == "0.0.0.0":
-			continue
-		if address.begins_with("169.254."):
-			continue
-		addresses.append(address)
-	return ", ".join(addresses) if not addresses.is_empty() else tr("coop_unavailable")
+	var coop = CoopNetScript.instance
+	if coop != null and is_instance_valid(coop):
+		var summary: String = str(coop.call("get_local_lan_ip_summary"))
+		if summary != "":
+			return summary
+	return tr("coop_unavailable")
 
 
 func _localize_status_prefix(prefix: String) -> String:

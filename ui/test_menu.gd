@@ -43,6 +43,17 @@ func reset():
 
 func add_card():
 	upgrades_pool_c = upgrade_manager.upgrade_pool.duplicate()
+	# 直接并入 mod 道具（不依赖 upgrade_manager 的注入时序/快照）
+	for u in ModManager.get_content("upgrades"):
+		if u != null and not upgrades_pool_c.has(u):
+			upgrades_pool_c.append(u)
+	# 按稀有度升序稳定分桶排序；同稀有度保持 upgrade_pool 原始顺序
+	var sorted_pool: Array[AbilityUpgrade] = []
+	for r in 3:
+		for up in upgrades_pool_c:
+			if up.rare == r:
+				sorted_pool.append(up)
+	upgrades_pool_c = sorted_pool
 	for i in upgrades_pool_c.size():
 		var ins = test_card.instantiate()
 		box.add_child(ins)
@@ -90,12 +101,13 @@ func _on_reset_pressed() -> void:
 	GameEvents.emit_test_room_button_close()
 	Transition.play_left_start()
 	await Transition.left_end_start
-	var player = get_tree().get_first_node_in_group("Player")
-	if player != null:
-		player.queue_free()
-	var path = load(now_player_path)
-	var ins = path.instantiate()
-	get_tree().get_first_node_in_group("PlayerRoot").add_child(ins)
+	if not ExtensionHooks.intercept(ExtensionHooks.local_player_change_gate, [now_player_path, Vector2.ZERO]):
+		var player = get_tree().get_first_node_in_group("Player")
+		if player != null:
+			player.queue_free()
+		var path = load(now_player_path)
+		var ins = path.instantiate()
+		get_tree().get_first_node_in_group("PlayerRoot").add_child(ins)
 	Transition.play_left_end()
 	await Transition.animation_player.animation_finished
 	GameEvents.emit_test_room_reset()
@@ -111,11 +123,3 @@ func _on_close_pressed() -> void:
 		await animation_player.animation_finished
 		GameEvents.emit_ui_visible(true)
 		self.visible = false
-
-func _on_reset_gui_input(event: InputEvent) -> void:
-	if event as InputEventScreenTouch and event.pressed:
-		_on_reset_pressed()
-
-func _on_close_gui_input(event: InputEvent) -> void:
-	if event as InputEventScreenTouch and event.pressed:
-		_on_close_pressed()

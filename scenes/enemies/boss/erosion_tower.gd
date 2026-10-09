@@ -47,6 +47,31 @@ func _ready() -> void:
 		stop_shoot.connect(i.stop_rotating)
 	stop_shoot.connect(static_bullet_1.stop_shoot)
 	lock_hp.reach_value.connect(hurt_defense)
+	stop_shoot.connect(func(): GameEvents.emit_boss_event("erosion_tower_stop_shoot", {}))
+	tower_dead.connect(func(_body): GameEvents.emit_boss_event("erosion_tower_dead", {}))
+	GameEvents.boss_event.connect(_on_network_boss_event)
+
+
+# 联机：可视动画态广播给其它端；远程镜像回放（host 本机已直接播放）
+var _net_visual_replaying: bool = false
+
+func _net_boss_visual(fn_name: String) -> void:
+	if _net_visual_replaying:
+		return
+	GameEvents.emit_boss_event("erosion_tower_visual", {"fn": fn_name})
+
+
+func _on_network_boss_event(event_name: String, data: Dictionary) -> void:
+	if not has_meta("network_remote_enemy"):
+		return
+	if event_name != "erosion_tower_visual":
+		return
+	var fn: String = str(data.get("fn", ""))
+	if fn == "" or not has_method(fn):
+		return
+	_net_visual_replaying = true
+	call(fn)
+	_net_visual_replaying = false
 
 func hurt_defense(_value_index: int):
 	can_shoot = false
@@ -67,11 +92,9 @@ func time_count():
 			defense_animation.play("RESET")
 
 func tick_physics(state: State, delta: float) -> void:
-	ACCELERATION = stats.MAX_SPEED / stats.SPEED_TIME
+	ACCELERATION = stats.move_acceleration()
 	
-	if enemy_body.size() != 0:
-		for i in enemy_body:
-			i.velocity += i.stats.weigth_mult * (i.global_position - self.global_position).normalized() * stats.MAX_SPEED / max(0.5, i.global_position.distance_to(self.global_position))
+	apply_soft_collision()
 	
 	match state:
 		
@@ -88,7 +111,7 @@ func tick_physics(state: State, delta: float) -> void:
 
 func get_next_state(state: State) -> State:
 	
-	var is_still := velocity.x == 0 and velocity.y == 0
+	var _is_still := velocity.x == 0 and velocity.y == 0
 	
 	if stats.hp == 0 :
 		return State.DEAD
@@ -118,7 +141,7 @@ func get_next_state(state: State) -> State:
 		
 	return state
 
-func transition_state(from:State, to: State) -> void:
+func transition_state(_from:State, to: State) -> void:
 	
 	match to:
 		State.IDLE:
@@ -142,7 +165,7 @@ func transition_state(from:State, to: State) -> void:
 		State.DEAD:
 			on_dead()
 
-func shooting_state(type: int):
+func shooting_state(_type: int):
 	if can_shoot == false:
 		if can_defense:
 			spawn_shoot()
@@ -163,6 +186,7 @@ func laser_shoot():
 		return
 	if !launcher_pool_1.is_empty():
 		var n = randi_range(0, launcher_pool_1.size() - 1)
+		launcher_pool_1[n].bullet_damage_mult = stats.Enemy_damage_mult
 		launcher_pool_1[n].active_state()
 
 func bullet_shoot():
@@ -178,7 +202,7 @@ func bullet_shoot():
 func spawn_shoot():
 	if is_idle == 1:
 		return
-	if PoolManager.enemies_group.size() > 15:
+	if PoolManager.active_enemy_count > 15:
 		return
 	enemy_spawn_launcher.hp_mult = stats.max_hp_mult
 	enemy_spawn_launcher.damage_mult = stats.Enemy_damage_mult
@@ -186,37 +210,45 @@ func spawn_shoot():
 	spawn_index = clamp(spawn_index + 1, 0, 2)
 
 func on_dead():
+	if is_idle == 1:
+		return
 	stop_shoot.emit()
 	tower_dead.emit(self)
 	boss_death_anim()
 
 func boss_death_anim():
+	_net_boss_visual("boss_death_anim")
 	is_idle = 1
 	if GameEvents.global_time_count.is_connected(time_count):
 		GameEvents.global_time_count.disconnect(time_count)
 	enemy_body.clear()
-	collision_shape_2d.disabled = true
+	collision_shape_2d.set_deferred("disabled", true)
+	hurt_box_shape_2d.set_deferred("disabled", true)
 	enemy_buff_manager.clear_all_buff()
 	animation_player_1.play("RESET")
 	animation_player_2.play("dead")
 	animation_player_3.play("dead")
 
 func enter_anim():
+	_net_boss_visual("enter_anim")
 	animation_player_1.play("RESET")
 	animation_player_2.play("RESET")
 	animation_player_3.play("enter_anim")
 
 func idle_anim():
+	_net_boss_visual("idle_anim")
 	animation_player_1.play("RESET")
 	animation_player_2.play("idle")
 	animation_player_3.play("idle")
 
 func attack_anim():
+	_net_boss_visual("attack_anim")
 	animation_player_1.play("attack_anim")
 	animation_player_2.play("idle")
 	animation_player_3.play("attack_anim")
 
 func defense_anim():
+	_net_boss_visual("defense_anim")
 	SoundManager.play_sfx("LaserSounds1")
 	animation_player_1.play("RESET")
 	animation_player_2.play("idle")

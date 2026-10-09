@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://0jwfcdnxow4w"]
+[gd_scene format=3 uid="uid://0jwfcdnxow4w"]
 
-[ext_resource type="Script" path="res://scenes/update_item/sniper_scope.gd" id="1_0qhei"]
+[ext_resource type="Script" uid="uid://d340f2pm5d62j" path="res://scenes/update_item/sniper_scope.gd" id="1_0qhei"]
 
 [node name="SniperScop" type="Node2D"]
 script = ExtResource("1_0qhei")

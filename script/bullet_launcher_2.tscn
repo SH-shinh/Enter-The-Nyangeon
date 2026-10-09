@@ -1,14 +1,14 @@
-[gd_scene load_steps=3 format=3 uid="uid://c4aems0h8mmt8"]
+[gd_scene format=3 uid="uid://c4aems0h8mmt8"]
 
-[ext_resource type="Script" path="res://script/bullet_launcher_2.gd" id="1_yxfyj"]
+[ext_resource type="Script" uid="uid://bsabbn6nbceqe" path="res://script/bullet_launcher_2.gd" id="1_yxfyj"]
 [ext_resource type="PackedScene" uid="uid://bhaktofgt0o5w" path="res://scenes/bullet/enemy_bullet.tscn" id="2_w31uw"]
 
-[node name="BulletLauncher2" type="Node2D"]
+[node name="BulletLauncher2" type="Node2D" unique_id=395601440]
 script = ExtResource("1_yxfyj")
 shoot_at_once = false
 bullet = ExtResource("2_w31uw")
 
-[node name="ShootPosition" type="Marker2D" parent="."]
+[node name="ShootPosition" type="Marker2D" parent="." unique_id=1026337558]
 
-[node name="Timer" type="Timer" parent="."]
+[node name="Timer" type="Timer" parent="." unique_id=957327619]
 wait_time = 0.1

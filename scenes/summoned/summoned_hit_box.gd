@@ -27,10 +27,11 @@ func deal_damage_to_player():
 		hurt_damage = 0
 
 func invincibility_frames():
-	hitbox_shape.disabled = true
+	# body_entered 回调（物理 flush 期）会调用本函数，须延迟写入
+	hitbox_shape.set_deferred("disabled", true)
 
 func on_hit_end():
-	hitbox_shape.disabled = false
+	hitbox_shape.set_deferred("disabled", false)
 	on_hit = false
 
 func count_damage(damage_value: int):
@@ -54,11 +55,11 @@ func _on_hit_box_body_entered(body):
 	
 	if body.is_in_group("Enemy"):
 		hurt_dir = (self_body.global_position - body.global_position ).normalized()
-		hurt_knockback = body.stats.Enemy_Knockback - self_body.stats.summoned_knockback_resis
+		hurt_knockback = int(body.stats.Enemy_Knockback * DamageRouter.diminishing_factor(self_body.stats.summoned_knockback_resis) * DamageRouter.MELEE_KNOCKBACK_MULT)
 		count_damage(body.stats.Enemy_damage)
 	
 	if body.is_in_group("EnemyBullet"):
 		hurt_dir = (self_body.global_position - body.global_position ).normalized()
-		hurt_knockback = body.knockback - self_body.stats.summoned_knockback_resis
+		hurt_knockback = int(body.knockback * DamageRouter.diminishing_factor(self_body.stats.summoned_knockback_resis))
 		count_damage(body.bullet_damage)
 		body.now_penetrate -= self_body.stats.summoned_penetrate_resis

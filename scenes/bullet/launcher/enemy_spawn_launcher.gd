@@ -24,7 +24,7 @@ func _ready() -> void:
 	GameEvents.spawn_stop.connect(spawn_stop)
 
 # 获取圆边上点的坐标数组
-func get_points_on_circle(center: Vector2, radius: float, count: int) -> Array[Vector2]:
+func get_points_on_circle(center_local: Vector2, radius_local: float, count: int) -> Array[Vector2]:
 	var points: Array[Vector2] = []
 	if count <= 0:
 		return points
@@ -35,8 +35,8 @@ func get_points_on_circle(center: Vector2, radius: float, count: int) -> Array[V
 		# 当前点的角度，这里从右侧(0度)开始逆时针旋转
 		var angle = i * angle_step
 		# 计算坐标
-		var x = center.x + radius * cos(angle)
-		var y = center.y + radius * sin(angle)
+		var x = center_local.x + radius_local * cos(angle)
+		var y = center_local.y + radius_local * sin(angle)
 		points.append(Vector2(x, y))
 	
 	return points

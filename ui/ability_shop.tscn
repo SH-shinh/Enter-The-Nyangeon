@@ -1,6 +1,7 @@
-[gd_scene load_steps=10 format=3 uid="uid://cm48dykln4nx1"]
+[gd_scene format=3 uid="uid://cm48dykln4nx1"]
 
 [ext_resource type="PackedScene" uid="uid://b0iipco20o0p6" path="res://ui/ability_shop_item_card.tscn" id="1_5w8ua"]
+[ext_resource type="Script" uid="uid://bahtscco3k2fo" path="res://ui/ability_shop.gd" id="1_kvwad"]
 [ext_resource type="Resource" uid="uid://dwd3umrlg3tbs" path="res://resources/equip/bag.tres" id="2_5xk33"]
 [ext_resource type="PackedScene" uid="uid://ves85hngw07v" path="res://ui/ability_shop_ps_card.tscn" id="2_625ks"]
 [ext_resource type="Resource" uid="uid://d0644tgwdy4pk" path="res://resources/equip/glove.tres" id="3_m42j8"]
@@ -21,22 +22,23 @@ fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(1, 0.5)
 metadata/_snap_enabled = true
 
-[node name="AbilityShop" type="Node2D"]
+[node name="AbilityShop" type="Node2D" unique_id=1451639057]
+script = ExtResource("1_kvwad")
 
-[node name="Node2D2" type="Node2D" parent="."]
+[node name="Node2D2" type="Node2D" parent="." unique_id=1260955713]
 
-[node name="ColorRect2" type="ColorRect" parent="Node2D2"]
+[node name="ColorRect2" type="ColorRect" parent="Node2D2" unique_id=827985962]
 offset_top = 0.5
 offset_right = 371.0
 offset_bottom = 70.5
 
-[node name="ColorRect3" type="ColorRect" parent="Node2D2"]
+[node name="ColorRect3" type="ColorRect" parent="Node2D2" unique_id=117884225]
 offset_left = 367.0
 offset_top = 4.5
 offset_right = 375.0
 offset_bottom = 66.5
 
-[node name="TextureRect" type="TextureRect" parent="Node2D2"]
+[node name="TextureRect" type="TextureRect" parent="Node2D2" unique_id=5967235]
 offset_left = 367.25
 offset_top = 0.750034
 offset_right = 447.25
@@ -44,7 +46,7 @@ offset_bottom = 80.75
 scale = Vector2(0.1, 0.1)
 texture = SubResource("GradientTexture2D_s6ln2")
 
-[node name="TextureRect2" type="TextureRect" parent="Node2D2"]
+[node name="TextureRect2" type="TextureRect" parent="Node2D2" unique_id=1013291919]
 offset_left = 367.25
 offset_top = 62.0
 offset_right = 447.25
@@ -52,9 +54,9 @@ offset_bottom = 142.0
 scale = Vector2(0.1, 0.1)
 texture = SubResource("GradientTexture2D_s6ln2")
 
-[node name="Node2D" type="Node2D" parent="."]
+[node name="Node2D" type="Node2D" parent="." unique_id=1184257524]
 
-[node name="HBoxContainer" type="HBoxContainer" parent="Node2D"]
+[node name="HBoxContainer" type="HBoxContainer" parent="Node2D" unique_id=1424000865]
 offset_left = 7.00002
 offset_top = 1.50003
 offset_right = 264.0
@@ -62,25 +64,25 @@ offset_bottom = 50.5
 scale = Vector2(1.4, 1.4)
 theme_override_constants/separation = -1
 
-[node name="Bag" parent="Node2D/HBoxContainer" instance=ExtResource("1_5w8ua")]
+[node name="Bag" parent="Node2D/HBoxContainer" unique_id=359583909 instance=ExtResource("1_5w8ua")]
 layout_mode = 2
 equip_card = ExtResource("2_5xk33")
 
-[node name="Gloves" parent="Node2D/HBoxContainer" instance=ExtResource("1_5w8ua")]
+[node name="Gloves" parent="Node2D/HBoxContainer" unique_id=941911621 instance=ExtResource("1_5w8ua")]
 layout_mode = 2
 equip_card = ExtResource("3_m42j8")
 
-[node name="Necklace" parent="Node2D/HBoxContainer" instance=ExtResource("1_5w8ua")]
+[node name="Necklace" parent="Node2D/HBoxContainer" unique_id=1973081606 instance=ExtResource("1_5w8ua")]
 layout_mode = 2
 equip_card = ExtResource("4_ro6qe")
 
-[node name="Badge" parent="Node2D/HBoxContainer" instance=ExtResource("1_5w8ua")]
+[node name="Badge" parent="Node2D/HBoxContainer" unique_id=2021932982 instance=ExtResource("1_5w8ua")]
 layout_mode = 2
 equip_card = ExtResource("5_h0qda")
 
-[node name="Watch" parent="Node2D/HBoxContainer" instance=ExtResource("1_5w8ua")]
+[node name="Watch" parent="Node2D/HBoxContainer" unique_id=1708739709 instance=ExtResource("1_5w8ua")]
 layout_mode = 2
 equip_card = ExtResource("6_ieeo8")
 
-[node name="AbilityShopPSCard" parent="Node2D/HBoxContainer" instance=ExtResource("2_625ks")]
+[node name="AbilityShopPSCard" parent="Node2D/HBoxContainer" unique_id=561180217 instance=ExtResource("2_625ks")]
 layout_mode = 2

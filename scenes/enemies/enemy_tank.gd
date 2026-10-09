@@ -23,6 +23,9 @@ enum State {
 
 var can_shoot: bool = true
 
+var _recoil_tween: Tween
+var _recoil_base: Dictionary = {}
+
 var aim_end: bool = false
 
 var distance : float = 0
@@ -70,6 +73,9 @@ func _ready():
 
 func idle_state():
 	is_idle = 1
+	_target_cache = null
+	_target_cache_frame = -1
+	PoolManager.unregister_active_enemy(self)
 	enemy_body.clear()
 	if GameEvents.global_time_count.is_connected(time_count):
 		GameEvents.global_time_count.disconnect(time_count)
@@ -87,6 +93,8 @@ func idle_state():
 
 func active_state():
 	is_idle = 0
+	_target_cache = null
+	_target_cache_frame = -1
 	stats.spawn_hp()
 	if !GameEvents.global_time_count.is_connected(time_count):
 		GameEvents.global_time_count.connect(time_count)
@@ -103,6 +111,8 @@ func active_state():
 	if tank_turret != null:
 		tank_turret.set_physics_process(true)
 	set_physics_process(true)
+	create_damage_data()
+	PoolManager.register_active_enemy(self)
 
 func time_count():
 	
@@ -115,7 +125,8 @@ func time_count():
 	if now_rand_time > 0:
 		now_rand_time -= 1
 		if now_rand_time <= 0:
-			rand_target_position()
+			if not is_standby():
+				rand_target_position()
 	
 	if aim > 0:
 		aim -= 1
@@ -128,7 +139,11 @@ func time_count():
 	if decision_time > 0:
 		decision_time -= 1
 		if decision_time <= 0:
-			dir_v = get_distance_to_player()
+			if is_standby():
+				dir_v = Vector2.ZERO
+				move_mod = 0
+			else:
+				dir_v = get_distance_to_player()
 			shoot_and_move_speed = int(shoot_and_move * stats.MAX_SPEED)
 			decision_time = 5
 	
@@ -153,13 +168,14 @@ func tick_physics(state: State, delta: float) -> void:
 	if is_idle == 1:
 		return
 	
-	ACCELERATION = stats.MAX_SPEED / stats.SPEED_TIME
+	ACCELERATION = stats.move_acceleration()
 	
 	apply_soft_collision()
 	
-	if player != null:
-		tank_turret.v = face_to_player().angle()
-		gun.rotation = tank_turret.now_rotation
+	if get_target() != null:
+		if not is_standby():
+			tank_turret.v = face_to_player().angle()
+			gun.rotation = tank_turret.now_rotation
 		shoot_bullet()
 	
 	box_around(tank_body.now_rotation)
@@ -201,29 +217,27 @@ func on_dead():
 	idle_state.call_deferred()
 
 func add_player_explosion():
-	
-	var ins = PoolManager.get_pool("player_explosion")
-	var add_ins: bool = false
-	if ins == null or ins.is_idle == 0:
-		ins = bullet_smoke.instantiate()
-		add_ins = true
-	
-	ins.global_position = self.global_position
-	if ins.damage_data == null:
-		ins.damage_data = DamageData.new()
-	else:
-		ins.damage_data.reset_data()
-	ins.damage_data.base_damage = 50 * stats.Enemy_damage_mult
-	ins.damage_data.knockback_force = stats.Enemy_Knockback
-	ins.damage_data.damage_type.append(GameTags.EXPLOSION_DAMAGE)
-	ins.damage_data.source_type.append(GameTags.NEUTRAL)
-	ins.damage_data.source_node = self.get_path()
-	ins.explosion_range = 6
-	
-	ins.active_state()
-	if add_ins == true:
-		get_tree().get_first_node_in_group("BulletRoot").add_child(ins)
-	ins.is_explosion()
+	ProjectileSpawner.spawn_core(
+		bullet_smoke, "player_explosion", "BulletRoot", self, Faction.ENEMY_SIDE,
+		self.global_position, 0.0, Vector2.ZERO,
+		false, false, true,
+		Callable(self, "_configure_explosion"),
+		Callable(),
+		Callable(self, "_post_explosion")
+	)
+
+func _configure_explosion(node: Node) -> void:
+	node.damage_data = DamageData.fill(node.damage_data, {
+		"damage": 50 * stats.Enemy_damage_mult,
+		"knockback": stats.Enemy_Knockback,
+		"type": GameTags.EXPLOSION_DAMAGE,
+		"source": GameTags.NEUTRAL,
+		"node": self,
+	})
+	node.explosion_range = 6
+
+func _post_explosion(node: Node) -> void:
+	node.is_explosion()
 
 func face_to_player():
 	var t := get_target()
@@ -254,11 +268,21 @@ func get_distance_to_player():
 func _shootAnim():
 	if tank_turret.get_child_count() == 0:
 		return
-	var tween := get_tree().create_tween().set_parallel(true)
+	if _recoil_tween != null and _recoil_tween.is_valid():
+		_recoil_tween.kill()
+	_recoil_tween = get_tree().create_tween().set_parallel(true)
 	for sprite_local in tank_turret.get_children():
-		tween.tween_property(sprite_local, "scale", Vector2(sprite_local.scale.x,sprite_local.scale.y), 0.3).from(Vector2(sprite_local.scale.x - 0.15, sprite_local.scale.y + 0.4))
+		var base: Vector2
+		if _recoil_base.has(sprite_local):
+			base = _recoil_base[sprite_local]
+		else:
+			base = sprite_local.scale
+			_recoil_base[sprite_local] = base
+		_recoil_tween.tween_property(sprite_local, "scale", base, 0.3).from(Vector2(base.x - 0.15, base.y + 0.4))
 
 func shoot_bullet():
+	if is_standby():
+		return
 	if shoot_cd <= 0 and can_shoot == true:
 		_shootAnim()
 		gun.gun_shot()
@@ -329,7 +353,8 @@ func transition_state(_from:State, to: State) -> void:
 	
 	match to:
 		State.IDLE:
-			now_v = face_to_player().angle()
+			if not is_standby():
+				now_v = face_to_player().angle()
 		
 		State.SHOOTING:
 			pass
@@ -350,14 +375,29 @@ func transition_state(_from:State, to: State) -> void:
 			pass
 
 func rand_target_position():
-	var ran = RandomNumberGenerator.new()
+	if tilemap == null:
+		return
 	var cells: Array = tilemap.get_used_cells(0)
-	var rand_position_num = ran.randi_range(0, cells.size()) - 5
-	var rand_position = tilemap.map_to_local(cells[rand_position_num])
-	while rand_position.distance_to(get_target_position()) > rand_length:
-		rand_position_num = ran.randi_range(0, cells.size()) - 5
-		rand_position = tilemap.map_to_local(cells[rand_position_num])
-	target_position = rand_position
+	if cells.is_empty():
+		return
+	var ran := RandomNumberGenerator.new()
+	var anchor := get_target_position()
+	var best_position: Vector2 = global_position
+	var best_diff: float = INF
+	var attempts := 0
+	const MAX_ATTEMPTS := 20
+	while attempts < MAX_ATTEMPTS:
+		attempts += 1
+		var idx := ran.randi_range(0, cells.size() - 1)
+		var pos: Vector2 = tilemap.map_to_local(cells[idx])
+		var diff: float = absf(pos.distance_to(anchor) - rand_length)
+		if diff < best_diff:
+			best_diff = diff
+			best_position = pos
+		if pos.distance_to(anchor) <= rand_length:
+			best_position = pos
+			break
+	target_position = best_position
 	now_v = (target_position - global_position).normalized().angle()
 
 func rand_aim_and_move_speed():

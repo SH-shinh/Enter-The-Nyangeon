@@ -40,14 +40,14 @@ var shot_damage_mult: float = 2
 
 func _ready() -> void:
 	GameEvents.player_ps_upgrade.connect(ps_upgrade)
-	GameEvents.player_bullet_kill_enemy.connect(melee_rank_count)
-	GameEvents.player_melee_hit_enemy.connect(shot_rank_count)
+	GameEvents.enemy_damage_taken_dead.connect(melee_rank_count)
+	GameEvents.enemy_damage_taken_dead.connect(shot_rank_count)
 	shot_rank_change.connect(enhancement_shot_count)
 	shot_rank_change.connect(bar_count)
 	melee_rank_change.connect(bar_count)
 	bar_count()
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	rank_bar.position.y = player.sprite_2d.position.y
 
 func ps_upgrade(t_num: int):
@@ -66,22 +66,31 @@ func ps_upgrade(t_num: int):
 	elif now_t == 3:
 		PlayerData.bullet_shoot_time_mult += 0.25
 		PlayerData.update_player_ability()
-		GameEvents.player_critical_hit_enemy.connect(melee_rank_count)
-		GameEvents.player_melee_critical_hit_enemy.connect(shot_rank_count)
+		GameEvents.enemy_damage_taken.connect(melee_crit_rank_count)
+		GameEvents.enemy_damage_taken.connect(shot_crit_rank_count)
 
 func bar_count():
 	animation_player.play("new_animation")
 	melee_bar.value = melee_rank
 	shot_bar.value = shot_rank
 
-func melee_rank_count(_bullet_body: Node):
-	melee_rank += 1
+func melee_rank_count(_final_damage: int, damage_data: DamageData, _body_path: NodePath):
+	if damage_data.source_type.has(GameTags.PLAYER) and damage_data.damage_type.has(GameTags.BULLET_DAMAGE):
+		melee_rank += 1
 
-func shot_rank_count(body: Node):
-	if body.hurt_damage >= body.stats.hp:
+func melee_crit_rank_count(_final_damage: int, damage_data: DamageData, _body_path: NodePath):
+	if damage_data.source_type.has(GameTags.PLAYER) and damage_data.damage_type.has(GameTags.BULLET_DAMAGE) and damage_data.is_crit == true:
+		melee_rank += 1
+
+func shot_rank_count(_final_damage: int, damage_data: DamageData, _body_path: NodePath):
+	if damage_data.source_type.has(GameTags.PLAYER) and damage_data.damage_type.has(GameTags.MELEE_DAMAGE):
 		if now_t > 0 and melee.enhancement_melee == true and ammo_end == false:
 			ammo_end = true
 			reload_ammo.call_deferred()
+		shot_rank += 1
+
+func shot_crit_rank_count(_final_damage: int, damage_data: DamageData, _body_path: NodePath):
+	if damage_data.source_type.has(GameTags.PLAYER) and damage_data.damage_type.has(GameTags.MELEE_DAMAGE) and damage_data.is_crit == true:
 		shot_rank += 1
 
 func reload_ammo():
@@ -100,9 +109,9 @@ func enhancement_shot_count():
 			GameEvents.player_shot_position.disconnect(bullet_damage_count)
 
 func bullet_damage_count(_shot_position: Vector2, bullet_body: Node):
-	if bullet_body.is_player_shoot == true:
+	if bullet_body.damage_data.source_type.has(GameTags.PLAYER):
 		bullet_body.penetrate += shot_penetrate
-		bullet_body.bullet_damage *= shot_damage_mult
+		bullet_body.damage_data.base_damage *= shot_damage_mult
 
 func shot_flash(_gun: Node):
 	if shot_rank > 0:
@@ -111,3 +120,19 @@ func shot_flash(_gun: Node):
 	smoke.scale = Vector2(player.graphics.scale.x, player.graphics.scale.x)
 	smoke.restart()
 	flash.restart()
+
+
+# 联机：镜像回放 rank 条（只写 bar + 动画，绝不写 rank setter 以免触发玩法信号）
+func get_network_character_state() -> int:
+	return (int(melee_rank) & 0xF) | ((int(shot_rank) & 0xF) << 4)
+
+
+func apply_network_character_state(state: int) -> void:
+	var melee: int = state & 0xF
+	var shot: int = (state >> 4) & 0xF
+	if melee_bar != null:
+		melee_bar.value = melee
+	if shot_bar != null:
+		shot_bar.value = shot
+	if rank_bar != null and animation_player != null and is_instance_valid(animation_player):
+		animation_player.play("new_animation")

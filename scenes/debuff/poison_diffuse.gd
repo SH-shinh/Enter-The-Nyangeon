@@ -33,6 +33,10 @@ func reset():
 
 func poison_dot_add():
 	if !enemy_group.is_empty():
+		for i in range(enemy_group.size() - 1, -1, -1):
+			if enemy_group[i] == null or not is_instance_valid(enemy_group[i]):
+				enemy_group.remove_at(i)
+		
 		var i_num: int
 		if enemy_num < enemy_group.size():
 			i_num = enemy_num
@@ -54,25 +58,31 @@ func poison_dot_add():
 			floating_text = floating_text_scene.instantiate() as Node2D
 			get_tree().get_first_node_in_group("ForegroundLayer").add_child(floating_text)
 		
-		floating_text.label.set("theme_override_colors/font_color", Color(0.063, 0.54, 0.342))
-		floating_text.label.set("theme_override_font_sizes/font_size", 16)
+		floating_text.set_style(Color(0.063, 0.54, 0.342), 16)
 		floating_text.global_position = global_position + (Vector2.UP * randf_range(5,15)) + (Vector2.RIGHT * randf_range(-15,15))
 		floating_text.start(tr("dot_spread") + "!")
 
 func sort_enemy():
 	if !enemy_group.is_empty():
+		for i in range(enemy_group.size() - 1, -1, -1):
+			if enemy_group[i] == null or not is_instance_valid(enemy_group[i]):
+				enemy_group.remove_at(i)
 		enemy_group.sort_custom(
 			func(x, y):
 				return x.global_position.distance_to(self.global_position) < y.global_position.distance_to(self.global_position)
 		)
 
 func _on_area_2d_body_entered(body):
+	if body == null or not is_instance_valid(body):
+		return
 	if body.is_in_group("Enemy") and !enemy_group.has(body):
 		enemy_group.push_back(body)
 		sort_enemy()
 
 
 func _on_area_2d_body_exited(body):
+	if body == null or not is_instance_valid(body):
+		return
 	if body.is_in_group("Enemy") and enemy_group.has(body):
 		enemy_group.remove_at(enemy_group.find(body))
 		sort_enemy()

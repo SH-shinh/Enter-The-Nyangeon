@@ -15,7 +15,7 @@ const NAME_FONT := preload("res://fonts/BoutiqueBitmap7x7_1.7.ttf")
 const HealthBarScript := preload("res://mods/etn_coop/net/coop_health_bar.gd")
 
 const TAG_WIDTH: float = 200.0
-const TAG_OFFSET: float = 49.0
+const TAG_OFFSET: float = 61.0
 
 const HEALTH_BAR_W: float = 44.0
 const HEALTH_BAR_Y: float = -6.0
@@ -37,6 +37,8 @@ var _health_bar: Control = null
 var _help_label: Label = null
 var _is_remote: bool = false
 var _help_t: float = 0.0
+var _offline: bool = false
+var _display_text: String = ""
 
 
 func setup(player: Node, display_text: String) -> void:
@@ -54,6 +56,7 @@ func setup(player: Node, display_text: String) -> void:
 	add_theme_color_override("font_color", Color(1, 1, 1, 0.8))
 	add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
 	add_theme_constant_override("outline_size", 4)
+	_display_text = display_text
 	text = display_text
 	position = Vector2(-TAG_WIDTH * 0.5, -TAG_OFFSET)
 	_build_ready_label()
@@ -61,7 +64,22 @@ func setup(player: Node, display_text: String) -> void:
 
 
 func set_display_text(value: String) -> void:
-	text = value
+	_display_text = value
+	if not _offline:
+		text = value
+
+
+# 断线重连宽限期间：名牌灰显并改文案（仅其它端可见的该玩家镜像）。
+func set_offline(value: bool) -> void:
+	if _offline == value:
+		return
+	_offline = value
+	if value:
+		text = tr("coop_peer_offline")
+		modulate = Color(0.55, 0.55, 0.55, 1.0)
+	else:
+		text = _display_text
+		modulate = Color(1, 1, 1, 1)
 
 
 # 仅远端玩家调用：挂生命条并启用倒地 HELP!。

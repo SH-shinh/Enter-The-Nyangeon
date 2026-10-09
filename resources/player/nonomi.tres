@@ -1,16 +1,16 @@
-[gd_resource type="Resource" script_class="PlayerCard" load_steps=4 format=3 uid="uid://dolf057662bwc"]
+[gd_resource type="Resource" script_class="PlayerCard" load_steps=3 format=3 uid="uid://dolf057662bwc"]
 
 [ext_resource type="Texture2D" uid="uid://bqjccnikfogr7" path="res://sprites/player/nonomi/nonomi_picture_halo.png" id="1_oampx"]
 [ext_resource type="Script" path="res://resources/player/player.gd" id="2_7p3oj"]
-[ext_resource type="Texture2D" uid="uid://2bl53ko6vc3c" path="res://sprites/player/nonomi/nonomi_picture.png" id="3_7yi4q"]
 
 [resource]
 script = ExtResource("2_7p3oj")
 name = "IZAYOI NONOMI"
 weapon = "MINI NO.5"
-sprite = ExtResource("3_7yi4q")
+sprite_path = "res://sprites/player/nonomi/nonomi_picture.png"
 halo = ExtResource("1_oampx")
 color = Color(0.745098, 0.909804, 0.611765, 1)
 description = ""
 voice_name = "nonomi"
 id = "nonomi"
+scene_path = "res://scenes/player/nonomi/nonomi.tscn"

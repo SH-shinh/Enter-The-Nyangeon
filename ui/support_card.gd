@@ -22,7 +22,7 @@ func _ready() -> void:
 
 func get_card():
 	if support_card != null:
-		player_support.texture = support_card.character_sprite
+		player_support.texture = LazyTexture.load_uncached(support_card.character_sprite_path)
 		weapon_name.text = support_card.weapon_name
 
 func update_bar():

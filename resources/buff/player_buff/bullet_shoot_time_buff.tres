@@ -9,3 +9,4 @@ id = "bullet_shoot_time_buff"
 icon = ExtResource("1_spr1f")
 name = "攻速buff"
 description = "提升攻击速度"
+modifiers = Array[Dictionary]([{"key": "shoot_time_mult", "mode": "add", "source": "value"}])

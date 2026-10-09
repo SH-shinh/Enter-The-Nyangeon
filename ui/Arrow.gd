@@ -22,7 +22,7 @@ func get_player_camera():
 	warring_target_position = target_node.target.global_position
 	camera_zoom = get_viewport().get_camera_2d().zoom
 
-func _process(delta):
+func _process(_delta):
 	if target_node == null:
 		return
 	

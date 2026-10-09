@@ -6,6 +6,7 @@ var dir: Vector2 = Vector2.ZERO
 
 var player: Node
 var equip_speed: int = 120
+var equip_range: float = 1.0
 var speed: int = 120
 var accel: float
 var speed_time: float = 0.1
@@ -15,6 +16,7 @@ var pick_group: Array = []
 @onready var sprite_2d = $Node2D/CanvasGroup/Sprite2D
 @onready var node_2d = $Node2D
 @onready var pick_box: CollisionShape2D = $Node2D/PickBox/CollisionShape2D
+@onready var canvas_group = $Node2D/CanvasGroup
 
 func _ready():
 	player = get_tree().get_first_node_in_group("Player")
@@ -28,8 +30,11 @@ func time_count():
 			pick_group[i].target = self
 			pick_group[i].pick_up = true
 
+func update_body():
+	pick_box.shape.radius = 36 * equip_range
+
 func outline_changed(n: float):
-	$Node2D/CanvasGroup.material.set_shader_parameter("outline_width", n)
+	canvas_group.material.set_shader_parameter("outline_width", n)
 
 func _physics_process(delta):
 	
@@ -53,6 +58,13 @@ func _physics_process(delta):
 	sprite_2d.v = velocity.normalized().angle()
 	
 	move_and_slide()
+
+# 联机：上报/应用视觉转向（proxy 同步 sprite_2d.v）
+func get_network_visual_rotation() -> float:
+	return sprite_2d.v
+
+func apply_network_visual_rotation(rot: float, delta: float) -> void:
+	sprite_2d.v = rot
 
 func sort_item():
 	if coin_group.size() != 0:

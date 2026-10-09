@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://cfuvco2lsuquf"]
+[gd_scene format=3 uid="uid://cfuvco2lsuquf"]
 
-[ext_resource type="Script" path="res://scenes/update_item/chocolate_coin.gd" id="1_76xn3"]
+[ext_resource type="Script" uid="uid://blyqero0etroh" path="res://scenes/update_item/chocolate_coin.gd" id="1_76xn3"]
 
 [node name="chocolate_coin" type="Node2D"]
 script = ExtResource("1_76xn3")

@@ -1,10 +1,13 @@
-[gd_resource type="Resource" script_class="EnemyCard" load_steps=3 format=3 uid="uid://doxv0u2ida458"]
+[gd_resource type="Resource" script_class="EnemyCard" format=3 uid="uid://doxv0u2ida458"]
 
 [ext_resource type="PackedScene" uid="uid://c7dvacer736k7" path="res://scenes/enemies/red_sweeper.tscn" id="1_0qqc3"]
-[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_2a6g6"]
+[ext_resource type="Script" uid="uid://c2yv0iuw6g8oh" path="res://resources/enemy/enemy.gd" id="2_2a6g6"]
+[ext_resource type="Texture2D" uid="uid://dc54gk0bfpmdj" path="res://sprites/enemies/red_sweeper_icon.png" id="2_yrh84"]
+[ext_resource type="PackedScene" uid="uid://cbpbf4l8gvrde" path="res://scenes/enemies/enemies_spawn/enemy_path.tscn" id="3_route"]
 
 [resource]
 script = ExtResource("2_2a6g6")
 id = "red_sweeper"
 body = ExtResource("1_0qqc3")
-description = ""
+route = ExtResource("3_route")
+icon = ExtResource("2_yrh84")

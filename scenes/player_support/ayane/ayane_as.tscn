@@ -1,6 +1,6 @@
-[gd_scene load_steps=12 format=3 uid="uid://xrpq35n8ial3"]
+[gd_scene format=3 uid="uid://xrpq35n8ial3"]
 
-[ext_resource type="Script" path="res://scenes/player_support/ayane/ayane_as.gd" id="1_y2274"]
+[ext_resource type="Script" uid="uid://dar87kxyvun1h" path="res://scenes/player_support/ayane/ayane_as.gd" id="1_y2274"]
 [ext_resource type="PackedScene" uid="uid://667yyp8p3mrr" path="res://script/explosion_damage.tscn" id="2_4ne0r"]
 [ext_resource type="Texture2D" uid="uid://c1yrscddqexvb" path="res://sprites/player_support/ayane/water_cloud_1.png" id="4_ahgu2"]
 [ext_resource type="Texture2D" uid="uid://bahxxqms8l1ry" path="res://sprites/player_support/ayane/water_cloud_2.png" id="5_wjs65"]
@@ -40,8 +40,8 @@ tracks/0/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_02vjh"]
 _data = {
-"RESET": SubResource("Animation_jpdja"),
-"loop": SubResource("Animation_6ffr3")
+&"RESET": SubResource("Animation_jpdja"),
+&"loop": SubResource("Animation_6ffr3")
 }
 
 [sub_resource type="Animation" id="Animation_kf3hm"]
@@ -187,45 +187,41 @@ tracks/5/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_a727a"]
 _data = {
-"RESET": SubResource("Animation_kf3hm"),
-"attack_anim": SubResource("Animation_montn")
+&"RESET": SubResource("Animation_kf3hm"),
+&"attack_anim": SubResource("Animation_montn")
 }
 
-[node name="ayane_as" type="Node2D"]
+[node name="ayane_as" type="Node2D" unique_id=678246250]
 script = ExtResource("1_y2274")
 explosion_pack = ExtResource("2_4ne0r")
 
-[node name="Timer" type="Timer" parent="."]
+[node name="Timer" type="Timer" parent="." unique_id=73620858]
 wait_time = 0.1
 one_shot = true
 
-[node name="water_clound" type="Node2D" parent="."]
+[node name="water_clound" type="Node2D" parent="." unique_id=418438211]
 visible = false
 top_level = true
 rotation = -0.453786
 skew = -0.663225
 
-[node name="CanvasGroup" type="CanvasGroup" parent="water_clound"]
+[node name="CanvasGroup" type="CanvasGroup" parent="water_clound" unique_id=2032193333]
 self_modulate = Color(1, 1, 1, 0.8)
 rotation = -3.14159
 scale = Vector2(3, 3)
 
-[node name="Sprite2D" type="Sprite2D" parent="water_clound/CanvasGroup"]
+[node name="Sprite2D" type="Sprite2D" parent="water_clound/CanvasGroup" unique_id=1940659577]
 texture = ExtResource("4_ahgu2")
 
-[node name="Sprite2D2" type="Sprite2D" parent="water_clound/CanvasGroup"]
+[node name="Sprite2D2" type="Sprite2D" parent="water_clound/CanvasGroup" unique_id=586032202]
 position = Vector2(0, -14)
 texture = ExtResource("5_wjs65")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_02vjh")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1199867118]
+libraries/ = SubResource("AnimationLibrary_02vjh")
 
-[node name="AnimationPlayer2" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_a727a")
-}
+[node name="AnimationPlayer2" type="AnimationPlayer" parent="." unique_id=348673765]
+libraries/ = SubResource("AnimationLibrary_a727a")
 
-[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=665227102]
 stream = ExtResource("6_0kygq")

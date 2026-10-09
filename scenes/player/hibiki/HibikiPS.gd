@@ -1,9 +1,5 @@
-extends Node2D
+extends PlayerPS
 
-
-
-@export var player: Node
-@export var stats: Stats
 @export var player_buff: Buff
 @export var buff_layer: int
 @export var buff_value: float
@@ -24,8 +20,6 @@ var on_ready: bool = false
 
 var value: Array
 var value_2: Array
-
-var now_t:int
 
 var explosion_num: int = 3
 
@@ -138,14 +132,14 @@ func explosion_count(bullet_position: Vector2):
 				launcher.bullet_arc = 360 * ( 1.0 - 1.0/float(explosion_num) )
 				launcher.bullet_speed = player.stats.bullet_speed
 				launcher.collision_num = player.stats.collision_num
-				launcher.shoot_bullet.call_deferred()
+				launcher.shoot_bullet()
 				target_group[str("target" + str(i + 1))]["position"] = rand_position()
 				target_group[str("target" + str(i + 1))]["cross"].global_position = target_group[str("target" + str(i + 1))]["position"]
 				
 				if now_t >= 1:
 					PlayerData.explosion_range_mult += 0.01
 
-func _physics_process(delta):
+func _physics_process(_delta):
 	
 	if on_ready == false:
 		return

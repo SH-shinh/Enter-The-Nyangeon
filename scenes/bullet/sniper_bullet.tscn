@@ -1,6 +1,7 @@
-[gd_scene load_steps=9 format=3 uid="uid://co0r5g6cxpu20"]
+[gd_scene format=3 uid="uid://co0r5g6cxpu20"]
 
-[ext_resource type="Script" path="res://scenes/bullet/sniper_bullet.gd" id="1_biku4"]
+[ext_resource type="Script" uid="uid://b46okxs1tha45" path="res://scenes/bullet/sniper_bullet.gd" id="1_biku4"]
+[ext_resource type="Script" uid="uid://dgqq5631n3u32" path="res://script/hit_box.gd" id="2_grb2o"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_ljs44"]
 
@@ -48,7 +49,7 @@ tracks/1/keys = {
 tracks/2/type = "value"
 tracks/2/imported = false
 tracks/2/enabled = true
-tracks/2/path = NodePath("Area2D/CollisionShape2D:disabled")
+tracks/2/path = NodePath("HitBox/CollisionShape2D:disabled")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
@@ -88,7 +89,7 @@ tracks/1/keys = {
 tracks/2/type = "value"
 tracks/2/imported = false
 tracks/2/enabled = true
-tracks/2/path = NodePath("Area2D/CollisionShape2D:disabled")
+tracks/2/path = NodePath("HitBox/CollisionShape2D:disabled")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
@@ -100,17 +101,16 @@ tracks/2/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_mt3fj"]
 _data = {
-"RESET": SubResource("Animation_e6vd5"),
-"shoot": SubResource("Animation_xd7g1")
+&"RESET": SubResource("Animation_e6vd5"),
+&"shoot": SubResource("Animation_xd7g1")
 }
 
-[node name="sniper_bullet" type="RayCast2D"]
+[node name="sniper_bullet" type="RayCast2D" unique_id=199544310]
 target_position = Vector2(1800, 0)
 collision_mask = 2
 script = ExtResource("1_biku4")
-bullet_knockback = 350
 
-[node name="Line2D2" type="Line2D" parent="."]
+[node name="Line2D2" type="Line2D" parent="." unique_id=1350642744]
 visible = false
 z_index = 1
 material = SubResource("CanvasItemMaterial_ljs44")
@@ -119,16 +119,17 @@ width = 3.0
 default_color = Color(20, 0, 0, 0.9)
 end_cap_mode = 2
 
-[node name="Area2D" type="Area2D" parent="."]
-collision_layer = 0
+[node name="HitBox" type="Area2D" parent="." unique_id=1075986059]
+collision_layer = 65536
 collision_mask = 10240
+script = ExtResource("2_grb2o")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox" unique_id=1842888675]
 position = Vector2(900, 0)
 shape = SubResource("RectangleShape2D_ub200")
 disabled = true
 
-[node name="Line2D" type="Line2D" parent="."]
+[node name="Line2D" type="Line2D" parent="." unique_id=348380182]
 visible = false
 z_index = 1
 points = PackedVector2Array(0, 0, 1000, 0)
@@ -137,9 +138,5 @@ texture = SubResource("GradientTexture2D_6pqxw")
 texture_mode = 1
 end_cap_mode = 2
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_mt3fj")
-}
-
-[connection signal="area_shape_entered" from="Area2D" to="." method="_on_area_2d_area_shape_entered"]
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1758675253]
+libraries/ = SubResource("AnimationLibrary_mt3fj")

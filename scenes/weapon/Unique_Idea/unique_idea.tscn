@@ -1,7 +1,7 @@
-[gd_scene load_steps=10 format=3 uid="uid://b7t5u574nj3pf"]
+[gd_scene format=3 uid="uid://b7t5u574nj3pf"]
 
 [ext_resource type="Texture2D" uid="uid://d4hukwsckh3ys" path="res://sprites/weapon/Unique_Idea.png" id="1_jpflg"]
-[ext_resource type="Script" path="res://scenes/weapon/Unique_Idea/unique_idea.gd" id="1_wh512"]
+[ext_resource type="Script" uid="uid://ll1l3uf862v7" path="res://script/player_gun.gd" id="1_wh512"]
 [ext_resource type="AudioStream" uid="uid://07582kyim4vq" path="res://sounds/GUNMech_Insert Clip_01.wav" id="4_dgpc3"]
 [ext_resource type="PackedScene" uid="uid://5xnka7kne7w" path="res://script/picatinny_rail.tscn" id="5_dl0oo"]
 [ext_resource type="AudioStream" uid="uid://dnajymkl244p7" path="res://sounds/GUNAuto_Assault Rifle D Fire_06.wav" id="5_h1u4i"]
@@ -53,49 +53,87 @@ tracks/1/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_w0ptx"]
 _data = {
-"RESET": SubResource("Animation_yiltc"),
-"reload": SubResource("Animation_sw87n")
+&"RESET": SubResource("Animation_yiltc"),
+&"reload": SubResource("Animation_sw87n")
 }
 
-[node name="Unique_Idea" type="Node2D"]
+[sub_resource type="Animation" id="Animation_tqh52"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0.6, 0.6)]
+}
+
+[sub_resource type="Animation" id="Animation_bqj5q"]
+resource_name = "fire"
+length = 0.3
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0.45, 1), Vector2(0.6, 0.6)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_w1q6w"]
+_data = {
+&"RESET": SubResource("Animation_tqh52"),
+&"fire": SubResource("Animation_bqj5q")
+}
+
+[node name="Unique_Idea" type="Node2D" unique_id=1083175339]
 script = ExtResource("1_wh512")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=22103972]
 position = Vector2(7, 0)
 scale = Vector2(0.6, 0.6)
 texture = ExtResource("1_jpflg")
 
-[node name="PicatinnyRail" parent="Sprite2D" instance=ExtResource("5_dl0oo")]
+[node name="PicatinnyRail" parent="Sprite2D" unique_id=746151038 instance=ExtResource("5_dl0oo")]
 position = Vector2(-3.33333, -5.83333)
 scale = Vector2(1.66667, 1.66667)
 
-[node name="Muzzle" parent="Sprite2D" instance=ExtResource("6_6rfqa")]
+[node name="Muzzle" parent="Sprite2D" unique_id=1038955811 instance=ExtResource("6_6rfqa")]
 position = Vector2(30, -0.833333)
 scale = Vector2(1.66667, 1.66667)
 
-[node name="ShootPosition" type="Marker2D" parent="."]
+[node name="ShootPosition" type="Marker2D" parent="." unique_id=1757217506]
 position = Vector2(25, -0.5)
 
-[node name="ShootTimer" type="Timer" parent="."]
+[node name="ShootTimer" type="Timer" parent="." unique_id=324858769]
 wait_time = 0.2
 one_shot = true
 
-[node name="FireSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="FireSounds" type="AudioStreamPlayer2D" parent="." unique_id=1435519031]
 process_mode = 3
 stream = ExtResource("5_h1u4i")
 volume_db = 8.0
 bus = &"SFX"
 
-[node name="ReloadAnim" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_w0ptx")
-}
+[node name="ReloadAnim" type="AnimationPlayer" parent="." unique_id=1861035639]
+libraries/ = SubResource("AnimationLibrary_w0ptx")
 
-[node name="AmmoReloadTimer" type="Timer" parent="."]
+[node name="FireAnim" type="AnimationPlayer" parent="." unique_id=503224003]
+libraries/ = SubResource("AnimationLibrary_w1q6w")
+
+[node name="AmmoReloadTimer" type="Timer" parent="." unique_id=98580302]
 wait_time = 0.5
 one_shot = true
 
-[node name="ReloadSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="ReloadSounds" type="AudioStreamPlayer2D" parent="." unique_id=263658563]
 process_mode = 3
 stream = ExtResource("4_dgpc3")
 volume_db = 8.0

@@ -1,22 +1,23 @@
-[gd_scene load_steps=59 format=3 uid="uid://bi7mu1tvf8kyr"]
+[gd_scene format=3 uid="uid://bi7mu1tvf8kyr"]
 
-[ext_resource type="Script" path="res://scenes/player/momoi/momoi.gd" id="1_puqf3"]
+[ext_resource type="Script" uid="uid://ci8narxcxkq0w" path="res://script/player.gd" id="1_puqf3"]
 [ext_resource type="Resource" uid="uid://b7xuyu5df8nte" path="res://resources/player/kasumi.tres" id="2_mot0i"]
 [ext_resource type="Resource" uid="uid://dqbr36mp6jcg7" path="res://resources/player/PS/kasumi_ps.tres" id="3_33mci"]
 [ext_resource type="PackedScene" uid="uid://b78jo1set8q45" path="res://script/follow.tscn" id="4_r3f21"]
 [ext_resource type="PackedScene" uid="uid://bdo12rjvieur7" path="res://scenes/shadow/shadow.tscn" id="5_66lsn"]
 [ext_resource type="PackedScene" uid="uid://ceydnirh2w7yb" path="res://scenes/player/smoke.tscn" id="6_07c6q"]
-[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="7_o4uwb"]
+[ext_resource type="Shader" uid="uid://bqypa5578tm8a" path="res://shaders/sprite_outline.gdshader" id="7_o4uwb"]
 [ext_resource type="Texture2D" uid="uid://clxmlfnsc882g" path="res://sprites/player/kasumi/kasumi_halo.png" id="8_cin2f"]
-[ext_resource type="Shader" path="res://shaders/screen_outline.gdshader" id="9_6lb06"]
-[ext_resource type="Script" path="res://scenes/player/yuzu/yuzu_hair.gd" id="10_myq3r"]
+[ext_resource type="Shader" uid="uid://cmu3hnm13h23n" path="res://shaders/screen_outline.gdshader" id="9_6lb06"]
+[ext_resource type="Script" uid="uid://da1c2c3gft87h" path="res://scenes/player/yuzu/yuzu_hair.gd" id="10_myq3r"]
 [ext_resource type="Texture2D" uid="uid://cs3m0kdoqjv1n" path="res://sprites/player/kasumi/kasumi.png" id="11_mnj6o"]
 [ext_resource type="PackedScene" uid="uid://wffnchsknkba" path="res://script/hat.tscn" id="12_5gwjw"]
 [ext_resource type="PackedScene" uid="uid://5a8isooy823m" path="res://scenes/weapon/Red_Rector/red_rector.tscn" id="13_pqm74"]
-[ext_resource type="Script" path="res://scenes/player/StateMachine.gd" id="14_8tdxy"]
+[ext_resource type="Script" uid="uid://e2gvf56eu6jb" path="res://scenes/player/StateMachine.gd" id="14_8tdxy"]
 [ext_resource type="PackedScene" uid="uid://dfdk1q5mpw3mh" path="res://scenes/bullet/kasumi_bullet.tscn" id="14_xpdae"]
-[ext_resource type="Script" path="res://script/Stats.gd" id="15_lktkx"]
+[ext_resource type="Script" uid="uid://c5wxmcve7xpca" path="res://script/Stats.gd" id="15_lktkx"]
 [ext_resource type="AudioStream" uid="uid://5rnyiqxeiusa" path="res://sounds/RunSounds.wav" id="16_hsfa0"]
+[ext_resource type="Script" uid="uid://cog8pvonoqtxu" path="res://script/hurt_box.gd" id="16_yquxb"]
 [ext_resource type="AudioStream" uid="uid://b6t6pjb3evtw4" path="res://sounds/jump.wav" id="17_lqggf"]
 [ext_resource type="AudioStream" uid="uid://bqqs4akeispjg" path="res://sounds/OnHit.wav" id="18_8xiie"]
 [ext_resource type="AudioStream" uid="uid://b5fdodmk5utji" path="res://sounds/coin.wav" id="19_0lf2s"]
@@ -27,10 +28,11 @@
 [ext_resource type="PackedScene" uid="uid://d1gmjbadbxsjp" path="res://scenes/game_camera/gamecamera.tscn" id="24_vea6o"]
 [ext_resource type="PackedScene" uid="uid://voxip8vojin" path="res://scenes/manager/player_buff_manager.tscn" id="26_icma1"]
 [ext_resource type="PackedScene" uid="uid://c620jv6qq2f8w" path="res://scenes/player/t_hp_count.tscn" id="28_qtv1m"]
-[ext_resource type="Script" path="res://scenes/player/kasumi/kasumi_melee.gd" id="29_k51yo"]
+[ext_resource type="Script" uid="uid://bs61n330ebtki" path="res://scenes/player/kasumi/kasumi_melee.gd" id="29_k51yo"]
 [ext_resource type="Texture2D" uid="uid://dfi144wplx4ym" path="res://sprites/player/kasumi/kasumi_controller.png" id="30_xuheo"]
-[ext_resource type="Script" path="res://scenes/player/kasumi/kasumi_ps.gd" id="31_ku5yp"]
+[ext_resource type="Script" uid="uid://bd8hahgdmj1id" path="res://scenes/player/kasumi/kasumi_ps.gd" id="31_ku5yp"]
 [ext_resource type="Resource" uid="uid://dmur1plvar11c" path="res://resources/buff/player_buff/kasumi_drill_buff.tres" id="32_urb3n"]
+[ext_resource type="Script" uid="uid://crtabh2xwunne" path="res://script/player_health_component.gd" id="33_e2wsm"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_5lclh"]
 radius = 7.0
@@ -43,9 +45,10 @@ shader_parameter/flash_opacity = 0.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5wv18"]
 shader = ExtResource("9_6lb06")
-shader_parameter/outline_width = 2.0
+shader_parameter/outline_width = 1.0
 shader_parameter/outline_color = Color(32, 18, 15, 1)
 shader_parameter/flash_opacity = 0.0
+shader_parameter/design_size = Vector2(640, 360)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_tc2a3"]
 shader = ExtResource("7_o4uwb")
@@ -106,7 +109,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_5ib6i")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 13.0
 }, {
@@ -114,7 +117,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_rws08")
 }],
-"loop": true,
+"loop": 1,
 "name": &"jump",
 "speed": 5.0
 }, {
@@ -131,7 +134,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_qqd24")
 }],
-"loop": true,
+"loop": 1,
 "name": &"run",
 "speed": 13.0
 }]
@@ -142,11 +145,6 @@ height = 2.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_o5v6t"]
 radius = 35.0
-
-[sub_resource type="Environment" id="Environment_q21nm"]
-background_mode = 3
-glow_enabled = true
-glow_strength = 0.7
 
 [sub_resource type="Animation" id="Animation_quqct"]
 resource_name = "Invincible frame"
@@ -230,8 +228,8 @@ tracks/2/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_apy7m"]
 _data = {
-"Invincible frame": SubResource("Animation_quqct"),
-"RESET": SubResource("Animation_54v52")
+&"Invincible frame": SubResource("Animation_quqct"),
+&"RESET": SubResource("Animation_54v52")
 }
 
 [sub_resource type="Animation" id="Animation_btd8x"]
@@ -292,8 +290,8 @@ tracks/1/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_y8tsq"]
 _data = {
-"RESET": SubResource("Animation_btd8x"),
-"kick_anim": SubResource("Animation_kssmf")
+&"RESET": SubResource("Animation_btd8x"),
+&"kick_anim": SubResource("Animation_kssmf")
 }
 
 [sub_resource type="Animation" id="Animation_56al1"]
@@ -401,11 +399,11 @@ tracks/3/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_qmkse"]
 _data = {
-"RESET": SubResource("Animation_56al1"),
-"melee_anim": SubResource("Animation_iw6xe")
+&"RESET": SubResource("Animation_56al1"),
+&"melee_anim": SubResource("Animation_iw6xe")
 }
 
-[node name="kasumi" type="CharacterBody2D" node_paths=PackedStringArray("stats") groups=["Player"]]
+[node name="kasumi" type="CharacterBody2D" unique_id=906455607 node_paths=PackedStringArray("stats") groups=["Player"]]
 collision_mask = 256
 motion_mode = 1
 script = ExtResource("1_puqf3")
@@ -416,21 +414,21 @@ player_color = Color(0.744998, 0.48951, 0.444899, 1)
 long_hair = true
 hat_position = 11.0
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2101572563]
 position = Vector2(0, -6)
 shape = SubResource("CircleShape2D_5lclh")
 
-[node name="Follow" parent="." instance=ExtResource("4_r3f21")]
+[node name="Follow" parent="." unique_id=1721474334 instance=ExtResource("4_r3f21")]
 
-[node name="Shadow" parent="." instance=ExtResource("5_66lsn")]
+[node name="Shadow" parent="." unique_id=1910872835 instance=ExtResource("5_66lsn")]
 scale = Vector2(0.445313, 0.445313)
 
-[node name="GPUParticles2D" parent="." instance=ExtResource("6_07c6q")]
+[node name="GPUParticles2D" parent="." unique_id=352191047 instance=ExtResource("6_07c6q")]
 emitting = false
 
-[node name="GraphicsHalo" type="Node2D" parent="."]
+[node name="GraphicsHalo" type="Node2D" parent="." unique_id=1059569358]
 
-[node name="Halo" type="Sprite2D" parent="GraphicsHalo"]
+[node name="Halo" type="Sprite2D" parent="GraphicsHalo" unique_id=1072853207]
 unique_name_in_owner = true
 material = SubResource("ShaderMaterial_ka1tk")
 position = Vector2(-10, -32)
@@ -438,32 +436,33 @@ rotation = 0.47822
 scale = Vector2(0.254, 0.276)
 texture = ExtResource("8_cin2f")
 
-[node name="CanvasGroup" type="CanvasGroup" parent="."]
+[node name="CanvasGroup" type="CanvasGroup" parent="." unique_id=731565788]
 material = SubResource("ShaderMaterial_5wv18")
 
-[node name="SubViewportContainer" type="SubViewportContainer" parent="CanvasGroup"]
+[node name="SubViewportContainer" type="SubViewportContainer" parent="CanvasGroup" unique_id=561837289]
 material = SubResource("ShaderMaterial_tc2a3")
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -320.0
-offset_top = -202.0
-offset_right = 320.0
-offset_bottom = 158.0
+offset_left = -64.0
+offset_top = -86.0
+offset_right = 64.0
+offset_bottom = 42.0
 grow_horizontal = 2
 grow_vertical = 2
-pivot_offset = Vector2(320, 180)
+pivot_offset = Vector2(64, 64)
 
-[node name="SubViewport" type="SubViewport" parent="CanvasGroup/SubViewportContainer"]
+[node name="SubViewport" type="SubViewport" parent="CanvasGroup/SubViewportContainer" unique_id=47701414]
 transparent_bg = true
 handle_input_locally = false
-size = Vector2i(640, 360)
+use_hdr_2d = true
+size = Vector2i(128, 128)
 render_target_update_mode = 4
 
-[node name="Hair" type="Node2D" parent="CanvasGroup/SubViewportContainer/SubViewport" node_paths=PackedStringArray("player")]
-position = Vector2(320, 180)
+[node name="Hair" type="Node2D" parent="CanvasGroup/SubViewportContainer/SubViewport" unique_id=2113837493 node_paths=PackedStringArray("player")]
+position = Vector2(64, 64)
 script = ExtResource("10_myq3r")
 player = NodePath("../../../..")
 offset_0 = Array[Vector2]([Vector2(0, 0), Vector2(0, 0), Vector2(0, 0), Vector2(0, 0), Vector2(0, 0)])
@@ -474,11 +473,11 @@ startRadius = 9.0
 endRadius = 3.0
 num = 0.5
 
-[node name="Graphics" type="Node2D" parent="CanvasGroup"]
+[node name="Graphics" type="Node2D" parent="CanvasGroup" unique_id=737148286]
 unique_name_in_owner = true
 material = SubResource("CanvasItemMaterial_i6o8k")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="CanvasGroup/Graphics"]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="CanvasGroup/Graphics" unique_id=1550095969]
 unique_name_in_owner = true
 position = Vector2(0, -17)
 sprite_frames = SubResource("SpriteFrames_k5knc")
@@ -487,129 +486,127 @@ autoplay = "idle"
 frame_progress = 0.553951
 flip_h = true
 
-[node name="HaloRoot" type="Node2D" parent="CanvasGroup/Graphics/AnimatedSprite2D"]
+[node name="HaloRoot" type="Node2D" parent="CanvasGroup/Graphics/AnimatedSprite2D" unique_id=774366275]
 unique_name_in_owner = true
 position = Vector2(-9, -28)
 
-[node name="GraphicsGun" type="Node2D" parent="."]
+[node name="GraphicsGun" type="Node2D" parent="." unique_id=718846720]
 
-[node name="Hat" parent="GraphicsGun" instance=ExtResource("12_5gwjw")]
+[node name="Hat" parent="GraphicsGun" unique_id=142067040 instance=ExtResource("12_5gwjw")]
 position = Vector2(1, -29)
 
-[node name="Gun" parent="GraphicsGun" node_paths=PackedStringArray("stats") instance=ExtResource("13_pqm74")]
+[node name="Gun" parent="GraphicsGun" unique_id=1529426774 node_paths=PackedStringArray("stats") instance=ExtResource("13_pqm74")]
 unique_name_in_owner = true
 position = Vector2(7, -8)
 stats = NodePath("../../Stats")
 bullet = ExtResource("14_xpdae")
 
-[node name="Node2D" type="Node2D" parent="GraphicsGun"]
+[node name="Node2D" type="Node2D" parent="GraphicsGun" unique_id=509595596]
 
-[node name="Sprite2D" type="Sprite2D" parent="GraphicsGun/Node2D"]
+[node name="Sprite2D" type="Sprite2D" parent="GraphicsGun/Node2D" unique_id=1132433298]
 visible = false
 position = Vector2(-8, -14)
 texture = ExtResource("30_xuheo")
 
-[node name="HitBox" type="Area2D" parent="." groups=["PlayerBox"]]
+[node name="HurtBox" type="Area2D" parent="." unique_id=2127443693 node_paths=PackedStringArray("body") groups=["PlayerBox"]]
 collision_layer = 2048
 collision_mask = 1160
+script = ExtResource("16_yquxb")
+body = NodePath("..")
+is_player = true
 
-[node name="HitboxShape" type="CollisionShape2D" parent="HitBox"]
+[node name="HurtboxShape" type="CollisionShape2D" parent="HurtBox" unique_id=155372307]
 position = Vector2(0, -8)
 rotation = 1.5708
 shape = SubResource("CapsuleShape2D_okpe0")
 debug_color = Color(3.18866e-06, 0.0816588, 0.291816, 0.42)
 
-[node name="PickBox" type="Area2D" parent="."]
+[node name="PickBox" type="Area2D" parent="." unique_id=1395190333]
 collision_layer = 0
 collision_mask = 64
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="PickBox"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PickBox" unique_id=1861881240]
 visible = false
 position = Vector2(0, -11)
 shape = SubResource("CircleShape2D_o5v6t")
 debug_color = Color(0.724221, 0.462988, 0.32265, 0.42)
 
-[node name="FlyTimer" type="Timer" parent="."]
+[node name="FlyTimer" type="Timer" parent="." unique_id=908165283]
 wait_time = 0.3
 one_shot = true
 
-[node name="JumpTimer" type="Timer" parent="."]
+[node name="JumpTimer" type="Timer" parent="." unique_id=1634669997]
 wait_time = 0.1
 one_shot = true
 
-[node name="JumpCDTimer" type="Timer" parent="."]
+[node name="JumpCDTimer" type="Timer" parent="." unique_id=1734279807]
 one_shot = true
 
-[node name="RunSoundsTimer" type="Timer" parent="."]
+[node name="RunSoundsTimer" type="Timer" parent="." unique_id=882746287]
 wait_time = 0.2
 one_shot = true
 
-[node name="InvincibleFrame" type="Timer" parent="."]
+[node name="InvincibleFrame" type="Timer" parent="." unique_id=1756500073]
 wait_time = 0.5
 one_shot = true
 
-[node name="StateMachine" type="Node" parent="."]
+[node name="StateMachine" type="Node" parent="." unique_id=92993922]
 script = ExtResource("14_8tdxy")
 
-[node name="Stats" type="Node" parent="."]
+[node name="Stats" type="Node" parent="." unique_id=1898519761]
 script = ExtResource("15_lktkx")
-critical_luck = 10
-MAX_SPEED = 160
 max_hp = 54
+critical_luck = 10
+critical_damage = 2.6
+MAX_SPEED = 160
 max_ammo = 8
+bullet_damage = 7
 bullet_shoot_time = 260
 bullet_speed = 950
-bullet_damage = 7
 bullet_recoil = 50
 bullet_knockback = 80
 reload_timer = 0.6
 explosion_damage = 1.2
-critical_damage = 2.6
 kick_damage = 20
 shake_mult = 1.2
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_q21nm")
-
-[node name="RunSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="RunSounds" type="AudioStreamPlayer2D" parent="." unique_id=1079688806]
 process_mode = 3
 stream = ExtResource("16_hsfa0")
 volume_db = -6.0
 bus = &"SFX"
 
-[node name="JumpSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="JumpSounds" type="AudioStreamPlayer2D" parent="." unique_id=923223127]
 process_mode = 3
 stream = ExtResource("17_lqggf")
 bus = &"SFX"
 
-[node name="OnHitSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="OnHitSounds" type="AudioStreamPlayer2D" parent="." unique_id=1608928528]
 process_mode = 3
 stream = ExtResource("18_8xiie")
 volume_db = 8.0
 bus = &"SFX"
 
-[node name="CoinSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="CoinSounds" type="AudioStreamPlayer2D" parent="." unique_id=1113321943]
 process_mode = 3
 stream = ExtResource("19_0lf2s")
 volume_db = -2.0
 bus = &"SFX"
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_apy7m")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1014283355]
+libraries/ = SubResource("AnimationLibrary_apy7m")
 
-[node name="GameUI" parent="." node_paths=PackedStringArray("player", "stats") instance=ExtResource("20_u6kat")]
+[node name="GameUI" parent="." unique_id=1551073177 node_paths=PackedStringArray("player", "stats") instance=ExtResource("20_u6kat")]
 player = NodePath("..")
 stats = NodePath("../Stats")
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1866855320]
 layer = 3
 
-[node name="PauseScreen" parent="CanvasLayer" instance=ExtResource("21_c5pxj")]
+[node name="PauseScreen" parent="CanvasLayer" unique_id=666777556 instance=ExtResource("21_c5pxj")]
 visible = false
 
-[node name="JumpCDBar" type="TextureProgressBar" parent="."]
+[node name="JumpCDBar" type="TextureProgressBar" parent="." unique_id=20900121]
 visible = false
 z_index = 20
 offset_left = -16.0
@@ -623,48 +620,48 @@ value = 0.355
 texture_under = ExtResource("22_kcuul")
 texture_progress = ExtResource("23_ivqg3")
 
-[node name="Camera2D" parent="." instance=ExtResource("24_vea6o")]
+[node name="Camera2D" parent="." unique_id=1416860955 instance=ExtResource("24_vea6o")]
 offset = Vector2(0, -15)
 
-[node name="AnimationPlayer2" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_y8tsq")
-}
+[node name="AnimationPlayer2" type="AnimationPlayer" parent="." unique_id=164844944]
+libraries/ = SubResource("AnimationLibrary_y8tsq")
 
-[node name="PlayerBuffManager" parent="." instance=ExtResource("26_icma1")]
+[node name="PlayerBuffManager" parent="." unique_id=433496838 instance=ExtResource("26_icma1")]
 
-[node name="T_HP_Count" parent="." node_paths=PackedStringArray("stats") instance=ExtResource("28_qtv1m")]
+[node name="T_HP_Count" parent="." unique_id=1419504700 node_paths=PackedStringArray("stats") instance=ExtResource("28_qtv1m")]
 stats = NodePath("../Stats")
 
-[node name="Kick" type="Node2D" parent="." node_paths=PackedStringArray("player", "ps_node")]
+[node name="Kick" type="Node2D" parent="." unique_id=1997126135 node_paths=PackedStringArray("player", "ps_node")]
 script = ExtResource("29_k51yo")
 player = NodePath("..")
 ps_node = NodePath("../kasumi_ps")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="Kick"]
-libraries = {
-"": SubResource("AnimationLibrary_qmkse")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Kick" unique_id=1289993842]
+libraries/ = SubResource("AnimationLibrary_qmkse")
 
-[node name="Timer" type="Timer" parent="Kick"]
+[node name="Timer" type="Timer" parent="Kick" unique_id=296061965]
 wait_time = 0.65
 one_shot = true
 
-[node name="Marker2D" type="Marker2D" parent="Kick"]
+[node name="Marker2D" type="Marker2D" parent="Kick" unique_id=186820265]
 position = Vector2(50, 0)
 
-[node name="kasumi_ps" type="Node2D" parent="." node_paths=PackedStringArray("stats", "player")]
+[node name="kasumi_ps" type="Node2D" parent="." unique_id=527697764 node_paths=PackedStringArray("stats", "player", "gun")]
 script = ExtResource("31_ku5yp")
-stats = NodePath("../Stats")
-player = NodePath("..")
 player_buff = ExtResource("32_urb3n")
 buff_layer = 30
 buff_value = 1.0
 buff_erase_timer = 10000.0
+stats = NodePath("../Stats")
+player = NodePath("..")
+gun = NodePath("../GraphicsGun/Gun")
 
-[connection signal="is_health" from="." to="." method="_on_is_health"]
+[node name="HealthComponent" type="Node" parent="." unique_id=1073700329 node_paths=PackedStringArray("stats", "hurt_box")]
+script = ExtResource("33_e2wsm")
+stats = NodePath("../Stats")
+hurt_box = NodePath("../HurtBox")
+
 [connection signal="is_hurt" from="." to="." method="_on_is_hurt"]
-[connection signal="body_entered" from="HitBox" to="." method="_on_hit_box_body_entered"]
 [connection signal="area_entered" from="PickBox" to="." method="_on_pick_box_area_entered"]
 [connection signal="timeout" from="JumpCDTimer" to="." method="_on_jump_cd_timer_timeout"]
 [connection signal="pick_up_range_changed" from="Stats" to="." method="_on_stats_pick_up_range_changed"]

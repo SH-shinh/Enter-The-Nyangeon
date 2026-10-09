@@ -63,23 +63,26 @@ func time_count():
 	if decision_time > 0:
 		decision_time -= 1
 		if decision_time <= 0:
-			dir_v = get_distance_to_player()
-			shoot_and_move_speed = shoot_and_move * stats.MAX_SPEED
+			if is_standby():
+				dir_v = Vector2.ZERO
+				move_mod = 0
+			else:
+				dir_v = get_distance_to_player()
+			shoot_and_move_speed = int(shoot_and_move * stats.MAX_SPEED)
 			decision_time = 5
 
 func tick_physics(state: State, delta: float) -> void:
 	if is_idle == 1:
 		return
 	
-	ACCELERATION = stats.MAX_SPEED / stats.SPEED_TIME
+	ACCELERATION = stats.move_acceleration()
 	
-	if enemy_body.size() != 0:
-		for i in enemy_body:
-			i.velocity += i.stats.weigth_mult * (i.global_position - self.global_position).normalized() * stats.MAX_SPEED / max(0.5, i.global_position.distance_to(self.global_position))
+	apply_soft_collision()
 	
-	if player != null:
-		if aim_end == false or sniper == true:
-			gun.look_at(player.global_position + Vector2(0, -8))
+	if player != null and not is_standby():
+		var target := get_target()
+		if target != null and (aim_end == false or sniper == true):
+			gun.look_at(target.global_position + Vector2(0, -8))
 	
 	match state:
 		
@@ -97,42 +100,47 @@ func tick_physics(state: State, delta: float) -> void:
 			move(delta, ACCELERATION, stats.MAX_SPEED)
 
 func face_to_player():
-	if player != null and self.position.distance_to(player.position) > 5:
+	var t := get_target()
+	if t != null and self.position.distance_to(t.global_position) > 5:
 		if aim_end == false or sniper == true:
-			return (player.global_position - global_position).normalized()
+			return (t.global_position - global_position).normalized()
 	return Vector2.ZERO
 
 func get_distance_to_player():
-	distance = self.position.distance_to(player.position)
+	var tp := get_target_position()
+	distance = self.position.distance_to(tp)
 	if distance > shoot_range:
 		move_mod = 0
-		return (player.global_position - global_position).normalized()
+		return (tp - global_position).normalized()
 	elif distance < back_range:
 		move_mod = 0
-		return (global_position - player.global_position).normalized()
+		return (global_position - tp).normalized()
 	else:
 		move_mod = 2
+		var n := (tp - global_position).normalized()
 		if dir_num == 0:
-			return Vector2((player.global_position - global_position).normalized().y, -(player.global_position - global_position).normalized().x)
+			return Vector2(n.y, -n.x)
 		else:
-			return Vector2(-(player.global_position - global_position).normalized().y, (player.global_position - global_position).normalized().x)
+			return Vector2(-n.y, n.x)
 
 func shoot_bullet():
+	if is_standby():
+		return
 	if shoot_cd <= 0 and can_shoot == true:
 		aim_end = true
 		gun.gun_shot()
 		shoot_cd = shoot_cd_time
 		can_shoot = false
 
-func move(delta: float, ACCELERATION: float ,MAX_SPEED: float ) -> void:
+func move(delta: float, acceleration_local: float ,MAX_SPEED: float ) -> void:
 	
-	var direction = dir_v
+	direction = dir_v
 	var look_dir = face_to_player()
 	
 	if stats.hp != 0:
 	
-		velocity.x = move_toward(velocity.x, direction.x * MAX_SPEED, ACCELERATION * delta)
-		velocity.y = move_toward(velocity.y, direction.y * MAX_SPEED, ACCELERATION * delta)
+		velocity.x = move_toward(velocity.x, direction.x * MAX_SPEED, acceleration_local * delta)
+		velocity.y = move_toward(velocity.y, direction.y * MAX_SPEED, acceleration_local * delta)
 		
 		if look_dir.x > 0:
 			graphics.scale.x = 1
@@ -178,7 +186,7 @@ func get_next_state(state: State) -> State:
 			
 	return state
 	
-func transition_state(from:State, to: State) -> void:
+func transition_state(_from:State, to: State) -> void:
 	
 	match to:
 		State.IDLE:
@@ -213,31 +221,13 @@ func rand_aim_and_move_speed():
 	var num:float = randf_range(0,aim_and_move)
 	if num < 0.3 :
 		num = 0
-	aim_and_move_speed = num * stats.MAX_SPEED
+	aim_and_move_speed = int(num * stats.MAX_SPEED)
 
 func surround_player():
 	var num = randf_range(0,100)
 	if num < surround_tendency:
 		aim = surround_time
 		aim_and_move_speed = stats.MAX_SPEED
-
-func _on_area_2d_body_entered(body):
-	if is_idle == 1:
-		return
-	if body.is_in_group("Enemy")  and !enemy_body.has(body) and body != self and !body.is_in_group("EnemyPart"):
-		enemy_body.append(body)
-	
-	if body.is_in_group("Enemy") and body != self and !body.is_in_group("EnemyPart"):
-		var collosion_direction = (self.position - body.position).normalized()
-		self.velocity += stats.weigth_mult * collosion_direction * stats.MAX_SPEED / 2
-
-func _on_area_2d_body_exited(body):
-	if is_idle == 1:
-		return
-	if body.is_in_group("Enemy")  and enemy_body.has(body):
-		enemy_body.remove_at(enemy_body.find(body))
-		if in_knockback == false:
-			body.velocity = velocity.limit_length(body.stats.MAX_SPEED)
 
 func _on_gun_shoot_end():
 	aim_end = false

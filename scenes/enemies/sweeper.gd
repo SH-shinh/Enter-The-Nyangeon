@@ -35,7 +35,7 @@ func time_count():
 	if charge_time > 0:
 		charge_time -= 1
 		if charge_time <= 0:
-			sprite_2d.material.set_shader_parameter("outline_width", 0)
+			_apply_outline_state()
 			can_charge = false
 			charge_cd_time = 50
 			move_mode = 0
@@ -44,11 +44,9 @@ func time_count():
 		charge_cd_time -= 1
 
 func tick_physics(state: State, delta: float) -> void:
-	ACCELERATION = stats.MAX_SPEED / stats.SPEED_TIME
+	ACCELERATION = stats.move_acceleration()
 	#sprite_2d.speed_scale = (velocity.x * velocity.x + velocity.y * velocity.y) / 6400
-	if enemy_body.size() != 0:
-		for i in enemy_body:
-			i.velocity += i.stats.weigth_mult * (i.global_position - self.global_position).normalized() * stats.MAX_SPEED / max(0.5, i.global_position.distance_to(self.global_position))
+	apply_soft_collision()
 	
 	match state:
 		
@@ -60,16 +58,17 @@ func tick_physics(state: State, delta: float) -> void:
 			charge_move(delta, ACCELERATION, stats.MAX_SPEED)
 	
 	if charge == true:
-		if player != null:
-			var distance = self.position.distance_to(player.position)
+		var charge_target := get_target() as Node2D
+		if charge_target != null and not is_standby():
+			var distance = self.position.distance_to(charge_target.position)
 			if distance < 150 and charge_cd_time <= 0:
 				can_charge = true
 
-func charge_move(delta: float, ACCELERATION: float ,MAX_SPEED: float ) -> void:
+func charge_move(delta: float, acceleration_local: float ,MAX_SPEED: float ) -> void:
 	if stats.hp != 0:
 	
-		velocity.x = move_toward(velocity.x, charge_dir.x * MAX_SPEED * charge_speed_mult, charge_speed_mult * ACCELERATION * delta)
-		velocity.y = move_toward(velocity.y, charge_dir.y * MAX_SPEED * charge_speed_mult, charge_speed_mult * ACCELERATION * delta)
+		velocity.x = move_toward(velocity.x, charge_dir.x * MAX_SPEED * charge_speed_mult, charge_speed_mult * acceleration_local * delta)
+		velocity.y = move_toward(velocity.y, charge_dir.y * MAX_SPEED * charge_speed_mult, charge_speed_mult * acceleration_local * delta)
 		
 		if charge_dir.x > 0:
 			graphics.scale.x = 1
@@ -107,7 +106,7 @@ func get_next_state(state: State) -> State:
 		
 	return state
 
-func transition_state(from:State, to: State) -> void:
+func transition_state(_from:State, to: State) -> void:
 	
 	match to:
 		State.IDLE:
@@ -131,21 +130,3 @@ func get_charge_dir():
 	if $AnimationPlayer != null:
 		$AnimationPlayer.play("charge_warning")
 	charge_dir_time = 15
-
-func _on_area_2d_body_entered(body):
-	if is_idle == 1:
-		return
-	if body.is_in_group("Enemy")  and !enemy_body.has(body) and body != self and !body.is_in_group("EnemyPart"):
-		enemy_body.append(body)
-	
-	if body.is_in_group("Enemy") and body != self and !body.is_in_group("EnemyPart"):
-		var collosion_direction = (self.position - body.position).normalized()
-		self.velocity += stats.weigth_mult * collosion_direction * stats.MAX_SPEED / 2
-
-func _on_area_2d_body_exited(body):
-	if is_idle == 1:
-		return
-	if body.is_in_group("Enemy")  and enemy_body.has(body):
-		enemy_body.remove_at(enemy_body.find(body))
-		if in_knockback == false:
-			body.velocity = velocity.limit_length(body.stats.MAX_SPEED)

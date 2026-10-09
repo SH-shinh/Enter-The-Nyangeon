@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://d06lefsipq5sa"]
+[gd_scene format=3 uid="uid://d06lefsipq5sa"]
 
-[ext_resource type="Script" path="res://scenes/update_item/AquaSandals.gd" id="1_ufp1w"]
+[ext_resource type="Script" uid="uid://by2d7b8utl5w" path="res://scenes/update_item/AquaSandals.gd" id="1_ufp1w"]
 
 [node name="AquaSandals" type="Node2D"]
 script = ExtResource("1_ufp1w")

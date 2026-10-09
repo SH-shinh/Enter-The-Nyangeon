@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://3cpqfyjg4t4"]
+[gd_scene format=3 uid="uid://3cpqfyjg4t4"]
 
-[ext_resource type="Script" path="res://scenes/update_item/shiny_conch.gd" id="1_3rcua"]
+[ext_resource type="Script" uid="uid://bxupblav18wl3" path="res://scenes/update_item/shiny_conch.gd" id="1_3rcua"]
 
 [node name="shiny_conch" type="Node2D"]
 script = ExtResource("1_3rcua")

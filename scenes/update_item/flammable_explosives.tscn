@@ -1,6 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://du3dnarh8ifcc"]
+[gd_scene format=3 uid="uid://du3dnarh8ifcc"]
 
-[ext_resource type="Script" path="res://scenes/update_item/flammable_explosives.gd" id="1_avfnk"]
+[ext_resource type="Script" uid="uid://k8iur2vaikew" path="res://scenes/update_item/flammable_explosives.gd" id="1_avfnk"]
 [ext_resource type="Resource" uid="uid://ddlwsbdn8hn6j" path="res://resources/buff/enemy_buff/fire_dot.tres" id="2_fca4s"]
 
 [node name="FlammableExplosives" type="Node2D"]

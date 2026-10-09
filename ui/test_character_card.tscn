@@ -1,7 +1,6 @@
-[gd_scene load_steps=9 format=3 uid="uid://bdq6bbg18vl86"]
+[gd_scene load_steps=8 format=3 uid="uid://bdq6bbg18vl86"]
 
 [ext_resource type="Script" path="res://ui/test_character_card.gd" id="1_vbwj4"]
-[ext_resource type="Texture2D" uid="uid://30jjllwalay0" path="res://sprites/player/aris/aris_picture.png" id="1_xs0n5"]
 [ext_resource type="Texture2D" uid="uid://jcqmwo1t8vv0" path="res://ui/ui.png" id="2_6jcqt"]
 [ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="3_8de66"]
 
@@ -47,7 +46,6 @@ mouse_filter = 2
 texture_filter = 2
 position = Vector2(39, 133)
 scale = Vector2(0.3, 0.3)
-texture = ExtResource("1_xs0n5")
 hframes = 4
 
 [node name="Text" type="Node2D" parent="."]
@@ -83,4 +81,3 @@ text = "ps_0"
 autowrap_mode = 1
 
 [connection signal="gui_input" from="Button" to="." method="_on_button_gui_input"]
-[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]

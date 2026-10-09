@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://ybfby3r6dxty"]
+[gd_scene format=3 uid="uid://ybfby3r6dxty"]
 
-[ext_resource type="Script" path="res://scenes/update_item/utaha_turret.gd" id="1_ytygj"]
+[ext_resource type="Script" uid="uid://c8aqijlyw7n5m" path="res://scenes/update_item/utaha_turret.gd" id="1_ytygj"]
 
 [node name="utaha_turret" type="Node2D"]
 script = ExtResource("1_ytygj")

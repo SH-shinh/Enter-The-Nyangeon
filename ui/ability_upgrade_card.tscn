@@ -1,10 +1,10 @@
-[gd_scene load_steps=25 format=3 uid="uid://blq6mggtcjlua"]
+[gd_scene format=3 uid="uid://blq6mggtcjlua"]
 
-[ext_resource type="Script" path="res://ui/ability_upgrade_card.gd" id="1_5vdvn"]
+[ext_resource type="Script" uid="uid://c7dt8bvdqhjqw" path="res://ui/ability_upgrade_card.gd" id="1_5vdvn"]
 [ext_resource type="Theme" uid="uid://82005dwd2wtx" path="res://fonts/theme.tres" id="1_ud75o"]
 [ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="2_h2sd1"]
 [ext_resource type="Texture2D" uid="uid://dd7vnobcamv4q" path="res://sprites/test_BG.png" id="4_aqn0d"]
-[ext_resource type="Shader" path="res://shaders/scrolling_bkgd.gdshader" id="5_0xx8b"]
+[ext_resource type="Shader" uid="uid://d3frxix26ovel" path="res://shaders/scrolling_bkgd.gdshader" id="5_0xx8b"]
 [ext_resource type="Texture2D" uid="uid://bhdhwepn34dkf" path="res://sprites/update_item/banana_magazine.png" id="5_lvncg"]
 [ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="6_8vorw"]
 [ext_resource type="Texture2D" uid="uid://m54grm4ymrn8" path="res://ui/line_point.png" id="6_tcgnu"]
@@ -91,8 +91,8 @@ tracks/2/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_oq8fj"]
 _data = {
-"RESET": SubResource("Animation_we04k"),
-"card_in": SubResource("Animation_cen0v")
+&"RESET": SubResource("Animation_we04k"),
+&"card_in": SubResource("Animation_cen0v")
 }
 
 [sub_resource type="Animation" id="Animation_ud3jp"]
@@ -365,11 +365,11 @@ tracks/5/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_pf0dc"]
 _data = {
-"RESET": SubResource("Animation_ud3jp"),
-"discard": SubResource("Animation_e83mv"),
-"select_enter": SubResource("Animation_3dtoq"),
-"select_exit": SubResource("Animation_3ysbw"),
-"selected": SubResource("Animation_i82qa")
+&"RESET": SubResource("Animation_ud3jp"),
+&"discard": SubResource("Animation_e83mv"),
+&"select_enter": SubResource("Animation_3dtoq"),
+&"select_exit": SubResource("Animation_3ysbw"),
+&"selected": SubResource("Animation_i82qa")
 }
 
 [sub_resource type="Gradient" id="Gradient_ru4ka"]
@@ -418,7 +418,7 @@ shader_parameter/repeat_x = 1.0
 shader_parameter/repeat_y = 1.0
 shader_parameter/tint = Color(1, 1, 1, 1)
 
-[node name="AbilityUpgradeCard" type="PanelContainer"]
+[node name="AbilityUpgradeCard" type="PanelContainer" unique_id=1587352540]
 process_mode = 3
 custom_minimum_size = Vector2(142, 253)
 offset_left = -6.0
@@ -431,22 +431,18 @@ mouse_filter = 2
 theme = ExtResource("1_ud75o")
 script = ExtResource("1_5vdvn")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_oq8fj")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1190748183]
+libraries/ = SubResource("AnimationLibrary_oq8fj")
 
-[node name="SelectCardAnim" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_pf0dc")
-}
+[node name="SelectCardAnim" type="AnimationPlayer" parent="." unique_id=1129178531]
+libraries/ = SubResource("AnimationLibrary_pf0dc")
 
-[node name="Node2D2" type="Node2D" parent="."]
+[node name="Node2D2" type="Node2D" parent="." unique_id=1870751152]
 show_behind_parent = true
 position = Vector2(64, 94)
 scale = Vector2(1e-05, 0.8)
 
-[node name="TextureRect" type="TextureRect" parent="Node2D2"]
+[node name="TextureRect" type="TextureRect" parent="Node2D2" unique_id=662523505]
 offset_left = -60.0
 offset_top = -159.0
 offset_right = 75.0
@@ -454,7 +450,7 @@ offset_bottom = 217.0
 mouse_filter = 2
 texture = SubResource("GradientTexture2D_fj41r")
 
-[node name="Label" type="Label" parent="Node2D2"]
+[node name="Label" type="Label" parent="Node2D2" unique_id=1084423334]
 offset_left = -60.0
 offset_top = 156.364
 offset_right = 75.0
@@ -465,7 +461,7 @@ text = "| CLICK |"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Line2D" type="Line2D" parent="Node2D2"]
+[node name="Line2D" type="Line2D" parent="Node2D2" unique_id=705897156]
 material = SubResource("ShaderMaterial_bcbse")
 position = Vector2(0, 9)
 points = PackedVector2Array(-60, -106, 74.5454, -106)
@@ -473,10 +469,10 @@ width = 2.0
 texture = ExtResource("6_tcgnu")
 texture_mode = 1
 
-[node name="Node2D3" type="Node2D" parent="."]
+[node name="Node2D3" type="Node2D" parent="." unique_id=660594407]
 show_behind_parent = true
 
-[node name="CardColor" type="ColorRect" parent="Node2D3"]
+[node name="CardColor" type="ColorRect" parent="Node2D3" unique_id=1874852659]
 unique_name_in_owner = true
 show_behind_parent = true
 offset_left = 3.0
@@ -485,14 +481,14 @@ offset_right = 140.0
 offset_bottom = 250.0
 color = Color(0.959597, 0.380431, 0.534742, 1)
 
-[node name="TextureRect" type="TextureRect" parent="Node2D3/CardColor"]
+[node name="TextureRect" type="TextureRect" parent="Node2D3/CardColor" unique_id=749986752]
 visible = false
 layout_mode = 0
 offset_right = 137.0
 offset_bottom = 247.0
 texture = SubResource("GradientTexture2D_4ccx7")
 
-[node name="ColorRect4" type="TextureRect" parent="Node2D3"]
+[node name="ColorRect4" type="TextureRect" parent="Node2D3" unique_id=1677076534]
 material = SubResource("ShaderMaterial_m6oth")
 offset_left = 3.0
 offset_top = 3.0
@@ -501,14 +497,14 @@ offset_bottom = 250.0
 texture = ExtResource("4_aqn0d")
 stretch_mode = 1
 
-[node name="ColorRect5" type="ColorRect" parent="Node2D3"]
+[node name="ColorRect5" type="ColorRect" parent="Node2D3" unique_id=153800880]
 offset_left = 3.0
 offset_top = 3.0
 offset_right = 140.0
 offset_bottom = 11.0
 color = Color(0.0980392, 0.0980392, 0.0980392, 1)
 
-[node name="Label" type="Label" parent="Node2D3"]
+[node name="Label" type="Label" parent="Node2D3" unique_id=473736377]
 offset_left = 8.0
 offset_top = 3.0
 offset_right = 65.0
@@ -517,10 +513,10 @@ theme_override_fonts/font = ExtResource("6_8vorw")
 theme_override_font_sizes/font_size = 10
 text = "EQUIPMENT"
 
-[node name="Node2D" type="Node2D" parent="."]
+[node name="Node2D" type="Node2D" parent="." unique_id=1373166593]
 position = Vector2(6.22222, 0)
 
-[node name="ColorRect" type="ColorRect" parent="Node2D"]
+[node name="ColorRect" type="ColorRect" parent="Node2D" unique_id=339776499]
 visible = false
 offset_left = 3.0
 offset_top = 11.0
@@ -528,7 +524,7 @@ offset_right = 125.0
 offset_bottom = 33.0
 color = Color(0.0768359, 0.0768358, 0.0768358, 0.752941)
 
-[node name="ColorRect5" type="ColorRect" parent="Node2D"]
+[node name="ColorRect5" type="ColorRect" parent="Node2D" unique_id=1809820424]
 visible = false
 offset_left = 1.0
 offset_top = 181.0
@@ -536,7 +532,7 @@ offset_right = 149.0
 offset_bottom = 187.0
 color = Color(0, 0, 0, 0.917647)
 
-[node name="Line2D2" type="Line2D" parent="Node2D"]
+[node name="Line2D2" type="Line2D" parent="Node2D" unique_id=841870443]
 position = Vector2(-7, 3)
 points = PackedVector2Array(39, 37, 110, 37, 110, 109, 39, 109)
 closed = true
@@ -546,14 +542,14 @@ joint_mode = 2
 begin_cap_mode = 2
 end_cap_mode = 2
 
-[node name="ColorRect2" type="ColorRect" parent="Node2D"]
+[node name="ColorRect2" type="ColorRect" parent="Node2D" unique_id=1398076196]
 offset_left = 30.0
 offset_top = 39.0
 offset_right = 98.0
 offset_bottom = 107.0
 color = Color(0.114897, 0.114897, 0.114897, 1)
 
-[node name="Line2D" type="Line2D" parent="Node2D"]
+[node name="Line2D" type="Line2D" parent="Node2D" unique_id=2043537414]
 position = Vector2(-11, 0)
 points = PackedVector2Array(39, 37, 110, 37, 110, 109, 39, 109)
 closed = true
@@ -563,11 +559,11 @@ joint_mode = 2
 begin_cap_mode = 2
 end_cap_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=77274953]
 clip_contents = true
 layout_mode = 2
 
-[node name="NameLabel" type="Label" parent="VBoxContainer"]
+[node name="NameLabel" type="Label" parent="VBoxContainer" unique_id=446571153]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 22)
 layout_mode = 2
@@ -582,18 +578,18 @@ theme_override_font_sizes/font_size = 16
 text = "物品名称"
 horizontal_alignment = 1
 
-[node name="TextureRect" type="TextureRect" parent="VBoxContainer"]
+[node name="TextureRect" type="TextureRect" parent="VBoxContainer" unique_id=624165246]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 70)
 layout_mode = 2
 texture = ExtResource("5_lvncg")
 stretch_mode = 5
 
-[node name="Label" type="Label" parent="VBoxContainer"]
+[node name="Label" type="Label" parent="VBoxContainer" unique_id=516377096]
 layout_mode = 2
 theme_override_font_sizes/font_size = 5
 
-[node name="DescriptionLabel" type="Label" parent="VBoxContainer"]
+[node name="DescriptionLabel" type="Label" parent="VBoxContainer" unique_id=318136364]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -613,7 +609,7 @@ text = "芭娜娜！
 "
 autowrap_mode = 1
 
-[node name="Forward" type="Label" parent="VBoxContainer"]
+[node name="Forward" type="Label" parent="VBoxContainer" unique_id=1739548298]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.690196, 0.929412, 0.278431, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -626,7 +622,7 @@ theme_override_font_sizes/font_size = 10
 text = "+99999999属性"
 autowrap_mode = 1
 
-[node name="Negative" type="Label" parent="VBoxContainer"]
+[node name="Negative" type="Label" parent="VBoxContainer" unique_id=2115278099]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.895585, 0.219214, 0.299834, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -639,7 +635,7 @@ theme_override_font_sizes/font_size = 10
 text = "-99999999属性"
 autowrap_mode = 1
 
-[node name="Line2D" type="Line2D" parent="."]
+[node name="Line2D" type="Line2D" parent="." unique_id=1870075172]
 texture_repeat = 2
 material = SubResource("ShaderMaterial_tonu8")
 position = Vector2(-4.88889, -0.444446)

@@ -31,28 +31,34 @@ func reset():
 
 func fire_dot_add():
 	if !enemy_group.is_empty():
-		for i in enemy_group.size():
-			if enemy_group[i] != null:
-				value = [buff_layer, buff_value, buff_erase_timer]
-				enemy_group[i].enemy_buff_manager.apply_buff(enemy_buff, value)
+		value = [buff_layer, buff_value, buff_erase_timer]
+		for i in range(enemy_group.size() - 1, -1, -1):
+			var enemy = enemy_group[i]
+			if enemy == null or not is_instance_valid(enemy):
+				enemy_group.remove_at(i)
+				continue
+			enemy.enemy_buff_manager.apply_buff(enemy_buff, value)
 		
 		var floating_text = PoolManager.get_pool("floating_text")
 		if floating_text == null or floating_text.is_idle == 0:
 			floating_text = floating_text_scene.instantiate() as Node2D
 			get_tree().get_first_node_in_group("ForegroundLayer").add_child(floating_text)
 		
-		floating_text.label.set("theme_override_colors/font_color", Color(1, 0.367, 0.178))
-		floating_text.label.set("theme_override_font_sizes/font_size", 16)
+		floating_text.set_style(Color(1, 0.367, 0.178), 16)
 		floating_text.global_position = global_position + (Vector2.UP * randf_range(5,15)) + (Vector2.RIGHT * randf_range(-15,15))
 		floating_text.start(tr("dot_spread") + "!")
 
 
 func _on_area_2d_body_entered(body):
+	if body == null or not is_instance_valid(body):
+		return
 	if body.is_in_group("Enemy") and !enemy_group.has(body):
 		enemy_group.push_back(body)
 
 
 func _on_area_2d_body_exited(body):
+	if body == null or not is_instance_valid(body):
+		return
 	if body.is_in_group("Enemy") and enemy_group.has(body):
 		enemy_group.remove_at(enemy_group.find(body))
 

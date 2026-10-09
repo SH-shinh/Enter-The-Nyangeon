@@ -204,6 +204,4 @@ libraries = {
 [connection signal="gui_input" from="ColorRect" to="." method="_on_color_rect_gui_input"]
 [connection signal="gui_input" from="player_id" to="." method="_on_player_id_gui_input"]
 [connection signal="gui_input" from="submit_button" to="." method="_on_submit_button_gui_input"]
-[connection signal="pressed" from="submit_button" to="." method="_on_submit_button_pressed"]
 [connection signal="gui_input" from="cancel_button" to="." method="_on_cancel_button_gui_input"]
-[connection signal="pressed" from="cancel_button" to="." method="_on_cancel_button_pressed"]

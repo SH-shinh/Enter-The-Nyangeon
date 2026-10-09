@@ -11,3 +11,5 @@ name = "白子buff"
 ability = ""
 remove_by_layer = false
 description = ""
+modifiers = Array[Dictionary]([{"key": "damage_add", "mode": "add", "source": "value"}])
+consume_event = "player_ammo_reload"

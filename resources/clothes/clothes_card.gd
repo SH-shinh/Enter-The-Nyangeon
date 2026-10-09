@@ -10,4 +10,4 @@ class_name ClothesCard
 @export var icon_1: Texture2D
 @export var icon_2: Texture2D
 @export var cost: int
-@export var sprite: Texture2D
+@export_file("*.png") var sprite_path: String

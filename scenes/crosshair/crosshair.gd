@@ -42,11 +42,12 @@ func get_player():
 	player = get_tree().get_first_node_in_group("Player")
 
 func game_over_hide(player_dead: bool):
-	if player_dead:
-		if player.stats.hp <= 0:
-			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-			visible = false
-	else:
+	if player == null:
+		player = get_tree().get_first_node_in_group("Player")
+	if player_dead and player != null and player.get("stats") != null and player.stats.hp <= 0:
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		visible = false
+	elif not player_dead:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		visible = false
 

@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://bqp8n3vxk2xar"]
+
+[ext_resource type="Script" uid="uid://che3hw578q8d8" path="res://scenes/manager/pickup_spawner.gd" id="1_spawn"]
+[ext_resource type="PackedScene" uid="uid://bn1f8nr3qe3s7" path="res://scenes/item/medical_kit.tscn" id="2_medkit"]
+
+[node name="PickupSpawner" type="Node2D" unique_id=68705493]
+script = ExtResource("1_spawn")
+pickup_scene = ExtResource("2_medkit")

@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3 uid="uid://667yyp8p3mrr"]
+[gd_scene format=3 uid="uid://667yyp8p3mrr"]
 
-[ext_resource type="Script" path="res://script/explosion_damage.gd" id="1_tyc5v"]
+[ext_resource type="Script" uid="uid://b1jk0gdho6owx" path="res://script/explosion_damage.gd" id="1_tyc5v"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_n4hdt"]
+resource_local_to_scene = true
 
 [sub_resource type="Gradient" id="Gradient_xh0rg"]
 interpolation_mode = 1
@@ -17,18 +18,17 @@ fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(0.5, 0)
 metadata/_snap_enabled = true
 
-[node name="ExplosionDamage" type="Node2D" groups=["PlayerExplosion"]]
+[node name="ExplosionDamage" type="Area2D" unique_id=818285522 groups=["PlayerExplosion"]]
 z_index = -1
+collision_layer = 0
+collision_mask = 288768
+monitorable = false
 script = ExtResource("1_tyc5v")
 
-[node name="Area2D" type="Area2D" parent="."]
-collision_layer = 0
-collision_mask = 1032
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=263535651]
 shape = SubResource("CircleShape2D_n4hdt")
 
-[node name="TextureRect" type="TextureRect" parent="."]
+[node name="TextureRect" type="TextureRect" parent="." unique_id=577775221]
 offset_left = -50.0
 offset_top = -50.0
 offset_right = 50.0
@@ -38,10 +38,9 @@ pivot_offset = Vector2(50, 50)
 mouse_filter = 2
 texture = SubResource("GradientTexture2D_wtxtv")
 
-[node name="Timer" type="Timer" parent="."]
+[node name="Timer" type="Timer" parent="." unique_id=1997817702]
 wait_time = 0.1
 one_shot = true
 
-[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
-[connection signal="body_exited" from="Area2D" to="." method="_on_area_2d_body_exited"]
+[connection signal="area_entered" from="." to="." method="_on_area_entered"]
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

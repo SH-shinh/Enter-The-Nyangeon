@@ -1,55 +1,248 @@
-[gd_scene load_steps=5 format=3 uid="uid://dfmayiqvenqr8"]
+[gd_scene format=3 uid="uid://dfmayiqvenqr8"]
 
-[ext_resource type="Script" path="res://script/ScrollBox.gd" id="1_e0i77"]
-[ext_resource type="Script" path="res://ui/cheat_menu.gd" id="1_uwy6u"]
+[ext_resource type="Resource" uid="uid://tyefl3u2oxr" path="res://resources/enemy/sweeper.tres" id="0_e01"]
+[ext_resource type="Resource" uid="uid://q1y8ttghyuve" path="res://resources/enemy/modded_sweeper.tres" id="0_e02"]
+[ext_resource type="Resource" uid="uid://bo5aojm81wiil" path="res://resources/enemy/enhanced_sweeper.tres" id="0_e03"]
+[ext_resource type="Resource" uid="uid://dx43aolfidycr" path="res://resources/enemy/mystic_sweeper.tres" id="0_e04"]
+[ext_resource type="Resource" uid="uid://doxv0u2ida458" path="res://resources/enemy/red_sweeper.tres" id="0_e05"]
+[ext_resource type="Resource" uid="uid://dmixiglqom01n" path="res://resources/enemy/tester_automaton.tres" id="0_e06"]
+[ext_resource type="Resource" uid="uid://cos7wg8husrce" path="res://resources/enemy/mp_automaton.tres" id="0_e07"]
+[ext_resource type="Resource" uid="uid://domddqeo286ox" path="res://resources/enemy/menacing_automaton.tres" id="0_e08"]
+[ext_resource type="Resource" uid="uid://dwgipm2sx68ue" path="res://resources/enemy/tester_automaton_rl.tres" id="0_e09"]
+[ext_resource type="Resource" uid="uid://1wrnoropoerp" path="res://resources/enemy/tester_automaton_shield.tres" id="0_e10"]
+[ext_resource type="Resource" uid="uid://uwsau2i7bmiv" path="res://resources/enemy/soldier_helmet_ar.tres" id="0_e11"]
+[ext_resource type="Resource" uid="uid://c5bt5jjpbifb8" path="res://resources/enemy/soldier_helmet_sg.tres" id="0_e12"]
+[ext_resource type="Resource" uid="uid://cjvrr0lb3dvye" path="res://resources/enemy/soldier_redhelmet_sr.tres" id="0_e13"]
+[ext_resource type="Resource" uid="uid://dtv88mgk8m0i" path="res://resources/enemy/droid_helmet_smg.tres" id="0_e14"]
+[ext_resource type="Resource" uid="uid://d2gcqwn6rb7cc" path="res://resources/enemy/lighttank_helmet.tres" id="0_e15"]
+[ext_resource type="Script" uid="uid://c2yv0iuw6g8oh" path="res://resources/enemy/enemy.gd" id="0_enemycard"]
+[ext_resource type="Script" uid="uid://cxexg1p6wvaks" path="res://script/ScrollBox.gd" id="1_e0i77"]
+[ext_resource type="Script" uid="uid://bg6spl1pkwy8j" path="res://ui/cheat_menu.gd" id="1_uwy6u"]
+[ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="18_m8l6k"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_f8pu4"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+bg_color = Color(0.08235294, 0.08235294, 0.08235294, 0.98039216)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.376471, 0.74902, 0.94902, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_scroll"]
 content_margin_right = 8.0
 
-[sub_resource type="Theme" id="Theme_cufpq"]
-ScrollContainer/styles/panel = SubResource("StyleBoxEmpty_f8pu4")
+[sub_resource type="Theme" id="Theme_scroll"]
+ScrollContainer/styles/panel = SubResource("StyleBoxEmpty_scroll")
 
-[node name="cheat_menu" type="CanvasLayer"]
+[node name="developer_menu" type="CanvasLayer" unique_id=285010516]
+process_mode = 3
+layer = 100
 visible = false
 script = ExtResource("1_uwy6u")
+enemy_group = Array[ExtResource("0_enemycard")]([ExtResource("0_e01"), ExtResource("0_e02"), ExtResource("0_e03"), ExtResource("0_e04"), ExtResource("0_e05"), ExtResource("0_e06"), ExtResource("0_e07"), ExtResource("0_e08"), ExtResource("0_e09"), ExtResource("0_e10"), ExtResource("0_e11"), ExtResource("0_e12"), ExtResource("0_e13"), ExtResource("0_e14"), ExtResource("0_e15")])
 
-[node name="ScrollContainer" type="ScrollContainer" parent="."]
-offset_left = 326.0
-offset_top = 69.0
-offset_right = 633.0
-offset_bottom = 325.0
-mouse_filter = 0
-theme = SubResource("Theme_cufpq")
-follow_focus = true
-horizontal_scroll_mode = 3
-vertical_scroll_mode = 2
-script = ExtResource("1_e0i77")
+[node name="Dim" type="ColorRect" parent="." unique_id=1581435259]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.55)
 
-[node name="GridContainer" type="GridContainer" parent="ScrollContainer"]
+[node name="Panel" type="PanelContainer" parent="." unique_id=1683481330]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -310.0
+offset_top = -170.0
+offset_right = 310.0
+offset_bottom = 170.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBox" type="VBoxContainer" parent="Panel" unique_id=2039533764]
 layout_mode = 2
-columns = 8
 
-[node name="Button" type="Button" parent="."]
-offset_left = 259.0
-offset_top = 69.0
-offset_right = 320.0
-offset_bottom = 95.0
-text = "下回合"
+[node name="TitleBar" type="HBoxContainer" parent="Panel/VBox" unique_id=1195467596]
+layout_mode = 2
+theme_override_constants/separation = 6
 
-[node name="Button2" type="Button" parent="."]
-offset_left = 259.0
-offset_top = 100.0
-offset_right = 320.0
-offset_bottom = 126.0
-text = "金币"
+[node name="Title" type="Label" parent="Panel/VBox/TitleBar" unique_id=529385717]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.43268725, 0.77409166, 0.96208745, 1)
+theme_override_font_sizes/font_size = 12
+text = "DEVELOPER MENU"
 
-[node name="Button3" type="Button" parent="."]
-offset_left = 254.0
-offset_top = 132.0
-offset_right = 320.0
-offset_bottom = 158.0
+[node name="Close" type="Button" parent="Panel/VBox/TitleBar" unique_id=2106627191]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("18_m8l6k")
+theme_override_font_sizes/font_size = 12
+text = "关闭"
+
+[node name="Actions" type="GridContainer" parent="Panel/VBox" unique_id=228004945]
+layout_mode = 2
+columns = 6
+
+[node name="Round" type="VBoxContainer" parent="Panel/VBox/Actions" unique_id=1713770813]
+layout_mode = 2
+
+[node name="RoundPlus" type="Button" parent="Panel/VBox/Actions/Round" unique_id=1988512142]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("18_m8l6k")
+theme_override_font_sizes/font_size = 12
 text = "回合+1"
 
-[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]
-[connection signal="pressed" from="Button2" to="." method="_on_button_2_pressed"]
-[connection signal="pressed" from="Button3" to="." method="_on_button_3_pressed"]
+[node name="RoundPlus10" type="Button" parent="Panel/VBox/Actions/Round" unique_id=1318982323]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("18_m8l6k")
+theme_override_font_sizes/font_size = 12
+text = "回合+10"
+
+[node name="NextRound" type="Button" parent="Panel/VBox/Actions/Round" unique_id=116414917]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("18_m8l6k")
+theme_override_font_sizes/font_size = 12
+text = "下回合"
+
+[node name="Coin" type="VBoxContainer" parent="Panel/VBox/Actions" unique_id=900190181]
+layout_mode = 2
+
+[node name="Coin" type="Button" parent="Panel/VBox/Actions/Coin" unique_id=1200655792]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("18_m8l6k")
+theme_override_font_sizes/font_size = 12
+text = "金币+1000"
+
+[node name="CoinPlus10000" type="Button" parent="Panel/VBox/Actions/Coin" unique_id=1312532060]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("18_m8l6k")
+theme_override_font_sizes/font_size = 12
+text = "金币+10000"
+
+[node name="CoinMinus1000" type="Button" parent="Panel/VBox/Actions/Coin" unique_id=1614782425]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("18_m8l6k")
+theme_override_font_sizes/font_size = 12
+text = "金币-1000"
+
+[node name="Player" type="GridContainer" parent="Panel/VBox/Actions" unique_id=634220997]
+layout_mode = 2
+columns = 3
+
+[node name="Invincible" type="Button" parent="Panel/VBox/Actions/Player" unique_id=102641561]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("18_m8l6k")
+theme_override_font_sizes/font_size = 12
+toggle_mode = true
+text = "无敌"
+
+[node name="Heal" type="Button" parent="Panel/VBox/Actions/Player" unique_id=550996963]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("18_m8l6k")
+theme_override_font_sizes/font_size = 12
+text = "回血+10%"
+
+[node name="TempHP" type="Button" parent="Panel/VBox/Actions/Player" unique_id=350713609]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("18_m8l6k")
+theme_override_font_sizes/font_size = 12
+text = "临时生命+10%"
+
+[node name="OneHitKill" type="Button" parent="Panel/VBox/Actions/Player" unique_id=562975215]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("18_m8l6k")
+theme_override_font_sizes/font_size = 12
+toggle_mode = true
+text = "一击必杀"
+
+[node name="Body" type="GridContainer" parent="Panel/VBox" unique_id=938726915]
+layout_mode = 2
+size_flags_vertical = 3
+columns = 2
+
+[node name="UpgradeBox" type="VBoxContainer" parent="Panel/VBox/Body" unique_id=1414096460]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="Panel/VBox/Body/UpgradeBox" unique_id=440028242]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("18_m8l6k")
+theme_override_font_sizes/font_size = 12
+text = "EQUIPMENT"
+
+[node name="UpgradeScroll" type="ScrollContainer" parent="Panel/VBox/Body/UpgradeBox" unique_id=2146069780]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_vertical = 3
+theme = SubResource("Theme_scroll")
+follow_focus = true
+horizontal_scroll_mode = 3
+vertical_scroll_mode = 3
+script = ExtResource("1_e0i77")
+
+[node name="UpgradeGrid" type="GridContainer" parent="Panel/VBox/Body/UpgradeBox/UpgradeScroll" unique_id=1627740766]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 3
+theme_override_constants/v_separation = 3
+columns = 8
+
+[node name="EnemyBox" type="VBoxContainer" parent="Panel/VBox/Body" unique_id=1202883012]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="Panel/VBox/Body/EnemyBox" unique_id=1126471399]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("18_m8l6k")
+theme_override_font_sizes/font_size = 12
+text = "ENEMY"
+
+[node name="EnemyScroll" type="ScrollContainer" parent="Panel/VBox/Body/EnemyBox" unique_id=378409411]
+layout_mode = 2
+size_flags_vertical = 3
+theme = SubResource("Theme_scroll")
+follow_focus = true
+horizontal_scroll_mode = 3
+vertical_scroll_mode = 3
+script = ExtResource("1_e0i77")
+
+[node name="EnemyGrid" type="GridContainer" parent="Panel/VBox/Body/EnemyBox/EnemyScroll" unique_id=1455487393]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 3
+theme_override_constants/v_separation = 3
+columns = 5
+
+[connection signal="pressed" from="Panel/VBox/TitleBar/Close" to="." method="_on_close_pressed"]
+[connection signal="pressed" from="Panel/VBox/Actions/Round/RoundPlus" to="." method="_on_button_3_pressed"]
+[connection signal="pressed" from="Panel/VBox/Actions/Round/RoundPlus10" to="." method="_on_round_plus_10_pressed"]
+[connection signal="pressed" from="Panel/VBox/Actions/Round/NextRound" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="Panel/VBox/Actions/Coin/Coin" to="." method="_on_button_2_pressed"]
+[connection signal="pressed" from="Panel/VBox/Actions/Coin/CoinPlus10000" to="." method="_on_coin_plus_10000_pressed"]
+[connection signal="pressed" from="Panel/VBox/Actions/Coin/CoinMinus1000" to="." method="_on_coin_minus_1000_pressed"]
+[connection signal="toggled" from="Panel/VBox/Actions/Player/Invincible" to="." method="_on_invincible_toggled"]
+[connection signal="pressed" from="Panel/VBox/Actions/Player/Heal" to="." method="_on_heal_pressed"]
+[connection signal="pressed" from="Panel/VBox/Actions/Player/TempHP" to="." method="_on_temp_hp_pressed"]
+[connection signal="toggled" from="Panel/VBox/Actions/Player/OneHitKill" to="." method="_on_one_hit_kill_toggled"]

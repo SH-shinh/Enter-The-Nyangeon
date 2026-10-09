@@ -1,9 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://cxsvb1leo6v7i"]
+[gd_scene format=3 uid="uid://cxsvb1leo6v7i"]
 
-[ext_resource type="Script" path="res://scenes/player_support/ayane/ayane.gd" id="1_q4w66"]
+[ext_resource type="Script" uid="uid://bpkppbi8m0a1v" path="res://scenes/player_support/ayane/ayane.gd" id="1_q4w66"]
 [ext_resource type="PackedScene" uid="uid://xrpq35n8ial3" path="res://scenes/player_support/ayane/ayane_as.tscn" id="2_iyirq"]
 
-[node name="ayane" type="Node2D"]
+[node name="ayane" type="Node2D" unique_id=1650392416]
 script = ExtResource("1_q4w66")
 
-[node name="ayane_as" parent="." instance=ExtResource("2_iyirq")]
+[node name="ayane_as" parent="." unique_id=335732308 instance=ExtResource("2_iyirq")]

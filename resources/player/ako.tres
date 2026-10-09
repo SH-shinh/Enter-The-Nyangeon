@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PlayerCard" format=3 uid="uid://jym7wa8pamt7"]
+
+[ext_resource type="Texture2D" uid="uid://hout7o5u6ceo" path="res://sprites/player/ako/ako_picture_halo.png" id="1_vyj3w"]
+[ext_resource type="Script" uid="uid://mhculkp4opo6" path="res://resources/player/player.gd" id="2_w7a78"]
+
+[resource]
+script = ExtResource("2_w7a78")
+name = "AMAU AKO"
+weapon = "HOT SHOT"
+sprite_path = "res://sprites/player/ako/ako_picture.png"
+halo = ExtResource("1_vyj3w")
+color = Color(0.44313726, 0.6039216, 0.9490196, 1)
+voice_name = "ako"
+id = "ako"
+scene_path = "res://scenes/player/ako/ako.tscn"

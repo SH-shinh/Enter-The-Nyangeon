@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://i7yaqxrgueaj"]
+[gd_scene format=3 uid="uid://i7yaqxrgueaj"]
 
-[ext_resource type="Script" path="res://scenes/update_item/wooden_hammer.gd" id="1_u7x0h"]
+[ext_resource type="Script" uid="uid://bsbap8186s53u" path="res://scenes/update_item/wooden_hammer.gd" id="1_u7x0h"]
 
 [node name="WoodenHammer" type="Node2D"]
 script = ExtResource("1_u7x0h")

@@ -1,66 +1,132 @@
-﻿,zh_CN,en,pt
-option_full_screen,全屏,Full Screen,Tela Cheia
-option_resolution,分辨率,Resolution,Resolução
-option_screen_shake,屏幕震动,Screen Shake,Tremor de Tela
-option_v_sync,垂直同步,V-Sync,V-Sync
-sounds_master_volume,主音量,Master Volume,Volume Principal
-sounds_sfx,音效,SFX,SFX
-sounds_bgm,背景音乐,BGM,BGM
-sounds_voice,语音,Voice,Voz
-controls_move,移动,Move,Mover
-controls_jump,跳跃,Jump,Pular
-controls_shoot,射击,Shoot,Atirar
-controls_melee,近战,Melee,Corpo a C.
-controls_reload,换弹,Reload,Recarregar
-controls_ex,EX技能,EX Skill,Hab. EX
-player_max_hp,生命值,HP,HP
-player_armor,护甲值,Armor,Armadura
-player_damage_taken,承伤率,DMG Taken,Dano Recebido
-player_luck,幸运值,Luck,Sorte
-player_knockback,击退力,Knockback,Repulsão
-player_max_ammo,弹匣,Max Ammo,Munição Máx.
-player_speed,速度,Speed,Velocidade
-player_melee,近战伤害,Melee,Dano Corpo a C.
-player_critical,暴击率,Crit,Taxa Crítica
-player_critical_damage,暴击伤害,Crit DMG,Dano Crítico
-player_global_damage,全局伤害,Global DMG,Dano Global
-player_bullet_damage,子弹伤害,Bullet DMG,Dano de Bala
-player_penetration,穿透值,Pen.,Perfuração
-player_reload_time,换弹时间,Reload Time,Tempo de Recarga
-player_fire_rate,射速,Fire Rate,Cadência de Tiro
-player_equip_damage,装备伤害,Equip DMG,Dano de Equipamento
-player_explosion_damage,爆炸伤害,Explosion DMG,Dano de Explosão
-player_explosion_radius,爆炸范围,Explosion Radius,Raio de Explosão
-player_anomaly_damage,异常伤害,Anomaly Damage,Dano de Anomalia
-player_summon_damage,召唤伤害,Summon DMG,Dano de Invocação
-player_recoil,后坐力,Recoil,Recuo
-player_reload_speed,换弹速度,Reload Speed,Veloc. de Recarga
-player_pickup_range,拾取范围,Pickup Range,Alcance de Coleta
-player_coin_refund,硬币返还,Coin Refund,Reembolso de Moedas
-dot_spread,扩散,Spread,Dispersão
-testmenu_item,道具选择,SELECTION,SELEÇÃO
-testmenu_player,角色选择,SELECTION,SELEÇÃO
-blitzkrieg_id,闪击芯片,BLITZKRIEG,BLITZKRIEG
-button_unlock,>> 解锁 <<,>> UNLOCK <<,>> DESBLOQUEAR <<
-button_confirm,确定,CONFIRM,CONFIRMAR
-button_cancel,取消,CANCEL,CANCELAR
-button_character,角色解锁,Character,Personagem
-button_clothes,时装,Skin,Skin
-support_pa,支援光环,Support Aura,Aura de Suporte
-blitzkrieg_description,每回合时间减少25%，最大回合数为15，金币获取提高至150%。,"Round time reduced by 25%, max rounds set to 15, and coin gain increased to 150%.","O tempo da rodada é reduzido em 25%, o máximo de rodadas é 15, e o ganho de moedas é 150%."
-endless_id,无尽芯片,ENDLESS,MODO INFINITO
-endless_description,20回合后进入无尽模式，每5回合遭遇一次BOSS战。,"After 20 rounds, enter endless mode. Encounter a boss battle every 5 rounds.","Após 20 rodadas, entra no modo infinito. Batalha contra o chefe é a cada 5 rodadas."
-hujiu_id,虎纠芯片,HUJIU,HUJIU
-hujiu_description,追求极致的试炼，最大回合数为5，金币获取提高至400%。,A trial of ultimate challenge. Max rounds set to 5. Coin gain increased to 400%.,"Um desafio extremo. O máximo de rodadas é 5, e o ganho de moedas é 400%."
-save_folder,存档文件夹,SAVE FOLDER,PASTA DE SAVES
-score_enter_id,请输入ID,Please enter ID,Insira o ID
-scoreboard_name,记分板,SCOREBOARD,PLACAR
-button_date,日期,Date,Data
-button_score,分数,Score,Pontuação
-button_level,难度,Level,Dificuldade
-button_round,回合数,Round,Rodada
-button_defeats,击败数,Defeats,Abates
-button_coins,硬币数,Coins,Moedas
-normal_sort,排序,Sort,Ordenar
-character_sort,筛选角色,Character,Personagem
-gamemode_sort,筛选模式,GameMode,Modo de Jogo
+﻿,zh_CN,en,pt,vi_VN
+option_full_screen,全屏,Full Screen,Tela Cheia,Toàn màn hình
+option_resolution,分辨率,Resolution,Resolução,Độ phân giải
+option_screen_shake,屏幕震动,Screen Shake,Tremor de Tela,Rung màn hình
+option_v_sync,垂直同步,V-Sync,V-Sync,Đồng bộ dọc
+sounds_master_volume,主音量,Master Volume,Volume Principal,Âm lượng chính
+sounds_sfx,音效,SFX,SFX,Hiệu ứng âm thanh
+sounds_bgm,背景音乐,BGM,BGM,Nhạc nền
+sounds_voice,语音,Voice,Voz,Giọng nói
+controls_move,移动,Move,Mover,Di chuyển
+controls_jump,跳跃,Jump,Pular,Nhảy
+controls_shoot,射击,Shoot,Atirar,Bắn
+controls_melee,近战,Melee,Corpo a C.,Cận chiến
+controls_reload,换弹,Reload,Recarregar,Nạp đạn
+controls_ex,EX技能,EX Skill,Hab. EX,Kỹ năng EX
+player_max_hp,生命值,HP,HP,Máu
+player_heal_mult,治疗效果,Healing Effect,Efeito de Cura,Hiệu quả hồi máu
+player_armor,护甲值,Armor,Armadura,Giáp
+player_damage_taken,承伤率,DMG Taken,Dano Recebido,ST nhận vào
+player_luck,幸运值,Luck,Sorte,May mắn
+player_knockback,击退力,Knockback,Repulsão,Lực đẩy lùi
+player_max_ammo,弹匣,Max Ammo,Munição Máx.,Lượng đạn tối đa
+player_speed,速度,Speed,Velocidade,Tốc độ
+player_melee,近战伤害,Melee,Dano Corpo a C.,ST cận chiến
+player_critical,暴击率,Crit,Taxa Crítica,Tỷ lệ chí mạng
+player_critical_damage,暴击伤害,Crit DMG,Dano Crítico,ST chí mạng
+player_global_damage,全局伤害,Global DMG,Dano Global,ST toàn cục
+player_bullet_damage,子弹伤害,Bullet DMG,Dano de Bala,ST đạn
+player_penetration,穿透值,Pen.,Perfuração,Xuyên thấu
+player_reload_time,换弹时间,Reload Time,Tempo de Recarga,Thời gian nạp đạn
+player_fire_rate,射速,Fire Rate,Cadência de Tiro,Tốc độ bắn
+player_equip_damage,装备伤害,Equip DMG,Dano de Equipamento,ST trang bị
+player_explosion_damage,爆炸伤害,Explosion DMG,Dano de Explosão,ST nổ
+player_explosion_radius,爆炸范围,Explosion Radius,Raio de Explosão,Bán kính vụ nổ
+player_anomaly_damage,异常伤害,Anomaly Damage,Dano de Anomalia,ST dị thường
+player_summon_damage,召唤伤害,Summon DMG,Dano de Invocação,ST triệu hồi
+player_recoil,后坐力,Recoil,Recuo,Độ giật
+player_reload_speed,换弹速度,Reload Speed,Veloc. de Recarga,Tốc độ nạp đạn
+player_pickup_range,拾取范围,Pickup Range,Alcance de Coleta,Phạm vi nhặt
+player_coin_refund,硬币返还,Coin Refund,Reembolso de Moedas,Hoàn lại xu
+dot_spread,扩散,Spread,Dispersão,Độ phân tán
+testmenu_item,道具选择,SELECTION,SELEÇÃO,Chọn đạo cụ
+testmenu_player,角色选择,SELECTION,SELEÇÃO,Chọn nhân vật
+testmenu_enemy,敌人生成,SPAWN,GERAR,Tạo kẻ địch
+blitzkrieg_id,闪击芯片,BLITZKRIEG,BLITZKRIEG,Chip Blitzkrieg
+button_unlock,>> 解锁 <<,>> UNLOCK <<,>> DESBLOQUEAR <<,>> MỞ KHÓA <<
+button_confirm,确定,CONFIRM,CONFIRMAR,XÁC NHẬN
+button_cancel,取消,CANCEL,CANCELAR,HỦY
+button_character,角色解锁,Character,Personagem,Mở khóa nhân vật
+button_clothes,时装,Skin,Skin,Trang phục
+support_pa,支援光环,Support Aura,Aura de Suporte,Hào quang hỗ trợ
+blitzkrieg_description,每回合时间减少25%，最大回合数为15，金币获取提高至150%。,"Round time reduced by 25%, max rounds set to 15, and coin gain increased to 150%.","O tempo da rodada é reduzido em 25%, o máximo de rodadas é 15, e o ganho de moedas é 150%.","Thời gian mỗi hiệp giảm 25%, số hiệp tối đa được đặt là 15 và lượng xu nhận được tăng lên 150%."
+endless_id,无尽芯片,ENDLESS,MODO INFINITO,Chip Bất tận
+endless_description,20回合后进入无尽模式，每5回合遭遇一次BOSS战。,"After 20 rounds, enter endless mode. Encounter a boss battle every 5 rounds.","Após 20 rodadas, entra no modo infinito. Batalha contra o chefe é a cada 5 rodadas.",Sau 20 vòng sẽ vào chế độ bất tận. Sau 5 vòng tiếp theo sẽ đánh 1 màn Boss.
+hujiu_id,虎纠芯片,HUJIU,HUJIU,Chip Hujiu
+hujiu_description,追求极致的试炼，最大回合数为5，金币获取提高至400%。,A trial of ultimate challenge. Max rounds set to 5. Coin gain increased to 400%.,"Um desafio extremo. O máximo de rodadas é 5, e o ganho de moedas é 400%.",Thử thách Tột Cùng. Số vòng tối đa được đặt là 5. Lượng xu nhận được tăng lên 400%.
+save_folder,存档文件夹,SAVE FOLDER,PASTA DE SAVES,Thư mục lưu
+score_enter_id,请输入ID,Please enter ID,Insira o ID,Nhập ID
+scoreboard_name,记分板,SCOREBOARD,PLACAR,Bảng điểm
+button_date,日期,Date,Data,Ngày
+button_score,分数,Score,Pontuação,Điểm
+button_level,难度,Level,Dificuldade,Độ khó
+button_round,回合数,Round,Rodada,Vòng
+button_defeats,击败数,Defeats,Abates,Số hạ gục
+button_coins,硬币数,Coins,Moedas,Xu
+normal_sort,排序,Sort,Ordenar,Sắp xếp
+character_sort,筛选角色,Character,Personagem,Lọc nhân vật
+gamemode_sort,筛选模式,GameMode,Modo de Jogo,Lọc chế độ
+credits_button,制作名单,CREDITS,CRÉDITOS,GHI CÔNG
+credits_title,制作名单,CREDITS,CRÉDITOS,GHI CÔNG
+credits_program,程序,Programming,Programação,Lập trình
+credits_art,美术,Art,Arte,Mỹ thuật
+credits_design,策划,Planning,Planejamento,Thiết kế
+credits_music,音乐,Music,Música,Âm nhạc
+credits_copyright,版权方,Copyright,Detentor dos Direitos,Bản quyền
+credits_special_thanks,特别鸣谢,Special Thanks,Agradecimentos Especiais,Lời cảm ơn đặc biệt
+credits_production,程序 / 美术 / 策划,Programming / Art / Planning,Programação / Arte / Planejamento,Lập trình / Mỹ thuật / Thiết kế
+thank_you_for_playing,感谢游玩！,Thank you for playing!,Obrigado por jogar!,Cảm ơn bạn đã chơi!
+droid_helmet_smg_name,头盔团自动机（SMG）,Helmet Gang Automaton (SMG),Autômato da Gangue do Capacete (SMG),Tự động cơ Băng Mũ Bảo Hiểm (SMG)
+droid_helmet_smg_description,头盔团的队长型自动机，持有SMG进行扫射。,"A captain-type automaton of the Helmet Gang, spraying fire with an SMG.","Um autômato do tipo capitão da Gangue do Capacete, disparando rajadas com uma SMG.","Tự động cơ dạng đội trưởng của Băng Mũ Bảo Hiểm, xả đạn bằng SMG."
+enhanced_sweeper_name,强化型清扫器,Enhanced Sweeper,Varredor Aprimorado,Máy Quét Tăng Cường
+enhanced_sweeper_description,轻量特化型的清扫器，强化了速度，但也容易被踢飞。,"A lightweight, specialized sweeper with boosted speed, but easy to send flying with a kick.","Um varredor leve e especializado, com velocidade aprimorada, mas fácil de ser arremessado com um chute.","Máy quét chuyên biệt nhẹ, được tăng cường tốc độ nhưng dễ bị đá văng."
+erosion_tower_name,侵蚀之柱,Erosion Tower,Torre da Erosão,Tháp Xói Mòn
+erosion_tower_description, , , , 
+goliath_name,歌利亚,Goliath,Golias,Goliath
+goliath_description, , , , 
+lighttank_helmet_name,头盔团轻坦克,Helmet Gang Light Tank,Tanque Leve da Gangue do Capacete,Xe Tăng Hạng Nhẹ Băng Mũ Bảo Hiểm
+lighttank_helmet_description,头盔团的轻型坦克，炮弹爆炸会四散出弹幕，尾部是弱点。,"The Helmet Gang's light tank. Its shells explode into a scattered barrage, and its rear is a weak point.","O tanque leve da Gangue do Capacete. Seus projéteis explodem em rajadas espalhadas, e a traseira é um ponto fraco.","Xe tăng hạng nhẹ của Băng Mũ Bảo Hiểm. Đạn pháo nổ tung thành màn đạn tản mát, và phần đuôi là điểm yếu."
+menacing_automaton_name,失控自动机,Menacing Automaton,Autômato Descontrolado,Tự động cơ Mất Kiểm Soát
+menacing_automaton_description,失控的自动机，使用AR进行射击，提高了伤害抵抗，向四周发射弹幕。,"An out-of-control automaton that fires an AR, has increased damage resistance, and sprays barrages in all directions.","Um autômato descontrolado que dispara uma AR, tem resistência a dano aumentada e espalha rajadas em todas as direções.","Tự động cơ mất kiểm soát, bắn AR, tăng khả năng kháng sát thương và xả đạn ra mọi hướng."
+modded_sweeper_name,改造型清扫器,Modified Sweeper,Varredor Modificado,Máy Quét Cải Tiến
+modded_sweeper_description,稍微改造过的清扫器，被打倒后会向周围释放弹幕。,"A slightly modified sweeper that releases a barrage around itself when destroyed.","Um varredor levemente modificado que libera uma rajada ao seu redor quando destruído.","Máy quét được cải tiến đôi chút, khi bị hạ sẽ xả đạn ra xung quanh."
+mp_automaton_name,量产型自动机（AR）,Mass-Produced Automaton (AR),Autômato de Produção em Massa (AR),Tự động cơ Sản Xuất Hàng Loạt (AR)
+mp_automaton_description,量产型的自动机，使用AR进行射击，发射能够扩散的子弹。,"A mass-produced automaton that fires an AR, shooting bullets that spread.","Um autômato de produção em massa que dispara uma AR, atirando balas que se espalham.","Tự động cơ sản xuất hàng loạt, bắn AR với đạn có thể lan rộng."
+mystic_sweeper_name,变异型清扫器,Mystic Sweeper,Varredor Místico,Máy Quét Huyền Bí
+mystic_sweeper_description,被神秘力量强化过的清扫器，除了会四处冲锋外还提高了伤害抵抗。,"A sweeper empowered by mysterious forces; besides charging around, it has increased damage resistance.","Um varredor fortalecido por forças misteriosas; além de avançar para todos os lados, tem resistência a dano aumentada.","Máy quét được tăng cường bởi sức mạnh huyền bí; ngoài việc lao tới khắp nơi, nó còn tăng khả năng kháng sát thương."
+red_sweeper_name,霓虹清扫器,Neon Sweeper,Varredor Neon,Máy Quét Neon
+red_sweeper_description,红色无角三倍速的清扫器，沿着路线一边行进一边留下火焰。,"A red, hornless, triple-speed sweeper that leaves a trail of fire as it advances along its route.","Um varredor vermelho, sem chifre e três vezes mais rápido, que deixa um rastro de fogo enquanto avança pela rota.","Máy quét màu đỏ, không sừng, tốc độ gấp ba, vừa tiến theo lộ trình vừa để lại vệt lửa."
+soldier_helmet_ar_name,头盔团团员（AR）,Helmet Gang Member (AR),Membro da Gangue do Capacete (AR),Thành Viên Băng Mũ Bảo Hiểm (AR)
+soldier_helmet_ar_description,头盔团的基础队员，使用AR进行射击。,"A basic member of the Helmet Gang, firing an AR.","Um membro básico da Gangue do Capacete, disparando uma AR.","Thành viên cơ bản của Băng Mũ Bảo Hiểm, bắn AR."
+soldier_helmet_sg_name,头盔团团员（SG）,Helmet Gang Member (SG),Membro da Gangue do Capacete (SG),Thành Viên Băng Mũ Bảo Hiểm (SG)
+soldier_helmet_sg_description,头盔团的进阶团员，使用SG进行射击，发射几何形状的弹幕。,"An advanced Helmet Gang member who fires a shotgun, launching geometric-pattern barrages.","Um membro avançado da Gangue do Capacete que dispara uma shotgun, lançando rajadas em padrões geométricos.","Thành viên cấp cao của Băng Mũ Bảo Hiểm, bắn shotgun và tạo ra màn đạn theo hình học."
+soldier_redhelmet_sr_name,头盔团干部（SR）,Helmet Gang Officer (SR),Oficial da Gangue do Capacete (SR),Sĩ Quan Băng Mũ Bảo Hiểm (SR)
+soldier_redhelmet_sr_description,头盔团的干部，使用SR进行射击，发射快速锁定的狙击弹。,"An officer of the Helmet Gang who fires an SR, shooting fast-locking sniper rounds.","Um oficial da Gangue do Capacete que dispara uma SR, atirando balas de sniper que travam rapidamente no alvo.","Sĩ quan của Băng Mũ Bảo Hiểm, bắn SR với đạn bắn tỉa khóa mục tiêu nhanh."
+sweeper_name,清扫器,Sweeper,Varredor,Máy Quét
+sweeper_description,最基础的款式，只会傻乎乎的跟在后面。,"The most basic model; it just dumbly follows behind.","O modelo mais básico; ele apenas segue atrás feito bobo.","Mẫu cơ bản nhất; chỉ ngốc nghếch bám theo phía sau."
+tester_automaton_name,实验用自动机（AR）,Test Automaton (AR),Autômato de Teste (AR),Tự động cơ Thử Nghiệm (AR)
+tester_automaton_description,基础款的自动机，使用AR进行射击。,"A basic automaton that fires an AR.","Um autômato básico que dispara uma AR.","Tự động cơ cơ bản, bắn AR."
+tester_automaton_rl_name,实验用自动机（RL）,Test Automaton (RL),Autômato de Teste (RL),Tự động cơ Thử Nghiệm (RL)
+tester_automaton_rl_description,稍微高配的基础款自动机，使用RL进行射击，发射会追踪玩家的导弹。,"A slightly upgraded basic automaton that fires an RL, launching missiles that track the player.","Um autômato básico levemente melhorado que dispara uma RL, lançando mísseis que perseguem o jogador.","Tự động cơ cơ bản được nâng cấp đôi chút, bắn RL với tên lửa truy đuổi người chơi."
+tester_automaton_shield_name,实验用自动机（Shield）,Test Automaton (Shield),Autômato de Teste (Shield),Tự động cơ Thử Nghiệm (Shield)
+tester_automaton_shield_description,基础款自动机PRO PLUS ULTRA，持有一块大盾向玩家一边推进一边射击，有点难缠的家伙。,"The basic automaton PRO PLUS ULTRA. It advances toward the player while firing behind a large shield — a rather troublesome foe.","O autômato básico PRO PLUS ULTRA. Avança em direção ao jogador atirando atrás de um grande escudo — um inimigo meio complicado.","Tự động cơ cơ bản PRO PLUS ULTRA, vừa tiến về phía người chơi vừa bắn sau một tấm khiên lớn — một kẻ khá khó nhằn."
+option_mobile_only_notice,该选项在移动端无效,This option is not available on mobile,Esta opção não está disponível no celular,Tùy chọn này không khả dụng trên thiết bị di động
+delete_confirm,确定删除？,Delete this record?,Excluir este registro?,Xóa bản ghi này?
+clear_confirm,确定清空所有记录吗？,Clear all records?,Excluir todos os registros?,Xóa tất cả bản ghi?
+option_damage_freq,伤害数字频率,Damage Number Frequency,Frequência dos Números de Dano,Tần suất số sát thương
+damage_freq_off,关闭,Off,Desativado,Tắt
+damage_freq_low,低,Low,Baixa,Thấp
+damage_freq_mid,中,Medium,Média,Trung bình
+damage_freq_high,高,High,Alta,Cao
+damage_freq_max,最高,Max,Máxima,Tối đa
+option_effect_freq,特效频率,Effect Frequency,Frequência dos Efeitos,Tần suất hiệu ứng
+option_hit_flash_freq,受击闪白频率,Hit Flash Frequency,Frequência do Flash de Dano,Tần suất nháy trắng khi trúng đòn
+mod_import,导入 zip,Import zip,Importar zip,Nhập zip
+mod_zip_filter,Mod 包,Mod package,Pacote Mod,Gói Mod
+mod_restart_notice,改动将在重启游戏后生效,Changes take effect after restart,As alterações entram em vigor após reiniciar,Thay đổi có hiệu lực sau khi khởi động lại
+mod_import_ok,已导入 %s，重启游戏后生效,"Imported %s, effective after restart","Importado %s, efetivo após reiniciar","Đã nhập %s, có hiệu lực sau khi khởi động lại"
+mod_import_fail,导入失败：%s,Import failed: %s,Falha na importação: %s,Nhập thất bại: %s
+mod_tag_error,[错误：%s],[Error: %s],[Erro: %s],[Lỗi: %s]
+mod_tag_unmounted,[未挂载],[Not mounted],[Não montado],[Chưa gắn]
+mod_reorder_hint,拖动或选中后用上下箭头调整顺序,Drag or select then use the up/down arrows to reorder,Arraste ou selecione e use as setas para reordenar,Kéo hoặc chọn rồi dùng mũi tên lên/xuống để sắp xếp lại
+coop_special_thanks,ETN联机版作者,ETN Co-op Author,Autor da Versão Co-op do ETN,Tác giả bản Co-op ETN

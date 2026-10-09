@@ -15,6 +15,7 @@ var center_position: Vector2 = Vector2.ZERO
 @export var bullet_scene: PackedScene
 @export var bullet_scale: float = 1
 @export var bullet_damage: float
+@export var convert_power: int = 0
 @export var bullet_penetrate: int
 @export var collision_num: int
 @export var decay_time: float
@@ -30,6 +31,10 @@ var bullet_damage_mult: float = 1
 var is_active: bool = false
 var erase_num: int = 0
 var velocity: Vector2 = Vector2.ZERO
+
+var knockback_force: int = 0
+
+var source_faction: int = Faction.ENEMY_SIDE
 
 func setup_formation():
 	match formation_type:
@@ -163,30 +168,41 @@ func erase_bullet(bullet: Node):
 		is_active = false
 
 func add_bullet():
-	var now_bullet = PoolManager.get_pool(bullet_id)
-	var add_bullet: bool = false
-	if now_bullet == null or now_bullet.is_idle == 0:
-		now_bullet = bullet_scene.instantiate()
-		add_bullet = true
-	
-	now_bullet.scale = Vector2(bullet_scale,bullet_scale)
-	now_bullet.bullet_damage =  bullet_damage * bullet_damage_mult
-	now_bullet.speed = 0
-	now_bullet.penetrate = bullet_penetrate
-	now_bullet.collision_num = collision_num
-	now_bullet.decay_time = decay_time * 10
-	now_bullet.decay_speed = decay_speed
-	now_bullet.kill_time = kill_time * 10
-	now_bullet.shoot_bullet_num = shoot_bullet_num
+	var node = ProjectileSpawner.spawn_core(
+		bullet_scene, bullet_id, "BulletRoot", _spawn_owner(), source_faction,
+		global_position, 0.0, Vector2(bullet_scale, bullet_scale),
+		false, false, true,
+		Callable(self, "_configure_bullet"),
+		Callable(),
+		Callable(self, "_post_bullet")
+	)
+	return node
+
+func _spawn_owner() -> Node:
+	var p := get_parent()
+	return p if p != null else self
+
+func _configure_bullet(node: Node) -> void:
+	node.damage_data = DamageData.fill(node.damage_data, {
+		"damage": DamageRouter.scaled_damage(source_faction, bullet_damage, self),
+		"convert": convert_power,
+		"knockback": knockback_force,
+		"type": GameTags.BULLET_DAMAGE,
+		"source": DamageRouter.source_tag(source_faction),
+	})
+	node.set("source_faction", source_faction)
+	node.speed = 0
+	node.penetrate = bullet_penetrate
+	node.collision_num = collision_num
+	node.decay_time = decay_time * 10
+	node.decay_speed = decay_speed
+	node.kill_time = kill_time * 10
+	node.shoot_bullet_num = shoot_bullet_num
 	if explosion_range > 0:
-		now_bullet.explosion_range = explosion_range
-	now_bullet.global_position = global_position
-	
-	now_bullet.active_state()
-	if add_bullet == true:
-		get_tree().get_first_node_in_group("BulletRoot").add_child(now_bullet)
-	
-	return now_bullet
+		node.explosion_range = explosion_range
+
+func _post_bullet(node: Node) -> void:
+	node.damage_data.source_node = node.get_path()
 
 func shoot_bullet():
 	if is_active == true:

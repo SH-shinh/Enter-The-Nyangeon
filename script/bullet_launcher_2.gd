@@ -8,6 +8,7 @@ signal can_move
 @export_range(0, 360) var bullet_arc :float
 @export var bullet: PackedScene
 @export var bullet_damage: float
+@export var convert_power: int = 0
 @export var bullet_speed: float
 @export var bullet_penetrate: int
 @export var collision_num: int
@@ -22,9 +23,30 @@ signal can_move
 @export var bullet_id: String
 var bullet_damage_mult: float = 1
 
+var knockback_force: int = 0
+
+var source_faction: int = Faction.ENEMY_SIDE
+var move_released: bool = false
+
+var burst_token: int = 0
+var firing_stopped: bool = false
 
 @onready var shoot_position = $ShootPosition
 @onready var timer = $Timer
+
+func begin_burst() -> int:
+	firing_stopped = false
+	burst_token += 1
+	return burst_token
+
+func burst_alive(tok: int) -> bool:
+	return tok == burst_token
+
+func stop_firing():
+	burst_token += 1
+	firing_stopped = true
+	if timer != null:
+		timer.stop()
 
 func _ready():
 	shoot_position.position.x = offset_x + offset
@@ -32,87 +54,108 @@ func _ready():
 		shoot_bullet()
 
 func emit_can_move():
+	move_released = true
 	can_move.emit()
+
+func _add_bullet_and_set_source(bullet: Node) -> void:
+	get_tree().get_first_node_in_group("BulletRoot").add_child(bullet)
+	bullet.damage_data.source_node = bullet.get_path()
 
 func shoot_bullet():
 	#var first_r = global_rotation
 	
 	timer.wait_time = delay_time
+	move_released = false
+	var tok := begin_burst()
 	
 	if bullet_count == 1:
-		
-		var now_bullet = PoolManager.get_pool(bullet_id)
-		var add_bullet: bool = false
-		if now_bullet == null or now_bullet.is_idle == 0:
-			now_bullet = bullet.instantiate()
-			add_bullet = true
-		
-		now_bullet.scale = Vector2(bullet_scale,bullet_scale)
-		now_bullet.bullet_damage =  bullet_damage * bullet_damage_mult
-		now_bullet.speed = bullet_speed
-		now_bullet.penetrate = bullet_penetrate
-		now_bullet.collision_num = collision_num
-		now_bullet.decay_time = decay_time * 10
-		now_bullet.decay_speed = decay_speed
-		now_bullet.kill_time = kill_time * 10
-		now_bullet.shoot_bullet_num = shoot_bullet_num
-		if explosion_range > 0:
-			now_bullet.explosion_range = explosion_range
-		now_bullet.global_position = shoot_position.global_position
-		now_bullet.global_rotation = global_rotation
-		can_move.connect(now_bullet.is_stop_false)
-		
-		now_bullet.active_state()
-		if add_bullet == true:
-			get_tree().get_first_node_in_group("BulletRoot").add_child(now_bullet)
-		
-	
+		ProjectileSpawner.spawn_core(
+			bullet, bullet_id, "BulletRoot", _spawn_owner(), source_faction,
+			shoot_position.global_position, global_rotation, Vector2(bullet_scale, bullet_scale),
+			false, false, true,
+			Callable(self, "_configure_single"),
+			Callable(),
+			Callable(self, "_post_bullet")
+		)
 	else:
-		var direction: Vector2 = global_position \
-			.direction_to(get_global_mouse_position()) \
-			.normalized()
-		
+		var arc_rad = deg_to_rad(bullet_arc)
+		var increment = arc_rad / (bullet_count - 1)
 		for i in bullet_count:
-			
-			var now_bullet = PoolManager.get_pool(bullet_id)
-			var add_bullet: bool = false
-			if now_bullet == null or now_bullet.is_idle == 0:
-				now_bullet = bullet.instantiate()
-				add_bullet = true
-			
-			now_bullet.scale = Vector2(bullet_scale,bullet_scale)
-			now_bullet.bullet_damage =  bullet_damage
-			now_bullet.speed = bullet_speed
-			now_bullet.penetrate = bullet_penetrate
-			now_bullet.collision_num = collision_num
-			now_bullet.decay_time = decay_time * 10
-			now_bullet.decay_speed = decay_speed
-			now_bullet.kill_time = kill_time * 10
-			now_bullet.shoot_bullet_num = shoot_bullet_num
-			now_bullet.is_stop = true
-			if !can_move.is_connected(now_bullet.is_stop_false):
-				can_move.connect(now_bullet.is_stop_false)
-			if explosion_range > 0:
-				now_bullet.explosion_range = explosion_range
-			
-			var arc_rad = deg_to_rad(bullet_arc)
-			var increment = arc_rad / (bullet_count - 1)
 			global_rotation = (
 				0 +
 				increment * i -
 				arc_rad / 2
 			)
-			now_bullet.global_position = shoot_position.global_position
-			now_bullet.global_rotation = global_rotation
-			
-			now_bullet.active_state()
-			if add_bullet == true:
-				get_tree().get_first_node_in_group("BulletRoot").call_deferred("add_child",now_bullet)
+			ProjectileSpawner.spawn_core(
+				bullet, bullet_id, "BulletRoot", _spawn_owner(), source_faction,
+				shoot_position.global_position, global_rotation, Vector2(bullet_scale, bullet_scale),
+				false, true, true,
+				Callable(self, "_configure_multi"),
+				Callable(),
+				Callable(self, "_post_bullet")
+			)
 			SoundManager.call_deferred("play_sfx","GunSounds3")
 			timer.start()
 			await timer.timeout
+			if not burst_alive(tok):
+				return
 	
 	timer.wait_time = 1
 	timer.start()
 	await timer.timeout
-	can_move.emit()
+	if not burst_alive(tok):
+		return
+	emit_can_move()
+
+func _spawn_owner() -> Node:
+	var p := get_parent()
+	return p if p != null else self
+
+func _configure_single(node: Node) -> void:
+	node.damage_data = DamageData.fill(node.damage_data, {
+		"damage": bullet_damage,
+		"convert": convert_power,
+		"knockback": knockback_force,
+		"type": GameTags.BULLET_DAMAGE,
+		"source": DamageRouter.source_tag(source_faction),
+	})
+	node.set("source_faction", source_faction)
+	node.speed = bullet_speed
+	node.penetrate = bullet_penetrate
+	node.collision_num = collision_num
+	node.decay_time = decay_time * 10
+	node.decay_speed = decay_speed
+	node.kill_time = kill_time * 10
+	node.shoot_bullet_num = shoot_bullet_num
+	if explosion_range > 0:
+		node.explosion_range = explosion_range
+	can_move.connect(node.is_stop_false)
+	if move_released:
+		node.is_stop_false()
+
+func _configure_multi(node: Node) -> void:
+	node.damage_data = DamageData.fill(node.damage_data, {
+		"damage": bullet_damage,
+		"convert": convert_power,
+		"knockback": knockback_force,
+		"type": GameTags.BULLET_DAMAGE,
+		"source": DamageRouter.source_tag(source_faction),
+	})
+	node.set("source_faction", source_faction)
+	node.speed = bullet_speed
+	node.penetrate = bullet_penetrate
+	node.collision_num = collision_num
+	node.decay_time = decay_time * 10
+	node.decay_speed = decay_speed
+	node.kill_time = kill_time * 10
+	node.shoot_bullet_num = shoot_bullet_num
+	node.is_stop = true
+	if !can_move.is_connected(node.is_stop_false):
+		can_move.connect(node.is_stop_false)
+	if move_released:
+		node.is_stop_false()
+	if explosion_range > 0:
+		node.explosion_range = explosion_range
+
+func _post_bullet(node: Node) -> void:
+	node.damage_data.source_node = node.get_path()

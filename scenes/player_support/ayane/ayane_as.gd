@@ -1,4 +1,4 @@
-extends Node2D
+extends SupportAS
 
 signal explosion_end
 
@@ -11,49 +11,21 @@ signal explosion_end
 @onready var audio_stream_player: AudioStreamPlayer = $AudioStreamPlayer
 
 var player: Node
-var as_is_active: bool = false
-var emit_ready: bool = false
-var explosion_num: int =0
+var explosion_num: int = 0
 
-func _ready() -> void:
-	GameEvents.round_upgrade.connect(skill_end)
-	GameEvents.enemy_dead_score.connect(cost_count)
+func _on_ready() -> void:
 	explosion_end.connect(skill_end)
 	animation_player_2.animation_finished.connect(anim_end)
 
-func cost_count(_score: int):
-	if SupportData.now_cost < SupportData.ex_cost:
-		SupportData.now_cost += 1
-	else:
-		if emit_ready == false:
-			emit_ready = true
-			GameEvents.emit_support_ex_ready()
+func _on_skill_active() -> void:
+	animation_player.play("loop")
+	animation_player_2.play("attack_anim")
 
-func _unhandled_input(event: InputEvent) -> void:
-	
-	if event.is_action_pressed("EX_skill") :
-		if SupportData.now_cost >= SupportData.ex_cost:
-			skill_active()
-
-func skill_active():
-	if as_is_active == false:
-		GameEvents.emit_support_ex_active()
-		as_is_active = true
-		animation_player.play("loop")
-		animation_player_2.play("attack_anim")
-
-func anim_end():
+func anim_end(_anim_name: String):
 	explosion_num = 0
 	animation_player.play("RESET")
 	animation_player_2.play("RESET")
 	audio_stream_player.stop()
-
-func skill_end():
-	if as_is_active == true:
-		as_is_active = false
-		emit_ready = false
-		SupportData.now_cost = 0
-		GameEvents.emit_support_ex_end()
 
 func explosion_to_map():
 	
@@ -76,32 +48,41 @@ func explosion_to_map():
 	explosion_end.emit()
 
 func add_explosion(point: Vector2):
-	var ins = PoolManager.get_pool("player_explosion")
-	var add_ins: bool = false
-	if ins == null or ins.is_idle == 0:
-		ins = explosion_pack.instantiate()
-		add_ins = true
-	
-	ins.global_position = point
+	ProjectileSpawner.spawn_core(
+		explosion_pack, "player_explosion", "BulletRoot", self, Faction.PLAYER_SIDE,
+		point, 0.0, Vector2.ZERO,
+		true, false, true,
+		Callable(self, "_configure_explosion"),
+		Callable(self, "_pre_activate_explosion"),
+		Callable(self, "_post_explosion")
+	)
+
+func _configure_explosion(node: Node) -> void:
+	node.damage_data = DamageData.fill(node.damage_data, {
+		"knockback": max(player.stats.bullet_knockback, 1),
+		"type": GameTags.EXPLOSION_DAMAGE,
+		"source": GameTags.EQUIP,
+		"node": self,
+	})
 	var luck = randf_range(0, 100)
 	if luck < player.stats.critical_luck:
-		ins.is_critical = true
-		ins.explosion_damage = max(1, (explosion_damage + player.stats.bullet_damage * 0.6) * player.stats.explosion_damage * player.stats.global_damage * player.stats.critical_damage * player.stats.equip_damage)
+		node.damage_data.base_damage = max(1, (explosion_damage + player.stats.bullet_damage * 0.6) * player.stats.global_damage * player.stats.critical_damage * player.stats.equip_damage)
+		node.damage_data.is_crit = true
 	else:
-		ins.explosion_damage = max(1, (explosion_damage + player.stats.bullet_damage * 0.6) * player.stats.explosion_damage * player.stats.global_damage * player.stats.equip_damage)
-	ins.explosion_knockback = player.stats.bullet_knockback
-	ins.explosion_range = 7 * max(1, player.stats.explosion_range * 0.3)
-	
-	ins.active_state()
-	if add_ins == true:
-		get_tree().get_first_node_in_group("BulletRoot").add_child(ins)
-	
-	ins.is_explosion()
+		node.damage_data.base_damage = max(1, (explosion_damage + player.stats.bullet_damage * 0.6) * player.stats.global_damage * player.stats.equip_damage)
+		node.damage_data.is_crit = false
+	node.explosion_range = 7 * max(1, player.stats.explosion_range * 0.3)
+
+func _pre_activate_explosion(node: Node) -> void:
+	node.damage_data.hit_box_center = node.global_position
+
+func _post_explosion(node: Node) -> void:
+	node.is_explosion()
 
 func generate_explosion_positions(num_points: int, radius_x: int, radius_y: int, center: Vector2, random_offset: float = 20.0) -> Array:
 	var points = []
 	var candidates = []
-	var step = max(1, int(sqrt(radius_x * radius_y / num_points)))
+	var step = max(1, int(sqrt(float(radius_x * radius_y) / float(num_points))))
 	
 	# 生成候选点
 	for x in range(center.x - radius_x, center.x + radius_x + 1, step):

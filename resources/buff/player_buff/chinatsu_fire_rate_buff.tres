@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://cq1ntsfr2x9v1"]
+
+[ext_resource type="Texture2D" uid="uid://gtf7t82l48r4" path="res://sprites/buff_icon/bullet_shoot_time_buff_icon.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://dhb70b327wxvy" path="res://resources/buff/buff.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = "chinatsu_fire_rate_buff"
+icon = ExtResource("1_icon")
+name = "强化针·射速"
+remove_by_layer = false
+description = ""
+modifiers = Array[Dictionary]([{"key": "shoot_time_mult", "mode": "add", "source": "value"}])

@@ -1,0 +1,8 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://mods/etn_coop/ui/coop_option.gd" id="1_coopopt"]
+
+[node name="CoopOption" type="VBoxContainer"]
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+script = ExtResource("1_coopopt")

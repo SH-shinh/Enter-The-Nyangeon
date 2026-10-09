@@ -28,9 +28,7 @@ void fragment() {
 	float gray = dot(c.rgb, vec3(0.299,0.587,0.114));
 	float bw = step(0.05, gray);
 
-	vec3 tex = texture(TEXTURE, UV).rgb;
-
-	COLOR = vec4(tex, emission_mask * bw);
+	COLOR = vec4(c.rgb, emission_mask * bw);
 
 
 }

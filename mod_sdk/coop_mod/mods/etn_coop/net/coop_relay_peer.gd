@@ -31,9 +31,13 @@ var _connect_started_msec: int = 0
 var _pending_action: String = ""
 var _pending_name: String = ""
 var _pending_room_code: String = ""
+var _pending_token: String = ""
 var _action_sent: bool = false
 var _admitted: Dictionary = {}          # peer_id -> true（已 emit 过 peer_connected，防重复接入）
 var _relay_debug: bool = OS.is_debug_build()
+# 发送失败诊断：WebSocket 出缓冲满等导致 send() 失败时计数（不再静默当作成功）
+var send_fail_count: int = 0
+var _send_fail_warn_msec: int = 0
 
 
 # 排入待接入列表（去重 + 跳过自身/0）。真正 emit 在 _poll 末尾统一做。
@@ -45,9 +49,10 @@ func _queue_peer(peer_id: int) -> void:
 	_peers_to_connect.append(peer_id)
 
 
-func create_relay_host(url: String, player_name: String) -> Error:
+func create_relay_host(url: String, player_name: String, token: String = "") -> Error:
 	_pending_action = "create"
 	_pending_name = player_name
+	_pending_token = token
 	_action_sent = false
 	_connect_started_msec = Time.get_ticks_msec()
 	_status = MultiplayerPeer.CONNECTION_CONNECTING
@@ -58,10 +63,11 @@ func create_relay_host(url: String, player_name: String) -> Error:
 	return error
 
 
-func join_relay_room(url: String, room_code: String, player_name: String) -> Error:
+func join_relay_room(url: String, room_code: String, player_name: String, token: String = "") -> Error:
 	_pending_action = "join"
 	_pending_name = player_name
 	_pending_room_code = room_code
+	_pending_token = token
 	_action_sent = false
 	_connect_started_msec = Time.get_ticks_msec()
 	_status = MultiplayerPeer.CONNECTION_CONNECTING
@@ -107,12 +113,14 @@ func _poll() -> void:
 			_ws.send_text(JSON.stringify({
 				"type": "create_room",
 				"player_name": _pending_name,
+				"token": _pending_token,
 			}))
 		elif _pending_action == "join":
 			_ws.send_text(JSON.stringify({
 				"type": "join_room",
 				"room_code": _pending_room_code,
 				"player_name": _pending_name,
+				"token": _pending_token,
 			}))
 		_pending_action = ""
 
@@ -152,8 +160,15 @@ func _on_control(text: String) -> void:
 			_unique_id = int(data.get("peer_id", 0))
 			_join_handshake_started_msec = Time.get_ticks_msec()
 			_pending_peers.clear()
-			for peer_info in data.get("peers", []):
+			var peers = data.get("peers", [])
+			if not (peers is Array):
+				peers = []
+			for peer_info in peers:
+				if not (peer_info is Dictionary):
+					continue
 				var peer_id := int(peer_info.get("peer_id", 0))
+				if peer_id <= 0:
+					continue
 				_known_peers[peer_id] = peer_info.get("name", "")
 				if peer_id != _unique_id:
 					_pending_peers.append(peer_id)
@@ -227,15 +242,24 @@ func _get_packet_script() -> PackedByteArray:
 
 
 func _get_packet_peer() -> int:
-	return _current_pkt_peer
+	# 引擎 SceneMultiplayer::poll() 先 get_packet_peer() 再 get_packet()（弹出），
+	# 故这里必须返回「队首包」的 peer（peek），不能返回上次 pop 的值，否则 sender 错位一拍：
+	# 首个包报 0、断线后报已断开 id → 引擎 !connected_peers.has(sender) 红字 / 多端错配。
+	if _incoming.is_empty():
+		return _current_pkt_peer
+	return int(_incoming[0]["peer"])
 
 
 func _get_packet_channel() -> int:
-	return _current_pkt_channel
+	if _incoming.is_empty():
+		return _current_pkt_channel
+	return int(_incoming[0]["channel"])
 
 
 func _get_packet_mode() -> MultiplayerPeer.TransferMode:
-	return _current_pkt_mode
+	if _incoming.is_empty():
+		return _current_pkt_mode
+	return _incoming[0]["mode"]
 
 
 func _put_packet_script(p_buffer: PackedByteArray) -> Error:
@@ -246,8 +270,14 @@ func _put_packet_script(p_buffer: PackedByteArray) -> Error:
 	var header := PackedByteArray()
 	header.resize(4)
 	header.encode_s32(0, _target_peer)
-	_ws.send(header + p_buffer)
-	return OK
+	var err := _ws.send(header + p_buffer)
+	if err != OK:
+		send_fail_count += 1
+		var now: int = Time.get_ticks_msec()
+		if now - _send_fail_warn_msec > 5000:
+			_send_fail_warn_msec = now
+			push_warning("[etn_coop][relay] send failed err=%d total=%d" % [err, send_fail_count])
+	return err
 
 
 func _get_unique_id() -> int:
@@ -299,6 +329,10 @@ func _set_refuse_new_connections(p_enable: bool) -> void:
 
 
 func _close() -> void:
+	# 主动离开：先发 leave_room，让中继立即 remove_peer。否则要等 TCP FIN / 心跳超时，
+	# 期间重复点加入会被中继当作新成员反复分配 peer_id、排到后面。
+	if _status == MultiplayerPeer.CONNECTION_CONNECTED:
+		_send_control_json({"type": "leave_room"})
 	_ws.close()
 	_status = MultiplayerPeer.CONNECTION_DISCONNECTED
 	_unique_id = 0
@@ -311,7 +345,12 @@ func _close() -> void:
 	_join_handshake_started_msec = 0
 	_action_sent = false
 	_pending_action = ""
+	_pending_token = ""
 
 
 func _disconnect_peer(p_peer: int, _p_force: bool) -> void:
+	# 中继协议（create_room/join_room/client_ready → room_created/...）没有 kick/close_peer 帧，
+	# 无法真正让服务端断开某个逻辑 peer；这里只能清本地表。故 host 侧对「未握手/被拒」连接
+	# 一律靠 CoopNet._server_sender_ok() 门控其权威 RPC（LAN 的 ENet disconnect_peer 仍直接生效）。
+	# 如需真正踢除 Relay 逻辑 peer，需服务端扩展 kick_peer 控制帧。
 	_known_peers.erase(p_peer)

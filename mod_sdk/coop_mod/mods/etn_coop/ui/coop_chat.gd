@@ -200,6 +200,23 @@ func _hide_now() -> void:
 	_fade_tween.tween_callback(func(): _panel.visible = false)
 
 
+# ---------------- 供 CoopScoreboard 查询（移动端联动 + 左移避让） ----------------
+
+# 是否处于「用户主动打开/输入」的聊天态（不含 peek 自动显示）。
+func is_composing() -> bool:
+	return _is_open and _composing
+
+
+# 聊天窗面板是否正显示（含淡出中）。
+func is_window_visible() -> bool:
+	return _panel.visible and _panel.modulate.a > 0.01
+
+
+# 聊天窗面板矩形（用于战绩栏左移避让）。
+func get_window_rect() -> Rect2:
+	return _panel.get_global_rect()
+
+
 func _on_game_over(_player_dead: bool) -> void:
 	# 游戏结束后保留聊天窗（不隐藏），新消息仍可自动显示（peek）
 	_upgrade_active = false
@@ -252,6 +269,10 @@ func _acquire_controls() -> void:
 	_prev_mouse_mode = Input.mouse_mode
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	_controls_held = true
+	# 输入态才让 Scroll 接收鼠标/触摸：滚轮原生 + ScrollBox.gd 拖拽；peek/关闭态保持 IGNORE 不吞游戏输入。
+	if _scroll != null and is_instance_valid(_scroll):
+		_scroll.mouse_filter = Control.MOUSE_FILTER_STOP
+		_scroll.mouse_force_pass_scroll_events = false
 
 
 # 发送/隐藏时释放：恢复鼠标模式与玩家冻结状态（幂等）。
@@ -263,6 +284,8 @@ func _release_controls() -> void:
 	_frozen_player = null
 	Input.mouse_mode = _prev_mouse_mode
 	_controls_held = false
+	if _scroll != null and is_instance_valid(_scroll):
+		_scroll.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 # ---------------- 日志 ----------------
@@ -319,20 +342,17 @@ func _ensure_button() -> void:
 	var coop = CoopNetScript.instance
 	var active: bool = coop != null and is_instance_valid(coop) and bool(coop.is_lan_game)
 	if not active:
-		if _btn != null and is_instance_valid(_btn):
-			_btn.visible = false
+		_hide_btn()
 		_hide_ping()
 		return
 	var player = coop.call("get_local_player")
 	if player == null or not is_instance_valid(player):
-		if _btn != null and is_instance_valid(_btn):
-			_btn.visible = false
+		_hide_btn()
 		_hide_ping()
 		return
 	var ammo_pos: Node = player.get_node_or_null("GameUI/AmmoPosition")
 	if ammo_pos == null:
-		if _btn != null and is_instance_valid(_btn):
-			_btn.visible = false
+		_hide_btn()
 		_hide_ping()
 		return
 	if _btn == null or not is_instance_valid(_btn):
@@ -387,8 +407,19 @@ func _make_ping_label() -> Label:
 
 
 func _hide_ping() -> void:
-	if _ping_label != null and is_instance_valid(_ping_label):
+	if _ping_label != null and not is_instance_valid(_ping_label):
+		_ping_label = null
+		return
+	if _ping_label != null:
 		_ping_label.visible = false
+
+
+func _hide_btn() -> void:
+	if _btn != null and not is_instance_valid(_btn):
+		_btn = null
+		return
+	if _btn != null:
+		_btn.visible = false
 
 
 func _refresh_pings(delta: float) -> void:
@@ -406,7 +437,7 @@ func _refresh_pings(delta: float) -> void:
 	_apply_ping_label(_upgrade_ping, rtt, quality)
 
 
-func _apply_ping_label(label: Label, rtt: float, quality: String) -> void:
+func _apply_ping_label(label, rtt: float, quality: String) -> void:
 	if label == null or not is_instance_valid(label):
 		return
 	var text: String = "%dms" % int(round(rtt)) if rtt > 0.0 else "--"

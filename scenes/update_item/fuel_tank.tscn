@@ -1,6 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://c84p1rbn8pwtu"]
+[gd_scene format=3 uid="uid://c84p1rbn8pwtu"]
 
-[ext_resource type="Script" path="res://scenes/update_item/fuel_tank.gd" id="1_oyako"]
+[ext_resource type="Script" uid="uid://due2kpj7xg34s" path="res://scenes/update_item/fuel_tank.gd" id="1_oyako"]
 [ext_resource type="Resource" uid="uid://ddlwsbdn8hn6j" path="res://resources/buff/enemy_buff/fire_dot.tres" id="2_wslye"]
 
 [node name="FuelTank" type="Node2D"]

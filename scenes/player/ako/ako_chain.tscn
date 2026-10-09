@@ -1,0 +1,32 @@
+[gd_scene format=3 uid="uid://b2dqkf0ewefxf"]
+
+[ext_resource type="Texture2D" uid="uid://di75js26v3vn8" path="res://sprites/player/ako/chain_1.png" id="1_nbhct"]
+[ext_resource type="Script" uid="uid://bka2ob26s83i0" path="res://scenes/player/ako/ako_chain.gd" id="1_nc05e"]
+[ext_resource type="Texture2D" uid="uid://50wni6gchkcq" path="res://sprites/player/ako/chain_2.png" id="2_nc05e"]
+[ext_resource type="Script" uid="uid://dr76chn03wfde" path="res://script/rope.gd" id="3_w2kow"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_wvhbo"]
+
+[node name="ako_chain" type="Node2D" unique_id=1256962160]
+script = ExtResource("1_nc05e")
+
+[node name="HitBox" type="Area2D" parent="." unique_id=2123273997]
+collision_layer = 0
+collision_mask = 16384
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox" unique_id=1159676724]
+shape = SubResource("CircleShape2D_wvhbo")
+
+[node name="Sprite2D" type="Sprite2D" parent="HitBox" unique_id=1267778091]
+z_index = 1
+texture = ExtResource("1_nbhct")
+
+[node name="Rope" type="Line2D" parent="." unique_id=1836015749]
+texture_repeat = 2
+width = 25.0
+texture = ExtResource("2_nc05e")
+texture_mode = 1
+script = ExtResource("3_w2kow")
+segment_count = 6
+segment_length = 18.0
+constraint_iterations = 5

@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://dcixivms2uc75"]
+[gd_scene format=3 uid="uid://dcixivms2uc75"]
 
-[ext_resource type="Script" path="res://script/enemy_hurt_floating_text.gd" id="1_2r0eh"]
+[ext_resource type="Script" uid="uid://0dcm6e4hx8cs" path="res://script/enemy_hurt_floating_text.gd" id="1_2r0eh"]
 
-[node name="EnemyHurtFloatingText" type="Node2D"]
+[node name="EnemyHurtFloatingText" type="Node2D" unique_id=1506258143]
 script = ExtResource("1_2r0eh")

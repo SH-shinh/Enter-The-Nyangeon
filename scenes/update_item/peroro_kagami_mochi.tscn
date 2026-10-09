@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://clb4rhe62pceo"]
+[gd_scene format=3 uid="uid://clb4rhe62pceo"]
 
-[ext_resource type="Script" path="res://scenes/update_item/peroro_kagami_mochi.gd" id="1_vrio1"]
+[ext_resource type="Script" uid="uid://3wnhk7cryb8q" path="res://scenes/update_item/peroro_kagami_mochi.gd" id="1_vrio1"]
 
-[node name="peroro_kagami_mochi" type="Node2D"]
+[node name="peroro_kagami_mochi" type="Node2D" unique_id=259634435]
 script = ExtResource("1_vrio1")

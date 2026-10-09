@@ -1,0 +1,117 @@
+[gd_scene format=3 uid="uid://bwg4n6jce008e"]
+
+[ext_resource type="Script" uid="uid://cidchjd27glus" path="res://script/menu_button.gd" id="1_nh5jk"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_5yi7o"]
+content_margin_left = 6.0
+
+[sub_resource type="Theme" id="Theme_7ln0o"]
+PanelContainer/styles/panel = SubResource("StyleBoxEmpty_5yi7o")
+
+[sub_resource type="Animation" id="Animation_vq2ci"]
+resource_name = "RESET"
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node2D/ColorRect:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(4, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Node2D/ColorRect:size")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 25)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:offset_transform_position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_v68qo"]
+resource_name = "on_select"
+length = 0.05
+step = 0.05
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node2D/ColorRect:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.05),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(4, 0), Vector2(-6, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Node2D/ColorRect:size")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.05),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0, 25), Vector2(8, 25)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:offset_transform_position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.05),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0, 0), Vector2(11, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_runuk"]
+_data = {
+&"RESET": SubResource("Animation_vq2ci"),
+&"on_select": SubResource("Animation_v68qo")
+}
+
+[node name="menu_button" type="PanelContainer" unique_id=207744459]
+custom_minimum_size = Vector2(150, 25)
+offset_transform_enabled = true
+focus_neighbor_top = NodePath("../TestRoom")
+focus_neighbor_bottom = NodePath("../Option")
+focus_mode = 2
+mouse_filter = 2
+theme = SubResource("Theme_7ln0o")
+script = ExtResource("1_nh5jk")
+
+[node name="Node2D" type="Node2D" parent="." unique_id=2138580840]
+
+[node name="ColorRect" type="ColorRect" parent="Node2D" unique_id=2060174634]
+offset_left = 4.0
+offset_right = 4.0
+offset_bottom = 25.0
+color = Color(0.2038, 0.572602, 0.932866, 1)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=2028580771]
+libraries/ = SubResource("AnimationLibrary_runuk")

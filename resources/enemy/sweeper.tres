@@ -1,10 +1,11 @@
-[gd_resource type="Resource" script_class="EnemyCard" load_steps=3 format=3 uid="uid://tyefl3u2oxr"]
+[gd_resource type="Resource" script_class="EnemyCard" format=3 uid="uid://tyefl3u2oxr"]
 
 [ext_resource type="PackedScene" uid="uid://blgdeks0i23pt" path="res://scenes/enemies/sweeper.tscn" id="1_5ygcp"]
-[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_arrik"]
+[ext_resource type="Script" uid="uid://c2yv0iuw6g8oh" path="res://resources/enemy/enemy.gd" id="2_arrik"]
+[ext_resource type="Texture2D" uid="uid://b08u1we6bchqr" path="res://sprites/enemies/sweeper_icon.png" id="2_js3qm"]
 
 [resource]
 script = ExtResource("2_arrik")
 id = "sweeper"
 body = ExtResource("1_5ygcp")
-description = ""
+icon = ExtResource("2_js3qm")

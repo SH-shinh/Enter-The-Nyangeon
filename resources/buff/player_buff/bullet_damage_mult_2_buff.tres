@@ -9,3 +9,5 @@ id = "bullet_damage_mult_2_buff"
 icon = ExtResource("1_gy531")
 name = "子弹伤害"
 description = ""
+modifiers = Array[Dictionary]([{"key": "damage_mult", "mode": "add", "source": "value"}])
+consume_event = "player_ammo_reload"

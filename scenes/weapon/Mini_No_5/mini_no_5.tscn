@@ -1,6 +1,6 @@
-[gd_scene load_steps=11 format=3 uid="uid://dxbftj431tfkf"]
+[gd_scene format=3 uid="uid://dxbftj431tfkf"]
 
-[ext_resource type="Script" path="res://scenes/weapon/Unique_Idea/unique_idea.gd" id="1_tw8oh"]
+[ext_resource type="Script" uid="uid://ll1l3uf862v7" path="res://script/player_gun.gd" id="1_tw8oh"]
 [ext_resource type="PackedScene" uid="uid://byimyqyqflqma" path="res://scenes/bullet/nonomi_bullet.tscn" id="2_je6wm"]
 [ext_resource type="Texture2D" uid="uid://dipntxdqai1gq" path="res://sprites/weapon/mini_no_5.png" id="3_ihljk"]
 [ext_resource type="PackedScene" uid="uid://5xnka7kne7w" path="res://script/picatinny_rail.tscn" id="4_020x7"]
@@ -54,56 +54,90 @@ tracks/1/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_w0ptx"]
 _data = {
-"RESET": SubResource("Animation_yiltc"),
-"reload": SubResource("Animation_sw87n")
+&"RESET": SubResource("Animation_yiltc"),
+&"reload": SubResource("Animation_sw87n")
 }
 
-[node name="Mini_No_5" type="Node2D"]
+[sub_resource type="Animation" id="Animation_tqh52"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0.6, 0.6)]
+}
+
+[sub_resource type="Animation" id="Animation_bqj5q"]
+resource_name = "fire"
+length = 0.3
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0.45, 1), Vector2(0.6, 0.6)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_65w31"]
+_data = {
+&"RESET": SubResource("Animation_tqh52"),
+&"fire": SubResource("Animation_bqj5q")
+}
+
+[node name="Mini_No_5" type="Node2D" unique_id=158857525]
 script = ExtResource("1_tw8oh")
 bullet = ExtResource("2_je6wm")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1530518078]
 position = Vector2(10, 1)
 scale = Vector2(0.6, 0.6)
 texture = ExtResource("3_ihljk")
 
-[node name="PicatinnyRail" parent="Sprite2D" instance=ExtResource("4_020x7")]
+[node name="PicatinnyRail" parent="Sprite2D" unique_id=965091602 instance=ExtResource("4_020x7")]
 position = Vector2(-4, -12)
 scale = Vector2(1.66667, 1.66667)
 
-[node name="Muzzle" parent="Sprite2D" instance=ExtResource("5_pxqtr")]
+[node name="Muzzle" parent="Sprite2D" unique_id=1319792030 instance=ExtResource("5_pxqtr")]
 position = Vector2(30, -1.66667)
 scale = Vector2(1.66667, 1.66667)
 
-[node name="ShootPosition" type="Marker2D" parent="."]
+[node name="ShootPosition" type="Marker2D" parent="." unique_id=1302093311]
 position = Vector2(28, 0)
 
-[node name="ShootTimer" type="Timer" parent="."]
+[node name="ShootTimer" type="Timer" parent="." unique_id=1346918064]
 wait_time = 0.2
 one_shot = true
 
-[node name="FireSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="FireSounds" type="AudioStreamPlayer2D" parent="." unique_id=2085788173]
 process_mode = 3
 stream = ExtResource("6_y7hbr")
 volume_db = 2.0
 pitch_scale = 1.1
 bus = &"SFX"
 
-[node name="ReloadAnim" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_w0ptx")
-}
+[node name="ReloadAnim" type="AnimationPlayer" parent="." unique_id=335058434]
+libraries/ = SubResource("AnimationLibrary_w0ptx")
 
-[node name="AmmoReloadTimer" type="Timer" parent="."]
+[node name="AmmoReloadTimer" type="Timer" parent="." unique_id=1566959820]
 wait_time = 0.5
 one_shot = true
 
-[node name="ReloadSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="ReloadSounds" type="AudioStreamPlayer2D" parent="." unique_id=1418922185]
 process_mode = 3
 stream = ExtResource("7_enjv7")
 volume_db = 8.0
 bus = &"SFX"
 
-[node name="EXskillTimer" type="Timer" parent="."]
-wait_time = 0.5
-one_shot = true
+[node name="FireAnim" type="AnimationPlayer" parent="." unique_id=193666361]
+libraries/ = SubResource("AnimationLibrary_65w31")

@@ -1,8 +1,9 @@
-[gd_scene load_steps=7 format=3 uid="uid://dy6fivqtnelx0"]
+[gd_scene format=3 uid="uid://dy6fivqtnelx0"]
 
 [ext_resource type="Texture2D" uid="uid://dcdfpkuwxmvxf" path="res://sprites/particle/fire-0001.png" id="1_364o7"]
-[ext_resource type="Script" path="res://scenes/debuff/fire_field.gd" id="1_pa7n5"]
+[ext_resource type="Script" uid="uid://d4cvgc8krxlmw" path="res://scenes/debuff/fire_field.gd" id="1_pa7n5"]
 [ext_resource type="Resource" uid="uid://ddlwsbdn8hn6j" path="res://resources/buff/enemy_buff/fire_dot.tres" id="2_lr7lr"]
+[ext_resource type="Script" uid="uid://dgqq5631n3u32" path="res://script/hit_box.gd" id="3_tflms"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_su75l"]
 radius = 40.0
@@ -25,26 +26,25 @@ color = Color(2, 1.2, 1.1, 0.6)
 anim_speed_min = 1.0
 anim_speed_max = 1.0
 
-[node name="fire_field" type="Node2D"]
+[node name="fire_field" type="Node2D" unique_id=1354088626]
 script = ExtResource("1_pa7n5")
 enemy_buff = ExtResource("2_lr7lr")
 buff_layer = 1
 buff_value = 1.0
 buff_erase_timer = 1.0
 
-[node name="Area2D" type="Area2D" parent="."]
-collision_layer = 0
-collision_mask = 8
+[node name="Area2D" type="Area2D" parent="." unique_id=417425869]
+collision_layer = 32768
+collision_mask = 16384
+monitorable = false
+script = ExtResource("3_tflms")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=1675797590]
 shape = SubResource("CircleShape2D_su75l")
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=643303073]
 material = SubResource("CanvasItemMaterial_uirau")
 amount = 32
-process_material = SubResource("ParticleProcessMaterial_31dt4")
 texture = ExtResource("1_364o7")
 explosiveness = 0.1
-
-[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
-[connection signal="body_exited" from="Area2D" to="." method="_on_area_2d_body_exited"]
+process_material = SubResource("ParticleProcessMaterial_31dt4")

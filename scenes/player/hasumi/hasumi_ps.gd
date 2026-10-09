@@ -17,7 +17,7 @@ var critical_luck_count: int = 0
 func _ready():
 	GameEvents.player_ps_upgrade.connect(ps_upgrade)
 	GameEvents.player_ammo_reload.connect(add_player_luck_buff)
-	GameEvents.player_bullet_kill_enemy.connect(add_fast_reload)
+	GameEvents.enemy_damage_taken_dead.connect(add_fast_reload)
 	value = [buff_layer, buff_value, buff_erase_timer]
 
 func ps_upgrade(t_num: int):
@@ -32,7 +32,7 @@ func ps_upgrade(t_num: int):
 		value = [buff_layer, buff_value, buff_erase_timer]
 		PlayerData.critical_luck_add += 15
 		PlayerData.update_player_ability()
-		GameEvents.enemy_body.connect(critical_kill_enemy)
+		GameEvents.enemy_damage_taken_dead.connect(critical_kill_enemy)
 	elif now_t == 3:
 		buff_value = 15
 		value = [buff_layer, buff_value, buff_erase_timer]
@@ -40,8 +40,8 @@ func ps_upgrade(t_num: int):
 		PlayerData.update_player_ability()
 		PlayerData.player_ability_changed.connect(critical_luck_to_damage)
 
-func add_fast_reload(_bullet_body: Node):
-	if gun.now_bullet_ammo <= 0:
+func add_fast_reload(_final_damage: int, damage_data: DamageData, _body_path: NodePath):
+	if gun.now_bullet_ammo <= 0 and damage_data.source_type.has(GameTags.PLAYER) and damage_data.damage_type.has(GameTags.BULLET_DAMAGE):
 		PoolManager.add_text("RELOAD!", player.global_position, Color(1,1,1), 16)
 		SoundManager.play_sfx("ReloadSounds")
 		gun.reload_ammo()
@@ -58,8 +58,8 @@ func fire_rate_count():
 		PlayerData.bullet_shoot_time_mult += critical_damage_count
 		PlayerData.update_player_ability()
 
-func critical_kill_enemy(enemy_body: Node, bullet_body: Node):
-	if bullet_body.is_critical == true and bullet_body.bullet_damage >= enemy_body.hurt_damage:
+func critical_kill_enemy(_final_damage: int, damage_data: DamageData, _body_path: NodePath):
+	if damage_data.is_crit == true and damage_data.source_type.has(GameTags.PLAYER) and damage_data.damage_type.has(GameTags.BULLET_DAMAGE):
 		PlayerData.bullet_damage_mult += 0.01
 		PlayerData.update_player_ability()
 

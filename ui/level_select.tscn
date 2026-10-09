@@ -536,6 +536,7 @@ _data = {
 }
 
 [node name="LevelSelect" type="CanvasLayer"]
+layer = 2
 visible = false
 script = ExtResource("1_qu4ss")
 

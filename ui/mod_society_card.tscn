@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://cgp6j77fvotwj"]
+
+[ext_resource type="Script" uid="uid://cjbfah8t1qxyi" path="res://ui/mod_society_card.gd" id="1_gsu1g"]
+
+[node name="ModSociety" type="PanelContainer" unique_id=1667012260]
+custom_minimum_size = Vector2(93, 28)
+script = ExtResource("1_gsu1g")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=601034875]
+
+[node name="Node2D" type="Node2D" parent="." unique_id=122230205]
+
+[node name="ColorRect" type="ColorRect" parent="Node2D" unique_id=1497421048]
+offset_right = 93.0
+offset_bottom = 28.0
+color = Color(0.09411765, 0.09411765, 0.09411765, 1)
+
+[node name="Label" type="Label" parent="Node2D" unique_id=80102428]
+offset_left = 4.0
+offset_top = 6.0
+offset_right = 5.0
+offset_bottom = 24.0
+text = "MOD"

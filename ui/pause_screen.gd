@@ -30,11 +30,16 @@ var resume_on_touch: bool = false
 var option_on_touch: bool = false
 
 var can_pause: bool = true
+# 演出/升级等非用户暂停期间为 true：禁止打开暂停菜单，且若已开则强制关闭
+var _pause_locked: bool = false
 
 func _ready():
 	hide()
 	visibility_changed.connect(func():
-		get_tree().paused = visible
+		if ExtensionHooks.pause_visibility.is_valid():
+			ExtensionHooks.notify(ExtensionHooks.pause_visibility, [visible, self])
+		else:
+			get_tree().paused = visible
 		)
 	GameEvents.get_player.connect(get_player)
 	get_player()
@@ -44,6 +49,7 @@ func _ready():
 	GameEvents.player_card_touch.connect(option_touch_out)
 	GameEvents.round_end.connect(no_can_pause)
 	GameEvents.round_start.connect(is_can_pause)
+	GameEvents.pause_lock.connect(_on_pause_lock)
 	GameEvents.game_over.connect(game_over_no_pause)
 	GameEvents.global_time_count.connect(auto_text)
 	GameEvents.round_upgrade.connect(hide_pause_screen)
@@ -66,7 +72,11 @@ func _ready():
 func _input(event: InputEvent) -> void:
 	if  event.is_action_pressed("pause"):
 		
-		if can_pause == false:
+		if can_pause == false or _pause_locked:
+			return
+		
+		# LAN：打开由 player._unhandled_input 负责；隐藏时此处直接返回，避免重复 toggle
+		if not self.visible and ExtensionHooks.is_lan_session.is_valid() and bool(ExtensionHooks.is_lan_session.call()):
 			return
 		
 		if on_menu_selected == true:
@@ -86,7 +96,7 @@ func hide_pause_screen():
 	if self.visible == true:
 		SoundManager.play_sfx("UISounds2")
 		SoundManager.bgm_player.volume_db = linear_to_db(1)
-		Input.mouse_mode = Input.MOUSE_MODE_CONFINED_HIDDEN
+		# 不写鼠标：升级页/商店接管时应由 crosshair(VISIBLE) 持有指针，此处强改会丢失鼠标
 		hide()
 		button_close()
 		get_window().set_input_as_handled()
@@ -115,6 +125,14 @@ func is_can_pause():
 func no_can_pause():
 	can_pause = false
 
+# 演出/升级锁：上锁时关掉已开的暂停菜单，保证 visible 与 get_tree().paused 一致
+func _on_pause_lock(locked: bool):
+	_pause_locked = locked
+	if locked and self.visible:
+		# 仅在确实关闭了可见菜单时隐藏指针（Boss 演出需要）；升级场景菜单通常已隐藏，不误伤
+		hide_pause_screen()
+		Input.mouse_mode = Input.MOUSE_MODE_CONFINED_HIDDEN
+
 func on_menu_selected_false():
 	on_menu_selected = false
 
@@ -139,7 +157,7 @@ func quit_button_close():
 func get_player():
 	player = get_tree().get_first_node_in_group("Player")
 	player_color.color = player.player_card.color
-	player_p.texture = player.player_card.sprite
+	player_p.texture = LazyTexture.load_uncached(player.player_card.sprite_path)
 	player_halo.texture = player.player_card.halo
 	player_name.text = player.player_card.name
 	player_weapon.text = player.player_card.weapon
@@ -154,7 +172,7 @@ func random_player_p():
 
 func show_pause() -> void:
 	
-	if can_pause == false:
+	if can_pause == false or _pause_locked:
 			return
 	
 	show()

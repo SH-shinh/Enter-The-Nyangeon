@@ -3,6 +3,7 @@ extends Node2D
 signal shop_open
 signal button_open
 signal button_close
+signal shop_close
 
 @export var shop_card_group: Array[CharacterCard]
 @export var shop_item_group: Array[ClothesCard]
@@ -21,6 +22,13 @@ signal button_close
 @onready var card_ins_2: PackedScene = preload("res://ui/item_shop_card.tscn")
 @onready var shop_tag_button_1: PanelContainer = $Node2D/Node2D2/Shop/Node2D/ShopTagButton1
 @onready var shop_tag_button_2: PanelContainer = $Node2D/Node2D2/Shop/Node2D/ShopTagButton2
+
+@onready var item_list_1: ScrollContainer = $Node2D/Node2D2/Shop/ItemList1
+@onready var item_list_2: ScrollContainer = $Node2D/Node2D2/Shop/ItemList2
+
+var _lazy_active: bool = false
+var _lazy_last_v: float = -1.0
+var _lazy_force: int = 0
 
 var shop_is_open: bool = false
 var shop_show: bool = false
@@ -46,24 +54,39 @@ func _ready() -> void:
 	add_item_card()
 
 func emit_shop_open():
+	_lazy_active = true
+	_lazy_force = 5
+	_lazy_last_v = -1.0
+	arona.get_now_clothes()
+	plana.get_now_clothes()
 	shop_open.emit()
 
 func update_wealth():
 	wealth.text = str(PlayerData.player_pyroxenes)
 
 func add_charavter_card():
-	for i in shop_card_group.size():
+	var cards: Array = []
+	cards.append_array(shop_card_group)
+	for c in ModManager.get_content("shop_characters"):
+		if c != null and not cards.has(c):
+			cards.append(c)
+	for i in cards.size():
 		var ins = card_ins.instantiate()
 		card_box.add_child(ins)
-		ins.shop_card = shop_card_group[i]
+		ins.shop_card = cards[i]
 		ins.get_card()
 		ins.check_data()
 
 func add_item_card():
-	for i in shop_item_group.size():
+	var items: Array = []
+	items.append_array(shop_item_group)
+	for c in ModManager.get_content("clothes"):
+		if c != null and not items.has(c):
+			items.append(c)
+	for i in items.size():
 		var ins = card_ins_2.instantiate()
 		card_box_2.add_child(ins)
-		ins.shop_card = shop_item_group[i]
+		ins.shop_card = items[i]
 		ins.get_card()
 		ins.check_data()
 
@@ -100,6 +123,7 @@ func _unhandled_input(event:InputEvent ) -> void:
 			await animation_player.animation_finished
 			shop_is_open = false
 			shop_show = false
+			_on_shop_closed()
 
 func shop_menu_open(event: InputEvent):
 	
@@ -182,6 +206,50 @@ func change_shop_select(event: InputEvent):
 			change_shop.mouse_filter = 0
 			shop_open_end = true
 			
+
+# 只在商店打开时按可见范围加载立绘大图，滚出即释放（+余量）。
+# 仅在滚动位置变化（或刚打开的前几帧）时重算，避免每帧开销。
+func _process(_delta: float) -> void:
+	if not _lazy_active:
+		return
+	var v := 0.0
+	if item_list_1 != null:
+		v = item_list_1.get_v_scroll()
+	if v == _lazy_last_v and _lazy_force <= 0:
+		return
+	_lazy_last_v = v
+	if _lazy_force > 0:
+		_lazy_force -= 1
+	_lazy_scroll(item_list_1, card_box)
+
+
+func _lazy_scroll(sc: ScrollContainer, box: Node) -> void:
+	if sc == null or box == null:
+		return
+	var view := sc.get_global_rect()
+	for card in box.get_children():
+		if not card.has_method("reveal"):
+			continue
+		var ctrl := card as Control
+		if ctrl == null:
+			continue
+		if view.intersects(ctrl.get_global_rect().grow(150.0)):
+			card.reveal()
+		else:
+			card.conceal()
+
+
+func _on_shop_closed() -> void:
+	_lazy_active = false
+	_lazy_last_v = -1.0
+	_lazy_force = 0
+	for card in card_box.get_children():
+		if card.has_method("conceal"):
+			card.conceal()
+	arona.release_clothes()
+	plana.release_clothes()
+	shop_close.emit()
+
 
 func shop_tag_1_open():
 	shop_tag_2_close()

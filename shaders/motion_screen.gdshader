@@ -11,6 +11,6 @@ void fragment(){
 	if (grayscale == true) {
 		float a = (COLOR.r + COLOR.g + COLOR.b) / 3.0;
 		float b = a * v * a;
-		COLOR.rgb = vec3(b);
+		COLOR.rgb = clamp(vec3(b), vec3(0.0), vec3(1.0));
 		}
 }

@@ -7,6 +7,7 @@ extends PanelContainer
 @onready var card_anim: AnimationPlayer = $AnimationPlayer
 
 var on_select: bool = false
+var _revealed_path: String = ""
 
 func _ready() -> void:
 	mouse_entered.connect(mouse_in)
@@ -17,10 +18,36 @@ func _ready() -> void:
 
 func get_card():
 	if support_sprite != null:
-		support_sprite.texture = shop_card.character_sprite
 		main_name.text = shop_card.support_name2
 	else:
 		main_name.text = "NULL"
+
+
+# 立绘大图按需加载/释放（列表可见性由 support_shop 调用）；幂等
+func reveal() -> void:
+	if support_sprite == null or shop_card == null:
+		return
+	var p := shop_card.character_sprite_path
+	if _revealed_path == p and support_sprite.texture != null:
+		return
+	if _revealed_path != "":
+		LazyTexture.release(_revealed_path)
+	support_sprite.texture = LazyTexture.acquire(p)
+	_revealed_path = p
+
+
+func conceal() -> void:
+	if _revealed_path != "":
+		LazyTexture.release(_revealed_path)
+		_revealed_path = ""
+	if support_sprite != null:
+		support_sprite.texture = null
+
+
+func _exit_tree() -> void:
+	if _revealed_path != "":
+		LazyTexture.release(_revealed_path)
+		_revealed_path = ""
 
 func check_card(s_card: SupportCard):
 	if s_card != shop_card and on_select == true:

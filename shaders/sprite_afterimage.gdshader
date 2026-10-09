@@ -30,7 +30,7 @@ void fragment() {
 	// 生成多个“瞬移片段”（残影感）
 	for (int i = 0; i < streaks; i++) {
 		// 计算当前片段的偏移比例
-		float t = float(i) / float(streaks - 1);
+		float t = float(i) / float(max(streaks - 1, 1));
 		// 非线性偏移让残影更自然
 		float offset_factor = pow(t, 1.5) * intensity;
 		vec2 offset = base_offset * offset_factor;

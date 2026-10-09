@@ -1,20 +1,21 @@
-[gd_scene load_steps=63 format=3 uid="uid://cgu60ukvb4wg0"]
+[gd_scene format=3 uid="uid://cgu60ukvb4wg0"]
 
-[ext_resource type="Script" path="res://scenes/player/hina/hina.gd" id="1_uq0u6"]
+[ext_resource type="Script" uid="uid://c45ekl3kkf258" path="res://scenes/player/hina/hina.gd" id="1_uq0u6"]
 [ext_resource type="Resource" uid="uid://dd0vndh2c4w8h" path="res://resources/player/hina.tres" id="2_r1iwf"]
 [ext_resource type="Resource" uid="uid://k7p3kwd8trdm" path="res://resources/player/PS/hina_ps.tres" id="3_b2c3j"]
 [ext_resource type="PackedScene" uid="uid://b78jo1set8q45" path="res://script/follow.tscn" id="4_pwd13"]
 [ext_resource type="PackedScene" uid="uid://bdo12rjvieur7" path="res://scenes/shadow/shadow.tscn" id="5_e63cy"]
 [ext_resource type="PackedScene" uid="uid://ceydnirh2w7yb" path="res://scenes/player/smoke.tscn" id="6_u07wr"]
-[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="7_7hcru"]
+[ext_resource type="Shader" uid="uid://bqypa5578tm8a" path="res://shaders/sprite_outline.gdshader" id="7_7hcru"]
 [ext_resource type="Texture2D" uid="uid://bsamowpogmxcq" path="res://sprites/player/hina/hina_halo.png" id="8_4id8j"]
-[ext_resource type="Shader" path="res://shaders/screen_outline.gdshader" id="9_3vanp"]
-[ext_resource type="Script" path="res://scenes/player/aris/Hair.gd" id="10_owuln"]
+[ext_resource type="Shader" uid="uid://cmu3hnm13h23n" path="res://shaders/screen_outline.gdshader" id="9_3vanp"]
+[ext_resource type="Script" uid="uid://b3rnn26hjgt0k" path="res://scenes/player/aris/Hair.gd" id="10_owuln"]
 [ext_resource type="Texture2D" uid="uid://dhsa3ai8x8gll" path="res://sprites/player/hina/hina.png" id="11_pw8nk"]
 [ext_resource type="PackedScene" uid="uid://wffnchsknkba" path="res://script/hat.tscn" id="12_hoee8"]
 [ext_resource type="PackedScene" uid="uid://c2rpcsl7pbmak" path="res://scenes/weapon/destroyer_of_denouement/destroyer_of_denouement.tscn" id="13_yw7cx"]
-[ext_resource type="Script" path="res://scenes/player/StateMachine.gd" id="14_8btom"]
-[ext_resource type="Script" path="res://script/Stats.gd" id="15_5y6pi"]
+[ext_resource type="Script" uid="uid://e2gvf56eu6jb" path="res://scenes/player/StateMachine.gd" id="14_8btom"]
+[ext_resource type="Script" uid="uid://cog8pvonoqtxu" path="res://script/hurt_box.gd" id="14_pe8fs"]
+[ext_resource type="Script" uid="uid://c5wxmcve7xpca" path="res://script/Stats.gd" id="15_5y6pi"]
 [ext_resource type="AudioStream" uid="uid://5rnyiqxeiusa" path="res://sounds/RunSounds.wav" id="16_tb6ly"]
 [ext_resource type="AudioStream" uid="uid://b6t6pjb3evtw4" path="res://sounds/jump.wav" id="17_ekjnr"]
 [ext_resource type="AudioStream" uid="uid://bqqs4akeispjg" path="res://sounds/OnHit.wav" id="18_ytllj"]
@@ -27,8 +28,9 @@
 [ext_resource type="PackedScene" uid="uid://voxip8vojin" path="res://scenes/manager/player_buff_manager.tscn" id="25_ywdwa"]
 [ext_resource type="PackedScene" uid="uid://c620jv6qq2f8w" path="res://scenes/player/t_hp_count.tscn" id="26_7ghe8"]
 [ext_resource type="PackedScene" uid="uid://ccbfmsfn7ay8r" path="res://script/kick.tscn" id="27_dd1l8"]
-[ext_resource type="Script" path="res://scenes/player/hina/hina_ps.gd" id="28_gxt44"]
+[ext_resource type="Script" uid="uid://drjo7k6eq4jkx" path="res://scenes/player/hina/hina_ps.gd" id="28_gxt44"]
 [ext_resource type="Resource" uid="uid://euhp41a3m0fb" path="res://resources/buff/player_buff/retribution_buff.tres" id="29_p35sq"]
+[ext_resource type="Script" uid="uid://crtabh2xwunne" path="res://script/player_health_component.gd" id="31_rgowa"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_5lclh"]
 radius = 7.0
@@ -41,9 +43,10 @@ shader_parameter/flash_opacity = 0.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_3jgld"]
 shader = ExtResource("9_3vanp")
-shader_parameter/outline_width = 2.0
+shader_parameter/outline_width = 1.0
 shader_parameter/outline_color = Color(25, 1, 20, 1)
 shader_parameter/flash_opacity = 0.0
+shader_parameter/design_size = Vector2(640, 360)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_tc2a3"]
 shader = ExtResource("7_7hcru")
@@ -104,7 +107,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_kitsx")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 13.0
 }, {
@@ -112,7 +115,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_ypwtx")
 }],
-"loop": true,
+"loop": 1,
 "name": &"jump",
 "speed": 5.0
 }, {
@@ -129,7 +132,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_k4gl7")
 }],
-"loop": true,
+"loop": 1,
 "name": &"run",
 "speed": 13.0
 }]
@@ -140,11 +143,6 @@ height = 2.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_o5v6t"]
 radius = 35.0
-
-[sub_resource type="Environment" id="Environment_q21nm"]
-background_mode = 3
-glow_enabled = true
-glow_strength = 0.7
 
 [sub_resource type="Animation" id="Animation_quqct"]
 resource_name = "Invincible frame"
@@ -228,8 +226,8 @@ tracks/2/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_apy7m"]
 _data = {
-"Invincible frame": SubResource("Animation_quqct"),
-"RESET": SubResource("Animation_54v52")
+&"Invincible frame": SubResource("Animation_quqct"),
+&"RESET": SubResource("Animation_54v52")
 }
 
 [sub_resource type="Animation" id="Animation_btd8x"]
@@ -290,8 +288,8 @@ tracks/1/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_y8tsq"]
 _data = {
-"RESET": SubResource("Animation_btd8x"),
-"kick_anim": SubResource("Animation_kssmf")
+&"RESET": SubResource("Animation_btd8x"),
+&"kick_anim": SubResource("Animation_kssmf")
 }
 
 [sub_resource type="Gradient" id="Gradient_urw5y"]
@@ -520,13 +518,13 @@ tracks/2/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_i2r47"]
 _data = {
-"RESET": SubResource("Animation_v0je3"),
-"false": SubResource("Animation_a7whx"),
-"qte_anim": SubResource("Animation_lvv2x"),
-"true": SubResource("Animation_4ai0o")
+&"RESET": SubResource("Animation_v0je3"),
+&"false": SubResource("Animation_a7whx"),
+&"qte_anim": SubResource("Animation_lvv2x"),
+&"true": SubResource("Animation_4ai0o")
 }
 
-[node name="hina" type="CharacterBody2D" node_paths=PackedStringArray("stats") groups=["Player"]]
+[node name="hina" type="CharacterBody2D" unique_id=117152615 node_paths=PackedStringArray("stats") groups=["Player"]]
 collision_mask = 256
 motion_mode = 1
 script = ExtResource("1_uq0u6")
@@ -538,53 +536,54 @@ long_hair = true
 hat_position = 11.0
 halo_root_position = 30.0
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1364098981]
 position = Vector2(0, -6)
 shape = SubResource("CircleShape2D_5lclh")
 
-[node name="Follow" parent="." instance=ExtResource("4_pwd13")]
+[node name="Follow" parent="." unique_id=1364386658 instance=ExtResource("4_pwd13")]
 
-[node name="Shadow" parent="." instance=ExtResource("5_e63cy")]
+[node name="Shadow" parent="." unique_id=2052212976 instance=ExtResource("5_e63cy")]
 scale = Vector2(0.445313, 0.445313)
 
-[node name="GPUParticles2D" parent="." instance=ExtResource("6_u07wr")]
+[node name="GPUParticles2D" parent="." unique_id=1882163107 instance=ExtResource("6_u07wr")]
 emitting = false
 
-[node name="GraphicsHalo" type="Node2D" parent="."]
+[node name="GraphicsHalo" type="Node2D" parent="." unique_id=2103288047]
 
-[node name="Halo" type="Sprite2D" parent="GraphicsHalo"]
+[node name="Halo" type="Sprite2D" parent="GraphicsHalo" unique_id=1713405044]
 unique_name_in_owner = true
 material = SubResource("ShaderMaterial_xkvqq")
 position = Vector2(-2, -45)
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("8_4id8j")
 
-[node name="CanvasGroup" type="CanvasGroup" parent="."]
+[node name="CanvasGroup" type="CanvasGroup" parent="." unique_id=868779318]
 material = SubResource("ShaderMaterial_3jgld")
 
-[node name="SubViewportContainer" type="SubViewportContainer" parent="CanvasGroup"]
+[node name="SubViewportContainer" type="SubViewportContainer" parent="CanvasGroup" unique_id=365406393]
 material = SubResource("ShaderMaterial_tc2a3")
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -320.0
-offset_top = -202.0
-offset_right = 320.0
-offset_bottom = 158.0
+offset_left = -64.0
+offset_top = -86.0
+offset_right = 64.0
+offset_bottom = 42.0
 grow_horizontal = 2
 grow_vertical = 2
-pivot_offset = Vector2(320, 180)
+pivot_offset = Vector2(64, 64)
 
-[node name="SubViewport" type="SubViewport" parent="CanvasGroup/SubViewportContainer"]
+[node name="SubViewport" type="SubViewport" parent="CanvasGroup/SubViewportContainer" unique_id=345354181]
 transparent_bg = true
 handle_input_locally = false
-size = Vector2i(640, 360)
+use_hdr_2d = true
+size = Vector2i(128, 128)
 render_target_update_mode = 4
 
-[node name="Hair" type="Node2D" parent="CanvasGroup/SubViewportContainer/SubViewport" node_paths=PackedStringArray("player")]
-position = Vector2(320, 180)
+[node name="Hair" type="Node2D" parent="CanvasGroup/SubViewportContainer/SubViewport" unique_id=1105873614 node_paths=PackedStringArray("player")]
+position = Vector2(64, 64)
 script = ExtResource("10_owuln")
 player = NodePath("../../../..")
 offset_0 = Array[Vector2]([Vector2(-0.5, 0.5), Vector2(0, 0), Vector2(0.5, 0.5)])
@@ -593,11 +592,11 @@ k = 0.2
 col = Color(0.866667, 0.847059, 0.890196, 1)
 startRadius = 8.5
 
-[node name="Graphics" type="Node2D" parent="CanvasGroup"]
+[node name="Graphics" type="Node2D" parent="CanvasGroup" unique_id=2113756408]
 unique_name_in_owner = true
 material = SubResource("CanvasItemMaterial_i6o8k")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="CanvasGroup/Graphics"]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="CanvasGroup/Graphics" unique_id=1787640547]
 unique_name_in_owner = true
 position = Vector2(0, -17)
 sprite_frames = SubResource("SpriteFrames_7gt2i")
@@ -606,117 +605,115 @@ autoplay = "idle"
 frame_progress = 0.714152
 flip_h = true
 
-[node name="HaloRoot" type="Node2D" parent="CanvasGroup/Graphics/AnimatedSprite2D"]
+[node name="HaloRoot" type="Node2D" parent="CanvasGroup/Graphics/AnimatedSprite2D" unique_id=1236021627]
 unique_name_in_owner = true
 position = Vector2(-2, -28)
 
-[node name="GraphicsGun" type="Node2D" parent="."]
+[node name="GraphicsGun" type="Node2D" parent="." unique_id=258057070]
 
-[node name="Hat" parent="GraphicsGun" instance=ExtResource("12_hoee8")]
+[node name="Hat" parent="GraphicsGun" unique_id=617964307 instance=ExtResource("12_hoee8")]
 position = Vector2(1, -29)
 
-[node name="Gun" parent="GraphicsGun" node_paths=PackedStringArray("stats") instance=ExtResource("13_yw7cx")]
+[node name="Gun" parent="GraphicsGun" unique_id=208722299 node_paths=PackedStringArray("stats") instance=ExtResource("13_yw7cx")]
 unique_name_in_owner = true
 position = Vector2(0, -8)
 stats = NodePath("../../Stats")
 
-[node name="HitBox" type="Area2D" parent="." groups=["PlayerBox"]]
+[node name="HurtBox" type="Area2D" parent="." unique_id=282402573 node_paths=PackedStringArray("body") groups=["PlayerBox"]]
 collision_layer = 2048
 collision_mask = 1160
+script = ExtResource("14_pe8fs")
+body = NodePath("..")
+is_player = true
 
-[node name="HitboxShape" type="CollisionShape2D" parent="HitBox"]
+[node name="HurtboxShape" type="CollisionShape2D" parent="HurtBox" unique_id=1098063519]
 position = Vector2(0, -8)
 rotation = 1.5708
 shape = SubResource("CapsuleShape2D_okpe0")
 debug_color = Color(3.18866e-06, 0.0816588, 0.291816, 0.42)
 
-[node name="PickBox" type="Area2D" parent="."]
+[node name="PickBox" type="Area2D" parent="." unique_id=2085447706]
 collision_layer = 0
 collision_mask = 64
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="PickBox"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PickBox" unique_id=1061906206]
 visible = false
 position = Vector2(0, -11)
 shape = SubResource("CircleShape2D_o5v6t")
 debug_color = Color(0.724221, 0.462988, 0.32265, 0.42)
 
-[node name="FlyTimer" type="Timer" parent="."]
+[node name="FlyTimer" type="Timer" parent="." unique_id=1950131997]
 wait_time = 0.3
 one_shot = true
 
-[node name="JumpTimer" type="Timer" parent="."]
+[node name="JumpTimer" type="Timer" parent="." unique_id=987650650]
 wait_time = 0.1
 one_shot = true
 
-[node name="JumpCDTimer" type="Timer" parent="."]
+[node name="JumpCDTimer" type="Timer" parent="." unique_id=957254728]
 one_shot = true
 
-[node name="RunSoundsTimer" type="Timer" parent="."]
+[node name="RunSoundsTimer" type="Timer" parent="." unique_id=1923263635]
 wait_time = 0.2
 one_shot = true
 
-[node name="InvincibleFrame" type="Timer" parent="."]
+[node name="InvincibleFrame" type="Timer" parent="." unique_id=730547228]
 wait_time = 0.5
 one_shot = true
 
-[node name="StateMachine" type="Node" parent="."]
+[node name="StateMachine" type="Node" parent="." unique_id=1611421241]
 script = ExtResource("14_8btom")
 
-[node name="Stats" type="Node" parent="."]
+[node name="Stats" type="Node" parent="." unique_id=391793607]
 script = ExtResource("15_5y6pi")
-MAX_SPEED = 130
 max_hp = 71
+MAX_SPEED = 130
 max_ammo = 49
+bullet_damage = 12
 bullet_shoot_time = 750
 bullet_speed = 1200
-bullet_damage = 12
 bullet_recoil = 50
 bullet_knockback = 100
 reload_timer = 2.0
 shake_mult = 0.8
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_q21nm")
-
-[node name="RunSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="RunSounds" type="AudioStreamPlayer2D" parent="." unique_id=1502285473]
 process_mode = 3
 stream = ExtResource("16_tb6ly")
 volume_db = -6.0
 bus = &"SFX"
 
-[node name="JumpSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="JumpSounds" type="AudioStreamPlayer2D" parent="." unique_id=1827698171]
 process_mode = 3
 stream = ExtResource("17_ekjnr")
 bus = &"SFX"
 
-[node name="OnHitSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="OnHitSounds" type="AudioStreamPlayer2D" parent="." unique_id=1736284935]
 process_mode = 3
 stream = ExtResource("18_ytllj")
 volume_db = 8.0
 bus = &"SFX"
 
-[node name="CoinSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="CoinSounds" type="AudioStreamPlayer2D" parent="." unique_id=1384566713]
 process_mode = 3
 stream = ExtResource("19_h3bhe")
 volume_db = -2.0
 bus = &"SFX"
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_apy7m")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1626049699]
+libraries/ = SubResource("AnimationLibrary_apy7m")
 
-[node name="GameUI" parent="." node_paths=PackedStringArray("player", "stats") instance=ExtResource("20_uah2s")]
+[node name="GameUI" parent="." unique_id=770053933 node_paths=PackedStringArray("player", "stats") instance=ExtResource("20_uah2s")]
 player = NodePath("..")
 stats = NodePath("../Stats")
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1985996069]
 layer = 3
 
-[node name="PauseScreen" parent="CanvasLayer" instance=ExtResource("21_83a7b")]
+[node name="PauseScreen" parent="CanvasLayer" unique_id=1036568799 instance=ExtResource("21_83a7b")]
 visible = false
 
-[node name="JumpCDBar" type="TextureProgressBar" parent="."]
+[node name="JumpCDBar" type="TextureProgressBar" parent="." unique_id=1460597775]
 visible = false
 z_index = 20
 offset_left = -16.0
@@ -730,24 +727,22 @@ value = 0.355
 texture_under = ExtResource("22_0vl3r")
 texture_progress = ExtResource("23_we7c4")
 
-[node name="Camera2D" parent="." instance=ExtResource("24_mdadp")]
+[node name="Camera2D" parent="." unique_id=1042390020 instance=ExtResource("24_mdadp")]
 offset = Vector2(0, -15)
 
-[node name="AnimationPlayer2" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_y8tsq")
-}
+[node name="AnimationPlayer2" type="AnimationPlayer" parent="." unique_id=431995849]
+libraries/ = SubResource("AnimationLibrary_y8tsq")
 
-[node name="PlayerBuffManager" parent="." instance=ExtResource("25_ywdwa")]
+[node name="PlayerBuffManager" parent="." unique_id=60886678 instance=ExtResource("25_ywdwa")]
 
-[node name="T_HP_Count" parent="." node_paths=PackedStringArray("stats") instance=ExtResource("26_7ghe8")]
+[node name="T_HP_Count" parent="." unique_id=1977847319 node_paths=PackedStringArray("stats") instance=ExtResource("26_7ghe8")]
 stats = NodePath("../Stats")
 
-[node name="Kick" parent="." node_paths=PackedStringArray("player") instance=ExtResource("27_dd1l8")]
+[node name="Kick" parent="." unique_id=1753038449 node_paths=PackedStringArray("player") instance=ExtResource("27_dd1l8")]
 position = Vector2(0, -16)
 player = NodePath("..")
 
-[node name="hina_ps" type="Node2D" parent="." node_paths=PackedStringArray("stats", "player", "gun")]
+[node name="hina_ps" type="Node2D" parent="." unique_id=2142063768 node_paths=PackedStringArray("stats", "player", "gun")]
 script = ExtResource("28_gxt44")
 player_buff = ExtResource("29_p35sq")
 buff_layer = 2
@@ -757,39 +752,40 @@ stats = NodePath("../Stats")
 player = NodePath("..")
 gun = NodePath("../GraphicsGun/Gun")
 
-[node name="ShootTimer" type="Timer" parent="hina_ps"]
+[node name="ShootTimer" type="Timer" parent="hina_ps" unique_id=136098760]
 
-[node name="ReloadTimer" type="Timer" parent="hina_ps"]
+[node name="ReloadTimer" type="Timer" parent="hina_ps" unique_id=331858828]
 one_shot = true
 
-[node name="qte_bar" type="Node2D" parent="hina_ps"]
+[node name="qte_bar" type="Node2D" parent="hina_ps" unique_id=1759225710]
 visible = false
 z_index = 2
 position = Vector2(0, -17)
 
-[node name="Sprite2D2" type="Sprite2D" parent="hina_ps/qte_bar"]
+[node name="Sprite2D2" type="Sprite2D" parent="hina_ps/qte_bar" unique_id=1036304605]
 position = Vector2(0, -41)
 scale = Vector2(0.03, 4)
 texture = SubResource("GradientTexture1D_ohhov")
 
-[node name="Sprite2D" type="Sprite2D" parent="hina_ps/qte_bar"]
+[node name="Sprite2D" type="Sprite2D" parent="hina_ps/qte_bar" unique_id=1908007403]
 position = Vector2(0, -41)
 scale = Vector2(1, 0.8)
 texture = ExtResource("22_0vl3r")
 
-[node name="bar" type="Sprite2D" parent="hina_ps/qte_bar"]
+[node name="bar" type="Sprite2D" parent="hina_ps/qte_bar" unique_id=190579882]
 position = Vector2(-15, -41)
 scale = Vector2(0.005, 6)
 texture = SubResource("GradientTexture1D_terpn")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="hina_ps/qte_bar"]
-libraries = {
-"": SubResource("AnimationLibrary_i2r47")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="hina_ps/qte_bar" unique_id=1089676219]
+libraries/ = SubResource("AnimationLibrary_i2r47")
 
-[connection signal="is_health" from="." to="." method="_on_is_health"]
+[node name="HealthComponent" type="Node" parent="." unique_id=2067117399 node_paths=PackedStringArray("stats", "hurt_box")]
+script = ExtResource("31_rgowa")
+stats = NodePath("../Stats")
+hurt_box = NodePath("../HurtBox")
+
 [connection signal="is_hurt" from="." to="." method="_on_is_hurt"]
-[connection signal="body_entered" from="HitBox" to="." method="_on_hit_box_body_entered"]
 [connection signal="area_entered" from="PickBox" to="." method="_on_pick_box_area_entered"]
 [connection signal="timeout" from="JumpCDTimer" to="." method="_on_jump_cd_timer_timeout"]
 [connection signal="pick_up_range_changed" from="Stats" to="." method="_on_stats_pick_up_range_changed"]

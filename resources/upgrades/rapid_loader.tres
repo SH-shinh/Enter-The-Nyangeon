@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" uid="uid://buwu55y6vwp11" path="res://sprites/update_item/rapid_loader.png" id="1_rapid"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_mv2vv"]
+
+[resource]
+script = ExtResource("2_mv2vv")
+id = "rapid_loader"
+icon = ExtResource("1_rapid")
+rare = 1
+order_num = 1
+special_rules = 0
+item_tags = 9
+tags = Array[String](["概率", "弹道"])
+weight = 1.0

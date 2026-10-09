@@ -28,12 +28,38 @@ var damage_value: float = 0.03
 
 var on_reset: bool = false
 
+# 联机：QTE 不用全局 Engine.time_scale 慢放（会拖慢本机、房主端还会饿死网络节奏），
+# 改为等比慢放 QTE 动画（qte_anim 驱动 bar 移动），世界不减速。
+const LAN_QTE_ANIM_SLOW: float = 0.07
+
+func _is_lan() -> bool:
+	return ExtensionHooks.is_lan_session.is_valid() and bool(ExtensionHooks.is_lan_session.call())
+
+func _qte_slow_begin() -> void:
+	if _is_lan():
+		animation_player.speed_scale = LAN_QTE_ANIM_SLOW
+	else:
+		GameEvents.request_slow("hina_qte", 0.07)
+
+func _qte_slow_end() -> void:
+	if _is_lan():
+		if animation_player != null and is_instance_valid(animation_player):
+			animation_player.speed_scale = 1.0
+	else:
+		GameEvents.end_slow("hina_qte")
+
 func _ready() -> void:
 	super._ready()
 	qte_end.connect(qte_false)
 	GameEvents.player_gun_shoot.connect(out_of_ammo_to_reload)
 	GameEvents.player_ammo_reload.connect(add_reload_buff)
 	value = [buff_layer, buff_value, buff_erase_timer]
+
+func _exit_tree() -> void:
+	# 场景切换/被释放时兜底解除慢放（GameEvents 侧另有 clear_slow 保护）
+	GameEvents.end_slow("hina_qte")
+	if animation_player != null and is_instance_valid(animation_player):
+		animation_player.speed_scale = 1.0
 
 func ps_upgrade(t_num: int):
 	super.ps_upgrade(t_num)
@@ -46,7 +72,7 @@ func ps_upgrade(t_num: int):
 		posion_value_min = -6
 		posion_value_max = 6
 		sprite_2d_2.scale.x = 0.045
-		GameEvents.enemy_hit_position.connect(count_enemy_distance_to_player)
+		apply_distance_bullet_mod()
 	elif now_t == 3:
 		reset_count()
 		posion_value_min = -9
@@ -55,14 +81,14 @@ func ps_upgrade(t_num: int):
 		fire_rate_value = 0.1
 		damage_value = 0.05
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	qte_bar.position.y = player.sprite_2d.position.y
 
 func add_perfect_reload_buff():
 	is_perfect_reload = true
 	value = [buff_layer * 2, buff_value, buff_erase_timer]
 	if player.player_buff_manager.current_buff.has(player_buff.id):
-		player.player_buff_manager.current_buff[player_buff.id]["buff"].buff_layer = buff_layer * 2 * player.stats.buff_layer_mult
+		player.player_buff_manager.current_buff[player_buff.id]["max_layer"] = int(buff_layer * 2 * player.stats.buff_layer_mult)
 	for i in buff_layer * 2:
 		player.player_buff_manager.apply_buff(player_buff, value)
 
@@ -74,12 +100,12 @@ func add_reload_buff(_now_ammo: float, _max_ammo: int, reload_time: float):
 		await reload_timer.timeout
 		value = [buff_layer, buff_value, buff_erase_timer]
 		if player.player_buff_manager.current_buff.has(player_buff.id):
-			player.player_buff_manager.current_buff[player_buff.id]["buff"].buff_layer = buff_layer * player.stats.buff_layer_mult
+			player.player_buff_manager.current_buff[player_buff.id]["max_layer"] = int(buff_layer * player.stats.buff_layer_mult)
 		for i in buff_layer:
 			player.player_buff_manager.apply_buff(player_buff, value)
 
 func check_qte():
-	Engine.time_scale = 1
+	_qte_slow_end()
 	if bar.position.x <= posion_value_max and bar.position.x >= posion_value_min:
 		animation_player.play("true")
 		fast_reload()
@@ -91,7 +117,7 @@ func check_qte():
 	can_qte = false
 
 func qte_false():
-	Engine.time_scale = 1
+	_qte_slow_end()
 	reset_count()
 	animation_player.play("false")
 	gun.in_ammo_reload = false
@@ -122,7 +148,7 @@ func _ammo_reload():
 	if gun.now_bullet_ammo != stats.max_ammo and gun.in_ammo_reload == false and can_qte == false:
 		is_perfect_reload = false
 		gun.in_ammo_reload = true
-		Engine.time_scale = 0.07
+		_qte_slow_begin()
 		SoundManager.play_sfx("ReloadSounds2")
 		animation_player.play("qte_anim")
 		can_qte = true
@@ -153,7 +179,9 @@ func reset_count():
 		bullet_num = 0
 		on_reset = false
 
-func count_enemy_distance_to_player(hit_body: Node):
-	var value = clamp(hit_body.global_position.distance_to(player.global_position), 100, 350)
-	var distance_damage_mult = value * 0.01
-	hit_body.hurt_damage *= distance_damage_mult
+func apply_distance_bullet_mod():
+	player.damage_modifier.append(func(victim: Node, actual_damage: float):
+		var value = clamp(victim.global_position.distance_to(player.global_position), 100, 350)
+		var distance_damage_mult = value * 0.01
+		return actual_damage * distance_damage_mult
+		)

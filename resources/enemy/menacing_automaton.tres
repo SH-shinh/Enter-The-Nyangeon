@@ -1,10 +1,12 @@
-[gd_resource type="Resource" script_class="EnemyCard" load_steps=3 format=3 uid="uid://domddqeo286ox"]
+[gd_resource type="Resource" script_class="EnemyCard" format=3 uid="uid://domddqeo286ox"]
 
 [ext_resource type="PackedScene" uid="uid://rheye558mxuv" path="res://scenes/enemies/menacing_automaton.tscn" id="1_vyqqx"]
-[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_w7beq"]
+[ext_resource type="Texture2D" uid="uid://cbxdloyc62e6" path="res://sprites/enemies/menacing_automaton_icon.png" id="2_7sksu"]
+[ext_resource type="Script" uid="uid://c2yv0iuw6g8oh" path="res://resources/enemy/enemy.gd" id="2_w7beq"]
 
 [resource]
 script = ExtResource("2_w7beq")
 id = "menacing_automaton"
 body = ExtResource("1_vyqqx")
-description = ""
+icon = ExtResource("2_7sksu")
+position_y = 52.0

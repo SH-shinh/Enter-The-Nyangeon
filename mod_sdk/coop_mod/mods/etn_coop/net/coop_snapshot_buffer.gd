@@ -16,9 +16,14 @@ const TELEPORT_DIST: float = 220.0
 const TELEPORT_DIST_SQUARED: float = TELEPORT_DIST * TELEPORT_DIST
 const GAP_EMA_ALPHA: float = 0.3
 
-# 自适应插值延迟：max(2×快照间隔, 1.8×实测间隔, rtt/2 + 2×jitter)，clamp 到 [min,max]（秒）
-const DELAY_MIN: float = 0.05
+# 自适应插值延迟：max(1.35×快照间隔, 1.2×实测间隔(封顶 2.2×间隔), rtt/2 + 1.5×jitter)，
+# clamp 到 [min,max]（秒）。下限由 2×interval 降到 1.35×，显著减小固定滞后。
+const DELAY_MIN: float = 0.033
 const DELAY_MAX: float = 0.20
+const DELAY_BASE_MULT: float = 1.35
+const DELAY_OBS_CAP_MULT: float = 2.2
+const DELAY_OBS_MULT: float = 1.2
+const DELAY_JITTER_MULT: float = 1.5
 
 var _t: PackedInt64Array = PackedInt64Array()
 var _pos: PackedVector2Array = PackedVector2Array()
@@ -36,9 +41,12 @@ var sample_vel: Vector2 = Vector2.ZERO
 
 
 static func compute_delay(snapshot_interval: float, rtt_ms: float, jitter_ms: float, observed_ms: float = 0.0) -> float:
-	var base: float = snapshot_interval * 2.0
-	var obs: float = (observed_ms * 1.8) / 1000.0 if observed_ms > 0.0 else 0.0
-	var net: float = (rtt_ms * 0.5 + jitter_ms * 2.0) / 1000.0
+	var base: float = snapshot_interval * DELAY_BASE_MULT
+	var obs: float = 0.0
+	if observed_ms > 0.0:
+		# 实测间隔封顶：静止实体 600ms 心跳会让 observed 虚高，先截到 2.2×间隔再缩放。
+		obs = minf(observed_ms, snapshot_interval * 1000.0 * DELAY_OBS_CAP_MULT) * DELAY_OBS_MULT / 1000.0
+	var net: float = (rtt_ms * 0.5 + jitter_ms * DELAY_JITTER_MULT) / 1000.0
 	return clampf(maxf(base, maxf(obs, net)), DELAY_MIN, DELAY_MAX)
 
 

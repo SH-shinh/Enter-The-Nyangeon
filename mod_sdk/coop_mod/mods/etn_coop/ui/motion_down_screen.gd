@@ -39,7 +39,7 @@ func show_down() -> void:
 
 
 func hide_down() -> void:
-	Engine.time_scale = 1.0
+	GameEvents.end_slow("coop_down")
 	if not visible:
 		return
 	_tween_kill()
@@ -58,7 +58,6 @@ func _tween_kill() -> void:
 
 
 func _hit_stop() -> void:
-	Engine.time_scale = SLOW_MO_SCALE
-	# ignore_time_scale=true：以真实时间计时恢复，避免被自身 time_scale 拖长
-	await get_tree().create_timer(SLOW_MO_SEC, true, false, true).timeout
-	Engine.time_scale = 1.0
+	# 经 GameEvents 时间管理器（Engine.time_scale 唯一写者），lease=SLOW_MO_SEC 自动恢复；
+	# 避免直接写 Engine.time_scale 与其它慢放（Hina QTE 等）互相覆盖或残留。
+	GameEvents.request_slow("coop_down", SLOW_MO_SCALE, SLOW_MO_SEC)

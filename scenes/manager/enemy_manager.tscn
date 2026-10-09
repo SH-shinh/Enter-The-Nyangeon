@@ -1,6 +1,6 @@
-[gd_scene load_steps=45 format=3 uid="uid://gx06pbp42cnx"]
+[gd_scene format=3 uid="uid://gx06pbp42cnx"]
 
-[ext_resource type="Script" path="res://scenes/manager/enemy_manager.gd" id="1_efy17"]
+[ext_resource type="Script" uid="uid://bavrqsv1rkewx" path="res://scenes/manager/enemy_manager.gd" id="1_efy17"]
 [ext_resource type="PackedScene" uid="uid://dejur0jy5v5jn" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_1.tscn" id="2_7kg51"]
 [ext_resource type="PackedScene" uid="uid://ctb6wohh80m44" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_9.tscn" id="2_fyo4g"]
 [ext_resource type="PackedScene" uid="uid://cnad11y7v8yyi" path="res://scenes/enemies/enemies_spawn/goliath_spawn.tscn" id="2_x0avi"]
@@ -45,11 +45,36 @@
 [ext_resource type="PackedScene" uid="uid://2v6jdtydno4k" path="res://scenes/enemies/enemies_spawn/enemies_spawn_lv_20_sweeper.tscn" id="41_6uwvo"]
 
 [sub_resource type="Curve" id="Curve_36etd"]
-max_value = 2.0
-_data = [Vector2(0, 0), 0.0, 0.901662, 0, 0, Vector2(1, 2), 4.3956, 0.0, 0, 0]
+_limits = [0.0, 6000.0, 0.0, 1000.0]
+_data = [Vector2(0, 0), 0.0, 0.901662, 0, 0, Vector2(1, 2), 2.0354788, 2.0354788, 0, 0, Vector2(1000, 6000), 9.591746, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_endless_dmg"]
+_limits = [0.0, 1999.0, 0.0, 1000.0]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(1, 1), 2.0, 2.0, 0, 0, Vector2(1000, 1999), 2.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_round_dmg"]
+_limits = [0.0, 10.0, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 1.2911994, 1, 0, Vector2(1, 10), 27.668528, 0.0, 0, 1]
 point_count = 2
 
-[node name="EnemyManager" type="Node"]
+[sub_resource type="Curve" id="Curve_round_hp"]
+_limits = [0.0, 35.0, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 4.88102, 0, 0, Vector2(1, 35), 99.16405, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_round_boss_hp"]
+_limits = [0.0, 6.5, 0.0, 1.0]
+_data = [Vector2(0, 5), 0.0, 1.5, 0, 0, Vector2(1, 6.5), 1.5, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_hp_growth"]
+_limits = [0.0, 750.0, 0.0, 1000.0]
+_data = [Vector2(0, 0), 0.0, 0.47859085, 0, 0, Vector2(1, 2), 1.6224791, 1.6224791, 0, 0, Vector2(1000, 750), 0.08165163, 0.4312156, 0, 0]
+point_count = 3
+
+[node name="EnemyManager" type="Node" unique_id=390960906]
 script = ExtResource("1_efy17")
 lv1 = Array[PackedScene]([ExtResource("2_7kg51")])
 lv2 = Array[PackedScene]([ExtResource("3_l156e")])
@@ -74,3 +99,10 @@ lv20 = Array[PackedScene]([ExtResource("21_m415r"), ExtResource("39_m6h6s")])
 lv_endless = Array[PackedScene]([ExtResource("38_d6vmm"), ExtResource("39_qqn15"), ExtResource("40_6u07s"), ExtResource("41_6uwvo")])
 lv_endless_boss = Array[PackedScene]([ExtResource("21_m415r"), ExtResource("39_m6h6s")])
 endless_mult = SubResource("Curve_36etd")
+endless_damage_curve = SubResource("Curve_endless_dmg")
+endless_damage_rounds = 80.0
+endless_damage_bonus = 24.0
+round_damage_curve = SubResource("Curve_round_dmg")
+round_hp_curve = SubResource("Curve_round_hp")
+round_boss_hp_curve = SubResource("Curve_round_boss_hp")
+hp_growth_curve = SubResource("Curve_hp_growth")

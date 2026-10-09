@@ -1,0 +1,525 @@
+[gd_scene format=3 uid="uid://uadknj435ou2"]
+
+[ext_resource type="Script" uid="uid://ci8narxcxkq0w" path="res://script/player.gd" id="1_5asy8"]
+[ext_resource type="Resource" uid="uid://jym7wa8pamt7" path="res://resources/player/ako.tres" id="2_rt03l"]
+[ext_resource type="Resource" uid="uid://b4n2qphr2sahn" path="res://resources/player/PS/ako_ps.tres" id="3_anpsg"]
+[ext_resource type="PackedScene" uid="uid://b78jo1set8q45" path="res://script/follow.tscn" id="4_x1nq5"]
+[ext_resource type="PackedScene" uid="uid://bdo12rjvieur7" path="res://scenes/shadow/shadow.tscn" id="5_0ux12"]
+[ext_resource type="PackedScene" uid="uid://ceydnirh2w7yb" path="res://scenes/player/smoke.tscn" id="6_x3ss2"]
+[ext_resource type="Texture2D" uid="uid://cuje7a80xybcm" path="res://sprites/player/ako/ako_halo.png" id="7_rt03l"]
+[ext_resource type="Texture2D" uid="uid://5ya54irhmueg" path="res://sprites/player/ako/ako.png" id="8_r27r2"]
+[ext_resource type="PackedScene" uid="uid://wffnchsknkba" path="res://script/hat.tscn" id="9_ndp0y"]
+[ext_resource type="PackedScene" uid="uid://61sf83rco8hq" path="res://scenes/weapon/hot_shot/hot_shot.tscn" id="10_rt03l"]
+[ext_resource type="Script" uid="uid://cog8pvonoqtxu" path="res://script/hurt_box.gd" id="12_l4mw4"]
+[ext_resource type="Script" uid="uid://e2gvf56eu6jb" path="res://scenes/player/StateMachine.gd" id="13_ij4ou"]
+[ext_resource type="Script" uid="uid://c5wxmcve7xpca" path="res://script/Stats.gd" id="14_yqx2o"]
+[ext_resource type="AudioStream" uid="uid://5rnyiqxeiusa" path="res://sounds/RunSounds.wav" id="15_g0e0t"]
+[ext_resource type="AudioStream" uid="uid://b6t6pjb3evtw4" path="res://sounds/jump.wav" id="16_medr4"]
+[ext_resource type="AudioStream" uid="uid://bqqs4akeispjg" path="res://sounds/OnHit.wav" id="17_twt02"]
+[ext_resource type="AudioStream" uid="uid://b5fdodmk5utji" path="res://sounds/coin.wav" id="18_wt814"]
+[ext_resource type="PackedScene" uid="uid://1th2ey27vgac" path="res://ui/game_ui.tscn" id="19_mrt7i"]
+[ext_resource type="PackedScene" uid="uid://cb5gh3hfe077g" path="res://ui/pause_screen.tscn" id="20_txud3"]
+[ext_resource type="Texture2D" uid="uid://nu6i7yovali6" path="res://ui/cd_bar.png" id="21_6yl6w"]
+[ext_resource type="Texture2D" uid="uid://ben34oyvgea61" path="res://ui/cd_bar_2.png" id="22_bmype"]
+[ext_resource type="PackedScene" uid="uid://d1gmjbadbxsjp" path="res://scenes/game_camera/gamecamera.tscn" id="23_2qbh7"]
+[ext_resource type="PackedScene" uid="uid://voxip8vojin" path="res://scenes/manager/player_buff_manager.tscn" id="25_45c56"]
+[ext_resource type="Script" uid="uid://cub46455tidls" path="res://scenes/player/ako/ako_ps.gd" id="26_anpsg"]
+[ext_resource type="PackedScene" uid="uid://c620jv6qq2f8w" path="res://scenes/player/t_hp_count.tscn" id="27_m02rw"]
+[ext_resource type="Script" uid="uid://crtabh2xwunne" path="res://script/player_health_component.gd" id="28_j0251"]
+[ext_resource type="Script" uid="uid://cb3cfva75jkhm" path="res://scenes/player/ako/ako_chain_controller.gd" id="30_cc"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_l238d"]
+radius = 7.0
+
+[sub_resource type="Shader" id="Shader_anpsg"]
+code = "shader_type canvas_item;
+
+uniform float outline_width = 1.0;
+uniform vec4 outline_color :source_color = vec4(0, 0, 0, 1 );
+uniform float flash_opacity: hint_range(0.0, 1.0, 0.1) = 0.0;
+
+
+
+void fragment() {
+
+	vec2 uv = UV;
+
+	vec2 uv_up = uv + vec2(0, TEXTURE_PIXEL_SIZE.y) * outline_width;
+	vec2 uv_down = uv + vec2(0, -TEXTURE_PIXEL_SIZE.y) * outline_width;
+	vec2 uv_left = uv + vec2(TEXTURE_PIXEL_SIZE.x, 0) * outline_width;
+	vec2 uv_right = uv + vec2(-TEXTURE_PIXEL_SIZE.x, 0) * outline_width;
+
+	vec4 color_up = texture(TEXTURE, uv_up);
+	vec4 color_down = texture(TEXTURE, uv_down);
+	vec4 color_left = texture(TEXTURE, uv_left);
+	vec4 color_right = texture(TEXTURE, uv_right);
+
+	vec4 outline = color_up + color_down + color_left + color_right;
+
+	outline.rgb = outline_color.rgb;
+
+	outline.a = min(outline.a, 1);
+
+	vec4 orginal_color = texture(TEXTURE, UV);
+	orginal_color.rgb = mix(orginal_color.rgb, outline_color.rgb, flash_opacity);
+
+	COLOR = mix(outline, orginal_color, orginal_color.a);
+
+}"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_5asy8"]
+shader = SubResource("Shader_anpsg")
+shader_parameter/outline_width = 2.0
+shader_parameter/outline_color = Color(15.938, 26.051, 35.702, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="Shader" id="Shader_lrjee"]
+code = "shader_type canvas_item;
+
+uniform float outline_width = 1.0;
+uniform vec4 outline_color :source_color = vec4(0, 0, 0, 1 );
+uniform float flash_opacity: hint_range(0.0, 1.0, 0.1) = 0.0;
+
+
+
+void fragment() {
+
+	vec2 uv = UV;
+
+	vec2 uv_up = uv + vec2(0, TEXTURE_PIXEL_SIZE.y) * outline_width;
+	vec2 uv_down = uv + vec2(0, -TEXTURE_PIXEL_SIZE.y) * outline_width;
+	vec2 uv_left = uv + vec2(TEXTURE_PIXEL_SIZE.x, 0) * outline_width;
+	vec2 uv_right = uv + vec2(-TEXTURE_PIXEL_SIZE.x, 0) * outline_width;
+
+	vec4 color_up = texture(TEXTURE, uv_up);
+	vec4 color_down = texture(TEXTURE, uv_down);
+	vec4 color_left = texture(TEXTURE, uv_left);
+	vec4 color_right = texture(TEXTURE, uv_right);
+
+	vec4 outline = color_up + color_down + color_left + color_right;
+
+	outline.rgb = outline_color.rgb;
+
+	outline.a = min(outline.a, 1);
+
+	vec4 orginal_color = texture(TEXTURE, UV);
+	orginal_color.rgb = mix(orginal_color.rgb, outline_color.rgb, flash_opacity);
+
+	COLOR = mix(outline, orginal_color, orginal_color.a);
+
+}"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_lr45n"]
+shader = SubResource("Shader_lrjee")
+shader_parameter/outline_width = 1.0
+shader_parameter/outline_color = Color(15.938108, 26.050798, 35.702145, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yxrvk"]
+atlas = ExtResource("8_r27r2")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ect8h"]
+atlas = ExtResource("8_r27r2")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_imwoq"]
+atlas = ExtResource("8_r27r2")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_v3qdt"]
+atlas = ExtResource("8_r27r2")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tgnvk"]
+atlas = ExtResource("8_r27r2")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_to2ca"]
+atlas = ExtResource("8_r27r2")
+region = Rect2(64, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0k37n"]
+atlas = ExtResource("8_r27r2")
+region = Rect2(128, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_q5lsn"]
+atlas = ExtResource("8_r27r2")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_arwqv"]
+atlas = ExtResource("8_r27r2")
+region = Rect2(0, 64, 64, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_kk3o0"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yxrvk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ect8h")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_imwoq")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_v3qdt")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 13.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tgnvk")
+}],
+"loop": 1,
+"name": &"jump",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_to2ca")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0k37n")
+}, {
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_q5lsn")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_arwqv")
+}],
+"loop": 1,
+"name": &"run",
+"speed": 13.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_dqk1k"]
+radius = 1.0
+height = 2.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_4tsyc"]
+radius = 35.0
+
+[sub_resource type="Animation" id="Animation_quqct"]
+resource_name = "Invincible frame"
+length = 0.5
+step = 0.075
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.075, 0.15, 0.225, 0.3, 0.375, 0.45),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [true, false, true, false, true, false, true]
+}
+
+[sub_resource type="Animation" id="Animation_54v52"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Graphics:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Graphics:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_apy7m"]
+_data = {
+&"Invincible frame": SubResource("Animation_quqct"),
+&"RESET": SubResource("Animation_54v52")
+}
+
+[sub_resource type="Animation" id="Animation_btd8x"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics/AnimatedSprite2D:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Graphics/AnimatedSprite2D:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, -17)]
+}
+
+[sub_resource type="Animation" id="Animation_kssmf"]
+resource_name = "kick_anim"
+length = 0.1
+step = 0.01
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics/AnimatedSprite2D:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.03, 0.1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [0.0, -0.698132, 0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Graphics/AnimatedSprite2D:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.03, 0.1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0, -17), Vector2(5, -20), Vector2(0, -17)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_y8tsq"]
+_data = {
+&"RESET": SubResource("Animation_btd8x"),
+&"kick_anim": SubResource("Animation_kssmf")
+}
+
+[node name="ako" type="CharacterBody2D" unique_id=814336257 node_paths=PackedStringArray("stats") groups=["Player"]]
+collision_mask = 256
+motion_mode = 1
+platform_floor_layers = 4294967040
+script = ExtResource("1_5asy8")
+player_card = ExtResource("2_rt03l")
+ps_card = ExtResource("3_anpsg")
+stats = NodePath("Stats")
+player_color = Color(0.44313726, 0.6039216, 0.9490196, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1307134586]
+position = Vector2(0, -6)
+shape = SubResource("CircleShape2D_l238d")
+
+[node name="Follow" parent="." unique_id=670549565 instance=ExtResource("4_x1nq5")]
+
+[node name="Shadow" parent="." unique_id=1387453203 instance=ExtResource("5_0ux12")]
+scale = Vector2(0.445313, 0.445313)
+
+[node name="GPUParticles2D" parent="." unique_id=1412145173 instance=ExtResource("6_x3ss2")]
+emitting = false
+
+[node name="Graphics" type="Node2D" parent="." unique_id=1473084420]
+unique_name_in_owner = true
+
+[node name="Halo" type="Sprite2D" parent="Graphics" unique_id=645409445]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_5asy8")
+position = Vector2(-10, -32)
+rotation = 0.47822
+scale = Vector2(0.254, 0.276)
+texture = ExtResource("7_rt03l")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Graphics" unique_id=647433233]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_lr45n")
+position = Vector2(0, -17)
+sprite_frames = SubResource("SpriteFrames_kk3o0")
+animation = &"idle"
+autoplay = "idle"
+frame_progress = 0.91761416
+flip_h = true
+
+[node name="HaloRoot" type="Node2D" parent="Graphics/AnimatedSprite2D" unique_id=338191493]
+unique_name_in_owner = true
+position = Vector2(-9, -28)
+
+[node name="Hat" parent="Graphics/AnimatedSprite2D" unique_id=730565075 instance=ExtResource("9_ndp0y")]
+position = Vector2(1, -12)
+
+[node name="Gun" parent="Graphics" unique_id=1981837391 node_paths=PackedStringArray("stats") instance=ExtResource("10_rt03l")]
+unique_name_in_owner = true
+position = Vector2(7, -8)
+stats = NodePath("../../Stats")
+
+[node name="HurtBox" type="Area2D" parent="." unique_id=335900981 node_paths=PackedStringArray("body") groups=["PlayerBox"]]
+collision_layer = 2048
+collision_mask = 1160
+script = ExtResource("12_l4mw4")
+body = NodePath("..")
+is_player = true
+
+[node name="HurtboxShape" type="CollisionShape2D" parent="HurtBox" unique_id=2002508033]
+position = Vector2(0, -8)
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_dqk1k")
+debug_color = Color(3.18866e-06, 0.0816588, 0.291816, 0.42)
+
+[node name="PickBox" type="Area2D" parent="." unique_id=725312478]
+collision_layer = 0
+collision_mask = 64
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PickBox" unique_id=311131848]
+position = Vector2(0, -11)
+shape = SubResource("CircleShape2D_4tsyc")
+debug_color = Color(0.724221, 0.462988, 0.32265, 0.42)
+
+[node name="FlyTimer" type="Timer" parent="." unique_id=591006984]
+wait_time = 0.3
+one_shot = true
+
+[node name="JumpTimer" type="Timer" parent="." unique_id=1588867141]
+wait_time = 0.1
+one_shot = true
+
+[node name="JumpCDTimer" type="Timer" parent="." unique_id=1835168107]
+one_shot = true
+
+[node name="RunSoundsTimer" type="Timer" parent="." unique_id=1538906868]
+wait_time = 0.2
+one_shot = true
+
+[node name="InvincibleFrame" type="Timer" parent="." unique_id=1779296011]
+wait_time = 0.5
+one_shot = true
+
+[node name="StateMachine" type="Node" parent="." unique_id=1506302176]
+script = ExtResource("13_ij4ou")
+
+[node name="Stats" type="Node" parent="." unique_id=2122875524]
+script = ExtResource("14_yqx2o")
+max_hp = 58
+critical_luck = 10
+critical_damage = 3.0
+MAX_SPEED = 160
+max_ammo = 8
+bullet_damage = 16
+bullet_shoot_time = 280
+bullet_speed = 950
+bullet_recoil = 60
+reload_timer = 0.6
+convert_power = 65
+shake_mult = 1.2
+
+[node name="RunSounds" type="AudioStreamPlayer2D" parent="." unique_id=302917896]
+process_mode = 3
+stream = ExtResource("15_g0e0t")
+volume_db = -6.0
+bus = &"SFX"
+
+[node name="JumpSounds" type="AudioStreamPlayer2D" parent="." unique_id=1309017338]
+process_mode = 3
+stream = ExtResource("16_medr4")
+bus = &"SFX"
+
+[node name="OnHitSounds" type="AudioStreamPlayer2D" parent="." unique_id=449247452]
+process_mode = 3
+stream = ExtResource("17_twt02")
+volume_db = 8.0
+bus = &"SFX"
+
+[node name="CoinSounds" type="AudioStreamPlayer2D" parent="." unique_id=882990323]
+process_mode = 3
+stream = ExtResource("18_wt814")
+volume_db = -2.0
+bus = &"SFX"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=693419034]
+libraries/ = SubResource("AnimationLibrary_apy7m")
+
+[node name="GameUI" parent="." unique_id=1010579495 node_paths=PackedStringArray("player", "stats") instance=ExtResource("19_mrt7i")]
+player = NodePath("..")
+stats = NodePath("../Stats")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1376125162]
+layer = 3
+
+[node name="PauseScreen" parent="CanvasLayer" unique_id=995634183 instance=ExtResource("20_txud3")]
+visible = false
+
+[node name="JumpCDBar" type="TextureProgressBar" parent="." unique_id=1083567095]
+visible = false
+z_index = 20
+offset_left = -16.0
+offset_top = 7.0
+offset_right = 16.0
+offset_bottom = 13.0
+size_flags_horizontal = 4
+max_value = 1.0
+step = 0.0
+value = 0.355
+texture_under = ExtResource("21_6yl6w")
+texture_progress = ExtResource("22_bmype")
+
+[node name="Camera2D" parent="." unique_id=721135821 instance=ExtResource("23_2qbh7")]
+offset = Vector2(0, -15)
+
+[node name="AnimationPlayer2" type="AnimationPlayer" parent="." unique_id=1778237123]
+libraries/ = SubResource("AnimationLibrary_y8tsq")
+
+[node name="PlayerBuffManager" parent="." unique_id=1313312428 instance=ExtResource("25_45c56")]
+
+[node name="T_HP_Count" parent="." unique_id=1823330357 node_paths=PackedStringArray("stats") instance=ExtResource("27_m02rw")]
+stats = NodePath("../Stats")
+
+[node name="ako_ps" type="Node2D" parent="." unique_id=1484900569 node_paths=PackedStringArray("chain_controller", "stats", "player", "gun")]
+script = ExtResource("26_anpsg")
+chain_controller = NodePath("../Kick")
+stats = NodePath("../Stats")
+player = NodePath("..")
+gun = NodePath("../Graphics/Gun")
+
+[node name="Kick" type="Node2D" parent="." unique_id=2003954150]
+unique_name_in_owner = true
+script = ExtResource("30_cc")
+root_offset = Vector2(0, 10)
+
+[node name="HealthComponent" type="Node" parent="." unique_id=136328311 node_paths=PackedStringArray("stats", "hurt_box")]
+script = ExtResource("28_j0251")
+stats = NodePath("../Stats")
+hurt_box = NodePath("../HurtBox")
+
+[connection signal="is_hurt" from="." to="." method="_on_is_hurt"]
+[connection signal="area_entered" from="PickBox" to="." method="_on_pick_box_area_entered"]
+[connection signal="timeout" from="JumpCDTimer" to="." method="_on_jump_cd_timer_timeout"]
+[connection signal="pick_up_range_changed" from="Stats" to="." method="_on_stats_pick_up_range_changed"]

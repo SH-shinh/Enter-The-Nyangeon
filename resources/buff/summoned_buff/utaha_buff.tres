@@ -8,4 +8,6 @@ script = ExtResource("2_5n8om")
 id = "utaha_buff"
 icon = ExtResource("1_ok68n")
 name = "歌园召唤物buff"
+per_source_layers = true
 description = ""
+modifiers = Array[Dictionary]([{"key": "damage_mult", "mode": "add", "source": "const", "amount": 0.25}, {"key": "shoot_time_mult", "mode": "add", "source": "const", "amount": 0.5}])

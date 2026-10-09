@@ -25,6 +25,7 @@ extends Node2D
 var voice_playing: bool = false
 var normal_index: int = 0
 var surprise_touch_num: int = 0
+var _loaded_path: String = ""
 
 
 func _ready() -> void:
@@ -32,11 +33,42 @@ func _ready() -> void:
 	breast_touch.gui_input.connect(breast_touch_voice)
 	head_touch.gui_input.connect(head_touch_voice)
 	GameEvents.pyroxenes_not_enough.connect(lack_talk)
-	get_now_clothes()
+
+func release_clothes() -> void:
+	if _loaded_path != "":
+		LazyTexture.release(_loaded_path)
+		_loaded_path = ""
+	sprite.texture = null
+
+
+func _exit_tree() -> void:
+	if _loaded_path != "":
+		LazyTexture.release(_loaded_path)
+		_loaded_path = ""
+
+
+# 幂等换装：同路径不重复解码
+func _show_sprite(path: String) -> void:
+	if path == "":
+		return
+	if _loaded_path == path and sprite.texture != null:
+		return
+	if _loaded_path != "":
+		LazyTexture.release(_loaded_path)
+		_loaded_path = ""
+	sprite.texture = LazyTexture.acquire(path)
+	_loaded_path = path
+
 
 func get_now_clothes():
-	var card_load = load("res://resources/clothes/" + voice_name + "/" + PlayerData.now_clothes[voice_name] + ".tres")
-	sprite.texture = card_load.sprite
+	var cid: String = str(PlayerData.now_clothes.get(voice_name, ""))
+	if cid == "":
+		return
+	var card_load = ModManager.get_resource("clothes", cid)
+	if card_load == null:
+		card_load = load("res://resources/clothes/" + voice_name + "/" + cid + ".tres")
+	if card_load != null:
+		_show_sprite(card_load.sprite_path)
 
 func reset_state():
 	sprite.frame = 0
@@ -107,7 +139,12 @@ func play_talk_anim(talk_card: TalkFormwork):
 			await get_tree().create_timer(talk_card.voice_time).timeout
 		else:
 			if talk_card.voice_num != "":
-				await SoundManager.talk.get_node(talk_card.voice_name).get_node(talk_card.voice_num).finished
+				var voice_group: Node = SoundManager.talk.get_node_or_null(talk_card.voice_name) if SoundManager.talk != null else null
+				var voice_node: Node = voice_group.get_node_or_null(talk_card.voice_num) if voice_group != null else null
+				if voice_node != null:
+					await voice_node.finished
+				else:
+					await get_tree().create_timer(1.5).timeout
 			else:
 				await get_tree().create_timer(1.5).timeout
 		ins.talk_out()
@@ -118,6 +155,6 @@ func change_clothes(cloth_card: ClothesCard):
 	cloth_change.close_button()
 	change_anim.play("change_anim")
 	await get_tree().create_timer(0.26).timeout
-	sprite.texture = cloth_card.sprite
+	_show_sprite(cloth_card.sprite_path)
 	await change_anim.animation_finished
 	cloth_change.open_button()

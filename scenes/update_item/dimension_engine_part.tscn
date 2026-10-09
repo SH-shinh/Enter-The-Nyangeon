@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://cwgoohnrxmq5b"]
+[gd_scene format=3 uid="uid://cwgoohnrxmq5b"]
 
-[ext_resource type="Script" path="res://scenes/update_item/dimension_engine_part.gd" id="1_wkamt"]
+[ext_resource type="Script" uid="uid://dof65kji0jape" path="res://scenes/update_item/dimension_engine_part.gd" id="1_wkamt"]
 
 [node name="dimension_engine_part" type="Node2D"]
 script = ExtResource("1_wkamt")

@@ -49,7 +49,7 @@ func _draw():
 			]
 			draw_polygon(P, C)
 
-func _physics_process(delta):
+func _physics_process(_delta):
 	
 	anchor = player.sprite_2d.position.y + 17
 	for x in offset_x.size():

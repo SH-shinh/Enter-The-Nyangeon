@@ -21,7 +21,7 @@ func _ready():
 	mouse_entered.connect(show_text)
 	mouse_exited.connect(hide_text)
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	if text_is_show == true:
 		if on_touch == false:
 			text_show.global_position = get_global_mouse_position()

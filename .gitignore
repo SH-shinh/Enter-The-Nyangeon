@@ -1,2 +1,5 @@
 # Godot 4+ specific ignores
 .godot/
+
+# coop mod 构建产物（源在 mod_sdk/coop_mod/mods/）
+mod_sdk/coop_mod/build/

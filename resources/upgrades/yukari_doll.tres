@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" format=3 uid="uid://bya7offrkkodg"]
+
+[ext_resource type="Texture2D" uid="uid://omfber76fqd2" path="res://sprites/update_item/yukari_doll.png" id="1_yukari"]
+[ext_resource type="Script" uid="uid://cvlwfck2jbhvs" path="res://resources/upgrades/ability_upgrade.gd" id="2_mv2vv"]
+
+[resource]
+script = ExtResource("2_mv2vv")
+id = "yukari_doll"
+icon = ExtResource("1_yukari")
+rare = 1
+order_num = 5
+item_tags = 65540
+tags = Array[String](["装备", "策反"])

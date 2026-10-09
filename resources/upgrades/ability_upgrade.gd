@@ -1,6 +1,13 @@
 extends Resource
 class_name AbilityUpgrade
 
+# 稀有度配色（0/1/2），供升级选卡与测试房道具卡共用
+const RARITY_COLORS := [
+	Color(0.159, 0.27, 0.419),
+	Color(0.567, 0.399, 0.116),
+	Color(0.96, 0.38, 0.535),
+]
+
 enum ItemType {
 	NONE = 0,
 	TRAJECTORY = 1 << 0,
@@ -18,7 +25,8 @@ enum ItemType {
 	MELEE = 1 << 12,
 	SPEED = 1 << 13,
 	ARMOR = 1 << 14,
-	COIN = 1 << 15
+	COIN = 1 << 15,
+	CONVERT = 1 << 16,
 }
 
 @export var id: String
@@ -30,7 +38,7 @@ enum ItemType {
 @export_multiline var description: String
 @export_multiline var forward: String
 @export_multiline var negative: String
-@export_flags("弹道", "爆炸", "装备", "概率", "暴击", "燃烧", "中毒", "恶寒", "防御", "生命", "成长", "召唤", "近战", "速度", "护甲", "金币") var item_tags: int = 0
+@export_flags("弹道", "爆炸", "装备", "概率", "暴击", "燃烧", "中毒", "恶寒", "防御", "生命", "成长", "召唤", "近战", "速度", "护甲", "金币", "策反") var item_tags: int = 0
 @export var tags: Array[String]
 @export var weight: float = 1.0  # 基础权重
 

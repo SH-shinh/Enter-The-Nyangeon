@@ -1,11 +1,10 @@
-[gd_scene load_steps=47 format=3 uid="uid://cr47uaqb2fppx"]
+[gd_scene format=3 uid="uid://cr47uaqb2fppx"]
 
 [ext_resource type="Texture2D" uid="uid://jcqmwo1t8vv0" path="res://ui/ui.png" id="1_du445"]
-[ext_resource type="Script" path="res://ui/character_shop_card.gd" id="1_o33f7"]
+[ext_resource type="Script" uid="uid://dsymbjbcgql4k" path="res://ui/character_shop_card.gd" id="1_o33f7"]
 [ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="3_fv6np"]
 [ext_resource type="Texture2D" uid="uid://3kojmlxs38v7" path="res://sprites/item/pyroxenes.png" id="4_yp0c7"]
-[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="5_dg1hs"]
-[ext_resource type="Texture2D" uid="uid://blewkmtfbtqh2" path="res://sprites/player/kasumi/kasumi_picture.png" id="6_h6h3f"]
+[ext_resource type="Shader" uid="uid://bqypa5578tm8a" path="res://shaders/sprite_outline.gdshader" id="5_dg1hs"]
 [ext_resource type="Texture2D" uid="uid://vkorsddirkrp" path="res://ui/weapon/HG_icon.png" id="7_c4sl4"]
 [ext_resource type="Texture2D" uid="uid://dhol5kko8375y" path="res://ui/school/GEHENNA_icon.png" id="8_q1knn"]
 [ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="9_nnu23"]
@@ -192,8 +191,8 @@ tracks/2/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_mhy7b"]
 _data = {
-"RESET": SubResource("Animation_fy0kh"),
-"select_anim": SubResource("Animation_tsq7d")
+&"RESET": SubResource("Animation_fy0kh"),
+&"select_anim": SubResource("Animation_tsq7d")
 }
 
 [sub_resource type="Animation" id="Animation_1vehf"]
@@ -273,8 +272,8 @@ tracks/2/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_dtgvv"]
 _data = {
-"RESET": SubResource("Animation_1vehf"),
-"select_anim": SubResource("Animation_hjnm2")
+&"RESET": SubResource("Animation_1vehf"),
+&"select_anim": SubResource("Animation_hjnm2")
 }
 
 [sub_resource type="Animation" id="Animation_6e0li"]
@@ -383,8 +382,8 @@ tracks/3/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_8kdi1"]
 _data = {
-"RESET": SubResource("Animation_6e0li"),
-"select_anim": SubResource("Animation_jm14s")
+&"RESET": SubResource("Animation_6e0li"),
+&"select_anim": SubResource("Animation_jm14s")
 }
 
 [sub_resource type="Animation" id="Animation_8lrtm"]
@@ -567,13 +566,13 @@ tracks/0/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_bn7ij"]
 _data = {
-"RESET": SubResource("Animation_8lrtm"),
-"confirm_anim": SubResource("Animation_kh52u"),
-"deal_anim": SubResource("Animation_ltfwa"),
-"select_anim": SubResource("Animation_pw7uu")
+&"RESET": SubResource("Animation_8lrtm"),
+&"confirm_anim": SubResource("Animation_kh52u"),
+&"deal_anim": SubResource("Animation_ltfwa"),
+&"select_anim": SubResource("Animation_pw7uu")
 }
 
-[node name="CharacterShopCard" type="PanelContainer"]
+[node name="CharacterShopCard" type="PanelContainer" unique_id=2028297690]
 custom_minimum_size = Vector2(101, 136)
 offset_left = 217.0
 offset_top = 60.0
@@ -583,9 +582,9 @@ pivot_offset = Vector2(50.5, 68)
 theme = SubResource("Theme_16qsj")
 script = ExtResource("1_o33f7")
 
-[node name="Node2D2" type="Node2D" parent="."]
+[node name="Node2D2" type="Node2D" parent="." unique_id=774440674]
 
-[node name="TextureRect" type="TextureRect" parent="Node2D2"]
+[node name="TextureRect" type="TextureRect" parent="Node2D2" unique_id=198537529]
 offset_left = -7.0
 offset_top = -7.0
 offset_right = 108.0
@@ -593,14 +592,14 @@ offset_bottom = 143.0
 mouse_filter = 2
 texture = SubResource("GradientTexture2D_7ww5s")
 
-[node name="Panel" type="Panel" parent="Node2D2"]
+[node name="Panel" type="Panel" parent="Node2D2" unique_id=206356892]
 offset_right = 101.0
 offset_bottom = 136.0
 pivot_offset = Vector2(50.5, 68)
 mouse_filter = 2
 theme = SubResource("Theme_f64bn")
 
-[node name="Panel2" type="Panel" parent="Node2D2"]
+[node name="Panel2" type="Panel" parent="Node2D2" unique_id=2056524615]
 modulate = Color(0.937255, 0.968627, 0, 1)
 offset_right = 101.0
 offset_bottom = 136.0
@@ -608,13 +607,13 @@ pivot_offset = Vector2(50.5, 68)
 mouse_filter = 2
 theme = SubResource("Theme_f64bn")
 
-[node name="Panel" type="Panel" parent="."]
+[node name="Panel" type="Panel" parent="." unique_id=2144141678]
 clip_children = 2
 layout_mode = 2
 mouse_filter = 2
 theme = SubResource("Theme_3jeqj")
 
-[node name="School" type="Label" parent="Panel"]
+[node name="School" type="Label" parent="Panel" unique_id=1361554247]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 1.0
@@ -630,7 +629,7 @@ theme_override_constants/outline_size = 5
 theme_override_font_sizes/font_size = 15
 text = "GEHENNA"
 
-[node name="ColorRect2" type="ColorRect" parent="Panel"]
+[node name="ColorRect2" type="ColorRect" parent="Panel" unique_id=1564297988]
 layout_mode = 0
 offset_left = 78.6611
 offset_top = -6.0
@@ -640,7 +639,7 @@ rotation = 0.19255
 mouse_filter = 2
 color = Color(0.796243, 0.796243, 0.796243, 1)
 
-[node name="ColorRect" type="ColorRect" parent="Panel"]
+[node name="ColorRect" type="ColorRect" parent="Panel" unique_id=750140777]
 layout_mode = 0
 offset_left = 90.0
 offset_top = -9.0
@@ -650,9 +649,9 @@ rotation = 0.19255
 mouse_filter = 2
 color = Color(0.431116, 0.73214, 0.992745, 1)
 
-[node name="Node2D" type="Node2D" parent="."]
+[node name="Node2D" type="Node2D" parent="." unique_id=1129333820]
 
-[node name="Panel" type="Panel" parent="Node2D"]
+[node name="Panel" type="Panel" parent="Node2D" unique_id=26803382]
 visible = false
 modulate = Color(0.0724563, 0.577216, 0.953835, 0.648)
 offset_left = 24.0
@@ -662,7 +661,7 @@ offset_bottom = 135.0
 mouse_filter = 2
 theme = SubResource("Theme_3jeqj")
 
-[node name="Cost" type="Label" parent="Node2D"]
+[node name="Cost" type="Label" parent="Node2D" unique_id=1135546558]
 unique_name_in_owner = true
 offset_left = 69.0
 offset_top = 119.0
@@ -680,7 +679,7 @@ theme_override_font_sizes/font_size = 16
 text = "6"
 horizontal_alignment = 1
 
-[node name="TextureRect2" type="TextureRect" parent="Node2D"]
+[node name="TextureRect2" type="TextureRect" parent="Node2D" unique_id=694745190]
 modulate = Color(0, 0, 0, 0.815686)
 offset_left = 53.0
 offset_top = 115.0
@@ -689,7 +688,7 @@ offset_bottom = 155.0
 scale = Vector2(0.51, 0.51)
 texture = ExtResource("4_yp0c7")
 
-[node name="TextureRect" type="TextureRect" parent="Node2D"]
+[node name="TextureRect" type="TextureRect" parent="Node2D" unique_id=1353136436]
 offset_left = 52.0
 offset_top = 115.0
 offset_right = 92.0
@@ -697,7 +696,7 @@ offset_bottom = 155.0
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("4_yp0c7")
 
-[node name="Panel2" type="Panel" parent="Node2D"]
+[node name="Panel2" type="Panel" parent="Node2D" unique_id=2123098964]
 clip_children = 2
 offset_top = 21.0
 offset_right = 101.0
@@ -705,7 +704,7 @@ offset_bottom = 115.0
 mouse_filter = 2
 theme = SubResource("Theme_6amul")
 
-[node name="ColorRect" type="ColorRect" parent="Node2D/Panel2"]
+[node name="ColorRect" type="ColorRect" parent="Node2D/Panel2" unique_id=1445992625]
 layout_mode = 0
 offset_left = 2.0
 offset_top = -4.0
@@ -714,24 +713,22 @@ offset_bottom = 91.0
 mouse_filter = 2
 color = Color(0.683968, 0.833564, 0.967576, 1)
 
-[node name="Character2" type="Sprite2D" parent="Node2D/Panel2"]
+[node name="Character2" type="Sprite2D" parent="Node2D/Panel2" unique_id=1662876502]
 unique_name_in_owner = true
 texture_filter = 2
 material = SubResource("ShaderMaterial_qjl7n")
 position = Vector2(56, 147)
 scale = Vector2(0.3, 0.3)
-texture = ExtResource("6_h6h3f")
 hframes = 4
 
-[node name="Character1" type="Sprite2D" parent="Node2D/Panel2"]
+[node name="Character1" type="Sprite2D" parent="Node2D/Panel2" unique_id=1041168139]
 unique_name_in_owner = true
 texture_filter = 2
 position = Vector2(60, 140)
 scale = Vector2(0.3, 0.3)
-texture = ExtResource("6_h6h3f")
 hframes = 4
 
-[node name="TextureRect" type="TextureRect" parent="Node2D/Panel2"]
+[node name="TextureRect" type="TextureRect" parent="Node2D/Panel2" unique_id=1405361416]
 layout_mode = 0
 offset_top = -130.0
 offset_right = 114.0
@@ -739,7 +736,7 @@ offset_bottom = 204.0
 mouse_filter = 2
 texture = SubResource("GradientTexture2D_qvg30")
 
-[node name="Name1" type="Label" parent="Node2D"]
+[node name="Name1" type="Label" parent="Node2D" unique_id=150562613]
 unique_name_in_owner = true
 offset_left = 4.0
 offset_top = 7.0
@@ -756,7 +753,7 @@ theme_override_fonts/font = ExtResource("3_fv6np")
 theme_override_font_sizes/font_size = 12
 text = "KINUGAWA"
 
-[node name="Name2" type="Label" parent="Node2D"]
+[node name="Name2" type="Label" parent="Node2D" unique_id=284974091]
 unique_name_in_owner = true
 offset_left = 4.0
 offset_top = 18.0
@@ -773,7 +770,7 @@ theme_override_fonts/font = ExtResource("3_fv6np")
 theme_override_font_sizes/font_size = 12
 text = "KASUMI"
 
-[node name="WeaponIcon" type="TextureRect" parent="Node2D"]
+[node name="WeaponIcon" type="TextureRect" parent="Node2D" unique_id=1856557150]
 unique_name_in_owner = true
 material = SubResource("ShaderMaterial_sard6")
 offset_left = 59.0
@@ -782,7 +779,7 @@ offset_right = 99.0
 offset_bottom = 121.0
 texture = ExtResource("7_c4sl4")
 
-[node name="Weapon" type="Label" parent="Node2D"]
+[node name="Weapon" type="Label" parent="Node2D" unique_id=277064836]
 unique_name_in_owner = true
 offset_left = 76.0
 offset_top = 104.0
@@ -796,11 +793,11 @@ theme_override_font_sizes/font_size = 8
 text = "HG
 "
 
-[node name="WeaponName" type="Label" parent="Node2D"]
+[node name="WeaponName" type="Label" parent="Node2D" unique_id=283058492]
 unique_name_in_owner = true
 offset_left = 4.0
 offset_top = 107.0
-offset_right = 99.0
+offset_right = 65.0
 offset_bottom = 115.0
 theme_override_colors/font_color = Color(1, 0.394791, 0.429579, 1)
 theme_override_colors/font_shadow_color = Color(0.262745, 0, 0.129412, 1)
@@ -813,7 +810,7 @@ theme_override_font_sizes/font_size = 8
 text = "RED RECTOR"
 autowrap_mode = 2
 
-[node name="SchoolIcon" type="TextureRect" parent="Node2D"]
+[node name="SchoolIcon" type="TextureRect" parent="Node2D" unique_id=253057791]
 unique_name_in_owner = true
 texture_filter = 2
 offset_left = 69.0
@@ -823,9 +820,9 @@ offset_bottom = 146.0
 scale = Vector2(0.25, 0.25)
 texture = ExtResource("8_q1knn")
 
-[node name="Node2D3" type="Node2D" parent="."]
+[node name="Node2D3" type="Node2D" parent="." unique_id=430520349]
 
-[node name="Panel" type="Panel" parent="Node2D3"]
+[node name="Panel" type="Panel" parent="Node2D3" unique_id=1835173710]
 clip_children = 1
 offset_right = 101.0
 offset_bottom = 136.0
@@ -834,7 +831,7 @@ pivot_offset = Vector2(50.5, 68)
 mouse_filter = 2
 theme = SubResource("Theme_f64bn")
 
-[node name="TextureRect" type="TextureRect" parent="Node2D3/Panel"]
+[node name="TextureRect" type="TextureRect" parent="Node2D3/Panel" unique_id=359564194]
 layout_mode = 0
 offset_top = 101.0
 offset_right = 101.0
@@ -842,7 +839,7 @@ offset_bottom = 401.0
 mouse_filter = 2
 texture = SubResource("GradientTexture2D_ehcjl")
 
-[node name="Label" type="Label" parent="Node2D3/Panel/TextureRect"]
+[node name="Label" type="Label" parent="Node2D3/Panel/TextureRect" unique_id=1507986052]
 layout_mode = 0
 offset_left = 8.97901
 offset_top = 182.953
@@ -859,7 +856,7 @@ theme_override_fonts/font = ExtResource("9_nnu23")
 theme_override_font_sizes/font_size = 15
 text = "shop_purchase"
 
-[node name="Yes" type="PanelContainer" parent="Node2D3/Panel/TextureRect"]
+[node name="Yes" type="PanelContainer" parent="Node2D3/Panel/TextureRect" unique_id=136688965]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 0.237752
@@ -869,9 +866,9 @@ offset_bottom = 232.426
 mouse_filter = 2
 theme = SubResource("Theme_ktreb")
 
-[node name="Node2D" type="Node2D" parent="Node2D3/Panel/TextureRect/Yes"]
+[node name="Node2D" type="Node2D" parent="Node2D3/Panel/TextureRect/Yes" unique_id=906422937]
 
-[node name="ColorRect" type="TextureRect" parent="Node2D3/Panel/TextureRect/Yes/Node2D"]
+[node name="ColorRect" type="TextureRect" parent="Node2D3/Panel/TextureRect/Yes/Node2D" unique_id=240766822]
 offset_top = 0.219379
 offset_right = 101.0
 offset_bottom = 26.2194
@@ -880,7 +877,7 @@ pivot_offset = Vector2(50.5, 13)
 mouse_filter = 2
 texture = SubResource("GradientTexture2D_ys6ny")
 
-[node name="TextureRect" type="TextureRect" parent="Node2D3/Panel/TextureRect/Yes/Node2D"]
+[node name="TextureRect" type="TextureRect" parent="Node2D3/Panel/TextureRect/Yes/Node2D" unique_id=1894211296]
 texture_filter = 2
 offset_left = 40.0
 offset_top = 2.1097
@@ -891,12 +888,10 @@ texture = ExtResource("10_6h58s")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="YesAnim" type="AnimationPlayer" parent="Node2D3/Panel/TextureRect/Yes"]
-libraries = {
-"": SubResource("AnimationLibrary_mhy7b")
-}
+[node name="YesAnim" type="AnimationPlayer" parent="Node2D3/Panel/TextureRect/Yes" unique_id=1943443925]
+libraries/ = SubResource("AnimationLibrary_mhy7b")
 
-[node name="No" type="PanelContainer" parent="Node2D3/Panel/TextureRect"]
+[node name="No" type="PanelContainer" parent="Node2D3/Panel/TextureRect" unique_id=1539698112]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 0.237752
@@ -906,9 +901,9 @@ offset_bottom = 261.135
 mouse_filter = 2
 theme = SubResource("Theme_ktreb")
 
-[node name="Node2D" type="Node2D" parent="Node2D3/Panel/TextureRect/No"]
+[node name="Node2D" type="Node2D" parent="Node2D3/Panel/TextureRect/No" unique_id=511252094]
 
-[node name="ColorRect" type="TextureRect" parent="Node2D3/Panel/TextureRect/No/Node2D"]
+[node name="ColorRect" type="TextureRect" parent="Node2D3/Panel/TextureRect/No/Node2D" unique_id=1687097916]
 offset_top = 0.219379
 offset_right = 101.0
 offset_bottom = 26.2194
@@ -917,7 +912,7 @@ pivot_offset = Vector2(50.5, 13)
 mouse_filter = 2
 texture = SubResource("GradientTexture2D_ys6ny")
 
-[node name="TextureRect" type="TextureRect" parent="Node2D3/Panel/TextureRect/No/Node2D"]
+[node name="TextureRect" type="TextureRect" parent="Node2D3/Panel/TextureRect/No/Node2D" unique_id=576947839]
 texture_filter = 2
 offset_left = 40.0
 offset_top = 2.1097
@@ -928,12 +923,10 @@ texture = ExtResource("11_240lq")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="NoAnim" type="AnimationPlayer" parent="Node2D3/Panel/TextureRect/No/Node2D"]
-libraries = {
-"": SubResource("AnimationLibrary_dtgvv")
-}
+[node name="NoAnim" type="AnimationPlayer" parent="Node2D3/Panel/TextureRect/No/Node2D" unique_id=362388035]
+libraries/ = SubResource("AnimationLibrary_dtgvv")
 
-[node name="Panel2" type="Panel" parent="Node2D3"]
+[node name="Panel2" type="Panel" parent="Node2D3" unique_id=1512067924]
 clip_children = 1
 offset_right = 101.0
 offset_bottom = 136.0
@@ -941,14 +934,14 @@ pivot_offset = Vector2(50.5, 68)
 mouse_filter = 2
 theme = SubResource("Theme_f64bn")
 
-[node name="ColorRect" type="ColorRect" parent="Node2D3/Panel2"]
+[node name="ColorRect" type="ColorRect" parent="Node2D3/Panel2" unique_id=1901770103]
 layout_mode = 0
 offset_right = 101.0
 offset_bottom = 136.0
 mouse_filter = 2
 color = Color(0.192157, 0.192157, 0.192157, 0)
 
-[node name="TextureRect" type="TextureRect" parent="Node2D3/Panel2"]
+[node name="TextureRect" type="TextureRect" parent="Node2D3/Panel2" unique_id=780226328]
 modulate = Color(1, 1, 1, 0)
 layout_mode = 0
 offset_left = 20.0
@@ -962,12 +955,8 @@ texture = ExtResource("12_vx0f3")
 expand_mode = 2
 stretch_mode = 4
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_8kdi1")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1820751486]
+libraries/ = SubResource("AnimationLibrary_8kdi1")
 
-[node name="AnimationPlayer2" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_bn7ij")
-}
+[node name="AnimationPlayer2" type="AnimationPlayer" parent="." unique_id=533765514]
+libraries/ = SubResource("AnimationLibrary_bn7ij")

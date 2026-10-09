@@ -1,6 +1,5 @@
-[gd_resource type="Resource" script_class="CharacterCard" load_steps=5 format=3 uid="uid://so0xpklkpndt"]
+[gd_resource type="Resource" script_class="CharacterCard" load_steps=4 format=3 uid="uid://so0xpklkpndt"]
 
-[ext_resource type="Texture2D" uid="uid://2bl53ko6vc3c" path="res://sprites/player/nonomi/nonomi_picture.png" id="1_mlbd0"]
 [ext_resource type="Texture2D" uid="uid://fso5eoabq0er" path="res://ui/school/ABYDOS_icon.png" id="2_ed5gt"]
 [ext_resource type="Script" path="res://resources/shop/character/character_card.gd" id="3_uqej3"]
 [ext_resource type="Texture2D" uid="uid://bdrbfoxum1iba" path="res://ui/weapon/MG_icon.png" id="4_v020c"]
@@ -10,7 +9,7 @@ script = ExtResource("3_uqej3")
 cost = 6
 name_1 = "IZAYOI"
 name_2 = "NONOMI"
-character_sprite = ExtResource("1_mlbd0")
+character_sprite_path = "res://sprites/player/nonomi/nonomi_picture.png"
 weapon_name = "MINI NO.5"
 weapon_type_name = "MG"
 weapon_icon = ExtResource("4_v020c")

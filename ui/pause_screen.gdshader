@@ -41,8 +41,8 @@ void fragment() {
 	float time = TIME * speed; // 使用全局时间变量TIME和速度参数
 	float scale_factor = amplitude * (sin(time) + 1.0) * 0.5; // 使用正弦函数生成循环缩放
 	vec2 scaled_uv = vec2(fract(offset_uv.x * repeat_x ),fract(offset_uv.y * repeat_y) );
-	scaled_uv.x /= UV.x * UV.y * UV.x * UV.y * num_uv;
-	scaled_uv.y /= UV.y * UV.x * UV.x * UV.y * num_uv;
+	float uv_denom = max(UV.x * UV.y, 1e-4) * max(UV.x * UV.y, 1e-4) * num_uv;
+	scaled_uv /= uv_denom;
 
 	//scaled_uv *= uv_up + uv_down + uv_right + uv_left ;
 

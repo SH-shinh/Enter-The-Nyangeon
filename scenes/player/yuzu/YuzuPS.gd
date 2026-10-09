@@ -68,7 +68,7 @@ func critical_damage_count():
 	PlayerData.emit_player_ability_changed()
 
 func combo_count(enemy_size: int, explosion: Node):
-	if explosion.is_player_bullet == true:
+	if explosion.damage_data.source_type.has(GameTags.PLAYER) and enemy_size > 0:
 		combo_num += 1
 		if combo_num > 999:
 			combo_text.combo_num("UZQUEEN!")
@@ -78,7 +78,7 @@ func combo_count(enemy_size: int, explosion: Node):
 		combo_timer.start()
 		player.player_buff_manager.apply_buff(player_buff_3, value_3)
 
-func combo_remove(player_dead: bool):
+func combo_remove(_player_dead: bool):
 	combo_clear()
 
 func combo_clear():

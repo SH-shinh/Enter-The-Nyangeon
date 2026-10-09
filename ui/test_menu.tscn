@@ -1,9 +1,9 @@
-[gd_scene load_steps=30 format=3 uid="uid://dxedalbulaxq6"]
+[gd_scene format=3 uid="uid://dxedalbulaxq6"]
 
-[ext_resource type="Script" path="res://ui/test_menu.gd" id="1_e5cud"]
-[ext_resource type="Script" path="res://script/ScrollBox.gd" id="2_dmxda"]
+[ext_resource type="Script" uid="uid://d1o6s0806puq7" path="res://ui/test_menu.gd" id="1_e5cud"]
+[ext_resource type="Script" uid="uid://cxexg1p6wvaks" path="res://script/ScrollBox.gd" id="2_dmxda"]
 [ext_resource type="Resource" uid="uid://cjvrr0lb3dvye" path="res://resources/enemy/soldier_redhelmet_sr.tres" id="2_wasfc"]
-[ext_resource type="Shader" path="res://shaders/scrolling_bkgd.gdshader" id="3_lka5y"]
+[ext_resource type="Shader" uid="uid://d3frxix26ovel" path="res://shaders/scrolling_bkgd.gdshader" id="3_lka5y"]
 [ext_resource type="Texture2D" uid="uid://dd7vnobcamv4q" path="res://sprites/test_BG.png" id="4_py4ve"]
 [ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="5_ia28t"]
 [ext_resource type="Texture2D" uid="uid://dieipwoadjxoa" path="res://ui/title_picture_2.png" id="6_k5xsm"]
@@ -173,18 +173,18 @@ tracks/1/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_nb6ex"]
 _data = {
-"RESET": SubResource("Animation_8ko6t"),
-"new_animation": SubResource("Animation_jj5y3")
+&"RESET": SubResource("Animation_8ko6t"),
+&"new_animation": SubResource("Animation_jj5y3")
 }
 
-[node name="TestMenu" type="CanvasLayer"]
+[node name="TestMenu" type="CanvasLayer" unique_id=909476141]
 process_mode = 3
 script = ExtResource("1_e5cud")
 enemy = ExtResource("2_wasfc")
 
-[node name="Node2D" type="Node2D" parent="."]
+[node name="Node2D" type="Node2D" parent="." unique_id=230781188]
 
-[node name="TextureRect6" type="TextureRect" parent="Node2D"]
+[node name="TextureRect6" type="TextureRect" parent="Node2D" unique_id=1463062853]
 material = SubResource("CanvasItemMaterial_th1hw")
 offset_left = 109.0
 offset_right = 2689.0
@@ -193,16 +193,16 @@ scale = Vector2(0.25, 0.25)
 mouse_filter = 0
 texture = SubResource("GradientTexture2D_51am5")
 
-[node name="ColorRect5" type="ColorRect" parent="Node2D"]
+[node name="ColorRect5" type="ColorRect" parent="Node2D" unique_id=1923679972]
 offset_right = 337.0
 offset_bottom = 360.0
 color = Color(0.188235, 0.188235, 0.188235, 1)
 
-[node name="ColorRect" type="ColorRect" parent="Node2D"]
+[node name="ColorRect" type="ColorRect" parent="Node2D" unique_id=1235426171]
 offset_right = 328.0
 offset_bottom = 360.0
 
-[node name="ColorRect" type="ColorRect" parent="Node2D/ColorRect"]
+[node name="ColorRect" type="ColorRect" parent="Node2D/ColorRect" unique_id=12911487]
 layout_mode = 0
 offset_left = 3.0
 offset_right = 320.0
@@ -210,7 +210,7 @@ offset_bottom = 360.0
 mouse_filter = 2
 color = Color(0.0575493, 0.605277, 0.81601, 1)
 
-[node name="ColorRect2" type="TextureRect" parent="Node2D/ColorRect"]
+[node name="ColorRect2" type="TextureRect" parent="Node2D/ColorRect" unique_id=643505049]
 material = SubResource("ShaderMaterial_ow0f7")
 layout_mode = 0
 offset_left = 3.0
@@ -219,7 +219,7 @@ offset_bottom = 360.0
 texture = ExtResource("4_py4ve")
 stretch_mode = 1
 
-[node name="ColorRect3" type="ColorRect" parent="Node2D/ColorRect"]
+[node name="ColorRect3" type="ColorRect" parent="Node2D/ColorRect" unique_id=1671474916]
 layout_mode = 0
 offset_left = 3.0
 offset_top = 91.0
@@ -227,7 +227,7 @@ offset_right = 320.0
 offset_bottom = 360.0
 color = Color(0.176471, 0.498039, 0.709804, 1)
 
-[node name="ColorRect4" type="ColorRect" parent="Node2D/ColorRect"]
+[node name="ColorRect4" type="ColorRect" parent="Node2D/ColorRect" unique_id=692649307]
 layout_mode = 0
 offset_left = 3.0
 offset_top = 69.0
@@ -235,7 +235,7 @@ offset_right = 320.0
 offset_bottom = 92.0
 color = Color(0.14902, 0.14902, 0.14902, 1)
 
-[node name="Label" type="Label" parent="Node2D/ColorRect/ColorRect4"]
+[node name="Label" type="Label" parent="Node2D/ColorRect/ColorRect4" unique_id=1781890991]
 layout_mode = 0
 offset_left = 3.0
 offset_top = 8.0
@@ -245,7 +245,7 @@ theme_override_fonts/font = ExtResource("5_ia28t")
 theme_override_font_sizes/font_size = 13
 text = "ARTIFACT"
 
-[node name="TextureRect2" type="TextureRect" parent="Node2D/ColorRect"]
+[node name="TextureRect2" type="TextureRect" parent="Node2D/ColorRect" unique_id=1535661956]
 material = SubResource("ShaderMaterial_q7dnd")
 layout_mode = 0
 offset_left = 337.0
@@ -256,7 +256,7 @@ scale = Vector2(0.1, 0.1)
 texture = ExtResource("6_k5xsm")
 stretch_mode = 1
 
-[node name="TextureRect3" type="TextureRect" parent="Node2D/ColorRect"]
+[node name="TextureRect3" type="TextureRect" parent="Node2D/ColorRect" unique_id=1126825281]
 material = SubResource("ShaderMaterial_v7aig")
 layout_mode = 0
 offset_left = 328.0
@@ -267,13 +267,13 @@ scale = Vector2(0.1, 0.1)
 texture = ExtResource("6_k5xsm")
 stretch_mode = 1
 
-[node name="ColorRect4" type="ColorRect" parent="Node2D"]
+[node name="ColorRect4" type="ColorRect" parent="Node2D" unique_id=1405586742]
 offset_left = 31.0
 offset_top = 17.0
 offset_right = 181.0
 offset_bottom = 62.0
 
-[node name="ColorRect4" type="ColorRect" parent="Node2D/ColorRect4"]
+[node name="ColorRect4" type="ColorRect" parent="Node2D/ColorRect4" unique_id=1583432029]
 layout_mode = 0
 offset_left = 2.0
 offset_top = 2.0
@@ -281,7 +281,7 @@ offset_right = 148.0
 offset_bottom = 43.0
 color = Color(0.121654, 0.252518, 0.434675, 1)
 
-[node name="Label" type="Label" parent="Node2D/ColorRect4"]
+[node name="Label" type="Label" parent="Node2D/ColorRect4" unique_id=2656307]
 layout_mode = 0
 offset_left = 2.0
 offset_top = 10.0
@@ -299,7 +299,7 @@ theme_override_font_sizes/font_size = 18
 text = "testmenu_item"
 horizontal_alignment = 1
 
-[node name="ColorRect2" type="ColorRect" parent="Node2D"]
+[node name="ColorRect2" type="ColorRect" parent="Node2D" unique_id=1990158989]
 clip_children = 2
 offset_left = 303.0
 offset_top = 92.0
@@ -307,7 +307,7 @@ offset_right = 320.0
 offset_bottom = 360.0
 color = Color(0.824175, 0.927159, 0.267976, 1)
 
-[node name="TextureRect3" type="TextureRect" parent="Node2D/ColorRect2"]
+[node name="TextureRect3" type="TextureRect" parent="Node2D/ColorRect2" unique_id=1106324669]
 material = SubResource("ShaderMaterial_e26xh")
 layout_mode = 0
 offset_top = -13.0
@@ -318,8 +318,8 @@ texture = ExtResource("6_k5xsm")
 stretch_mode = 1
 flip_h = true
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Node2D"]
-offset_left = 13.0
+[node name="ScrollContainer" type="ScrollContainer" parent="Node2D" unique_id=895503743]
+offset_left = 6.0
 offset_top = 99.0
 offset_right = 320.0
 offset_bottom = 355.0
@@ -330,57 +330,59 @@ horizontal_scroll_mode = 3
 vertical_scroll_mode = 2
 script = ExtResource("2_dmxda")
 
-[node name="GridContainer" type="GridContainer" parent="Node2D/ScrollContainer"]
+[node name="GridContainer" type="GridContainer" parent="Node2D/ScrollContainer" unique_id=1080201016]
 layout_mode = 2
+theme_override_constants/h_separation = 3
+theme_override_constants/v_separation = 3
 columns = 8
 
-[node name="ShopTest" type="Node2D" parent="Node2D"]
+[node name="ShopTest" type="Node2D" parent="Node2D" unique_id=1792996514]
 
-[node name="HBoxContainer" type="VBoxContainer" parent="Node2D/ShopTest"]
+[node name="HBoxContainer" type="VBoxContainer" parent="Node2D/ShopTest" unique_id=1709055656]
 offset_left = 322.0
 offset_top = 77.0
 offset_right = 360.0
 offset_bottom = 312.0
 theme_override_constants/separation = 47
 
-[node name="Bag" parent="Node2D/ShopTest/HBoxContainer" instance=ExtResource("10_l1pcw")]
+[node name="Bag" parent="Node2D/ShopTest/HBoxContainer" unique_id=1290548646 instance=ExtResource("10_l1pcw")]
 layout_mode = 2
 equip_card = ExtResource("11_21303")
 is_test = true
 
-[node name="Gloves" parent="Node2D/ShopTest/HBoxContainer" instance=ExtResource("10_l1pcw")]
+[node name="Gloves" parent="Node2D/ShopTest/HBoxContainer" unique_id=1892550296 instance=ExtResource("10_l1pcw")]
 layout_mode = 2
 equip_card = ExtResource("12_repeh")
 is_test = true
 
-[node name="Necklace" parent="Node2D/ShopTest/HBoxContainer" instance=ExtResource("10_l1pcw")]
+[node name="Necklace" parent="Node2D/ShopTest/HBoxContainer" unique_id=732212150 instance=ExtResource("10_l1pcw")]
 layout_mode = 2
 equip_card = ExtResource("13_jg013")
 is_test = true
 
-[node name="Badge" parent="Node2D/ShopTest/HBoxContainer" instance=ExtResource("10_l1pcw")]
+[node name="Badge" parent="Node2D/ShopTest/HBoxContainer" unique_id=1049824035 instance=ExtResource("10_l1pcw")]
 layout_mode = 2
 equip_card = ExtResource("14_lvjrv")
 is_test = true
 
-[node name="Watch" parent="Node2D/ShopTest/HBoxContainer" instance=ExtResource("10_l1pcw")]
+[node name="Watch" parent="Node2D/ShopTest/HBoxContainer" unique_id=1208849238 instance=ExtResource("10_l1pcw")]
 layout_mode = 2
 equip_card = ExtResource("15_tohpd")
 is_test = true
 
-[node name="AbilityShopPSCard" parent="Node2D/ShopTest/HBoxContainer" instance=ExtResource("9_fkqg2")]
+[node name="AbilityShopPSCard" parent="Node2D/ShopTest/HBoxContainer" unique_id=358103980 instance=ExtResource("9_fkqg2")]
 layout_mode = 2
 is_test = true
 
-[node name="Button" type="Button" parent="Node2D"]
+[node name="Button" type="Button" parent="Node2D" unique_id=1206179038]
 visible = false
-offset_left = 9.0
-offset_top = 239.0
-offset_right = 143.0
-offset_bottom = 265.0
-text = "COIN + 100000"
+offset_left = 269.0
+offset_top = 37.0
+offset_right = 315.0
+offset_bottom = 63.0
+text = "test"
 
-[node name="Button2" type="Button" parent="Node2D"]
+[node name="Button2" type="Button" parent="Node2D" unique_id=599481767]
 visible = false
 offset_left = 252.0
 offset_top = 38.0
@@ -388,7 +390,7 @@ offset_right = 314.0
 offset_bottom = 64.0
 text = "enemy"
 
-[node name="Reset" type="Button" parent="Node2D"]
+[node name="Reset" type="Button" parent="Node2D" unique_id=1475837800]
 offset_left = 218.0
 offset_top = 71.0
 offset_right = 264.0
@@ -398,7 +400,7 @@ theme_override_font_sizes/font_size = 11
 text = "RESET
 "
 
-[node name="Close" type="Button" parent="Node2D"]
+[node name="Close" type="Button" parent="Node2D" unique_id=387324492]
 offset_left = 272.0
 offset_top = 71.0
 offset_right = 314.0
@@ -407,14 +409,10 @@ theme_override_fonts/font = ExtResource("5_ia28t")
 theme_override_font_sizes/font_size = 11
 text = "CLOSE"
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_nb6ex")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=158922725]
+libraries/ = SubResource("AnimationLibrary_nb6ex")
 
 [connection signal="pressed" from="Node2D/Button" to="." method="_on_button_pressed"]
 [connection signal="pressed" from="Node2D/Button2" to="." method="_on_button_2_pressed"]
-[connection signal="gui_input" from="Node2D/Reset" to="." method="_on_reset_gui_input"]
 [connection signal="pressed" from="Node2D/Reset" to="." method="_on_reset_pressed"]
-[connection signal="gui_input" from="Node2D/Close" to="." method="_on_close_gui_input"]
 [connection signal="pressed" from="Node2D/Close" to="." method="_on_close_pressed"]

@@ -8,21 +8,46 @@ const LOCALES: Array[String] = ["zh_CN", "en", "pt", "vi_VN"]
 const MESSAGES: Dictionary = {
 	"coop_title": {"zh_CN": "联机", "en": "CO-OP", "pt": "CO-OP", "vi_VN": "CO-OP"},
 	"coop_mode_lan": {"zh_CN": "局域网", "en": "LAN", "pt": "LAN", "vi_VN": "LAN"},
+	"coop_mode_lan_label": {"zh_CN": "公网/局域网", "en": "Internet/LAN", "pt": "Internet/LAN", "vi_VN": "Internet/LAN"},
 	"coop_mode_relay": {"zh_CN": "中继", "en": "RELAY", "pt": "RELAY", "vi_VN": "RELAY"},
 	"coop_mode_dedicated": {"zh_CN": "专用", "en": "DEDICATED", "pt": "DEDICADO", "vi_VN": "RIÊNG"},
-	"coop_mode_subtitle_lan": {"zh_CN": "同一局域网内联机", "en": "Co-op on the same LAN", "pt": "Co-op na mesma LAN", "vi_VN": "Chơi chung cùng LAN"},
+	"coop_mode_subtitle_lan": {"zh_CN": "同一局域网或公网直连（房主可开启 UPnP）", "en": "Same LAN or public direct connect (host can enable UPnP)", "pt": "Mesma LAN ou conexão pública direta (host pode ativar UPnP)", "vi_VN": "Cùng LAN hoặc kết nối trực tiếp công khai (chủ phòng bật UPnP)"},
 	"coop_mode_subtitle_relay": {"zh_CN": "跨网络中继联机（WebSocket）", "en": "Relay co-op over WebSocket", "pt": "Co-op via relay WebSocket", "vi_VN": "Chơi chung qua relay WebSocket"},
 	"coop_mode_subtitle_dedicated": {"zh_CN": "专用服务器（暂不可用）", "en": "Dedicated server (unavailable)", "pt": "Servidor dedicado (indisponível)", "vi_VN": "Máy chủ riêng (không khả dụng)"},
 	"coop_host": {"zh_CN": "开服", "en": "HOST", "pt": "HOSPEDAR", "vi_VN": "TẠO PHÒNG"},
 	"coop_join": {"zh_CN": "加入", "en": "JOIN", "pt": "ENTRAR", "vi_VN": "THAM GIA"},
-	"coop_host_lan_ip_placeholder": {"zh_CN": "主机局域网 IP", "en": "Host LAN IP", "pt": "IP da LAN do host", "vi_VN": "IP LAN của chủ phòng"},
-	"coop_lan_note": {"zh_CN": "同一局域网内可直接连接。", "en": "Connect directly within the same LAN.", "pt": "Conecte-se diretamente na mesma LAN.", "vi_VN": "Kết nối trực tiếp trong cùng LAN."},
+	"coop_host_lan_ip_placeholder": {"zh_CN": "主机地址（IP / 域名）", "en": "Host address (IP / domain)", "pt": "Endereço do host (IP / domínio)", "vi_VN": "Địa chỉ chủ phòng (IP / tên miền)"},
+	"coop_lan_port": {"zh_CN": "端口", "en": "Port", "pt": "Porta", "vi_VN": "Cổng"},
+	"coop_share_address": {"zh_CN": "分享地址", "en": "Share address", "pt": "Compartilhar endereço", "vi_VN": "Chia sẻ địa chỉ"},
+	"coop_addr_lan": {"zh_CN": "局域网", "en": "LAN", "pt": "LAN", "vi_VN": "LAN"},
+	"coop_addr_public": {"zh_CN": "公网", "en": "Internet", "pt": "Internet", "vi_VN": "Internet"},
+	"coop_addr_public_unavailable": {"zh_CN": "公网地址暂不可用，请手动填入公网 IP 或改用中继", "en": "Public address unavailable; enter your public IP manually or use relay", "pt": "Endereço público indisponível; informe o IP público ou use relay", "vi_VN": "Địa chỉ công khai không khả dụng; nhập IP công khai hoặc dùng relay"},
+	"coop_copied": {"zh_CN": "地址已复制", "en": "Address copied", "pt": "Endereço copiado", "vi_VN": "Đã sao chép địa chỉ"},
+	"coop_manual_ip_placeholder": {"zh_CN": "公网地址（IP / 域名[:端口]）", "en": "Public address (IP / domain[:port])", "pt": "Endereço público (IP / domínio[:porta])", "vi_VN": "Địa chỉ công khai (IP / tên miền[:cổng])"},
+	"coop_manual_ip_clear": {"zh_CN": "清除", "en": "Clear", "pt": "Limpar", "vi_VN": "Xóa"},
+	"coop_manual_ip_invalid": {"zh_CN": "公网 IP 无效", "en": "Invalid public IP", "pt": "IP público inválido", "vi_VN": "IP công khai không hợp lệ"},
+	"coop_upnp_failed_hint": {"zh_CN": "UPnP 自动映射失败，请手动填入公网 IP（或在路由器转发端口 / 改用中继）", "en": "UPnP mapping failed; enter your public IP manually (or forward the port / use relay)", "pt": "Falha no UPnP; informe o IP público manualmente (ou encaminhe a porta / use relay)", "vi_VN": "Ánh xạ UPnP thất bại; hãy nhập IP công khai thủ công (hoặc chuyển tiếp cổng / dùng relay)"},
+	# 网络自检
+	"coop_net_check": {"zh_CN": "网络自检", "en": "Network check", "pt": "Verificação de rede", "vi_VN": "Kiểm tra mạng"},
+	"coop_net_check_hint": {"zh_CN": "点击「网络自检」查看结果", "en": "Click \"Network check\" for results", "pt": "Clique em \"Verificação de rede\" para ver o resultado", "vi_VN": "Nhấn \"Kiểm tra mạng\" để xem kết quả"},
+	"coop_netcheck_not_hosting": {"zh_CN": "未开房（端口未监听）", "en": "Not hosting (port not listening)", "pt": "Não está hospedando (porta não escutando)", "vi_VN": "Chưa tạo phòng (cổng chưa mở)"},
+	"coop_netcheck_listening": {"zh_CN": "本机已在 UDP %d 监听", "en": "Local UDP %d is listening", "pt": "UDP %d local está escutando", "vi_VN": "UDP %d cục bộ đang lắng nghe"},
+	"coop_netcheck_virtual": {"zh_CN": "检测到疑似代理/加速器网卡：%s", "en": "Possible proxy/accelerator adapter: %s", "pt": "Adaptador de proxy/acelerador detectado: %s", "vi_VN": "Phát hiện card mạng proxy/tăng tốc: %s"},
+	"coop_netcheck_cgnat": {"zh_CN": "处于 CGNAT / 多 NAT：端口转发无效", "en": "Behind CGNAT / multi-NAT: port forwarding won't work", "pt": "Atrás de CGNAT / multi-NAT: encaminhamento não funciona", "vi_VN": "Sau CGNAT / nhiều NAT: chuyển tiếp cổng vô hiệu"},
+	"coop_netcheck_router_public": {"zh_CN": "路由器公网：%s", "en": "Router public IP: %s", "pt": "IP público do roteador: %s", "vi_VN": "IP công khai của router: %s"},
+	"coop_netcheck_exit_ip": {"zh_CN": "出口公网：%s", "en": "Egress public IP: %s", "pt": "IP público de saída: %s", "vi_VN": "IP công khai đầu ra: %s"},
+	"coop_netcheck_no_ip": {"zh_CN": "无法获取公网 IP（可能无外网或被拦截）", "en": "Cannot get public IP (offline or blocked)", "pt": "Não foi possível obter IP público (offline ou bloqueado)", "vi_VN": "Không lấy được IP công khai (mất mạng hoặc bị chặn)"},
+	"coop_netcheck_proxy": {"zh_CN": "疑似代理/CGNAT：远程直连通常不可用，建议用中继", "en": "Likely proxy/CGNAT: direct connect usually fails; use relay", "pt": "Provável proxy/CGNAT: conexão direta geralmente falha; use relay", "vi_VN": "Có thể do proxy/CGNAT: kết nối trực tiếp thường lỗi; hãy dùng relay"},
+	"coop_netcheck_need_forward": {"zh_CN": "请确认路由器已转发 UDP %d 且防火墙放行；本机无法验证外网可达", "en": "Ensure the router forwards UDP %d and firewall allows it; external reachability cannot be verified locally", "pt": "Confirme que o roteador encaminha UDP %d e o firewall permite; não dá para verificar de fora localmente", "vi_VN": "Hãy đảm bảo router chuyển tiếp UDP %d và tường lửa cho phép; không thể xác minh từ ngoài tại máy"},
+	"coop_lan_note": {"zh_CN": "同一局域网内可直接连接；房主在「选项」开启 UPnP 后，客机填公网 IP:端口即可跨网直连。", "en": "Connect directly within the same LAN; if the host enables UPnP in OPTION, clients can connect over the internet with the public IP:port.", "pt": "Conecte-se na mesma LAN; se o host ativar UPnP em OPÇÕES, clientes podem conectar pela internet com IP:porta público.", "vi_VN": "Kết nối trực tiếp trong cùng LAN; nếu chủ phòng bật UPnP trong TÙY CHỌN, người khác có thể kết nối qua internet bằng IP:cổng công khai."},
 	# LAN 房间发现
 	"coop_lan_scanning": {"zh_CN": "正在扫描局域网…", "en": "Scanning LAN...", "pt": "Procurando na LAN...", "vi_VN": "Đang quét LAN..."},
 	"coop_lan_rooms": {"zh_CN": "局域网房间", "en": "LAN rooms", "pt": "Salas LAN", "vi_VN": "Phòng LAN"},
 	"coop_lan_no_rooms": {"zh_CN": "未发现房间", "en": "No rooms found", "pt": "Nenhuma sala encontrada", "vi_VN": "Không tìm thấy phòng"},
 	# 版本/协议握手
 	"coop_version_mismatch": {"zh_CN": "版本不一致，无法联机", "en": "Version mismatch, cannot join", "pt": "Versão incompatível", "vi_VN": "Phiên bản không khớp"},
+	"coop_status_host_version_old": {"zh_CN": "房主版本过旧，请让对方更新联机 mod", "en": "Host version is outdated; ask them to update the coop mod", "pt": "Versão do host desatualizada; peça para atualizar", "vi_VN": "Chủ phòng cũ; hãy nhờ họ cập nhật mod"},
+	"coop_status_handshake_timeout": {"zh_CN": "联机握手超时，可能版本不匹配", "en": "Handshake timed out (possible version mismatch)", "pt": "Tempo de handshake esgotado (versão incompatível?)", "vi_VN": "Quá hạn bắt tay (có thể lệch phiên bản)"},
 	# 实时战绩面板
 	"coop_sb_title": {"zh_CN": "战绩", "en": "SCOREBOARD", "pt": "PLACAR", "vi_VN": "BẢNG ĐIỂM"},
 	"coop_sb_player": {"zh_CN": "玩家", "en": "Player", "pt": "Jogador", "vi_VN": "Người chơi"},
@@ -31,6 +56,7 @@ const MESSAGES: Dictionary = {
 	"coop_sb_coins": {"zh_CN": "金币", "en": "Coins", "pt": "Moedas", "vi_VN": "Xu"},
 	# OPTION 页：调试窗口
 	"coop_option_debug_hud": {"zh_CN": "调试窗口", "en": "Debug HUD", "pt": "HUD de depuração", "vi_VN": "Bảng gỡ lỗi"},
+	"coop_option_upnp": {"zh_CN": "UPnP 自动端口映射", "en": "UPnP auto port mapping", "pt": "Mapeamento UPnP automático", "vi_VN": "Ánh xạ cổng UPnP tự động"},
 	"coop_on": {"zh_CN": "开", "en": "ON", "pt": "LIG", "vi_VN": "BẬT"},
 	"coop_off": {"zh_CN": "关", "en": "OFF", "pt": "DES", "vi_VN": "TẮT"},
 	"coop_saki_server": {"zh_CN": "使用 Saki 服务器", "en": "Use Saki server", "pt": "Usar servidor Saki", "vi_VN": "Dùng máy chủ Saki"},
@@ -48,6 +74,7 @@ const MESSAGES: Dictionary = {
 	"coop_return_hint": {"zh_CN": "返回", "en": "Return", "pt": "Voltar", "vi_VN": "Quay lại"},
 	"coop_unavailable": {"zh_CN": "不可用", "en": "unavailable", "pt": "indisponível", "vi_VN": "không khả dụng"},
 	"coop_your_ip_format": {"zh_CN": "你的 IP：%s", "en": "Your IP: %s", "pt": "Seu IP: %s", "vi_VN": "IP của bạn: %s"},
+	"coop_public_ip_format": {"zh_CN": "公网：%s", "en": "Public: %s", "pt": "Público: %s", "vi_VN": "Công khai: %s"},
 	"coop_status_format": {"zh_CN": "%s · %s", "en": "%s · %s", "pt": "%s · %s", "vi_VN": "%s · %s"},
 	"coop_status_offline": {"zh_CN": "离线", "en": "offline", "pt": "offline", "vi_VN": "ngoại tuyến"},
 	"coop_status_relay_not_implemented": {"zh_CN": "中继联机尚未实现", "en": "relay networking is not implemented yet", "pt": "rede relay ainda não implementada", "vi_VN": "mạng relay chưa được triển khai"},
@@ -69,6 +96,10 @@ const MESSAGES: Dictionary = {
 	"coop_status_server_disconnected": {"zh_CN": "与主机断开", "en": "Server disconnected", "pt": "Servidor desconectado", "vi_VN": "Máy chủ đã ngắt"},
 	# 房主离开（LAN/Relay）：客户端提示后过场回主菜单
 	"coop_host_left": {"zh_CN": "房主已离开，房间已关闭", "en": "Host left. Room closed.", "pt": "O anfitrião saiu. Sala fechada.", "vi_VN": "Chủ phòng đã rời. Phòng đã đóng."},
+	# 断线重连
+	"coop_reconnecting": {"zh_CN": "连接中断，正在重连", "en": "Connection lost, reconnecting", "pt": "Conexão perdida, reconectando", "vi_VN": "Mất kết nối, đang kết nối lại"},
+	"coop_status_reconnected": {"zh_CN": "已重连", "en": "Reconnected", "pt": "Reconectado", "vi_VN": "Đã kết nối lại"},
+	"coop_peer_offline": {"zh_CN": "掉线中", "en": "OFFLINE", "pt": "OFFLINE", "vi_VN": "MẤT KẾT NỐI"},
 	"coop_status_relay_room_created": {"zh_CN": "中继房间 %s 已创建", "en": "Relay room %s created", "pt": "Sala relay %s criada", "vi_VN": "Đã tạo phòng relay %s"},
 	"coop_status_selected_players": {"zh_CN": "已选择 %s 名玩家", "en": "Selected %s players", "pt": "%s jogadores selecionados", "vi_VN": "Đã chọn %s người chơi"},
 	"coop_status_peer_joined": {"zh_CN": "玩家 %s 已加入", "en": "Peer %s joined", "pt": "Par %s entrou", "vi_VN": "Người %s đã vào"},
@@ -77,6 +108,7 @@ const MESSAGES: Dictionary = {
 	"coop_status_join_failed_detail": {"zh_CN": "加入失败：%s", "en": "Join failed: %s", "pt": "Falha ao entrar: %s", "vi_VN": "Tham gia thất bại: %s"},
 	"coop_status_hosting_lan_port": {"zh_CN": "局域网开服端口 %s", "en": "Hosting LAN on port %s", "pt": "Hospedando LAN na porta %s", "vi_VN": "Tạo LAN cổng %s"},
 	"coop_status_hosting_address": {"zh_CN": "开服 %s", "en": "Hosting %s", "pt": "Hospedando %s", "vi_VN": "Tạo phòng %s"},
+	"coop_status_upnp_unavailable": {"zh_CN": "UPnP 不可用，请手动端口转发或改用中继", "en": "UPnP unavailable; forward the port manually or use relay", "pt": "UPnP indisponível; encaminhe a porta ou use relay", "vi_VN": "UPnP không khả dụng; hãy chuyển tiếp cổng hoặc dùng relay"},
 	"coop_status_joining_relay_room": {"zh_CN": "正在加入中继房间 %s", "en": "Joining relay room %s", "pt": "Entrando na sala relay %s", "vi_VN": "Đang vào phòng relay %s"},
 	"coop_status_joining_address": {"zh_CN": "正在加入 %s", "en": "Joining %s", "pt": "Entrando em %s", "vi_VN": "Đang vào %s"},
 	"coop_status_joined_relay_peer": {"zh_CN": "已作为 %s 加入中继", "en": "Joined relay as peer %s", "pt": "Entrou no relay como par %s", "vi_VN": "Đã vào relay với mã %s"},
@@ -105,6 +137,7 @@ const MESSAGES: Dictionary = {
 	"coop_ready": {"zh_CN": "已就绪", "en": "READY", "pt": "PRONTO", "vi_VN": "SẴN SÀNG"},
 	"coop_waiting_host": {"zh_CN": "等待房主选择", "en": "Waiting for host", "pt": "Aguardando o anfitrião", "vi_VN": "Đang chờ chủ phòng"},
 	"coop_wait_all_ready": {"zh_CN": "等待所有人就绪", "en": "Waiting for all players", "pt": "Aguardando todos os jogadores", "vi_VN": "Đang chờ mọi người sẵn sàng"},
+	"coop_wait_reconnect": {"zh_CN": "等待 %s 重新连接…", "en": "Waiting for %s to reconnect...", "pt": "Aguardando %s reconectar...", "vi_VN": "Đang chờ %s kết nối lại..."},
 	"coop_room_number": {"zh_CN": "房间号", "en": "Room", "pt": "Sala", "vi_VN": "Phòng"},
 	"coop_room_ip": {"zh_CN": "IP", "en": "IP", "pt": "IP", "vi_VN": "IP"},
 	"coop_select_support": {"zh_CN": "支援角色选择", "en": "Support selection", "pt": "Seleção de apoio", "vi_VN": "Chọn nhân vật hỗ trợ"},
@@ -118,6 +151,8 @@ const MESSAGES: Dictionary = {
 	# 聊天室
 	"coop_chat_title": {"zh_CN": "聊天", "en": "CHAT", "pt": "BATE-PAPO", "vi_VN": "TRÒ CHUYỆN"},
 	"coop_chat_placeholder": {"zh_CN": "输入消息…", "en": "Type a message...", "pt": "Digite uma mensagem...", "vi_VN": "Nhập tin nhắn..."},
+	# MOD 面板描述（以中文原句为键；pt/vi 未给，install() 自动回落 en）
+	"由荻某人的ETN联机版移植，SH移植并添加部分内容。": {"zh_CN": "由荻某人的ETN联机版移植，SH移植并添加部分内容。", "en": "Ported from 荻某人's ETN co-op version; ported and partially extended by SH."},
 }
 
 

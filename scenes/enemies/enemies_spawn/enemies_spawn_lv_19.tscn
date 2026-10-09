@@ -14,8 +14,6 @@
 script = ExtResource("1_dc6ia")
 num_mult = 2.0
 round_mult = 1.0
-hp_mult = 28.0
-damage_mult = 6.0
 enemy = Array[ExtResource("2_p12uf")]([ExtResource("2_gksvo"), ExtResource("3_4ev65"), ExtResource("4_2cp5q"), ExtResource("5_omod7"), ExtResource("6_jucog"), ExtResource("7_r3np1")])
 enemy_spawn_num = Array[int]([2, 1, 1, 2, 2, 2])
 enemy_spawn_time = Array[float]([5.0, 25.0, 20.0, 35.0, 35.0, 35.0])

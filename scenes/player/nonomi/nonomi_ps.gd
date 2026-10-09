@@ -37,6 +37,8 @@ var has_concentrated_ammo: bool = false
 
 var ps_luck: float = 100
 
+var _recompute_pending: bool = false
+
 func _ready():
 	value = [buff_layer, buff_value, buff_erase_timer]
 	time_num = time_wait
@@ -45,7 +47,7 @@ func _ready():
 	GameEvents.player_ammo_reload.connect(reload_reset)
 	GameEvents.round_upgrade.connect(preheat_reset)
 	GameEvents.round_start.connect(preheat_reset)
-	GameEvents.enemy_body.connect(add_coin)
+	GameEvents.enemy_damage_taken.connect(add_coin)
 	PlayerData.player_ability_changed_end.connect(set_playerdata)
 	player.stats.coin_changed.connect(set_playerdata)
 	GameEvents.player_gun_shoot.connect(gatling_speed_buff_add)
@@ -78,12 +80,25 @@ func set_playerdata():
 		var coin_v: int = player.stats.coin * damage_mult
 		if PlayerData.bullet_damage_add != coin_v:
 			PlayerData.bullet_damage_add = coin_v
-			PlayerData.update_player_ability()
+			_schedule_recompute()
 	else:
 		var coin_v: int = player.stats.coin * damage_mult * (( PlayerData.base_max_ammo - 1 ) + PlayerData.max_ammo_add * PlayerData.max_ammo_mult) * 0.5
 		if PlayerData.bullet_damage_add != coin_v:
 			PlayerData.bullet_damage_add = coin_v
-			PlayerData.update_player_ability()
+			_schedule_recompute()
+
+# 高频触发（命中得币/硬币消耗）只标记，帧末合并为一次全量重算
+func _schedule_recompute():
+	if _recompute_pending:
+		return
+	_recompute_pending = true
+	_flush_recompute.call_deferred()
+
+func _flush_recompute():
+	if is_queued_for_deletion():
+		return
+	_recompute_pending = false
+	PlayerData.update_player_ability()
 
 func add_round_coin():
 	var coin_value: int = max(1, stats.coin * 0.1)
@@ -91,12 +106,13 @@ func add_round_coin():
 	GameEvents.emit_player_coins_get(coin_value)
 	SoundManager.play_sfx("CoinSounds")
 
-func add_coin(_enemy_body: Node, _bullet_body: Node):
-	var luck: float = randf_range(0,100)
-	if luck < ps_luck:
-		var coin_value: int = ceil( 1 * player.stats.coin_mult)
-		stats.coin += coin_value
-		GameEvents.emit_player_coins_get(coin_value)
+func add_coin(_final_damage: int, damage_data: DamageData, _body_path: NodePath):
+	if damage_data.damage_type.has(GameTags.BULLET_DAMAGE):
+		var luck: float = randf_range(0,100)
+		if luck < ps_luck:
+			var coin_value: int = ceil( 1 * player.stats.coin_mult)
+			stats.coin += coin_value
+			GameEvents.emit_player_coins_get(coin_value)
 
 func bullet_num_count(gun: Node):
 	if now_t > 0 and shoot_timer.is_stopped() and bullet_num < max_bullet:
@@ -115,10 +131,13 @@ func reset_count():
 
 func coin_cost_count(coin_value: int):
 	coin_num += coin_value
+	var gained: bool = false
 	while coin_num >= 300:
 		coin_num -= 300
 		PlayerData.max_ammo_add += 1
-		PlayerData.update_player_ability()
+		gained = true
+	if gained:
+		_schedule_recompute()
 
 func _unhandled_input(event:InputEvent ) -> void:
 	

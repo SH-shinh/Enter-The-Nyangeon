@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" uid="uid://5dtp2bpiov12" path="res://sprites/update_item/nagusa_doll.png" id="1_nagusa"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_mv2vv"]
+
+[resource]
+script = ExtResource("2_mv2vv")
+id = "nagusa_doll"
+icon = ExtResource("1_nagusa")
+name = "名草人偶"
+rare = 1
+order_num = 5
+special_rules = 0
+description = "名草做的自己的木雕人偶。
+以人偶为中心，每0.5秒释放一圈恶寒，对波及的敌人施加3层恶寒。"
+forward = "最大持有5个
+每0.5秒释放3层恶寒
+每次升级+1层"
+negative = ""
+item_tags = 132
+tags = Array[String](["装备", "恶寒"])
+weight = 1.0

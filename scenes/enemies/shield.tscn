@@ -1,13 +1,16 @@
-[gd_scene load_steps=14 format=3 uid="uid://bp2tplg0cfckw"]
+[gd_scene format=3 uid="uid://bp2tplg0cfckw"]
 
-[ext_resource type="Script" path="res://scenes/enemies/shield.gd" id="1_akvwe"]
+[ext_resource type="Script" uid="uid://b1wkms6lm8hiv" path="res://script/enemy_part.gd" id="1_akvwe"]
 [ext_resource type="Texture2D" uid="uid://dpqtvv2huo2hn" path="res://sprites/enemies/shield_1.png" id="1_qj3f2"]
-[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="2_e13mv"]
-[ext_resource type="Script" path="res://script/EnemyStats.gd" id="4_jswsf"]
+[ext_resource type="Shader" uid="uid://bqypa5578tm8a" path="res://shaders/sprite_outline.gdshader" id="2_e13mv"]
+[ext_resource type="Script" uid="uid://b36s5d5e3v3h4" path="res://script/EnemyStats.gd" id="4_jswsf"]
 [ext_resource type="PackedScene" uid="uid://bwix1bf5g1mjh" path="res://script/death_anim.tscn" id="5_8j8jm"]
 [ext_resource type="PackedScene" uid="uid://dcixivms2uc75" path="res://script/enemy_hurt_floating_text.tscn" id="7_7rv0i"]
 [ext_resource type="PackedScene" uid="uid://btl1l8a33rp5b" path="res://scenes/manager/enemy_buff_manager.tscn" id="8_64vay"]
-[ext_resource type="Script" path="res://ui/BuffCard.gd" id="9_axs83"]
+[ext_resource type="Script" uid="uid://dqwj0hqp7m745" path="res://ui/BuffCard.gd" id="9_axs83"]
+[ext_resource type="Script" uid="uid://cgyde7ws002vo" path="res://script/health_component.gd" id="9_j88u5"]
+[ext_resource type="Script" uid="uid://cog8pvonoqtxu" path="res://script/hurt_box.gd" id="10_j7o56"]
+[ext_resource type="Script" uid="uid://dgqq5631n3u32" path="res://script/hit_box.gd" id="11_hitbox"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_h52ho"]
 resource_local_to_scene = true
@@ -15,9 +18,6 @@ shader = ExtResource("2_e13mv")
 shader_parameter/outline_width = 0.0
 shader_parameter/outline_color = Color(2, 2, 2, 1)
 shader_parameter/flash_opacity = 0.0
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_3hcab"]
-size = Vector2(28, 64)
 
 [sub_resource type="Gradient" id="Gradient_636w8"]
 colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1)
@@ -27,62 +27,98 @@ gradient = SubResource("Gradient_636w8")
 width = 16
 height = 16
 
-[sub_resource type="PackedScene" id="PackedScene_271rv"]
+[sub_resource type="PackedScene" id="PackedScene_j7o56"]
 resource_local_to_scene = true
 _bundled = {
 "conn_count": 0,
 "conns": PackedInt32Array(),
 "editable_instances": [],
+"id_paths": [],
 "names": PackedStringArray("BuffCard", "PanelContainer", "custom_minimum_size", "script", "Node2D", "Node2D", "position", "BuffIcon", "TextureProgressBar", "unique_name_in_owner", "offset_right", "offset_bottom", "max_value", "step", "value", "fill_mode", "texture_progress", "Node2D2", "Node2D", "BuffLayer", "Label", "unique_name_in_owner", "offset_right", "offset_bottom", "theme_override_font_sizes/font_size", "text", "horizontal_alignment"),
 "node_count": 5,
+"node_ids": PackedInt32Array(),
 "node_paths": [NodePath("."), NodePath("./Node2D"), NodePath("."), NodePath("./Node2D2")],
 "nodes": PackedInt32Array(-1, -1, 1, 0, -1, 2, 2, 0, 3, 1, 0, 1073741824, 0, 5, 4, -1, 1, 6, 2, 0, 1073741825, 0, 8, 7, -1, 8, 9, 3, 10, 4, 11, 5, 12, 6, 13, 7, 14, 8, 15, 9, 16, 10, 0, 1073741826, 0, 18, 17, -1, 0, 0, 1073741827, 0, 20, 19, -1, 6, 21, 11, 22, 12, 23, 13, 24, 14, 25, 15, 26, 16, 0),
 "variants": [Vector2(16, 0), ExtResource("9_axs83"), Vector2(0, 9), true, 16.0, 16.0, 1.0, 0.0, 0.865, 5, SubResource("GradientTexture2D_x4mtp"), true, 16.0, 11.0, 10, "1", 1],
 "version": 3
 }
 
-[node name="Shield" type="CharacterBody2D" node_paths=PackedStringArray("stats") groups=["Enemy", "EnemyPart"]]
-position = Vector2(0, -24)
-collision_layer = 1024
-collision_mask = 0
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_tcfhm"]
+size = Vector2(28, 58)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_kb"]
+size = Vector2(22, 50)
+
+[node name="Shield" type="Node2D" unique_id=701880547 node_paths=PackedStringArray("stats", "sprite_2d", "graphics", "enemy_buff_manager", "knockback_hit_box") groups=["Enemy", "EnemyPart"]]
 script = ExtResource("1_akvwe")
 icon = "shield_1"
 stats = NodePath("EnemyStats")
+sprite_2d = NodePath("Graphics/Sprite2D")
+graphics = NodePath("Graphics")
+enemy_buff_manager = NodePath("EnemyBuffManager")
+contact_knockback = 250
+knockback_hit_box = NodePath("HitBox")
+contact_range = 0.0
 
-[node name="Graphics" type="Node2D" parent="."]
+[node name="Graphics" type="Node2D" parent="." unique_id=1578234995]
+position = Vector2(0, -22)
 
-[node name="Sprite2D" type="Sprite2D" parent="Graphics"]
+[node name="Sprite2D" type="Sprite2D" parent="Graphics" unique_id=1353990757]
 material = SubResource("ShaderMaterial_h52ho")
-position = Vector2(26, 0)
 texture = ExtResource("1_qj3f2")
 flip_h = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(26, -3)
-shape = SubResource("RectangleShape2D_3hcab")
-
-[node name="EnemyStats" type="Node" parent="."]
+[node name="EnemyStats" type="Node" parent="." unique_id=667247246]
 script = ExtResource("4_jswsf")
 max_hp = 200
-knockback_resis = 30
+knockback_resis = 40
 penetrate_resis = 30
 global_hurt_damage = 0.1
-Enemy_Knockback = 400
+Enemy_Knockback = 200
 Enemy_damage = 0
 Enemy_bullet_damage = 0
 Enemy_coin = 0
 MAX_SPEED = 0
+convert_threshold = 1000
 
-[node name="DeathAnim" parent="." node_paths=PackedStringArray("stats") instance=ExtResource("5_8j8jm")]
-position = Vector2(27, 0)
+[node name="DeathAnim" parent="." unique_id=745303095 node_paths=PackedStringArray("stats") instance=ExtResource("5_8j8jm")]
+position = Vector2(1, 0)
 stats = NodePath("../EnemyStats")
 y_position = 24
 
-[node name="EnemyHurtFloatingText" parent="." instance=ExtResource("7_7rv0i")]
-position = Vector2(27, 0)
+[node name="EnemyHurtFloatingText" parent="." unique_id=1126545823 node_paths=PackedStringArray("health_component") instance=ExtResource("7_7rv0i")]
+position = Vector2(1, 0)
+health_component = NodePath("../HealthComponent")
 
-[node name="EnemyBuffManager" parent="." instance=ExtResource("8_64vay")]
-buff_card = SubResource("PackedScene_271rv")
+[node name="EnemyBuffManager" parent="." unique_id=1684478706 instance=ExtResource("8_64vay")]
+buff_card = SubResource("PackedScene_j7o56")
+
+[node name="HealthComponent" type="Node" parent="." unique_id=1780740948 node_paths=PackedStringArray("stats", "hurt_box")]
+script = ExtResource("9_j88u5")
+stats = NodePath("../EnemyStats")
+hurt_box = NodePath("../HurtBox")
+
+[node name="HurtBox" type="Area2D" parent="." unique_id=951711387 node_paths=PackedStringArray("body")]
+position = Vector2(1, -22)
+collision_layer = 16384
+collision_mask = 163840
+script = ExtResource("10_j7o56")
+body = NodePath("..")
+
+[node name="HurtBoxShape2D" type="CollisionShape2D" parent="HurtBox" unique_id=211721297]
+position = Vector2(-1, -3)
+shape = SubResource("RectangleShape2D_tcfhm")
+
+[node name="HitBox" type="Area2D" parent="." unique_id=421326140]
+position = Vector2(1, -22)
+collision_layer = 0
+collision_mask = 10240
+monitorable = false
+script = ExtResource("11_hitbox")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox" unique_id=1023196568]
+position = Vector2(-1, -3)
+shape = SubResource("RectangleShape2D_kb")
 
 [connection signal="is_hurt" from="." to="." method="_on_is_hurt"]
 [connection signal="is_dead" from="EnemyStats" to="." method="_on_enemy_stats_is_dead"]

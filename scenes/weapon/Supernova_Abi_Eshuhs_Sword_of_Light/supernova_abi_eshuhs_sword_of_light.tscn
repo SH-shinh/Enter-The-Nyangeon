@@ -1,0 +1,233 @@
+[gd_scene format=3 uid="uid://dk3f2xsvyalef"]
+
+[ext_resource type="PackedScene" uid="uid://dssish0ybncf7" path="res://scenes/bullet/aris_sniper_bullet.tscn" id="2_7ouei"]
+[ext_resource type="PackedScene" uid="uid://clvtf3ykhau3t" path="res://scenes/weapon/shoot_flash_3.tscn" id="3_e33wl"]
+[ext_resource type="Texture2D" uid="uid://cvni4qgrk6hmu" path="res://sprites/weapon/Supernova_Abi_Eshuhs_Sword_of_Light.png" id="4_bg55h"]
+[ext_resource type="PackedScene" uid="uid://5xnka7kne7w" path="res://script/picatinny_rail.tscn" id="5_cr5o3"]
+[ext_resource type="PackedScene" uid="uid://bjvr1nuwo7ish" path="res://script/muzzle.tscn" id="6_6dwof"]
+[ext_resource type="AudioStream" uid="uid://h4kqlwjbl7dc" path="res://sounds/LASRGun_Plasma Rifle Fire_03.wav" id="7_7ouei"]
+[ext_resource type="AudioStream" uid="uid://07582kyim4vq" path="res://sounds/GUNMech_Insert Clip_01.wav" id="8_twtuu"]
+[ext_resource type="Script" uid="uid://bi6728yfalvqx" path="res://scenes/weapon/Supernova_Abi_Eshuhs_Sword_of_Light/charge_laser_gun.gd" id="10_charge"]
+[ext_resource type="PackedScene" uid="uid://bcsqndof8pd5a" path="res://scenes/bullet/player_laser_beam.tscn" id="11_beam"]
+[ext_resource type="Texture2D" uid="uid://b5nbmcnfshgb8" path="res://sprites/particle/circular_1.png" id="12_fire"]
+[ext_resource type="AudioStream" uid="uid://dojwsbwhfwme6" path="res://sounds/87043__runnerpack__weapappear.wav" id="13_charge"]
+
+[sub_resource type="Animation" id="Animation_yiltc"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+
+[sub_resource type="Animation" id="Animation_sw87n"]
+resource_name = "shoot"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.0, -1.0472, 3.14159, 6.63225, 6.28319]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.9),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"reload_ammo"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_w0ptx"]
+_data = {
+&"RESET": SubResource("Animation_yiltc"),
+&"reload": SubResource("Animation_sw87n")
+}
+
+[sub_resource type="Animation" id="Animation_d24ot"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0.6, 0.6)]
+}
+
+[sub_resource type="Animation" id="Animation_nqxbl"]
+resource_name = "fire"
+length = 0.3
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0.45, 1), Vector2(0.6, 0.6)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_ahwow"]
+_data = {
+&"RESET": SubResource("Animation_d24ot"),
+&"fire": SubResource("Animation_nqxbl")
+}
+
+[sub_resource type="Curve" id="Curve_charge"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -2.88854, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_charge"]
+curve = SubResource("Curve_charge")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_charge"]
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 2.0
+angle_min = -45.0
+angle_max = 45.0
+inherit_velocity_ratio = 0.5
+gravity = Vector3(0, 0, 0)
+scale_min = 0.2
+scale_max = 0.5
+scale_curve = SubResource("CurveTexture_charge")
+color = Color(5, 5, 5, 1)
+
+[sub_resource type="Gradient" id="Gradient_ring"]
+colors = PackedColorArray(0.856938, 0.604261, 1, 1, 1, 0.900046, 0.777326, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_ring"]
+gradient = SubResource("Gradient_ring")
+
+[sub_resource type="Curve" id="Curve_ring"]
+_data = [Vector2(0, 0), 0.0, 5.54522, 0, 0, Vector2(0.48125, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -2.29336, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_ring"]
+curve = SubResource("Curve_ring")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ring"]
+particle_flag_disable_z = true
+emission_shape = 6
+emission_ring_axis = Vector3(0, 0, 1)
+emission_ring_height = 0.0
+emission_ring_radius = 20.0
+emission_ring_inner_radius = 20.0
+emission_ring_cone_angle = 90.0
+angle_min = -45.0
+angle_max = 45.0
+inherit_velocity_ratio = 0.16
+gravity = Vector3(0, 0, 0)
+radial_accel_min = -150.0
+radial_accel_max = -150.0
+tangential_accel_min = 4.0
+tangential_accel_max = 5.0
+scale_min = 4.0
+scale_max = 5.0
+scale_curve = SubResource("CurveTexture_ring")
+color_initial_ramp = SubResource("GradientTexture1D_ring")
+
+[node name="Supernova_Abi_Eshuhs_Sword_of_Light" type="Node2D" unique_id=1072167880]
+script = ExtResource("10_charge")
+laser_beam = ExtResource("11_beam")
+laser_shake_range = 10.0
+follow_speed = 1.0
+damage_refresh_interval = 0.2
+bullet = ExtResource("2_7ouei")
+bullet_pool_id = "player_sniper_bullet"
+shoot_flash = ExtResource("3_e33wl")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1900348579]
+position = Vector2(6.4001, 0.400099)
+scale = Vector2(0.6, 0.6)
+texture = ExtResource("4_bg55h")
+
+[node name="PicatinnyRail" parent="Sprite2D" unique_id=389079213 instance=ExtResource("5_cr5o3")]
+position = Vector2(-7, -12)
+scale = Vector2(1.429, 1.429)
+
+[node name="Muzzle" parent="Sprite2D" unique_id=22076897 instance=ExtResource("6_6dwof")]
+position = Vector2(30.99983, -2.3334982)
+scale = Vector2(1.429, 1.429)
+
+[node name="ShootPosition" type="Marker2D" parent="." unique_id=1911288296]
+position = Vector2(25, -1)
+
+[node name="ShootTimer" type="Timer" parent="." unique_id=1484519106]
+wait_time = 0.2
+one_shot = true
+
+[node name="FireSounds" type="AudioStreamPlayer2D" parent="." unique_id=2142943192]
+process_mode = 3
+stream = ExtResource("7_7ouei")
+volume_db = 5.0
+pitch_scale = 1.2
+bus = &"SFX"
+
+[node name="ReloadAnim" type="AnimationPlayer" parent="." unique_id=539375262]
+libraries/ = SubResource("AnimationLibrary_w0ptx")
+
+[node name="AmmoReloadTimer" type="Timer" parent="." unique_id=1291663647]
+wait_time = 0.5
+one_shot = true
+
+[node name="ReloadSounds" type="AudioStreamPlayer2D" parent="." unique_id=2052269779]
+process_mode = 3
+stream = ExtResource("8_twtuu")
+volume_db = 8.0
+bus = &"SFX"
+
+[node name="EXskillTimer" type="Timer" parent="." unique_id=316871949]
+wait_time = 0.5
+one_shot = true
+
+[node name="FireAnim" type="AnimationPlayer" parent="." unique_id=38724562]
+libraries/ = SubResource("AnimationLibrary_ahwow")
+
+[node name="ChargeParticles" type="GPUParticles2D" parent="." unique_id=1113158661]
+position = Vector2(25, -1)
+emitting = false
+texture = ExtResource("12_fire")
+lifetime = 0.05
+process_material = SubResource("ParticleProcessMaterial_charge")
+
+[node name="ChargeRingParticles" type="GPUParticles2D" parent="." unique_id=92519302]
+position = Vector2(25, -1)
+emitting = false
+amount = 32
+lifetime = 0.5
+trail_enabled = true
+trail_lifetime = 0.1
+process_material = SubResource("ParticleProcessMaterial_ring")
+
+[node name="ChargeSounds" type="AudioStreamPlayer2D" parent="." unique_id=1079154134]
+process_mode = 3
+stream = ExtResource("13_charge")
+pitch_scale = 1.5
+bus = &"SFX"

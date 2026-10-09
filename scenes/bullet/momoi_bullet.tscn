@@ -1,15 +1,18 @@
-[gd_scene load_steps=10 format=3 uid="uid://dpjbi3lq3fedn"]
+[gd_scene format=3 uid="uid://letrn1wr2i3n"]
 
-[ext_resource type="Script" path="res://scenes/bullet/momoi_bullet.gd" id="1_j0o5o"]
-[ext_resource type="Texture2D" uid="uid://dsrjb3c3kvw0j" path="res://sprites/bullet/momoi_bullet.png" id="1_ym1qt"]
-[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="2_k5buh"]
-[ext_resource type="PackedScene" uid="uid://ygvqweawmhgs" path="res://scenes/line.tscn" id="2_q1ky6"]
+[ext_resource type="Script" uid="uid://oj3do5n5ujp1" path="res://script/player_bullet.gd" id="1_47hc1"]
+[ext_resource type="PackedScene" uid="uid://ygvqweawmhgs" path="res://scenes/line.tscn" id="2_17pnf"]
+[ext_resource type="Shader" uid="uid://bqypa5578tm8a" path="res://shaders/sprite_outline.gdshader" id="3_lansn"]
+[ext_resource type="Texture2D" uid="uid://dsrjb3c3kvw0j" path="res://sprites/bullet/momoi_bullet.png" id="4_fl75r"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hqkud"]
+radius = 7.0
 
 [sub_resource type="Gradient" id="Gradient_xvr0u"]
 colors = PackedColorArray(0.998186, 0.627375, 0.784651, 1, 0.977989, 0.364517, 0.715827, 1)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_6fy21"]
-shader = ExtResource("2_k5buh")
+shader = ExtResource("3_lansn")
 shader_parameter/outline_width = 3.0
 shader_parameter/outline_color = Color(50, 1, 20, 1)
 shader_parameter/flash_opacity = 0.0
@@ -18,46 +21,34 @@ shader_parameter/flash_opacity = 0.0
 _data = [Vector2(0, 0.527472), 0.0, 0.0, 0, 0, Vector2(1, 0.67033), 0.0, 0.0, 0, 0]
 point_count = 2
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_k2cyk"]
-radius = 7.0
-
-[sub_resource type="CircleShape2D" id="CircleShape2D_hqkud"]
-radius = 7.0
-
-[node name="CharacterBody2D" type="CharacterBody2D" groups=["PlayerBullet"]]
+[node name="PlayerBullet" type="Area2D" unique_id=1972268738 groups=["PlayerBullet"]]
 z_index = 2
-collision_layer = 4
-collision_mask = 2
-motion_mode = 1
-script = ExtResource("1_j0o5o")
+collision_layer = 32772
+collision_mask = 16384
+script = ExtResource("1_47hc1")
 r_speed = 100
 
-[node name="Line" parent="." instance=ExtResource("2_q1ky6")]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1139885014]
+shape = SubResource("CircleShape2D_hqkud")
+
+[node name="Line" parent="." unique_id=1582006494 instance=ExtResource("2_17pnf")]
 z_index = 1
 width = 12.0
 gradient = SubResource("Gradient_xvr0u")
 texture_mode = 2
 width_f = 12.0
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=720246410]
 material = SubResource("ShaderMaterial_6fy21")
 scale = Vector2(0.4, 0.4)
-texture = ExtResource("1_ym1qt")
+texture = ExtResource("4_fl75r")
 
-[node name="Line2" parent="." instance=ExtResource("2_q1ky6")]
+[node name="Line2" parent="." unique_id=487122655 instance=ExtResource("2_17pnf")]
 z_index = 2
 width = 7.0
 width_curve = SubResource("Curve_uc1as")
 width_f = 7.0
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("CircleShape2D_k2cyk")
-
-[node name="Area2D" type="Area2D" parent="."]
-collision_layer = 0
-collision_mask = 1032
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
-shape = SubResource("CircleShape2D_hqkud")
-
-[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
+[node name="RayCast2D" type="RayCast2D" parent="." unique_id=1361575638]
+target_position = Vector2(7, 0)
+collision_mask = 2

@@ -1,0 +1,397 @@
+[gd_scene format=3 uid="uid://b1kw7h2m4n8p3"]
+
+[ext_resource type="Script" uid="uid://bd0twevdoi3i1" path="res://scenes/player_support/kei/kei_summoned.gd" id="1_13uqu"]
+[ext_resource type="PackedScene" uid="uid://bdo12rjvieur7" path="res://scenes/shadow/shadow.tscn" id="2_kbdd5"]
+[ext_resource type="PackedScene" uid="uid://ceydnirh2w7yb" path="res://scenes/player/smoke.tscn" id="3_idawl"]
+[ext_resource type="Shader" uid="uid://bqypa5578tm8a" path="res://shaders/sprite_outline.gdshader" id="4_oxlai"]
+[ext_resource type="Texture2D" uid="uid://b0vht7lxpmynf" path="res://sprites/player_support/kei/kei_halo.png" id="5_5pdr3"]
+[ext_resource type="Shader" uid="uid://cmu3hnm13h23n" path="res://shaders/screen_outline.gdshader" id="6_mdjxv"]
+[ext_resource type="Texture2D" uid="uid://cbnpmkw1dg2we" path="res://sprites/player_support/kei/kei_bow.png" id="7_37wm7"]
+[ext_resource type="Script" uid="uid://6sjgrudevhv" path="res://scenes/player_support/kei/kei_bow.gd" id="8_gq6o3"]
+[ext_resource type="Script" uid="uid://b3rnn26hjgt0k" path="res://scenes/player/aris/Hair.gd" id="9_nvplk"]
+[ext_resource type="Texture2D" uid="uid://cfxcggn8tok57" path="res://sprites/player_support/kei/kei.png" id="10_02iot"]
+[ext_resource type="PackedScene" uid="uid://mbskkmxmp1c0" path="res://scenes/player_support/kei/luminous_nova.tscn" id="11_xw2es"]
+[ext_resource type="Script" uid="uid://e2gvf56eu6jb" path="res://scenes/player/StateMachine.gd" id="12_nl055"]
+[ext_resource type="Script" uid="uid://chj2ac0qka2mr" path="res://script/SummonedStats.gd" id="13_f0k0j"]
+[ext_resource type="PackedScene" uid="uid://qh7xxgcqcqi" path="res://scenes/manager/summoned_buff_manager.tscn" id="14_ug64c"]
+[ext_resource type="PackedScene" uid="uid://yxqjlr1cx45m" path="res://scenes/player_support/kei/kei_as.tscn" id="15_6sotf"]
+[ext_resource type="Script" uid="uid://cog8pvonoqtxu" path="res://script/hurt_box.gd" id="16_o2u5l"]
+[ext_resource type="Script" uid="uid://d2ab3bt8d0qlp" path="res://script/summoned_health_component.gd" id="17_nx2ij"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_wxrt8"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ds0by"]
+shader = ExtResource("4_oxlai")
+shader_parameter/outline_width = 1.0
+shader_parameter/outline_color = Color(35, 10, 15, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wsi45"]
+shader = ExtResource("6_mdjxv")
+shader_parameter/outline_width = 1.0
+shader_parameter/outline_color = Color(35, 10, 15, 1)
+shader_parameter/flash_opacity = 0.0
+shader_parameter/design_size = Vector2(640, 360)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_xo52v"]
+shader = ExtResource("4_oxlai")
+shader_parameter/outline_width = 1.0
+shader_parameter/outline_color = Color(0, 0, 0, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_ioe6d"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hn6d1"]
+atlas = ExtResource("10_02iot")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5fytn"]
+atlas = ExtResource("10_02iot")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_s4un5"]
+atlas = ExtResource("10_02iot")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hgvtg"]
+atlas = ExtResource("10_02iot")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0ggfg"]
+atlas = ExtResource("10_02iot")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vlgxy"]
+atlas = ExtResource("10_02iot")
+region = Rect2(64, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1cs33"]
+atlas = ExtResource("10_02iot")
+region = Rect2(128, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_s40vl"]
+atlas = ExtResource("10_02iot")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_alnse"]
+atlas = ExtResource("10_02iot")
+region = Rect2(0, 64, 64, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_dupnb"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hn6d1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5fytn")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_s4un5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hgvtg")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 13.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0ggfg")
+}],
+"loop": 1,
+"name": &"jump",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_vlgxy")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1cs33")
+}, {
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_s40vl")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_alnse")
+}],
+"loop": 1,
+"name": &"run",
+"speed": 13.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_5v2ei"]
+radius = 300.0
+
+[sub_resource type="Animation" id="Animation_wdkw6"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_n63ti"]
+resource_name = "spawn_anim"
+length = 0.3
+step = 0.01
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.06, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_cqq10"]
+_data = {
+&"RESET": SubResource("Animation_wdkw6"),
+&"spawn_anim": SubResource("Animation_n63ti")
+}
+
+[sub_resource type="Animation" id="Animation_cmfqj"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CanvasGroup/Graphics/AnimatedSprite2D:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, -17)]
+}
+
+[sub_resource type="Animation" id="Animation_uqvdw"]
+resource_name = "jump_anim"
+length = 0.6
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CanvasGroup/Graphics/AnimatedSprite2D:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(0, -17), Vector2(0, -73), Vector2(0, -70), Vector2(0, -17)]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.6),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"jump_end"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_hiw78"]
+_data = {
+&"RESET": SubResource("Animation_cmfqj"),
+&"jump_anim": SubResource("Animation_uqvdw")
+}
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_qj1bu"]
+radius = 1.0
+height = 2.0
+
+[node name="kei" type="CharacterBody2D" unique_id=883811340 node_paths=PackedStringArray("stats", "gun") groups=["Summoned"]]
+collision_layer = 512
+collision_mask = 256
+motion_mode = 1
+script = ExtResource("1_13uqu")
+carry_trigger_distance = 30.0
+long_hair = true
+stats = NodePath("Stats")
+gun = NodePath("GraphicsGun/Gun")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=136134208]
+position = Vector2(0, -10)
+shape = SubResource("CircleShape2D_wxrt8")
+
+[node name="Shadow" parent="." unique_id=1117085415 instance=ExtResource("2_kbdd5")]
+scale = Vector2(0.445313, 0.445313)
+
+[node name="GPUParticles2D" parent="." unique_id=2048350892 instance=ExtResource("3_idawl")]
+emitting = false
+
+[node name="GraphicsHalo" type="Node2D" parent="." unique_id=1685019642]
+
+[node name="Halo" type="Sprite2D" parent="GraphicsHalo" unique_id=1268129968]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_ds0by")
+position = Vector2(-10, -32)
+rotation = 0.47822
+scale = Vector2(0.254, 0.276)
+texture = ExtResource("5_5pdr3")
+
+[node name="CanvasGroup" type="CanvasGroup" parent="." unique_id=887260210]
+material = SubResource("ShaderMaterial_wsi45")
+
+[node name="kei_bow" type="Sprite2D" parent="CanvasGroup" unique_id=1990502972 node_paths=PackedStringArray("player")]
+position = Vector2(-5.00001, -20)
+scale = Vector2(1.42857, 1.42857)
+texture = ExtResource("7_37wm7")
+script = ExtResource("8_gq6o3")
+player = NodePath("../..")
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="CanvasGroup" unique_id=165014990]
+material = SubResource("ShaderMaterial_xo52v")
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -64.0
+offset_top = -86.0
+offset_right = 64.0
+offset_bottom = 42.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(64, 64)
+mouse_filter = 2
+
+[node name="SubViewport" type="SubViewport" parent="CanvasGroup/SubViewportContainer" unique_id=1193437627]
+transparent_bg = true
+handle_input_locally = false
+use_hdr_2d = true
+size = Vector2i(128, 128)
+render_target_update_mode = 4
+
+[node name="Hair" type="Node2D" parent="CanvasGroup/SubViewportContainer/SubViewport" unique_id=207844318 node_paths=PackedStringArray("player")]
+position = Vector2(64, 64)
+script = ExtResource("9_nvplk")
+player = NodePath("../../../..")
+offset_0 = Array[Vector2]([Vector2(0, 0), Vector2(0, 0), Vector2(0, 0)])
+offset_x = Array[Vector2]([Vector2(-1, 3), Vector2(0, 3), Vector2(1, 3)])
+k = 0.15
+col = Color(0.966654, 0.968657, 0.979164, 1)
+startRadius = 9.0
+endRadius = 4.0
+
+[node name="Graphics" type="Node2D" parent="CanvasGroup" unique_id=975595708]
+unique_name_in_owner = true
+material = SubResource("CanvasItemMaterial_ioe6d")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="CanvasGroup/Graphics" unique_id=1606277211]
+unique_name_in_owner = true
+position = Vector2(0, -17)
+sprite_frames = SubResource("SpriteFrames_dupnb")
+animation = &"idle"
+autoplay = "idle"
+flip_h = true
+
+[node name="LevelDisplayAnchor" type="Marker2D" parent="CanvasGroup/Graphics/AnimatedSprite2D"]
+unique_name_in_owner = true
+position = Vector2(0, -41)
+
+[node name="HaloRoot" type="Node2D" parent="CanvasGroup/Graphics/AnimatedSprite2D" unique_id=937688454]
+unique_name_in_owner = true
+position = Vector2(-9, -28)
+
+[node name="GraphicsGun" type="Node2D" parent="." unique_id=720191359]
+
+[node name="Gun" parent="GraphicsGun" unique_id=763527304 node_paths=PackedStringArray("stats") instance=ExtResource("11_xw2es")]
+unique_name_in_owner = true
+position = Vector2(0, -6)
+stats = NodePath("../../Stats")
+
+[node name="StateMachine" type="Node" parent="." unique_id=787251192]
+script = ExtResource("12_nl055")
+
+[node name="Area2D" type="Area2D" parent="." unique_id=1001743226]
+collision_layer = 0
+collision_mask = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=171299732]
+shape = SubResource("CircleShape2D_5v2ei")
+
+[node name="ShootTimer" type="Timer" parent="." unique_id=463922224]
+one_shot = true
+
+[node name="IdleTimer" type="Timer" parent="." unique_id=844622090]
+wait_time = 2.5
+one_shot = true
+
+[node name="Stats" type="Node" parent="." unique_id=120630818]
+script = ExtResource("13_f0k0j")
+summoned_damage = 75
+summoned_max_ammo = 5
+summoned_speed = 130
+SPEED_TIME = 0.2
+summoned_shoot_time = 100
+summoned_bullet_speed = 1200
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1321381802]
+libraries/ = SubResource("AnimationLibrary_cqq10")
+autoplay = &"spawn_anim"
+
+[node name="jump_anim" type="AnimationPlayer" parent="." unique_id=243274843]
+libraries/ = SubResource("AnimationLibrary_hiw78")
+
+[node name="SummonedBuffManager" parent="." unique_id=423662550 instance=ExtResource("14_ug64c")]
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1726664490]
+offset_left = -10.0
+offset_top = -57.0
+offset_right = 30.0
+offset_bottom = -31.0
+scale = Vector2(0.5, 0.5)
+mouse_filter = 2
+
+[node name="BuffBox" type="HBoxContainer" parent="MarginContainer" unique_id=634163609]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+alignment = 1
+
+[node name="jump_dely" type="Timer" parent="." unique_id=1773480367]
+one_shot = true
+
+[node name="kei_as" parent="." unique_id=1628264321 node_paths=PackedStringArray("body") instance=ExtResource("15_6sotf")]
+body = NodePath("..")
+
+[node name="HurtBox" type="Area2D" parent="." unique_id=1188878575 node_paths=PackedStringArray("body") groups=["SummonedBox"]]
+collision_layer = 8192
+collision_mask = 0
+monitoring = false
+script = ExtResource("16_o2u5l")
+body = NodePath("..")
+
+[node name="HurtboxShape" type="CollisionShape2D" parent="HurtBox" unique_id=157433250]
+position = Vector2(0, -8)
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_qj1bu")
+debug_color = Color(3.18866e-06, 0.0816588, 0.291816, 0.42)
+
+[node name="HealthComponent" type="Node" parent="." unique_id=1591700396 node_paths=PackedStringArray("stats", "hurt_box")]
+script = ExtResource("17_nx2ij")
+stats = NodePath("../Stats")
+hurt_box = NodePath("../HurtBox")
+
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
+[connection signal="body_exited" from="Area2D" to="." method="_on_area_2d_body_exited"]

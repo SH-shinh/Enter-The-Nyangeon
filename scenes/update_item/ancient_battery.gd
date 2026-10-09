@@ -1,11 +1,10 @@
-extends Node2D
+extends EquipItem
 
 @export var player_buff: Buff
 @onready var ancient_battery_icon = preload("res://scenes/update_item/ancient_battery_icon.tscn")
 
 var value: Array = []
 var group: Array = []
-var num: int
 
 @export var buff_layer: int
 @export var buff_value: float
@@ -13,16 +12,10 @@ var num: int
 
 var player: Node
 
-func _ready():
+func _on_equip():
 	player = get_tree().get_first_node_in_group("Player")
-	first_activation()
-	GameEvents.ability_upgrade_added.connect(on_upgrade_added)
-	GameEvents.player_bullet_kill_enemy.connect(add_buff)
 
-func first_activation():
-	
 	value = [buff_layer, buff_value, buff_erase_timer]
-	PlayerData.update_player_ability()
 	var sprite_2d = ancient_battery_icon.instantiate()
 	group = get_tree().get_nodes_in_group("Follow")
 	for i in group:
@@ -30,19 +23,18 @@ func first_activation():
 			get_tree().get_first_node_in_group("PlayerRoot").add_child(sprite_2d)
 			sprite_2d.get_follow(i)
 			i.follow_use = true
-	
 
-func on_upgrade_added(upgrade: AbilityUpgrade, current_upgrade: Dictionary):
-	if upgrade.id != "ancient_battery":
+func _setup():
+	GameEvents.enemy_damage_taken_dead.connect(add_buff)
+
+func _apply_effect(quantity: int):
+	if quantity == 1:
 		return
-	if current_upgrade["ancient_battery"]["quantity"] == 1:
-		return
-	num = current_upgrade["ancient_battery"]["quantity"]
 	buff_layer += 5
 	buff_value *= 1
 	buff_erase_timer *= 1
 	value = [buff_layer, buff_value, buff_erase_timer]
-	PlayerData.update_player_ability()
 
-func add_buff(bullet_body: Node):
-	player.player_buff_manager.apply_buff(player_buff, value)
+func add_buff(_final_damage: int, damage_data: DamageData, _body_path: NodePath):
+	if damage_data.damage_type.has(GameTags.BULLET_DAMAGE):
+		player.player_buff_manager.apply_buff(player_buff, value)

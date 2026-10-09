@@ -1,8 +1,8 @@
-[gd_scene load_steps=9 format=3 uid="uid://duos8282oyoo6"]
+[gd_scene format=3 uid="uid://duos8282oyoo6"]
 
-[ext_resource type="Script" path="res://ui/AbilityBox.gd" id="1_yni3t"]
+[ext_resource type="Script" uid="uid://bajmjxwdpywg6" path="res://ui/AbilityBox.gd" id="1_yni3t"]
 [ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="2_5pgj5"]
-[ext_resource type="Script" path="res://script/ScrollBox.gd" id="2_lpfhc"]
+[ext_resource type="Script" uid="uid://cxexg1p6wvaks" path="res://script/ScrollBox.gd" id="2_lpfhc"]
 [ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="3_or0n0"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_h436x"]
@@ -17,27 +17,27 @@ content_margin_top = 1.0
 [sub_resource type="Theme" id="Theme_eyrtr"]
 ScrollContainer/styles/panel = SubResource("StyleBoxEmpty_pb1uj")
 
-[node name="AbilityBox" type="PanelContainer"]
+[node name="AbilityBox" type="PanelContainer" unique_id=656563427]
 custom_minimum_size = Vector2(159, 196)
 offset_right = 159.0
 offset_bottom = 196.0
 theme = SubResource("Theme_nbow6")
 script = ExtResource("1_yni3t")
 
-[node name="MarginContainer" type="ScrollContainer" parent="."]
+[node name="MarginContainer" type="ScrollContainer" parent="." unique_id=1812737924]
 layout_mode = 2
 theme = SubResource("Theme_eyrtr")
 horizontal_scroll_mode = 3
 vertical_scroll_mode = 3
 script = ExtResource("2_lpfhc")
 
-[node name="GridContainer" type="GridContainer" parent="MarginContainer"]
+[node name="GridContainer" type="GridContainer" parent="MarginContainer" unique_id=1233071129]
 layout_mode = 2
 theme_override_constants/h_separation = -97
 theme_override_constants/v_separation = 1
 columns = 2
 
-[node name="Label4" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Label4" type="Label" parent="MarginContainer/GridContainer" unique_id=546187245]
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -50,7 +50,7 @@ theme_override_fonts/font = ExtResource("2_5pgj5")
 theme_override_font_sizes/font_size = 10
 text = "player_max_hp"
 
-[node name="MaxHP" type="Label" parent="MarginContainer/GridContainer"]
+[node name="MaxHP" type="Label" parent="MarginContainer/GridContainer" unique_id=1818469013]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(115, 0)
 layout_mode = 2
@@ -66,7 +66,7 @@ theme_override_font_sizes/font_size = 12
 text = "5"
 horizontal_alignment = 2
 
-[node name="Label5" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Label5" type="Label" parent="MarginContainer/GridContainer" unique_id=2091124260]
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -79,7 +79,7 @@ theme_override_fonts/font = ExtResource("2_5pgj5")
 theme_override_font_sizes/font_size = 10
 text = "player_armor"
 
-[node name="Armor" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Armor" type="Label" parent="MarginContainer/GridContainer" unique_id=2073186431]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.0980392, 0.0980392, 0.0980392, 1)
@@ -94,7 +94,7 @@ theme_override_font_sizes/font_size = 12
 text = "5"
 horizontal_alignment = 2
 
-[node name="Label17" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Label17" type="Label" parent="MarginContainer/GridContainer" unique_id=990793617]
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -107,7 +107,7 @@ theme_override_fonts/font = ExtResource("2_5pgj5")
 theme_override_font_sizes/font_size = 10
 text = "player_damage_taken"
 
-[node name="DamageTaken" type="Label" parent="MarginContainer/GridContainer"]
+[node name="DamageTaken" type="Label" parent="MarginContainer/GridContainer" unique_id=1735435833]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.0980392, 0.0980392, 0.0980392, 1)
@@ -122,7 +122,7 @@ theme_override_font_sizes/font_size = 12
 text = "5"
 horizontal_alignment = 2
 
-[node name="Label3" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Label3" type="Label" parent="MarginContainer/GridContainer" unique_id=2037460981]
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -135,7 +135,7 @@ theme_override_fonts/font = ExtResource("2_5pgj5")
 theme_override_font_sizes/font_size = 10
 text = "player_luck"
 
-[node name="Luck" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Luck" type="Label" parent="MarginContainer/GridContainer" unique_id=239998408]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(35, 0)
 layout_mode = 2
@@ -151,7 +151,7 @@ theme_override_font_sizes/font_size = 12
 text = "5"
 horizontal_alignment = 2
 
-[node name="Label8" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Label8" type="Label" parent="MarginContainer/GridContainer" unique_id=691403648]
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -164,7 +164,7 @@ theme_override_fonts/font = ExtResource("2_5pgj5")
 theme_override_font_sizes/font_size = 10
 text = "player_knockback"
 
-[node name="BulletKnockback" type="Label" parent="MarginContainer/GridContainer"]
+[node name="BulletKnockback" type="Label" parent="MarginContainer/GridContainer" unique_id=1183127052]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(35, 0)
 layout_mode = 2
@@ -180,7 +180,7 @@ theme_override_font_sizes/font_size = 12
 text = "5"
 horizontal_alignment = 2
 
-[node name="Label18" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Label18" type="Label" parent="MarginContainer/GridContainer" unique_id=775084275]
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -193,7 +193,7 @@ theme_override_fonts/font = ExtResource("2_5pgj5")
 theme_override_font_sizes/font_size = 10
 text = "player_max_ammo"
 
-[node name="MaxAmmo" type="Label" parent="MarginContainer/GridContainer"]
+[node name="MaxAmmo" type="Label" parent="MarginContainer/GridContainer" unique_id=1921958928]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.0980392, 0.0980392, 0.0980392, 1)
@@ -208,7 +208,7 @@ theme_override_font_sizes/font_size = 12
 text = "5"
 horizontal_alignment = 2
 
-[node name="Label19" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Label19" type="Label" parent="MarginContainer/GridContainer" unique_id=73054744]
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -221,7 +221,7 @@ theme_override_fonts/font = ExtResource("2_5pgj5")
 theme_override_font_sizes/font_size = 10
 text = "player_speed"
 
-[node name="Speed" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Speed" type="Label" parent="MarginContainer/GridContainer" unique_id=1724628119]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.0980392, 0.0980392, 0.0980392, 1)
@@ -236,7 +236,7 @@ theme_override_font_sizes/font_size = 12
 text = "5"
 horizontal_alignment = 2
 
-[node name="Label20" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Label20" type="Label" parent="MarginContainer/GridContainer" unique_id=1924812360]
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -249,7 +249,7 @@ theme_override_fonts/font = ExtResource("2_5pgj5")
 theme_override_font_sizes/font_size = 10
 text = "player_melee"
 
-[node name="Melee" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Melee" type="Label" parent="MarginContainer/GridContainer" unique_id=303020642]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.0980392, 0.0980392, 0.0980392, 1)
@@ -264,7 +264,7 @@ theme_override_font_sizes/font_size = 12
 text = "5"
 horizontal_alignment = 2
 
-[node name="Label2" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Label2" type="Label" parent="MarginContainer/GridContainer" unique_id=797547262]
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -277,7 +277,7 @@ theme_override_fonts/font = ExtResource("2_5pgj5")
 theme_override_font_sizes/font_size = 10
 text = "player_critical"
 
-[node name="CriticalLuck" type="Label" parent="MarginContainer/GridContainer"]
+[node name="CriticalLuck" type="Label" parent="MarginContainer/GridContainer" unique_id=1709120800]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.0980392, 0.0980392, 0.0980392, 1)
@@ -292,7 +292,7 @@ theme_override_font_sizes/font_size = 12
 text = "5"
 horizontal_alignment = 2
 
-[node name="Label9" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Label9" type="Label" parent="MarginContainer/GridContainer" unique_id=956163573]
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -305,7 +305,7 @@ theme_override_fonts/font = ExtResource("2_5pgj5")
 theme_override_font_sizes/font_size = 10
 text = "player_critical_damage"
 
-[node name="CriticalDamage" type="Label" parent="MarginContainer/GridContainer"]
+[node name="CriticalDamage" type="Label" parent="MarginContainer/GridContainer" unique_id=1242134866]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.0980392, 0.0980392, 0.0980392, 1)
@@ -320,7 +320,7 @@ theme_override_font_sizes/font_size = 12
 text = "5"
 horizontal_alignment = 2
 
-[node name="Label14" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Label14" type="Label" parent="MarginContainer/GridContainer" unique_id=402317110]
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -333,7 +333,7 @@ theme_override_fonts/font = ExtResource("2_5pgj5")
 theme_override_font_sizes/font_size = 10
 text = "player_global_damage"
 
-[node name="GlobalDamage" type="Label" parent="MarginContainer/GridContainer"]
+[node name="GlobalDamage" type="Label" parent="MarginContainer/GridContainer" unique_id=2000647784]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.0980392, 0.0980392, 0.0980392, 1)
@@ -348,7 +348,7 @@ theme_override_font_sizes/font_size = 12
 text = "5"
 horizontal_alignment = 2
 
-[node name="Label" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Label" type="Label" parent="MarginContainer/GridContainer" unique_id=466158088]
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -361,7 +361,7 @@ theme_override_fonts/font = ExtResource("2_5pgj5")
 theme_override_font_sizes/font_size = 10
 text = "player_bullet_damage"
 
-[node name="BulletDamage" type="Label" parent="MarginContainer/GridContainer"]
+[node name="BulletDamage" type="Label" parent="MarginContainer/GridContainer" unique_id=1113159076]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.0980392, 0.0980392, 0.0980392, 1)
@@ -376,7 +376,7 @@ theme_override_font_sizes/font_size = 12
 text = "5"
 horizontal_alignment = 2
 
-[node name="Label7" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Label7" type="Label" parent="MarginContainer/GridContainer" unique_id=1098674805]
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -389,7 +389,7 @@ theme_override_fonts/font = ExtResource("2_5pgj5")
 theme_override_font_sizes/font_size = 10
 text = "player_penetration"
 
-[node name="BulletPenetrate" type="Label" parent="MarginContainer/GridContainer"]
+[node name="BulletPenetrate" type="Label" parent="MarginContainer/GridContainer" unique_id=1932044785]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.0980392, 0.0980392, 0.0980392, 1)
@@ -404,7 +404,7 @@ theme_override_font_sizes/font_size = 12
 text = "5"
 horizontal_alignment = 2
 
-[node name="Label6" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Label6" type="Label" parent="MarginContainer/GridContainer" unique_id=816840571]
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -417,7 +417,7 @@ theme_override_fonts/font = ExtResource("2_5pgj5")
 theme_override_font_sizes/font_size = 10
 text = "player_reload_time"
 
-[node name="ReloadTimer" type="Label" parent="MarginContainer/GridContainer"]
+[node name="ReloadTimer" type="Label" parent="MarginContainer/GridContainer" unique_id=1257536535]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.0980392, 0.0980392, 0.0980392, 1)
@@ -432,7 +432,7 @@ theme_override_font_sizes/font_size = 12
 text = "5"
 horizontal_alignment = 2
 
-[node name="Label10" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Label10" type="Label" parent="MarginContainer/GridContainer" unique_id=1564840830]
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -445,7 +445,7 @@ theme_override_fonts/font = ExtResource("2_5pgj5")
 theme_override_font_sizes/font_size = 10
 text = "player_fire_rate"
 
-[node name="BulletShootTime" type="Label" parent="MarginContainer/GridContainer"]
+[node name="BulletShootTime" type="Label" parent="MarginContainer/GridContainer" unique_id=8064904]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.0980392, 0.0980392, 0.0980392, 1)
@@ -460,7 +460,7 @@ theme_override_font_sizes/font_size = 12
 text = "5"
 horizontal_alignment = 2
 
-[node name="Label13" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Label13" type="Label" parent="MarginContainer/GridContainer" unique_id=379670100]
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -473,7 +473,7 @@ theme_override_fonts/font = ExtResource("2_5pgj5")
 theme_override_font_sizes/font_size = 10
 text = "player_equip_damage"
 
-[node name="EquipDamage" type="Label" parent="MarginContainer/GridContainer"]
+[node name="EquipDamage" type="Label" parent="MarginContainer/GridContainer" unique_id=154076225]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.0980392, 0.0980392, 0.0980392, 1)
@@ -488,7 +488,7 @@ theme_override_font_sizes/font_size = 12
 text = "5"
 horizontal_alignment = 2
 
-[node name="Label11" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Label11" type="Label" parent="MarginContainer/GridContainer" unique_id=1259560296]
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -501,7 +501,7 @@ theme_override_fonts/font = ExtResource("2_5pgj5")
 theme_override_font_sizes/font_size = 10
 text = "player_explosion_damage"
 
-[node name="ExplosionDamage" type="Label" parent="MarginContainer/GridContainer"]
+[node name="ExplosionDamage" type="Label" parent="MarginContainer/GridContainer" unique_id=976933513]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.0980392, 0.0980392, 0.0980392, 1)
@@ -516,7 +516,7 @@ theme_override_font_sizes/font_size = 12
 text = "5"
 horizontal_alignment = 2
 
-[node name="Label12" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Label12" type="Label" parent="MarginContainer/GridContainer" unique_id=644280670]
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -529,7 +529,7 @@ theme_override_fonts/font = ExtResource("2_5pgj5")
 theme_override_font_sizes/font_size = 10
 text = "player_explosion_radius"
 
-[node name="ExplosionRange" type="Label" parent="MarginContainer/GridContainer"]
+[node name="ExplosionRange" type="Label" parent="MarginContainer/GridContainer" unique_id=776765229]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.0980392, 0.0980392, 0.0980392, 1)
@@ -544,7 +544,7 @@ theme_override_font_sizes/font_size = 12
 text = "5"
 horizontal_alignment = 2
 
-[node name="Label15" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Label15" type="Label" parent="MarginContainer/GridContainer" unique_id=1308708749]
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -557,7 +557,7 @@ theme_override_fonts/font = ExtResource("2_5pgj5")
 theme_override_font_sizes/font_size = 10
 text = "player_anomaly_damage"
 
-[node name="DotDamage" type="Label" parent="MarginContainer/GridContainer"]
+[node name="DotDamage" type="Label" parent="MarginContainer/GridContainer" unique_id=1593417371]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.0980392, 0.0980392, 0.0980392, 1)
@@ -572,7 +572,7 @@ theme_override_font_sizes/font_size = 12
 text = "5"
 horizontal_alignment = 2
 
-[node name="Label16" type="Label" parent="MarginContainer/GridContainer"]
+[node name="Label16" type="Label" parent="MarginContainer/GridContainer" unique_id=219468310]
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -585,7 +585,7 @@ theme_override_fonts/font = ExtResource("2_5pgj5")
 theme_override_font_sizes/font_size = 10
 text = "player_summon_damage"
 
-[node name="SummonDamage" type="Label" parent="MarginContainer/GridContainer"]
+[node name="SummonDamage" type="Label" parent="MarginContainer/GridContainer" unique_id=320279715]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.0980392, 0.0980392, 0.0980392, 1)
@@ -600,46 +600,46 @@ theme_override_font_sizes/font_size = 12
 text = "5"
 horizontal_alignment = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=2059852858]
 visible = false
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer" unique_id=910396540]
 custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
 
-[node name="VBoxContainer2" type="VBoxContainer" parent="HBoxContainer"]
+[node name="VBoxContainer2" type="VBoxContainer" parent="HBoxContainer" unique_id=659531681]
 custom_minimum_size = Vector2(30, 0)
 layout_mode = 2
 
-[node name="VBoxContainer3" type="VBoxContainer" parent="HBoxContainer"]
+[node name="VBoxContainer3" type="VBoxContainer" parent="HBoxContainer" unique_id=1376772239]
 custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
 
-[node name="VBoxContainer4" type="VBoxContainer" parent="HBoxContainer"]
+[node name="VBoxContainer4" type="VBoxContainer" parent="HBoxContainer" unique_id=616941116]
 custom_minimum_size = Vector2(30, 0)
 layout_mode = 2
 
-[node name="VBoxContainer5" type="VBoxContainer" parent="HBoxContainer"]
+[node name="VBoxContainer5" type="VBoxContainer" parent="HBoxContainer" unique_id=863009354]
 custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
 
-[node name="VBoxContainer6" type="VBoxContainer" parent="HBoxContainer"]
+[node name="VBoxContainer6" type="VBoxContainer" parent="HBoxContainer" unique_id=725474357]
 custom_minimum_size = Vector2(30, 0)
 layout_mode = 2
 
-[node name="VBoxContainer7" type="VBoxContainer" parent="HBoxContainer"]
+[node name="VBoxContainer7" type="VBoxContainer" parent="HBoxContainer" unique_id=2018563743]
 custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
 
-[node name="VBoxContainer8" type="VBoxContainer" parent="HBoxContainer"]
+[node name="VBoxContainer8" type="VBoxContainer" parent="HBoxContainer" unique_id=857976593]
 custom_minimum_size = Vector2(30, 0)
 layout_mode = 2
 
-[node name="VBoxContainer9" type="VBoxContainer" parent="HBoxContainer"]
+[node name="VBoxContainer9" type="VBoxContainer" parent="HBoxContainer" unique_id=523818174]
 custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
 
-[node name="VBoxContainer10" type="VBoxContainer" parent="HBoxContainer"]
+[node name="VBoxContainer10" type="VBoxContainer" parent="HBoxContainer" unique_id=1934032419]
 custom_minimum_size = Vector2(30, 0)
 layout_mode = 2

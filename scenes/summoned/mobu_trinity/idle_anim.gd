@@ -11,7 +11,6 @@ var spawn_position: Vector2
 func _ready():
 	self_body.self_is_idle.connect(on_death_anim)
 	spawn_position = Vector2.UP * y_position
-	
 
 func on_death_anim():
 	

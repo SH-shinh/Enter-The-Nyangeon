@@ -8,4 +8,7 @@ script = ExtResource("2_6y178")
 id = "luck_buff"
 icon = ExtResource("1_spr6x")
 name = "运气值buff"
+remove_by_layer = true
 description = "运气值buff"
+modifiers = Array[Dictionary]([{"key": "crit_luck_add", "mode": "add", "source": "value"}])
+consume_event = "player_shot_critical"

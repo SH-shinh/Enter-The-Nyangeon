@@ -1,8 +1,9 @@
-[gd_scene load_steps=12 format=3 uid="uid://dssf2qvxakdl"]
+[gd_scene format=3 uid="uid://dssf2qvxakdl"]
 
-[ext_resource type="Script" path="res://scenes/update_item/kitchen_knife.gd" id="1_b6exi"]
-[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="2_8ars5"]
+[ext_resource type="Script" uid="uid://bfwcm6hfsgi2v" path="res://scenes/update_item/kitchen_knife.gd" id="1_b6exi"]
+[ext_resource type="Shader" uid="uid://bqypa5578tm8a" path="res://shaders/sprite_outline.gdshader" id="2_8ars5"]
 [ext_resource type="Texture2D" uid="uid://b044ma3lr6tr7" path="res://sprites/update_item/kitchen_knife_icon.png" id="2_wu51i"]
+[ext_resource type="Script" uid="uid://dgqq5631n3u32" path="res://script/hit_box.gd" id="4_mmpby"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_m3myx"]
 shader = ExtResource("2_8ars5")
@@ -89,39 +90,36 @@ tracks/1/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_5wj10"]
 _data = {
-"RESET": SubResource("Animation_a2sy8"),
-"new_animation": SubResource("Animation_emlml")
+&"RESET": SubResource("Animation_a2sy8"),
+&"new_animation": SubResource("Animation_emlml")
 }
 
-[node name="kitchen_knife" type="Node2D"]
+[node name="kitchen_knife" type="Node2D" unique_id=445495843]
 script = ExtResource("1_b6exi")
 
-[node name="knife" type="Node2D" parent="."]
+[node name="knife" type="Node2D" parent="." unique_id=1604344257]
 position = Vector2(0, -14)
 
-[node name="Sprite2D" type="Sprite2D" parent="knife"]
+[node name="Sprite2D" type="Sprite2D" parent="knife" unique_id=295586766]
 z_index = 2
 material = SubResource("ShaderMaterial_m3myx")
 position = Vector2(39, 0)
 texture = ExtResource("2_wu51i")
 
-[node name="Area2D" type="Area2D" parent="knife/Sprite2D"]
-collision_layer = 0
-collision_mask = 8
+[node name="HitBox" type="Area2D" parent="knife/Sprite2D" unique_id=456428265]
+collision_layer = 32768
+collision_mask = 16384
+monitorable = false
+script = ExtResource("4_mmpby")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="knife/Sprite2D/Area2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="knife/Sprite2D/HitBox" unique_id=1982810955]
 position = Vector2(0.228123, 0)
 shape = SubResource("RectangleShape2D_jcqeu")
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="knife/Sprite2D"]
+[node name="GPUParticles2D" type="GPUParticles2D" parent="knife/Sprite2D" unique_id=443904116]
 amount = 4
 process_material = SubResource("ParticleProcessMaterial_65ho2")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="knife"]
-libraries = {
-"": SubResource("AnimationLibrary_5wj10")
-}
-autoplay = "new_animation"
-
-[connection signal="body_entered" from="knife/Sprite2D/Area2D" to="." method="_on_area_2d_body_entered"]
-[connection signal="body_exited" from="knife/Sprite2D/Area2D" to="." method="_on_area_2d_body_exited"]
+[node name="AnimationPlayer" type="AnimationPlayer" parent="knife" unique_id=806701778]
+libraries/ = SubResource("AnimationLibrary_5wj10")
+autoplay = &"new_animation"

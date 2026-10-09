@@ -1,0 +1,397 @@
+[gd_scene format=3 uid="uid://d0ghmc05x1pdw"]
+
+[ext_resource type="Script" uid="uid://ddkbu7x2c3su7" path="res://ui/enemy_test_menu.gd" id="1_66oiq"]
+[ext_resource type="Shader" uid="uid://d3frxix26ovel" path="res://shaders/scrolling_bkgd.gdshader" id="1_msac1"]
+[ext_resource type="Texture2D" uid="uid://dd7vnobcamv4q" path="res://sprites/test_BG.png" id="2_ummo8"]
+[ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="3_gq2i2"]
+[ext_resource type="Texture2D" uid="uid://dieipwoadjxoa" path="res://ui/title_picture_2.png" id="4_5rnhx"]
+[ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="5_d06kc"]
+[ext_resource type="Script" uid="uid://cxexg1p6wvaks" path="res://script/ScrollBox.gd" id="6_nj5lr"]
+[ext_resource type="Script" uid="uid://c2yv0iuw6g8oh" path="res://resources/enemy/enemy.gd" id="60_enemycard"]
+[ext_resource type="Resource" uid="uid://dtv88mgk8m0i" path="res://resources/enemy/droid_helmet_smg.tres" id="61_edroid"]
+[ext_resource type="Resource" uid="uid://bo5aojm81wiil" path="res://resources/enemy/enhanced_sweeper.tres" id="62_eenh"]
+[ext_resource type="Resource" uid="uid://d2gcqwn6rb7cc" path="res://resources/enemy/lighttank_helmet.tres" id="63_elight"]
+[ext_resource type="Resource" uid="uid://domddqeo286ox" path="res://resources/enemy/menacing_automaton.tres" id="64_emenac"]
+[ext_resource type="Resource" uid="uid://q1y8ttghyuve" path="res://resources/enemy/modded_sweeper.tres" id="65_emodd"]
+[ext_resource type="Resource" uid="uid://cos7wg8husrce" path="res://resources/enemy/mp_automaton.tres" id="66_emp"]
+[ext_resource type="Resource" uid="uid://dx43aolfidycr" path="res://resources/enemy/mystic_sweeper.tres" id="67_emystic"]
+[ext_resource type="Resource" uid="uid://doxv0u2ida458" path="res://resources/enemy/red_sweeper.tres" id="68_ered"]
+[ext_resource type="Resource" uid="uid://uwsau2i7bmiv" path="res://resources/enemy/soldier_helmet_ar.tres" id="69_esar"]
+[ext_resource type="Resource" uid="uid://c5bt5jjpbifb8" path="res://resources/enemy/soldier_helmet_sg.tres" id="70_esasg"]
+[ext_resource type="Resource" uid="uid://cjvrr0lb3dvye" path="res://resources/enemy/soldier_redhelmet_sr.tres" id="71_esrsr"]
+[ext_resource type="Resource" uid="uid://tyefl3u2oxr" path="res://resources/enemy/sweeper.tres" id="72_esweep"]
+[ext_resource type="Resource" uid="uid://dmixiglqom01n" path="res://resources/enemy/tester_automaton.tres" id="73_etesta"]
+[ext_resource type="Resource" uid="uid://dwgipm2sx68ue" path="res://resources/enemy/tester_automaton_rl.tres" id="74_etestrl"]
+[ext_resource type="Resource" uid="uid://1wrnoropoerp" path="res://resources/enemy/tester_automaton_shield.tres" id="75_etestsh"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_th1hw"]
+blend_mode = 3
+
+[sub_resource type="Gradient" id="Gradient_1xrme"]
+offsets = PackedFloat32Array(0.233766, 0.383117)
+colors = PackedColorArray(0, 0, 0, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_51am5"]
+gradient = SubResource("Gradient_1xrme")
+width = 1200
+height = 1200
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ow0f7"]
+shader = ExtResource("1_msac1")
+shader_parameter/scroll_speed = 0.3
+shader_parameter/angle_degrees = 45.0
+shader_parameter/repeat_x = 1.0
+shader_parameter/repeat_y = 1.0
+shader_parameter/tint = Color(0, 0, 0, 0.329412)
+
+[sub_resource type="Shader" id="Shader_ch8kh"]
+code = "shader_type canvas_item;
+
+uniform float scroll_speed : hint_range( 0, 2) = 0.05;
+uniform float angle_degrees : hint_range( 0, 360, 1) = 45.0;
+uniform float repeat_x : hint_range( 1, 20, 1) = 1;
+uniform float repeat_y : hint_range( 1, 20, 1) = 1;
+uniform vec4 tint : source_color = vec4( 1.0 );
+
+
+void fragment() {
+
+	float angle_rad = radians(angle_degrees);
+	vec2 direction = vec2(cos(angle_rad), sin(angle_rad) );
+	vec2 offset_uv = UV - ( TIME * scroll_speed * direction );
+
+	// tile
+	vec2 scaled_uv = vec2(fract(offset_uv.x * repeat_x ),fract(offset_uv.y * repeat_y) );
+	vec2 texelSize = vec2( 1.0 ) / vec2(textureSize( TEXTURE, 0) );
+	vec2 snappedUV = round(scaled_uv / texelSize ) * texelSize;
+
+	COLOR = texture(TEXTURE, snappedUV) * tint;
+
+
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_q7dnd"]
+shader = SubResource("Shader_ch8kh")
+shader_parameter/scroll_speed = 0.2
+shader_parameter/angle_degrees = 90.0
+shader_parameter/repeat_x = 1.0
+shader_parameter/repeat_y = 1.0
+shader_parameter/tint = Color(0.187176, 0.187176, 0.187176, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_v7aig"]
+shader = SubResource("Shader_ch8kh")
+shader_parameter/scroll_speed = 0.2
+shader_parameter/angle_degrees = 90.0
+shader_parameter/repeat_x = 1.0
+shader_parameter/repeat_y = 1.0
+shader_parameter/tint = Color(1, 1, 1, 1)
+
+[sub_resource type="Shader" id="Shader_susvr"]
+code = "shader_type canvas_item;
+
+uniform float scroll_speed : hint_range( 0, 2) = 0.05;
+uniform float angle_degrees : hint_range( 0, 360, 1) = 45.0;
+uniform float repeat_x : hint_range( 1, 20, 1) = 1;
+uniform float repeat_y : hint_range( 1, 20, 1) = 1;
+uniform vec4 tint : source_color = vec4( 1.0 );
+
+
+void fragment() {
+
+	float angle_rad = radians(angle_degrees);
+	vec2 direction = vec2(cos(angle_rad), sin(angle_rad) );
+	vec2 offset_uv = UV - ( TIME * scroll_speed * direction );
+
+	// tile
+	vec2 scaled_uv = vec2(fract(offset_uv.x * repeat_x ),fract(offset_uv.y * repeat_y) );
+	vec2 texelSize = vec2( 1.0 ) / vec2(textureSize( TEXTURE, 0) );
+	vec2 snappedUV = round(scaled_uv / texelSize ) * texelSize;
+
+	COLOR = texture(TEXTURE, snappedUV) * tint;
+
+
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_5orxf"]
+shader = SubResource("Shader_susvr")
+shader_parameter/scroll_speed = 1.0
+shader_parameter/angle_degrees = 90.0
+shader_parameter/repeat_x = 1.0
+shader_parameter/repeat_y = 1.0
+shader_parameter/tint = Color(0.270588, 0.270588, 0.270588, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_bo088"]
+content_margin_right = 8.0
+
+[sub_resource type="Theme" id="Theme_i2rh8"]
+ScrollContainer/styles/panel = SubResource("StyleBoxEmpty_bo088")
+
+[sub_resource type="Animation" id="Animation_uejhf"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node2D:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.05, 0, 0.05, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Node2D:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.05, 0, 0.05, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="Animation" id="Animation_cbuyq"]
+resource_name = "new_animation"
+length = 0.1
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node2D:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(640, -0.05, 0, 0.05, 0, 0, -0.05, 0, 0.05, 0),
+"times": PackedFloat32Array(0, 0.1)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Node2D:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.05, 0, 0.05, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_f71bi"]
+_data = {
+&"RESET": SubResource("Animation_uejhf"),
+&"new_animation": SubResource("Animation_cbuyq")
+}
+
+[node name="EnemyTestMenu" type="CanvasLayer" unique_id=2074926915]
+script = ExtResource("1_66oiq")
+enemy_group = Array[ExtResource("60_enemycard")]([ExtResource("72_esweep"), ExtResource("65_emodd"), ExtResource("62_eenh"), ExtResource("67_emystic"), ExtResource("68_ered"), ExtResource("73_etesta"), ExtResource("66_emp"), ExtResource("64_emenac"), ExtResource("74_etestrl"), ExtResource("75_etestsh"), ExtResource("69_esar"), ExtResource("70_esasg"), ExtResource("71_esrsr"), ExtResource("61_edroid"), ExtResource("63_elight")])
+
+[node name="Node2D" type="Node2D" parent="." unique_id=380532347]
+
+[node name="TextureRect6" type="TextureRect" parent="Node2D" unique_id=1428775902]
+material = SubResource("CanvasItemMaterial_th1hw")
+offset_left = -111.0
+offset_right = 2469.0
+offset_bottom = 1464.0
+scale = Vector2(0.25, 0.25)
+mouse_filter = 0
+texture = SubResource("GradientTexture2D_51am5")
+flip_h = true
+
+[node name="ColorRect5" type="ColorRect" parent="Node2D" unique_id=2090393662]
+offset_left = 306.0
+offset_right = 643.0
+offset_bottom = 360.0
+color = Color(0.188235, 0.188235, 0.188235, 1)
+
+[node name="ColorRect" type="ColorRect" parent="Node2D" unique_id=1983344541]
+offset_left = 312.0
+offset_right = 640.0
+offset_bottom = 360.0
+
+[node name="ColorRect" type="ColorRect" parent="Node2D/ColorRect" unique_id=1071093550]
+layout_mode = 0
+offset_left = 8.0
+offset_right = 325.0
+offset_bottom = 360.0
+mouse_filter = 2
+color = Color(0.0575493, 0.605277, 0.81601, 1)
+
+[node name="ColorRect2" type="TextureRect" parent="Node2D/ColorRect" unique_id=764517324]
+material = SubResource("ShaderMaterial_ow0f7")
+layout_mode = 0
+offset_left = 8.0
+offset_right = 325.0
+offset_bottom = 360.0
+texture = ExtResource("2_ummo8")
+stretch_mode = 1
+
+[node name="ColorRect3" type="ColorRect" parent="Node2D/ColorRect" unique_id=1106589492]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 91.0
+offset_right = 325.0
+offset_bottom = 360.0
+color = Color(0.176471, 0.498039, 0.709804, 1)
+
+[node name="ColorRect4" type="ColorRect" parent="Node2D/ColorRect" unique_id=1162802398]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 69.0
+offset_right = 325.0
+offset_bottom = 92.0
+color = Color(0.14902, 0.14902, 0.14902, 1)
+
+[node name="Label" type="Label" parent="Node2D/ColorRect/ColorRect4" unique_id=1687971730]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 8.0
+offset_right = 115.0
+offset_bottom = 22.0
+theme_override_fonts/font = ExtResource("3_gq2i2")
+theme_override_font_sizes/font_size = 13
+text = "ENEMY"
+
+[node name="TextureRect2" type="TextureRect" parent="Node2D/ColorRect" unique_id=1076268216]
+material = SubResource("ShaderMaterial_q7dnd")
+layout_mode = 0
+offset_left = -27.0
+offset_top = -3.0
+offset_right = 187.0
+offset_bottom = 3627.0
+scale = Vector2(0.1, 0.1)
+texture = ExtResource("4_5rnhx")
+stretch_mode = 1
+flip_h = true
+
+[node name="TextureRect3" type="TextureRect" parent="Node2D/ColorRect" unique_id=400988447]
+material = SubResource("ShaderMaterial_v7aig")
+layout_mode = 0
+offset_left = -21.0
+offset_top = -7.0
+offset_right = 193.0
+offset_bottom = 3663.0
+scale = Vector2(0.1, 0.1)
+texture = ExtResource("4_5rnhx")
+stretch_mode = 1
+flip_h = true
+
+[node name="ColorRect4" type="ColorRect" parent="Node2D" unique_id=505850131]
+offset_left = 454.0
+offset_top = 17.0
+offset_right = 604.0
+offset_bottom = 62.0
+
+[node name="ColorRect4" type="ColorRect" parent="Node2D/ColorRect4" unique_id=13568192]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 148.0
+offset_bottom = 43.0
+color = Color(0.121654, 0.252518, 0.434675, 1)
+
+[node name="Label" type="Label" parent="Node2D/ColorRect4" unique_id=854873510]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 10.0
+offset_right = 148.0
+offset_bottom = 31.0
+theme_override_colors/font_color = Color(0.14902, 0.14902, 0.14902, 1)
+theme_override_colors/font_shadow_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 5
+theme_override_fonts/font = ExtResource("5_d06kc")
+theme_override_font_sizes/font_size = 18
+text = "testmenu_enemy"
+horizontal_alignment = 1
+
+[node name="ColorRect2" type="ColorRect" parent="Node2D" unique_id=1421658922]
+clip_children = 2
+offset_left = 620.0
+offset_top = 92.0
+offset_right = 637.0
+offset_bottom = 360.0
+color = Color(0.824175, 0.927159, 0.267976, 1)
+
+[node name="TextureRect3" type="TextureRect" parent="Node2D/ColorRect2" unique_id=1316919601]
+material = SubResource("ShaderMaterial_5orxf")
+layout_mode = 0
+offset_top = -13.0
+offset_right = 214.0
+offset_bottom = 3657.0
+scale = Vector2(0.08, 0.08)
+texture = ExtResource("4_5rnhx")
+stretch_mode = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Node2D" unique_id=707287171]
+offset_left = 324.0
+offset_top = 99.0
+offset_right = 637.0
+offset_bottom = 355.0
+mouse_filter = 0
+theme = SubResource("Theme_i2rh8")
+horizontal_scroll_mode = 3
+vertical_scroll_mode = 2
+script = ExtResource("6_nj5lr")
+
+[node name="GridContainer" type="GridContainer" parent="Node2D/ScrollContainer" unique_id=1242111900]
+layout_mode = 2
+theme_override_constants/h_separation = 3
+theme_override_constants/v_separation = 3
+columns = 5
+
+[node name="Button" type="Button" parent="Node2D" unique_id=616246753]
+visible = false
+offset_left = 9.0
+offset_top = 239.0
+offset_right = 143.0
+offset_bottom = 265.0
+text = "COIN + 100000"
+
+[node name="Button2" type="Button" parent="Node2D" unique_id=1775857809]
+visible = false
+offset_left = 10.0
+offset_top = 207.0
+offset_right = 72.0
+offset_bottom = 233.0
+text = "enemy"
+
+[node name="Close" type="Button" parent="Node2D" unique_id=1732849913]
+offset_left = 591.0
+offset_top = 71.0
+offset_right = 633.0
+offset_bottom = 91.0
+theme_override_fonts/font = ExtResource("3_gq2i2")
+theme_override_font_sizes/font_size = 11
+text = "CLOSE"
+
+[node name="Refresh" type="Button" parent="Node2D" unique_id=734572672]
+offset_left = 500.0
+offset_top = 71.0
+offset_right = 585.0
+offset_bottom = 91.0
+theme_override_fonts/font = ExtResource("3_gq2i2")
+theme_override_font_sizes/font_size = 11
+text = "REFRESH"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=663568486]
+libraries/ = SubResource("AnimationLibrary_f71bi")
+
+[node name="Button" type="Button" parent="." unique_id=1449762748]
+visible = false
+offset_left = 339.0
+offset_top = 26.0
+offset_right = 373.0
+offset_bottom = 52.0
+text = "KEI"
+
+[connection signal="pressed" from="Node2D/Button" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="Node2D/Button2" to="." method="_on_button_2_pressed"]
+[connection signal="pressed" from="Node2D/Close" to="." method="_on_close_pressed"]
+[connection signal="pressed" from="Node2D/Refresh" to="." method="_on_refresh_pressed"]

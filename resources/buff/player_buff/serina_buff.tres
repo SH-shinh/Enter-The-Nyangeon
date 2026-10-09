@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Buff" format=3 uid="uid://b4mxuyo18an6h"]
+
+[ext_resource type="Texture2D" uid="uid://liiahuytmibv" path="res://sprites/buff_icon/health_mult_buff.png" id="1_oxvcc"]
+[ext_resource type="Script" uid="uid://dhb70b327wxvy" path="res://resources/buff/buff.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = "serina_buff"
+icon = ExtResource("1_oxvcc")
+name = "serina治疗buff"
+ability = "heal_mult_add"

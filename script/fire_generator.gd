@@ -28,4 +28,6 @@ func time_count():
 				fire_ins = fire_field.instantiate()
 				get_tree().get_first_node_in_group("SELayer").add_child(fire_ins)
 			fire_ins.global_position = self.global_position
+			if body != null and body.get("faction") != null:
+				fire_ins.source_faction = body.faction
 			fire_ins.active_state()

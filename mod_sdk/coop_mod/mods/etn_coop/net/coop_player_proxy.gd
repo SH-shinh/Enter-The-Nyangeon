@@ -95,6 +95,13 @@ func setup(p_peer_id: int, p_is_local: bool) -> void:
 	if player_gun != null:
 		player_gun.set_physics_process(false)
 		player_gun.set_process(false)
+	# 第二把枪（如 tsurugi）：同样会连发，一并停用并锁 is_shoot=false，防本地生成本地子弹；
+	# 其开火表现由 mod 的 _remote_player_gun_shoot 直接调 _shootAnim 回放，瞄准由 _apply_weapon_look 负责。
+	if second_gun != null:
+		if second_gun.get("is_shoot") != null:
+			second_gun.is_shoot = false
+		second_gun.set_physics_process(false)
+		second_gun.set_process(false)
 	if state_machine != null:
 		state_machine.set_physics_process(false)
 	_disable_areas(player)

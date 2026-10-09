@@ -17,6 +17,10 @@ var time_add: int = 1
 
 var is_black_frame: bool = false
 
+# 震动偏移：由 shake_screen 单独写入，_process 里与瞄准前导相加。
+# 不再直接写 position，避免与 _process 每帧写 position 互相覆盖产生抖动。
+var shake_offset: Vector2 = Vector2.ZERO
+
 @onready var animation_player: AnimationPlayer = $CanvasLayer/AnimationPlayer
 
 func _ready():
@@ -53,10 +57,10 @@ func camera_reset():
 func _process(delta):
 	
 	if can_move == true:
-		if target.length() < range:
-			self.position = Vector2(0, 0)
-		else:
-			self.position = target.normalized() * ( target.length() - range ) * space
+		var base: Vector2 = Vector2.ZERO
+		if target.length() >= range:
+			base = target.normalized() * ( target.length() - range ) * space
+		self.position = base + shake_offset
 	else:
 		if mark != null:
 			global_position = mark.global_position
@@ -78,9 +82,8 @@ func shake_screen(length: int,shake_range: float,freq: float):
 			offset_position.x = randf_range( -shake_range, shake_range)
 			offset_position.y = randf_range( -shake_range, shake_range)
 			
-			var new_position: Vector2 = self.position
-			new_position += offset_position
-			var tween = get_tree().create_tween().set_parallel(true)
-			tween.tween_property(self, "position", new_position, freq).from(self.position)
-			await get_tree().create_timer(freq).timeout
+			var tween = create_tween()
+			tween.tween_property(self, "shake_offset", offset_position, freq)
+			await tween.finished
+		shake_offset = Vector2.ZERO
 		on_shake = false

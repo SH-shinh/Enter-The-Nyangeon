@@ -9,3 +9,4 @@ id = "range_buff"
 icon = ExtResource("1_mrl2i")
 name = "射程buff"
 description = ""
+modifiers = Array[Dictionary]([{"key": "bullet_kill_time_mult", "mode": "add", "source": "const", "amount": 10}, {"key": "damage_mult", "mode": "add", "source": "const", "amount": 1}, {"key": "hurt_mult_mult", "mode": "add", "source": "const", "amount": -0.5, "if_gt": 1}, {"key": "knockback_resis_mult", "mode": "add", "source": "const", "amount": 0.5, "if_gt": 1}])

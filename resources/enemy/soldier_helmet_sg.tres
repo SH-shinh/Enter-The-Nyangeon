@@ -1,10 +1,12 @@
-[gd_resource type="Resource" script_class="EnemyCard" load_steps=3 format=3 uid="uid://c5bt5jjpbifb8"]
+[gd_resource type="Resource" script_class="EnemyCard" format=3 uid="uid://c5bt5jjpbifb8"]
 
 [ext_resource type="PackedScene" uid="uid://dopkakxpq1qoo" path="res://scenes/enemies/soldier_helmet_sg.tscn" id="1_cfmia"]
-[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_50avn"]
+[ext_resource type="Script" uid="uid://c2yv0iuw6g8oh" path="res://resources/enemy/enemy.gd" id="2_50avn"]
+[ext_resource type="Texture2D" uid="uid://hxg1rwgt1rir" path="res://sprites/enemies/soldier_helmet_icon.png" id="2_u31l5"]
 
 [resource]
 script = ExtResource("2_50avn")
 id = "soldier_helmet_sg"
 body = ExtResource("1_cfmia")
-description = ""
+icon = ExtResource("2_u31l5")
+position_y = 45.0

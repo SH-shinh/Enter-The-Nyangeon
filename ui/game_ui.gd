@@ -30,6 +30,7 @@ func _ready():
 	GameEvents.game_over.connect(game_over_hide)
 	GameEvents.ui_visible.connect(game_ui_visible)
 	Game.game_mode_changed.connect(check_game_mode)
+	GameEvents.round_start.connect(check_game_mode)
 	update_hp()
 	update_coin()
 	update_ammo()
@@ -41,13 +42,11 @@ func check_game_mode():
 		virtual_joypad.visible = false
 	else:
 		virtual_joypad.visible = true
-		if SupportData.game_support.support_id == "null":
-			$VirtualJoypad/Actions/TouchScreenButton4.visible = false
-		else:
-			$VirtualJoypad/Actions/TouchScreenButton4.visible = true
+		var has_support: bool = SupportData.game_support != null and SupportData.game_support.support_id != "null"
+		$VirtualJoypad/Actions/TouchScreenButton4.visible = has_support
 
 func get_player_card():
-	player_icon.texture = player.player_card.sprite
+	player_icon.texture = LazyTexture.load_uncached(player.player_card.sprite_path)
 	player_name.text = player.player_card.name
 	weapon_name.text = player.player_card.weapon
 	weapon_name.set("theme_override_colors/font_color", player.player_card.color)

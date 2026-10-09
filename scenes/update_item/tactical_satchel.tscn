@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://b6catvdecrvk7"]
+[gd_scene format=3 uid="uid://b6catvdecrvk7"]
 
-[ext_resource type="Script" path="res://scenes/update_item/tactical_satchel.gd" id="1_dsbu7"]
+[ext_resource type="Script" uid="uid://bht0afot8gnfc" path="res://scenes/update_item/tactical_satchel.gd" id="1_dsbu7"]
 
 [node name="tactical_satchel" type="Node2D"]
 script = ExtResource("1_dsbu7")

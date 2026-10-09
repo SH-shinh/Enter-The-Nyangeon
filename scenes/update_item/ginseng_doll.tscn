@@ -1,7 +1,7 @@
-[gd_scene load_steps=10 format=3 uid="uid://cmeufqhw3qdvl"]
+[gd_scene format=3 uid="uid://cmeufqhw3qdvl"]
 
-[ext_resource type="Script" path="res://scenes/update_item/ginseng_doll.gd" id="1_lypd6"]
-[ext_resource type="Shader" path="res://shaders/shock_wave_2.gdshader" id="2_sytam"]
+[ext_resource type="Script" uid="uid://dahp2vggnfnjn" path="res://scenes/update_item/ginseng_doll.gd" id="1_lypd6"]
+[ext_resource type="Shader" uid="uid://dvycg6oyg2c0t" path="res://shaders/shock_wave_2.gdshader" id="2_sytam"]
 [ext_resource type="Texture2D" uid="uid://c7vyq0e22y2jl" path="res://sprites/particle/point_5.png" id="2_w4l23"]
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_yu8cj"]
@@ -182,24 +182,24 @@ tracks/5/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_vbdfm"]
 _data = {
-"RESET": SubResource("Animation_sxgbb"),
-"new_animation": SubResource("Animation_nv1jh")
+&"RESET": SubResource("Animation_sxgbb"),
+&"new_animation": SubResource("Animation_nv1jh")
 }
 
-[node name="ginseng_doll" type="Node2D"]
+[node name="ginseng_doll" type="Node2D" unique_id=1106650328]
 script = ExtResource("1_lypd6")
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=1155671675]
 modulate = Color(5, 9, 2, 0.02)
 z_index = 2
 position = Vector2(0, -7)
 emitting = false
-process_material = SubResource("ParticleProcessMaterial_yu8cj")
 texture = ExtResource("2_w4l23")
+process_material = SubResource("ParticleProcessMaterial_yu8cj")
 
-[node name="Node2D" type="Node2D" parent="."]
+[node name="Node2D" type="Node2D" parent="." unique_id=538451619]
 
-[node name="ColorRect" type="ColorRect" parent="Node2D"]
+[node name="ColorRect" type="ColorRect" parent="Node2D" unique_id=1848707894]
 z_index = -1
 material = SubResource("ShaderMaterial_ugcdw")
 offset_left = -35.0
@@ -209,7 +209,7 @@ offset_bottom = 35.0
 mouse_filter = 2
 color = Color(0.690196, 0.929412, 0.278431, 1)
 
-[node name="ColorRect2" type="ColorRect" parent="Node2D"]
+[node name="ColorRect2" type="ColorRect" parent="Node2D" unique_id=1183394982]
 z_index = -1
 material = SubResource("ShaderMaterial_mimu8")
 offset_left = -35.0
@@ -219,11 +219,13 @@ offset_bottom = 35.0
 mouse_filter = 2
 color = Color(0.690196, 0.929412, 0.278431, 1)
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="Node2D"]
-libraries = {
-"": SubResource("AnimationLibrary_vbdfm")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Node2D" unique_id=1014206112]
+libraries/ = SubResource("AnimationLibrary_vbdfm")
 
-[node name="HealthTimer" type="Timer" parent="."]
+[node name="HealthTimer" type="Timer" parent="." unique_id=1565353660]
 wait_time = 3.0
+one_shot = true
+
+[node name="CDTimer" type="Timer" parent="." unique_id=1565353661]
+wait_time = 1.0
 one_shot = true

@@ -1,7 +1,8 @@
-[gd_scene load_steps=17 format=3 uid="uid://2fjtsdxiqgus"]
+[gd_scene format=3 uid="uid://2fjtsdxiqgus"]
 
-[ext_resource type="Script" path="res://scenes/bullet/laser_bullet.gd" id="1_r7lce"]
+[ext_resource type="Script" uid="uid://dwxyo1goe7ts5" path="res://scenes/bullet/laser_bullet.gd" id="1_r7lce"]
 [ext_resource type="Texture2D" uid="uid://b5nbmcnfshgb8" path="res://sprites/particle/circular_1.png" id="1_ru122"]
+[ext_resource type="Script" uid="uid://dgqq5631n3u32" path="res://script/hit_box.gd" id="2_ptsqf"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_gmr26"]
 
@@ -138,7 +139,7 @@ tracks/5/keys = {
 tracks/6/type = "value"
 tracks/6/imported = false
 tracks/6/enabled = true
-tracks/6/path = NodePath("Area2D/CollisionShape2D:disabled")
+tracks/6/path = NodePath("HitBox/CollisionShape2D:disabled")
 tracks/6/interp = 1
 tracks/6/loop_wrap = true
 tracks/6/keys = {
@@ -214,7 +215,7 @@ tracks/3/keys = {
 tracks/4/type = "value"
 tracks/4/imported = false
 tracks/4/enabled = true
-tracks/4/path = NodePath("Area2D/CollisionShape2D:disabled")
+tracks/4/path = NodePath("HitBox/CollisionShape2D:disabled")
 tracks/4/interp = 1
 tracks/4/loop_wrap = true
 tracks/4/keys = {
@@ -280,18 +281,18 @@ tracks/3/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_raiir"]
 _data = {
-"RESET": SubResource("Animation_ar22b"),
-"laser_anim": SubResource("Animation_y8v3n"),
-"warning_anim": SubResource("Animation_twra5")
+&"RESET": SubResource("Animation_ar22b"),
+&"laser_anim": SubResource("Animation_y8v3n"),
+&"warning_anim": SubResource("Animation_twra5")
 }
 
-[node name="laser_bullet" type="RayCast2D"]
+[node name="laser_bullet" type="RayCast2D" unique_id=1999728782]
 target_position = Vector2(1800, 0)
 collision_mask = 2
 script = ExtResource("1_r7lce")
 bullet_damage = 1.0
 
-[node name="Line2D2" type="Line2D" parent="."]
+[node name="Line2D2" type="Line2D" parent="." unique_id=1647417668]
 visible = false
 z_index = 1
 material = SubResource("CanvasItemMaterial_gmr26")
@@ -300,44 +301,42 @@ width = 5.0
 default_color = Color(20, 0, 0, 0.9)
 end_cap_mode = 2
 
-[node name="Line2D" type="Line2D" parent="."]
+[node name="Line2D" type="Line2D" parent="." unique_id=1882723525]
 visible = false
 z_index = 1
 points = PackedVector2Array(0, 0, 500, 0)
 texture = SubResource("GradientTexture2D_88wg8")
 texture_mode = 1
 
-[node name="Area2D" type="Area2D" parent="."]
-collision_layer = 0
+[node name="HitBox" type="Area2D" parent="." unique_id=1563496026]
+collision_layer = 65536
+collision_mask = 10240
+monitorable = false
+script = ExtResource("2_ptsqf")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox" unique_id=1616515667]
 position = Vector2(250, 0)
 shape = SubResource("RectangleShape2D_877n4")
 disabled = true
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=1292270870]
 position = Vector2(500, 0)
 emitting = false
 amount = 32
-process_material = SubResource("ParticleProcessMaterial_yeryr")
 texture = ExtResource("1_ru122")
 lifetime = 0.3
 explosiveness = 0.2
+process_material = SubResource("ParticleProcessMaterial_yeryr")
 
-[node name="GPUParticles2D2" type="GPUParticles2D" parent="."]
+[node name="GPUParticles2D2" type="GPUParticles2D" parent="." unique_id=2015401731]
 z_index = 1
 position = Vector2(500, 0)
 emitting = false
 amount = 16
-process_material = SubResource("ParticleProcessMaterial_m7g3d")
 texture = ExtResource("1_ru122")
 lifetime = 0.3
 explosiveness = 0.2
+process_material = SubResource("ParticleProcessMaterial_m7g3d")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_raiir")
-}
-
-[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
-[connection signal="body_exited" from="Area2D" to="." method="_on_area_2d_body_exited"]
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1015524957]
+libraries/ = SubResource("AnimationLibrary_raiir")

@@ -1,8 +1,5 @@
-extends Node2D
+extends PlayerPS
 
-@export var player: Node
-@export var stats: Stats
-@export var gun: Node
 @export var sniper_bullet: PackedScene
 
 @export var player_buff: Buff
@@ -19,10 +16,10 @@ extends Node2D
 @onready var hold_timer: Timer = $HoldTimer
 
 var cross_group: Array[Node]
+var _cross_damage: DamageData = null
 var index: int = 0
 var ps_luck: int = 0
 var luck_cd: int = 0
-var now_t:int
 
 var on_charge_up: bool = false
 var gun_bullet: PackedScene
@@ -30,17 +27,17 @@ var shoot_pressed: bool = false
 var value: Array
 
 func _ready():
-	GameEvents.player_ps_upgrade.connect(ps_upgrade)
+	super._ready()
 	charge_up.timeout.connect(gun_on_charge_up)
 	hold_timer.timeout.connect(add_charge_buff)
 	gun.can_shoot = false
 	value = [buff_layer, buff_value, buff_erase_timer]
 
 func ps_upgrade(t_num: int):
-	now_t = t_num
+	super.ps_upgrade(t_num)
 	
 	if now_t == 1:
-		GameEvents.enemy_body.connect(hit_add_cross_bullet)
+		GameEvents.enemy_damage_taken.connect(hit_add_cross_bullet)
 		GameEvents.global_time_count.connect(time_count)
 	elif now_t == 2:
 		buff_layer = 20
@@ -126,18 +123,52 @@ func add_charge_buff():
 		player.player_buff_manager.apply_buff(player_buff, value)
 		player.player_buff_manager.apply_buff(player_buff, value)
 
-func hit_add_cross_bullet(enemy_body: Node, bullet_body: Node):
-	var luck = randf_range(0, 100)
-	if luck < 10 + ps_luck:
-		var ins
-		var max_value = cross_group.size()
-		if max_value > 30:
-			ins = cross_group[index]
-			index = wrapi(index + 1, 0, max_value)
-		else:
-			ins = cross_bullet.instantiate()
-			get_tree().get_first_node_in_group("BulletRoot").call_deferred("add_child", ins)
-			cross_group.push_back(ins)
-		ins.global_position = enemy_body.global_position
-		ins.equip_damage = bullet_body.bullet_damage
-		ins.call_deferred("active_state")
+func hit_add_cross_bullet(final_damage: int, damage_data: DamageData, body_path: NodePath):
+	if damage_data.source_type.has(GameTags.PLAYER) and damage_data.damage_type.has(GameTags.BULLET_DAMAGE):
+		var luck = randf_range(0, 100)
+		if luck < 10 + ps_luck:
+			var ins
+			var max_value = cross_group.size()
+			var enemy_body = get_node_or_null(body_path)
+			if enemy_body == null:
+				return
+			if max_value > 30:
+				ins = cross_group[index]
+				index = wrapi(index + 1, 0, max_value)
+				ins.global_position = enemy_body.global_position
+				ins.damage_data = DamageData.fill(ins.damage_data, {
+					"damage": damage_data.base_damage,
+					"type": GameTags.PS_DAMAGE,
+					"source": GameTags.PS_DAMAGE,
+					"node": ins,
+				})
+				ins.call_deferred("active_state")
+			else:
+				_cross_damage = damage_data
+				ins = ProjectileSpawner.spawn_core(
+					cross_bullet, "", "BulletRoot", self, Faction.PLAYER_SIDE,
+					enemy_body.global_position, 0.0, Vector2.ZERO,
+					false, true, true,
+					Callable(self, "_configure_cross_bullet")
+				)
+				_cross_damage = null
+				cross_group.push_back(ins)
+
+func _configure_cross_bullet(node: Node) -> void:
+	node.damage_data = DamageData.fill(node.damage_data, {
+		"damage": _cross_damage.base_damage,
+		"type": GameTags.PS_DAMAGE,
+		"source": GameTags.PS_DAMAGE,
+		"node": node,
+	})
+
+
+# 联机：同步蓄力发光（供 player.gd 汇总子节点状态）
+func get_network_character_state() -> int:
+	return 1 if on_charge_up else 0
+
+
+func apply_network_character_state(state: int) -> void:
+	var charging: bool = state == 1
+	if gpu_particles_2d != null:
+		gpu_particles_2d.emitting = charging

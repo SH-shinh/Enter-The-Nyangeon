@@ -1,15 +1,10 @@
-extends Node2D
+extends EquipItem
 
 @onready var follow_icon = preload("res://scenes/update_item/peroro_kagami_mochi_icon.tscn")
 
-var num: int
 var group: Array = []
 
-func _ready():
-	first_activation()
-	GameEvents.ability_upgrade_added.connect(on_upgrade_added)
-
-func first_activation():
+func _on_equip():
 	GameEvents.explosion_quantity.connect(add_damage_mult)
 	var sprite_2d = follow_icon.instantiate()
 	group = get_tree().get_nodes_in_group("Follow")
@@ -19,13 +14,6 @@ func first_activation():
 			sprite_2d.get_follow(i)
 			i.follow_use = true
 
-func on_upgrade_added(upgrade: AbilityUpgrade, current_upgrade: Dictionary):
-	if upgrade.id != "peroro_kagami_mochi":
-		return
-	if current_upgrade["peroro_kagami_mochi"]["quantity"] == 1:
-		return
-	num = current_upgrade["peroro_kagami_mochi"]["quantity"]
-
 func add_damage_mult(size: int, explosion: Node):
 	var mult_value = size * 0.1 + 1
-	explosion.damage_mult = mult_value
+	explosion.damage_data.base_damage *= mult_value

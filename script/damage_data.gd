@@ -38,9 +38,11 @@ const WHITE_MIX_WEIGHT := 0.2
 
 func reset_data():
 	base_damage = 0
+	is_heal = false
 	is_crit = false
 	knockback_force = 0
 	knockback_direction = Vector2.ZERO
+	hit_box_center = Vector2.ZERO
 	damage_type.clear()
 	source_node = ""
 	source_type.clear()
@@ -48,6 +50,183 @@ func reset_data():
 	convert_power = 0
 	damage_modifier.clear()
 	on_damage_dealt.clear()
+	owner_peer = 0
+
+# ---------------- 构建器 API ----------------
+
+## 从零构建（cfg 键见 _apply_cfg）
+static func make(cfg: Dictionary = {}) -> DamageData:
+	return fill(null, cfg)
+
+## 复用槽位：slot 为 null 则新建，否则全量 reset 后按 cfg 覆盖；返回该实例
+static func fill(slot: DamageData, cfg: Dictionary = {}) -> DamageData:
+	var d: DamageData = slot if slot != null else DamageData.new()
+	d.reset_data()
+	d._apply_cfg(cfg)
+	return d
+
+## 预设：标准子弹（BULLET_DAMAGE + 阵营来源标签）
+static func bullet(value: int, source_faction: int, node: Node = null) -> DamageData:
+	return fill(null, {
+		"damage": value,
+		"type": GameTags.BULLET_DAMAGE,
+		"source": DamageRouter.source_tag(source_faction),
+		"node": node,
+	})
+
+## 预设：近战（MELEE_DAMAGE + 阵营来源标签）
+static func melee(value: int, source_faction: int, node: Node = null) -> DamageData:
+	return fill(null, {
+		"damage": value,
+		"type": GameTags.MELEE_DAMAGE,
+		"source": DamageRouter.source_tag(source_faction),
+		"node": node,
+	})
+
+## 预设：爆炸
+static func explosion(value: int, source_tag: String, node: Node = null) -> DamageData:
+	return fill(null, {
+		"damage": value,
+		"type": GameTags.EXPLOSION_DAMAGE,
+		"source": source_tag,
+		"node": node,
+	})
+
+## 预设：装备伤害（EQUIP_DAMAGE + EQUIP 来源）
+static func equip_hit(value: int, node: Node = null) -> DamageData:
+	return fill(null, {
+		"damage": value,
+		"type": GameTags.EQUIP_DAMAGE,
+		"source": GameTags.EQUIP,
+		"node": node,
+	})
+
+## 预设：DOT（元素标签 + DOT_DAMAGE）
+static func dot(value: int, element_tag: String, source_tag: String) -> DamageData:
+	return fill(null, {
+		"damage": value,
+		"type": [element_tag, GameTags.DOT_DAMAGE],
+		"source": source_tag,
+	})
+
+## 预设：真实伤害
+static func true_hit(value: int, source_tag: String, node: Node = null) -> DamageData:
+	return fill(null, {
+		"damage": value,
+		"type": GameTags.EQUIP_DAMAGE,
+		"source": source_tag,
+		"flags": [GameTags.TRUE_DAMAGE],
+		"node": node,
+	})
+
+func _apply_cfg(cfg: Dictionary) -> void:
+	if cfg.is_empty():
+		return
+	if cfg.has("damage"):
+		base_damage = cfg["damage"]
+	if cfg.has("crit"):
+		is_crit = cfg["crit"]
+	if cfg.has("convert"):
+		convert_power = cfg["convert"]
+	if cfg.has("knockback"):
+		knockback_force = cfg["knockback"]
+	if cfg.has("direction"):
+		knockback_direction = cfg["direction"]
+	if cfg.has("center"):
+		hit_box_center = cfg["center"]
+	if cfg.has("type"):
+		HealthChangeData.append_to(damage_type, cfg["type"])
+	if cfg.has("source"):
+		HealthChangeData.append_to(source_type, cfg["source"])
+	if cfg.has("flags"):
+		HealthChangeData.append_to(flags, cfg["flags"])
+	if cfg.has("modifiers"):
+		HealthChangeData.append_to(damage_modifier, cfg["modifiers"])
+	if cfg.has("on_hit"):
+		HealthChangeData.append_to(on_damage_dealt, cfg["on_hit"])
+	if cfg.has("node") and cfg["node"] != null:
+		var n: Node = cfg["node"]
+		if n.is_inside_tree():
+			source_node = n.get_path()
+		if not cfg.has("center") and n is Node2D:
+			hit_box_center = n.global_position
+	if cfg.has("owner_peer"):
+		owner_peer = int(cfg["owner_peer"])
+	if cfg.has("source_node"):
+		source_node = NodePath(str(cfg["source_node"]))
+
+# ---------------- 链式 setter（均返回 self） ----------------
+
+func damage(value: int) -> DamageData:
+	base_damage = value
+	return self
+
+func crit(value: bool) -> DamageData:
+	is_crit = value
+	return self
+
+func type(tag: String) -> DamageData:
+	if not damage_type.has(tag):
+		damage_type.append(tag)
+	return self
+
+func source(tag: String) -> DamageData:
+	if not source_type.has(tag):
+		source_type.append(tag)
+	return self
+
+func flag(tag: String) -> DamageData:
+	if not flags.has(tag):
+		flags.append(tag)
+	return self
+
+func knockback(value: int) -> DamageData:
+	knockback_force = value
+	return self
+
+func knockback_dir(value: Vector2) -> DamageData:
+	knockback_direction = value
+	return self
+
+func center(value: Vector2) -> DamageData:
+	hit_box_center = value
+	return self
+
+func convert(value: int) -> DamageData:
+	convert_power = value
+	return self
+
+func from(node: Node) -> DamageData:
+	if node != null:
+		if node.is_inside_tree():
+			source_node = node.get_path()
+		if node is Node2D:
+			hit_box_center = node.global_position
+	return self
+
+func add_modifier(cb: Callable) -> DamageData:
+	damage_modifier.append(cb)
+	return self
+
+func add_on_hit(cb: Callable) -> DamageData:
+	on_damage_dealt.append(cb)
+	return self
+
+## 结构校验：debug 下对缺失的必填项 push_warning，返回是否通过
+func check() -> bool:
+	if not OS.is_debug_build():
+		return true
+	var ok := true
+	if base_damage <= 0:
+		push_warning("DamageData: base_damage <= 0 (source_node=%s)" % source_node)
+		ok = false
+	if damage_type.is_empty():
+		push_warning("DamageData: damage_type 为空 (source_node=%s)" % source_node)
+		ok = false
+	if source_type.is_empty():
+		push_warning("DamageData: source_type 为空 (source_node=%s)" % source_node)
+		ok = false
+	return ok
 
 func get_display_color() -> Color:
 	if damage_type.is_empty():

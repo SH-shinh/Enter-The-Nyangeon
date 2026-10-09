@@ -1,4 +1,4 @@
-[gd_scene load_steps=38 format=3 uid="uid://cr17wqlu5i7ph"]
+[gd_scene load_steps=37 format=3 uid="uid://cr17wqlu5i7ph"]
 
 [ext_resource type="Script" path="res://ui/ark_of_Shittim/arona.gd" id="1_k7o8h"]
 [ext_resource type="Script" path="res://resources/talk/talk_formwork.gd" id="2_56h6p"]
@@ -23,7 +23,6 @@
 [ext_resource type="Resource" uid="uid://bssprs7w5bc16" path="res://resources/talk/plana/plana_lack_1.tres" id="21_f0vaq"]
 [ext_resource type="Texture2D" uid="uid://bhfrbynwvqxxs" path="res://ui/ark_of_Shittim/plana_halo.png" id="22_hg5hm"]
 [ext_resource type="Resource" uid="uid://37wos48kegce" path="res://resources/talk/plana/plana_lack_2.tres" id="22_lq3w4"]
-[ext_resource type="Texture2D" uid="uid://bixolireen61q" path="res://ui/ark_of_Shittim/plana_picture.png" id="23_agyro"]
 [ext_resource type="PackedScene" uid="uid://0p71mm31g3tb" path="res://ui/ark_of_Shittim/cloth_change.tscn" id="23_cjmbd"]
 
 [sub_resource type="Animation" id="Animation_ipikd"]
@@ -299,7 +298,6 @@ flip_h = true
 texture_filter = 2
 position = Vector2(0, 220)
 scale = Vector2(0.46, 0.46)
-texture = ExtResource("23_agyro")
 hframes = 4
 vframes = 4
 

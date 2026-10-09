@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://ea3ht3f25q1m"]
+[gd_scene format=3 uid="uid://ea3ht3f25q1m"]
 
-[ext_resource type="Script" path="res://scenes/update_item/multipurpose_rope.gd" id="1_hqmbl"]
+[ext_resource type="Script" uid="uid://b72iqmn53bfqr" path="res://scenes/update_item/multipurpose_rope.gd" id="1_hqmbl"]
 
 [node name="multipurpose_rope" type="Node2D"]
 script = ExtResource("1_hqmbl")

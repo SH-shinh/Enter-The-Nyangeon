@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://ctog6ilrw4c5i"]
+[gd_scene format=3 uid="uid://ctog6ilrw4c5i"]
 
-[ext_resource type="Script" path="res://scenes/update_item/banana_magazine.gd" id="1_0c0g0"]
+[ext_resource type="Script" uid="uid://d1eadkac6dfkf" path="res://scenes/update_item/banana_magazine.gd" id="1_0c0g0"]
 
-[node name="BananaMagazine" type="Node2D"]
+[node name="BananaMagazine" type="Node2D" unique_id=1497119846]
 script = ExtResource("1_0c0g0")

@@ -1,9 +1,8 @@
-[gd_resource type="Resource" script_class="ClothesCard" load_steps=5 format=3 uid="uid://ctsf2y2ljvv30"]
+[gd_resource type="Resource" script_class="ClothesCard" load_steps=4 format=3 uid="uid://ctsf2y2ljvv30"]
 
 [ext_resource type="Texture2D" uid="uid://dtpmmooph343w" path="res://ui/ark_of_Shittim/maid_plana_icon.png" id="1_1dlic"]
 [ext_resource type="Texture2D" uid="uid://b8ffo8lswmfge" path="res://ui/ark_of_Shittim/maid_plana_icon_2.png" id="2_dnrjt"]
 [ext_resource type="Script" path="res://resources/clothes/clothes_card.gd" id="3_tmkkl"]
-[ext_resource type="Texture2D" uid="uid://dpc0jkb7br1q2" path="res://ui/ark_of_Shittim/maid_plana_picture.png" id="4_ga12a"]
 
 [resource]
 script = ExtResource("3_tmkkl")
@@ -15,4 +14,4 @@ user_name = "PLANA"
 icon_1 = ExtResource("1_1dlic")
 icon_2 = ExtResource("2_dnrjt")
 cost = 15
-sprite = ExtResource("4_ga12a")
+sprite_path = "res://ui/ark_of_Shittim/maid_plana_picture.png"

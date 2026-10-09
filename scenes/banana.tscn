@@ -1,7 +1,7 @@
-[gd_scene load_steps=11 format=3 uid="uid://d3mpig6jjw0ma"]
+[gd_scene format=3 uid="uid://d3mpig6jjw0ma"]
 
+[ext_resource type="Script" uid="uid://bsc5em3bew12d" path="res://scenes/banana.gd" id="1_36b2i"]
 [ext_resource type="Texture2D" uid="uid://ejkns5skcltr" path="res://sprites/update_item/banana_icon.png" id="1_vca74"]
-[ext_resource type="AudioStream" uid="uid://bkyrbf8lggs6k" path="res://sounds/jump_sound_2.wav" id="2_a6c88"]
 
 [sub_resource type="Gradient" id="Gradient_sr4wf"]
 offsets = PackedFloat32Array(0, 0.827869, 1)
@@ -29,48 +29,6 @@ gravity = Vector3(0, 1000, 0)
 scale_curve = SubResource("CurveTexture_u2q6v")
 color_ramp = SubResource("GradientTexture1D_oh36q")
 
-[sub_resource type="Animation" id="Animation_a6dys"]
-resource_name = "new_animation"
-length = 0.8
-tracks/0/type = "method"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath(".")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0.8),
-"transitions": PackedFloat32Array(1),
-"values": [{
-"args": [],
-"method": &"queue_free"
-}]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("GPUParticles2D:emitting")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [true]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("AudioStreamPlayer:playing")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [true]
-}
-
 [sub_resource type="Animation" id="Animation_wmd8k"]
 length = 0.001
 tracks/0/type = "value"
@@ -85,40 +43,54 @@ tracks/0/keys = {
 "update": 1,
 "values": [false]
 }
+
+[sub_resource type="Animation" id="Animation_a6dys"]
+resource_name = "new_animation"
+length = 0.8
+tracks/0/type = "method"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.8),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"idle_state"
+}]
+}
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("AudioStreamPlayer:playing")
+tracks/1/path = NodePath("GPUParticles2D:emitting")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 1,
-"values": [false]
+"values": [true]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_yjlyi"]
 _data = {
-"RESET": SubResource("Animation_wmd8k"),
-"new_animation": SubResource("Animation_a6dys")
+&"RESET": SubResource("Animation_wmd8k"),
+&"new_animation": SubResource("Animation_a6dys")
 }
 
-[node name="Banana" type="Node2D"]
+[node name="Banana" type="Node2D" unique_id=964403975]
+script = ExtResource("1_36b2i")
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=1877502867]
 emitting = false
 amount = 1
-process_material = SubResource("ParticleProcessMaterial_gr21w")
 texture = ExtResource("1_vca74")
 lifetime = 0.8
 one_shot = true
+process_material = SubResource("ParticleProcessMaterial_gr21w")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_yjlyi")
-}
-autoplay = "new_animation"
-
-[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
-stream = ExtResource("2_a6c88")
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=2121878917]
+libraries/ = SubResource("AnimationLibrary_yjlyi")
+autoplay = &"new_animation"

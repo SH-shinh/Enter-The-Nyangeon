@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://script/props/scene_prop.gd" id="1_prop"]
+[ext_resource type="Script" path="res://script/props/prop_wall_body.gd" id="2_wall"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
+size = Vector2(32, 44)
+
+[node name="Obstacle" type="Node2D"]
+script = ExtResource("1_prop")
+
+[node name="Visual" type="Polygon2D" parent="."]
+color = Color(0.3, 0.32, 0.36, 1)
+polygon = PackedVector2Array(-16, -30, 16, -30, 16, 0, -16, 0)
+
+[node name="PropWallBody" type="StaticBody2D" parent="."]
+script = ExtResource("2_wall")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PropWallBody"]
+position = Vector2(0, -15)
+shape = SubResource("RectangleShape2D_wall")

@@ -1,37 +1,27 @@
 extends Node2D
 
-signal check
-
 @export var bgm_first_cut: Array[AudioStream]
 @export var bgm_loop: Array[AudioStream]
 
-@onready var blue_ball: CharacterBody2D = %blue_ball
-@onready var red_ball: CharacterBody2D = %red_ball
-@onready var item_text: Node2D = $TestRoomLayer/ItemText
-@onready var use_name: Label = $TestRoomLayer/ItemText/Panel/use_name
-@onready var animation_player: AnimationPlayer = $TestRoomLayer/ItemText/AnimationPlayer
 @onready var battle_room: Marker2D = $BattleRoom
 
 var bgm_num: int = 0
 
+var _reset_token: int = 0
+
 var player: Node
-var ball_group: Array
 var now_player_path: String = "res://scenes/player/momoi/momoi.tscn"
 
+var initial_enemies: Array = []
+var spawned_anim_scene: PackedScene = preload("res://script/spawn_anim.tscn")
+
 func _ready() -> void:
-	check.connect(check_enemies)
-	blue_ball.player_enter.connect(add_group)
-	blue_ball.player_exit.connect(remove_group)
-	red_ball.player_enter.connect(add_group)
-	red_ball.player_exit.connect(remove_group)
+	initial_enemies = get_tree().get_first_node_in_group("EnemiesRoot").get_children()
 	GameEvents.test_room_reset.connect(reset_data)
 	GameEvents.teset_room_now_player.connect(updata_player_path)
 	await get_tree().create_timer(0.1).timeout
 	reset_data()
 	test_room_start()
-
-func check_enemies():
-	PoolManager.check_enemies()
 
 func test_room_start():
 	SoundManager.cut_finish.connect(bgm_loop_play)
@@ -46,10 +36,27 @@ func updata_player_path(player_path: String):
 	now_player_path = player_path
 
 func reset_data():
+	_reset_token += 1
+	var token := _reset_token
 	GameEvents.emit_round_end()
 	player = get_tree().get_first_node_in_group("Player")
+	if player == null:
+		# LAN：本地玩家由 change_scene 延迟 add_child，0.1s 时可能尚未入组；
+		# 有界等待后再完成本房初始化，避免跳过 reset_date/get_player_base_ability
+		# （否则 base_* 为默认 0，首次获取道具时属性被重算成默认值）。
+		for _i in 30:
+			await get_tree().process_frame
+			if token != _reset_token:
+				return
+			player = get_tree().get_first_node_in_group("Player")
+			if player != null:
+				break
+		if player == null or token != _reset_token:
+			return
 	player.global_position = battle_room.global_position
 	reset_clear_unit()
+	refresh_enemies()
+	connect_player_protection()
 	PlayerData.reset_date()
 	GameEvents.emit_first_round_add()
 	PlayerData.get_player()
@@ -66,6 +73,8 @@ func reset_clear_unit():
 		if !node.is_in_group("Player"):
 			node.queue_free()
 	for bullet in get_tree().get_first_node_in_group("BulletRoot").get_children():
+		if bullet.get("pool_id") != null and str(bullet.pool_id) != "":
+			PoolManager.erase_pool(str(bullet.pool_id))
 		bullet.queue_free()
 	for equip in get_tree().get_first_node_in_group("EquipLayer").get_children():
 		equip.queue_free()
@@ -77,53 +86,46 @@ func reset_clear_unit():
 		foreground.queue_free()
 	for floor in get_tree().get_first_node_in_group("FloorLayer").get_children():
 		floor.queue_free()
+	for prop in get_tree().get_nodes_in_group("SceneProp"):
+		prop.queue_free()
 
-func _physics_process(delta: float) -> void:
-	if !ball_group.is_empty():
-		item_text.global_position = ball_group[0].global_position
+func refresh_enemies():
+	var root = get_tree().get_first_node_in_group("EnemiesRoot")
+	if root == null:
+		return
+	PoolManager.clear_active_enemies()
+	for node in root.get_children():
+		if not initial_enemies.has(node):
+			node.queue_free()
+	for node in initial_enemies:
+		if node == null or not is_instance_valid(node):
+			continue
+		if node.has_method("reset_position"):
+			node.reset_position()
+		if node.get("stats") != null:
+			node.stats.spawn_hp()
+		if node.has_method("active_state"):
+			node.active_state()
 
-func ball_count():
-	if !ball_group.is_empty() and player != null:
-		sort_enemy()
-		for i in ball_group.size():
-			if i == 0:
-				use_name.text = ball_group[i].menu_name
-				if item_text.visible == false:
-					animation_player.play("show_text")
-				ball_group[i].on_chose = true
-			else:
-				ball_group[i].on_chose = false
+func spawn_test_enemy(enemy: EnemyCard, position: Vector2):
+	if enemy == null or enemy.body == null:
+		return
+	var spawn_anim = spawned_anim_scene.instantiate()
+	spawn_anim.position = position
+	spawn_anim.hp_mult = 1
+	spawn_anim.damage_mult = 1
+	get_tree().get_first_node_in_group("EnemiesRoot").add_child(spawn_anim)
+	spawn_anim.enemy_spawn_anim(enemy)
 
-func sort_enemy():
-	if ball_group.size() != 0:
-		ball_group.sort_custom(
-			func(x, y):
-				return x.global_position.distance_to(player.global_position) < y.global_position.distance_to(player.global_position)
-		)
+func connect_player_protection():
+	if player != null and player.get("stats") != null:
+		if not player.stats.hp_changed.is_connected(protect_player):
+			player.stats.hp_changed.connect(protect_player)
 
-func add_group(ball: Node):
-	if !ball_group.has(ball):
-		ball_group.push_back(ball)
-
-func remove_group(ball: Node):
-	if ball_group.has(ball):
-		ball.on_chose = false
-		ball_group.remove_at(ball_group.find(ball))
-		if item_text.visible == true and ball_group.is_empty():
-			animation_player.play_backwards("show_text")
+func protect_player():
+	if player != null and is_instance_valid(player) and player.get("stats") != null:
+		if player.stats.hp <= 0:
+			player.stats.hp = player.stats.max_hp
 
 func _on_timer_timeout():
 	GameEvents.emit_global_time_count()
-	ball_count()
-
-
-func _on_check_box_body_entered(body: Node2D) -> void:
-	if body.is_in_group("Enemy")  and !PoolManager.enemies_group.has(body):
-		PoolManager.enemies_group.append(body)
-		check.emit()
-
-
-func _on_check_box_body_exited(body: Node2D) -> void:
-	if body.is_in_group("Enemy")  and PoolManager.enemies_group.has(body):
-		PoolManager.enemies_group.remove_at(PoolManager.enemies_group.find(body))
-		check.emit()

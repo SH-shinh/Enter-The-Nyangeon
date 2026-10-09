@@ -1,0 +1,16 @@
+{
+  "id": "example",
+  "name": "Example Mod",
+  "version": "0.1.0",
+  "author": "you",
+  "description": "Minimal example mod: one player character + one upgrade.",
+  "api_version": 1,
+  "game_version": "v0.4.1.4",
+  "load_order": 0,
+  "dependencies": [],
+  "conflicts": [],
+  "overrides": [],
+  "replace_files": false,
+  "entry": "",
+  "pck": "example.pck"
+}

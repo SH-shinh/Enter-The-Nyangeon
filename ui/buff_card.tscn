@@ -1,6 +1,6 @@
-[gd_scene load_steps=7 format=3 uid="uid://p0upwahvpxbe"]
+[gd_scene format=3 uid="uid://p0upwahvpxbe"]
 
-[ext_resource type="Script" path="res://ui/BuffCard.gd" id="1_h0i2n"]
+[ext_resource type="Script" uid="uid://dqwj0hqp7m745" path="res://ui/BuffCard.gd" id="1_h0i2n"]
 [ext_resource type="Texture2D" uid="uid://jcqmwo1t8vv0" path="res://ui/ui.png" id="1_ixv6c"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_efeua"]
@@ -23,26 +23,26 @@ gradient = SubResource("Gradient_636w8")
 width = 16
 height = 16
 
-[node name="BuffCard" type="PanelContainer"]
+[node name="BuffCard" type="PanelContainer" unique_id=25131576]
 offset_right = 18.0
 offset_bottom = 26.0
 mouse_filter = 2
 theme = SubResource("Theme_boubp")
 script = ExtResource("1_h0i2n")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=320524256]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = -1
 
-[node name="BuffLayer" type="Label" parent="VBoxContainer"]
+[node name="BuffLayer" type="Label" parent="VBoxContainer" unique_id=1158068538]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 8
 horizontal_alignment = 1
 clip_text = true
 
-[node name="BuffIcon" type="TextureProgressBar" parent="VBoxContainer"]
+[node name="BuffIcon" type="TextureProgressBar" parent="VBoxContainer" unique_id=776809869]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2

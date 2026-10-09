@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://cxgf6tfxi6ik7"]
+
+[ext_resource type="Texture2D" uid="uid://dcdfpkuwxmvxf" path="res://sprites/particle/fire-0001.png" id="1_fire"]
+[ext_resource type="Script" uid="uid://dsbvk3rn1haij" path="res://scenes/update_item/renge_fire_field.gd" id="2_script"]
+[ext_resource type="Resource" uid="uid://ddlwsbdn8hn6j" path="res://resources/buff/enemy_buff/fire_dot.tres" id="3_buff"]
+[ext_resource type="Script" uid="uid://dgqq5631n3u32" path="res://script/hit_box.gd" id="4_hitbox"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_renge"]
+radius = 40.0
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_renge"]
+particles_animation = true
+particles_anim_h_frames = 12
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_renge"]
+lifetime_randomness = 0.3
+particle_flag_disable_z = true
+emission_shape_offset = Vector3(0, -5, 0)
+emission_shape = 1
+emission_sphere_radius = 40.0
+gravity = Vector3(0, 5, 0)
+scale_max = 1.5
+color = Color(1.6963534, 1.4368972, 0, 0.6)
+anim_speed_min = 1.0
+anim_speed_max = 1.0
+
+[node name="renge_fire_field" type="Node2D" unique_id=1517940955]
+script = ExtResource("2_script")
+enemy_buff = ExtResource("3_buff")
+
+[node name="Area2D" type="Area2D" parent="." unique_id=1692338158]
+collision_layer = 32768
+collision_mask = 16384
+monitorable = false
+script = ExtResource("4_hitbox")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=687798158]
+shape = SubResource("CircleShape2D_renge")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=2082726872]
+material = SubResource("CanvasItemMaterial_renge")
+amount = 32
+texture = ExtResource("1_fire")
+explosiveness = 0.1
+process_material = SubResource("ParticleProcessMaterial_renge")

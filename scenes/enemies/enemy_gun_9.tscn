@@ -1,20 +1,58 @@
-[gd_scene load_steps=5 format=3 uid="uid://y6lhuhihhol7"]
+[gd_scene format=3 uid="uid://y6lhuhihhol7"]
 
-[ext_resource type="Script" path="res://scenes/enemies/enemy_gun_9.gd" id="1_ej15d"]
+[ext_resource type="Script" uid="uid://cdshnkaekogvj" path="res://scenes/enemies/enemy_gun_9.gd" id="1_ej15d"]
 [ext_resource type="Texture2D" uid="uid://c5bdmhgq61xul" path="res://sprites/enemies/enemy_gun_9.png" id="1_gjj8p"]
 [ext_resource type="PackedScene" uid="uid://bm6dimclh7dhb" path="res://script/bullet_launcher.tscn" id="2_4syak"]
 [ext_resource type="PackedScene" uid="uid://bhaktofgt0o5w" path="res://scenes/bullet/enemy_bullet.tscn" id="3_ig60q"]
 
-[node name="EnemyGun9" type="Node2D"]
+[sub_resource type="Animation" id="Animation_2p3o8"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0.65, 0.65)]
+}
+
+[sub_resource type="Animation" id="Animation_0xghn"]
+resource_name = "fire_anim"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0.5, 1.05), Vector2(0.65, 0.65)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_n6t38"]
+_data = {
+&"RESET": SubResource("Animation_2p3o8"),
+&"fire_anim": SubResource("Animation_0xghn")
+}
+
+[node name="EnemyGun9" type="Node2D" unique_id=357697330 node_paths=PackedStringArray("bullet_launcher")]
 script = ExtResource("1_ej15d")
 gun_scale = 0.65
+bullet_launcher = NodePath("Sprite2D/BulletLauncher")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=596415573]
 position = Vector2(7, 0)
 scale = Vector2(0.65, 0.65)
 texture = ExtResource("1_gjj8p")
 
-[node name="BulletLauncher" parent="Sprite2D" instance=ExtResource("2_4syak")]
+[node name="BulletLauncher" parent="Sprite2D" unique_id=2060467573 instance=ExtResource("2_4syak")]
 position = Vector2(30, -1)
 shoot_at_once = false
 bullet_scale = 0.6
@@ -26,6 +64,9 @@ bullet_penetrate = 1
 kill_time = 11.0
 bullet_id = "enemy_bullet_1"
 
-[node name="Timer" type="Timer" parent="."]
+[node name="Timer" type="Timer" parent="." unique_id=928218240]
 wait_time = 0.1
 one_shot = true
+
+[node name="FireAnim" type="AnimationPlayer" parent="." unique_id=1544879326]
+libraries/ = SubResource("AnimationLibrary_n6t38")

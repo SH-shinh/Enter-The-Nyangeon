@@ -1,9 +1,8 @@
-[gd_scene load_steps=14 format=3 uid="uid://dwsd13u7soadu"]
+[gd_scene format=3 uid="uid://dwsd13u7soadu"]
 
-[ext_resource type="Script" path="res://ui/support_ui/support_select_ui.gd" id="1_ggi4a"]
+[ext_resource type="Script" uid="uid://cbeaf0cicprqa" path="res://ui/support_ui/support_select_ui.gd" id="1_ggi4a"]
 [ext_resource type="Theme" uid="uid://bxrwumqxp32a3" path="res://rounded_corner_theme.tres" id="1_kweuy"]
-[ext_resource type="Texture2D" uid="uid://dukre71u1l6r7" path="res://sprites/player_support/kei/kei_picture.png" id="2_r1r0d"]
-[ext_resource type="Script" path="res://script/ScrollBox.gd" id="3_y7nr3"]
+[ext_resource type="Script" uid="uid://cxexg1p6wvaks" path="res://script/ScrollBox.gd" id="3_y7nr3"]
 [ext_resource type="PackedScene" uid="uid://bmgdyaumkmynv" path="res://ui/support_ui/support_shop_card.tscn" id="4_gn7qm"]
 [ext_resource type="Resource" uid="uid://c6x6fhqakh5v2" path="res://resources/support/null_support.tres" id="5_1lifw"]
 [ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="6_2v01w"]
@@ -89,8 +88,8 @@ tracks/2/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_8gc0c"]
 _data = {
-"RESET": SubResource("Animation_cr5rs"),
-"select_anim": SubResource("Animation_yh71b")
+&"RESET": SubResource("Animation_cr5rs"),
+&"select_anim": SubResource("Animation_yh71b")
 }
 
 [sub_resource type="Animation" id="Animation_lsmb2"]
@@ -150,11 +149,11 @@ tracks/1/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_4k58p"]
 _data = {
-"RESET": SubResource("Animation_lsmb2"),
-"change_card": SubResource("Animation_scopv")
+&"RESET": SubResource("Animation_lsmb2"),
+&"change_card": SubResource("Animation_scopv")
 }
 
-[node name="support_ui" type="Node2D"]
+[node name="support_ui" type="Node2D" unique_id=898209800]
 script = ExtResource("1_ggi4a")
 support_card = ExtResource("4_gn7qm")
 null_card = ExtResource("5_1lifw")
@@ -163,29 +162,28 @@ test_d = {
 "b": 3
 }
 
-[node name="main_card" type="PanelContainer" parent="."]
+[node name="main_card" type="PanelContainer" parent="." unique_id=994937959]
 clip_children = 1
 custom_minimum_size = Vector2(0, 140)
 offset_right = 80.0
 offset_bottom = 140.0
 theme = ExtResource("1_kweuy")
 
-[node name="ColorRect" type="ColorRect" parent="main_card"]
+[node name="ColorRect" type="ColorRect" parent="main_card" unique_id=1743436837]
 layout_mode = 2
 mouse_filter = 2
 color = Color(0.14902, 0.14902, 0.14902, 1)
 
-[node name="Sprite2D" type="Sprite2D" parent="main_card"]
+[node name="Sprite2D" type="Sprite2D" parent="main_card" unique_id=938941323]
 texture_filter = 2
 position = Vector2(29, 190)
 scale = Vector2(0.4, 0.4)
-texture = ExtResource("2_r1r0d")
 flip_h = true
 hframes = 4
 
-[node name="Node2D" type="Node2D" parent="main_card"]
+[node name="Node2D" type="Node2D" parent="main_card" unique_id=192622953]
 
-[node name="MainName" type="Label" parent="main_card/Node2D"]
+[node name="MainName" type="Label" parent="main_card/Node2D" unique_id=1705776118]
 unique_name_in_owner = true
 offset_left = 3.0
 offset_top = 107.0
@@ -202,14 +200,14 @@ theme_override_fonts/font = ExtResource("6_2v01w")
 theme_override_font_sizes/font_size = 14
 text = "KEI"
 
-[node name="ColorRect3" type="ColorRect" parent="main_card/Node2D"]
+[node name="ColorRect3" type="ColorRect" parent="main_card/Node2D" unique_id=567172000]
 offset_left = -1.0
 offset_top = 125.0
 offset_right = 88.0
 offset_bottom = 390.0
 mouse_filter = 2
 
-[node name="ColorRect2" type="ColorRect" parent="main_card/Node2D"]
+[node name="ColorRect2" type="ColorRect" parent="main_card/Node2D" unique_id=146056016]
 offset_left = -1.0
 offset_top = 128.0
 offset_right = 88.0
@@ -217,7 +215,7 @@ offset_bottom = 396.0
 mouse_filter = 2
 color = Color(0.211765, 0.211765, 0.211765, 1)
 
-[node name="ColorRect" type="ColorRect" parent="main_card/Node2D"]
+[node name="ColorRect" type="ColorRect" parent="main_card/Node2D" unique_id=796286604]
 offset_left = -1.0
 offset_top = -67.0
 offset_right = 88.0
@@ -225,7 +223,7 @@ offset_bottom = 12.0
 mouse_filter = 2
 color = Color(0.211765, 0.211765, 0.211765, 1)
 
-[node name="support" type="Label" parent="main_card/Node2D"]
+[node name="support" type="Label" parent="main_card/Node2D" unique_id=1437831416]
 offset_top = 9.0
 offset_right = 80.0
 offset_bottom = 24.0
@@ -241,7 +239,7 @@ theme_override_font_sizes/font_size = 10
 text = "- SUPPORT -"
 horizontal_alignment = 1
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1928752034]
 visible = false
 clip_contents = true
 offset_top = 132.0
@@ -249,25 +247,21 @@ offset_right = 80.0
 offset_bottom = 252.0
 mouse_filter = 0
 
-[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer" unique_id=132312832]
 layout_mode = 2
 horizontal_scroll_mode = 3
 vertical_scroll_mode = 3
 script = ExtResource("3_y7nr3")
 
-[node name="support_box" type="VBoxContainer" parent="MarginContainer/ScrollContainer"]
+[node name="support_box" type="VBoxContainer" parent="MarginContainer/ScrollContainer" unique_id=1251178365]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 0
 
-[node name="ui_anim" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_8gc0c")
-}
+[node name="ui_anim" type="AnimationPlayer" parent="." unique_id=629486272]
+libraries/ = SubResource("AnimationLibrary_8gc0c")
 
-[node name="card_anim" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_4k58p")
-}
+[node name="card_anim" type="AnimationPlayer" parent="." unique_id=844408450]
+libraries/ = SubResource("AnimationLibrary_4k58p")
 
 [connection signal="gui_input" from="main_card" to="." method="_on_main_card_gui_input"]

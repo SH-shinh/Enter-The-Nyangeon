@@ -12,24 +12,47 @@ signal pick_up_range_changed
 signal hurt_invalid_changed
 
 @export var bullet_type: int = 0 #子弹类型
-@export var luck: int = 0 #概率事件发生率
+
+
+@export_category("基础数值")
+
+@export var max_hp: int = 100 #最大生命值
+@export var heal_mult: float = 1 #治疗系数
+@export var heal_overflow_to_t_hp: bool = false #治疗溢出转入临时生命值（EX 期间开启）
+
 @export var critical_luck: int = 0 #暴击率
+@export var critical_damage: float = 1.5 #暴击伤害倍率
+
+@export var luck: int = 0 #概率事件发生率
 @export var luck_critical_mult: float = 1 #暴击率乘算
+
+@export var knockback_resis: int = 20 #击退抗性（百分比，0-100）
+@export var MAX_SPEED: int = 150 #速度
+@export var SPEED_TIME: float = 0.2 #达到最大速度需要的时间
+@export var pick_up_range: int = 35 #拾取半径
+@export var pick_up_speed: float = 1.0 #长按拾取速度乘区（1=正常）
+
+@export var hurt_invalid: int = 0 #伤害无效化次数
+@export var life_num: int = 0 #生命数
+
+@export_category("硬币相关")
+
 @export var initial_coin: int = 0 #初始硬币
 @export var min_coin: int = 0 #最低硬币
 @export var coin_mult: float = 1 #硬币获取率
-@export var knockback_resis: int = 50 #击退抗性
-@export var MAX_SPEED: int = 150 #速度
-@export var SPEED_TIME: float = 0.2 #达到最大速度需要的时间
-@export var max_hp: int = 100 #最大生命值
-@export var heal_mult: float = 1 #治疗系数
+
+
+@export_category("子弹相关")
+
 @export_range(1, 9999) var max_ammo: int = 15 #弹匣容量
-@export var max_cost: int = 50 #最大cost
+
+@export var bullet_damage: int = 1 #子弹伤害
 @export var bullet_scale: float = 1 #子弹大小
 @export var bullet_kill_time: float = 11 #子弹射程
 @export var bullet_shoot_time: int = 300 #子弹射速
+
 @export_range(50, 1600) var bullet_speed: int = 600 #子弹速度
-@export var bullet_damage: int = 1 #子弹伤害
+
 @export var bullet_recoil: int = 100 #后坐力
 @export var bullet_knockback: int = 120 #击退力
 @export var bullet_penetrate: int = 1 #穿透值
@@ -38,28 +61,67 @@ signal hurt_invalid_changed
 @export_range(0, 360) var bullet_arc :float = 0 #子弹弧度
 @export var reload_timer: float = 1 #换弹时间
 @export var collision_num: int = 0 #子弹反弹次数
-@export var append_damage: int = 0 #追加伤害
+
+
+@export_category("全局伤害")
+
+@export var global_damage: float = 1 #全局伤害乘区
+
+
+@export_category("爆炸")
+
 @export var explosion_damage: float = 1 #爆炸伤害百分比
 @export var explosion_range: float = 1 #爆炸范围百分比
-@export var critical_damage: float = 1.5 #暴击伤害倍率
+
+
+@export_category("召唤物")
+
+@export var summoned_damage: float = 1 #召唤物伤害
+
+
+@export_category("近战")
+
+@export var kick_damage: int = 5 #踢击伤害
+
+@export_category("装备")
+
+@export var equip_damage: float = 1 #装备伤害加成
+
+
+@export_category("异常相关")
+
 @export var dot_time: float = 1 #dot伤害持续时间加成
 @export var dot_damage: float = 1 #dot伤害加成
 @export var fire_dot_layer: int = 5 #火dot最大层数
-@export var global_damage: float = 1 #全局伤害乘区
-@export var kick_damage: int = 5 #踢击伤害
-@export var pick_up_range: int = 35 #拾取半径
-@export var equip_damage: float = 1 #装备伤害加成
-@export var shake_mult: float = 1 #屏幕震动倍率
-@export var shake_length: int = 2 #屏幕震动次数
+@export var converted_cap: int = 10 #策反数量上限
+@export var convert_power: int = 30 #策反伤害
+@export var convert_time: float = 5.0 #策反持续时间（秒）
+@export var chill_layer_mult: float = 1.0 #恶寒层数上限加成
+
+
+@export_category("减伤相关")
+
 @export var hurt_resis: int = 0 #减伤值
 @export var hurt_mult: float = 1 #承伤率
-@export var hurt_invalid: int = 0 #伤害无效化次数
-@export var life_num: int = 0 #生命数
-@export var summoned_damage: float = 1 #召唤物伤害
+
+
+@export_category("屏幕震动相关")
+
+@export var shake_mult: float = 1 #屏幕震动倍率
+@export var shake_length: int = 2 #屏幕震动次数
+
+
+@export_category("其它")
+
 @export var buff_layer_mult: float = 1 #buff上限
+@export var buff_duration: float = 1 #有益buff持续时间百分比（乘区，1=100%）
+@export var max_cost: int = 50 #最大cost
 
 var player_dead: bool = false
-var usable_coin: int = 0
+# 按需计算，避免 @onready 初始化不经过 setter 导致 usable_coin 滞留 0
+var usable_coin: int:
+	get:
+		return coin - min_coin
 
 @onready var ammo: int = max_ammo:
 	set(v):
@@ -77,12 +139,15 @@ var usable_coin: int = 0
 		if coin > v:
 			GameEvents.emit_player_stats_coin_cost(coin - v)
 		coin = v
-		usable_coin = coin - min_coin
 		coin_changed.emit()
 
 @onready var hp: int = max_hp:
 	set(v):
+		# 治疗溢出：把超过血量上限的部分转为临时生命值（仅在 heal_overflow_to_t_hp 开启时）
+		var overflow: int = v - max_hp
 		v = clamp(v, 0, max_hp)
+		if overflow > 0 and heal_overflow_to_t_hp:
+			t_hp += overflow
 		if hp == v:
 			return
 		hp = v
@@ -90,6 +155,10 @@ var usable_coin: int = 0
 		await get_tree().create_timer(0.1).timeout
 		if player_dead == false:
 			if hp <= 0:
+				var stats_owner: Node = get_parent()
+				if stats_owner != null and stats_owner.is_in_group("Player") \
+						and ExtensionHooks.intercept(ExtensionHooks.player_death_gate, [stats_owner]):
+					return
 				if life_num > 0:
 					PlayerData.life_num_add -= 1
 					if PlayerData.game_mode.has("hujiu"):

@@ -1,16 +1,16 @@
-[gd_resource type="Resource" script_class="PlayerCard" load_steps=4 format=3 uid="uid://dhvwuoq4q5114"]
+[gd_resource type="Resource" script_class="PlayerCard" load_steps=3 format=3 uid="uid://dhvwuoq4q5114"]
 
 [ext_resource type="Texture2D" uid="uid://bd5cxtu3u2nov" path="res://sprites/player/hasumi/hasumi_picture_halo.png" id="1_ruj8k"]
 [ext_resource type="Script" path="res://resources/player/player.gd" id="2_048ma"]
-[ext_resource type="Texture2D" uid="uid://dhvm7i37msrpi" path="res://sprites/player/hasumi/hasumi_picture.png" id="3_ayjyn"]
 
 [resource]
 script = ExtResource("2_048ma")
 name = "HANEKAWA HASUMI"
 weapon = "IMPALEMENT"
-sprite = ExtResource("3_ayjyn")
+sprite_path = "res://sprites/player/hasumi/hasumi_picture.png"
 halo = ExtResource("1_ruj8k")
 color = Color(0.994929, 0.497784, 0.436898, 1)
 description = ""
 voice_name = "hasumi"
 id = "hasumi"
+scene_path = "res://scenes/player/hasumi/hasumi.tscn"

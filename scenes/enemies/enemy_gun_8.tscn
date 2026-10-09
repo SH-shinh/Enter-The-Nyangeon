@@ -1,29 +1,70 @@
-[gd_scene load_steps=4 format=3 uid="uid://ienp1pc5modp"]
+[gd_scene format=3 uid="uid://ienp1pc5modp"]
 
-[ext_resource type="Script" path="res://scenes/enemies/enemy_gun_8.gd" id="1_s0bc4"]
+[ext_resource type="Script" uid="uid://b84rxgikisofd" path="res://scenes/enemies/enemy_gun_8.gd" id="1_s0bc4"]
 [ext_resource type="Texture2D" uid="uid://bg2dc4btb3mu6" path="res://sprites/enemies/enemy_gun_8.png" id="2_ek2ep"]
 [ext_resource type="PackedScene" uid="uid://co0r5g6cxpu20" path="res://scenes/bullet/sniper_bullet.tscn" id="4_d6pm2"]
 
-[node name="EnemyGun8" type="Node2D" node_paths=PackedStringArray("bullet_launcher")]
+[sub_resource type="Animation" id="Animation_2p3o8"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0.65, 0.65)]
+}
+
+[sub_resource type="Animation" id="Animation_0xghn"]
+resource_name = "fire_anim"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0.5, 1.05), Vector2(0.65, 0.65)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_gqis2"]
+_data = {
+&"RESET": SubResource("Animation_2p3o8"),
+&"fire_anim": SubResource("Animation_0xghn")
+}
+
+[node name="EnemyGun8" type="Node2D" unique_id=618737263 node_paths=PackedStringArray("bullet_launcher")]
 script = ExtResource("1_s0bc4")
 gun_scale = 0.65
+knockback_force = 300
 bullet_launcher = NodePath("sniper_bullet")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1688165434]
 position = Vector2(7, 0)
 scale = Vector2(0.65, 0.65)
 texture = ExtResource("2_ek2ep")
 
-[node name="sniper_bullet" parent="." instance=ExtResource("4_d6pm2")]
+[node name="sniper_bullet" parent="." unique_id=660049128 instance=ExtResource("4_d6pm2")]
 position = Vector2(27.15, 0)
 
-[node name="Timer" type="Timer" parent="."]
+[node name="Timer" type="Timer" parent="." unique_id=1611405188]
 wait_time = 1.5
 one_shot = true
 
-[node name="Timer2" type="Timer" parent="."]
+[node name="Timer2" type="Timer" parent="." unique_id=1611076439]
 wait_time = 0.3
 one_shot = true
+
+[node name="FireAnim" type="AnimationPlayer" parent="." unique_id=1950453327]
+libraries/ = SubResource("AnimationLibrary_gqis2")
 
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
 [connection signal="timeout" from="Timer2" to="." method="_on_timer_2_timeout"]

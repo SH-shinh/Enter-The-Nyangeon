@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://duh52k36clxnm"]
+[gd_scene format=3 uid="uid://duh52k36clxnm"]
 
-[ext_resource type="Script" path="res://scenes/update_item/arale_hat.gd" id="1_vqngf"]
+[ext_resource type="Script" uid="uid://bgboksooaa18x" path="res://scenes/update_item/arale_hat.gd" id="1_vqngf"]
 
 [node name="AraleHat" type="Node2D"]
 script = ExtResource("1_vqngf")

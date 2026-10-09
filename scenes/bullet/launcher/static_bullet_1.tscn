@@ -1,14 +1,14 @@
-[gd_scene load_steps=5 format=3 uid="uid://mtusmj2be5ae"]
+[gd_scene format=3 uid="uid://mtusmj2be5ae"]
 
 [ext_resource type="PackedScene" uid="uid://bm6dimclh7dhb" path="res://script/bullet_launcher.tscn" id="1_5gybc"]
-[ext_resource type="Script" path="res://scenes/bullet/launcher/static_bullet_1.gd" id="1_aym8m"]
+[ext_resource type="Script" uid="uid://bx4tdr20sl1ce" path="res://scenes/bullet/launcher/static_bullet_1.gd" id="1_aym8m"]
 [ext_resource type="PackedScene" uid="uid://bhaktofgt0o5w" path="res://scenes/bullet/enemy_bullet.tscn" id="3_r1rhb"]
 [ext_resource type="PackedScene" uid="uid://btv16sfw3hyx" path="res://scenes/bullet/enemy_bullet_3.tscn" id="4_urx6i"]
 
-[node name="StaticBullet1" type="Node2D"]
+[node name="StaticBullet1" type="Node2D" unique_id=1674567603]
 script = ExtResource("1_aym8m")
 
-[node name="BulletLauncher" parent="." instance=ExtResource("1_5gybc")]
+[node name="BulletLauncher" parent="." unique_id=1457939589 instance=ExtResource("1_5gybc")]
 shoot_at_once = false
 bullet_scale = 0.6
 bullet_count = 30
@@ -20,7 +20,7 @@ bullet_penetrate = 1
 kill_time = 11.0
 bullet_id = "enemy_bullet_1"
 
-[node name="BulletLauncher2" parent="." instance=ExtResource("1_5gybc")]
+[node name="BulletLauncher2" parent="." unique_id=307172386 instance=ExtResource("1_5gybc")]
 shoot_at_once = false
 bullet_scale = 0.6
 bullet_count = 30
@@ -32,9 +32,9 @@ bullet_penetrate = 1
 kill_time = 11.0
 bullet_id = "enemy_bullet_3"
 
-[node name="BulletTimer1" type="Timer" parent="."]
+[node name="BulletTimer1" type="Timer" parent="." unique_id=543472635]
 
-[node name="BulletTimer2" type="Timer" parent="."]
+[node name="BulletTimer2" type="Timer" parent="." unique_id=2049789280]
 wait_time = 0.15
 
 [connection signal="timeout" from="BulletTimer1" to="." method="_on_bullet_timer_1_timeout"]

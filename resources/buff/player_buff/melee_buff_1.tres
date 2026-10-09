@@ -11,3 +11,4 @@ name = "近战伤害buff"
 ability = ""
 remove_by_layer = false
 description = ""
+modifiers = Array[Dictionary]([{"key": "kick_damage_mult", "mode": "add", "source": "value"}])

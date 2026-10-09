@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://chnuk76n2aqwv"]
+[gd_scene format=3 uid="uid://chnuk76n2aqwv"]
 
-[ext_resource type="Script" path="res://scenes/update_item/bug_eating_plant.gd" id="1_5ppx8"]
+[ext_resource type="Script" uid="uid://decc5wu28g0i1" path="res://scenes/update_item/bug_eating_plant.gd" id="1_5ppx8"]
 
 [node name="bug_eating_plant" type="Node2D"]
 script = ExtResource("1_5ppx8")

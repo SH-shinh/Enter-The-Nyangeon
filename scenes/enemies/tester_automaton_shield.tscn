@@ -1,16 +1,18 @@
-[gd_scene load_steps=32 format=3 uid="uid://dmxgmabfb0b0p"]
+[gd_scene format=3 uid="uid://dmxgmabfb0b0p"]
 
-[ext_resource type="Script" path="res://scenes/enemies/tester_automaton_shield.gd" id="1_3apxv"]
+[ext_resource type="Script" uid="uid://ce44lat17oeed" path="res://scenes/enemies/tester_automaton_shield.gd" id="1_3apxv"]
 [ext_resource type="Texture2D" uid="uid://grpybfaq0dv1" path="res://sprites/enemies/tester_automaton_shield.png" id="1_kfqrb"]
-[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="2_2674t"]
+[ext_resource type="Shader" uid="uid://bqypa5578tm8a" path="res://shaders/sprite_outline.gdshader" id="2_2674t"]
 [ext_resource type="PackedScene" uid="uid://bdo12rjvieur7" path="res://scenes/shadow/shadow.tscn" id="2_qanj7"]
 [ext_resource type="PackedScene" uid="uid://dhdel2yi5tfon" path="res://scenes/enemies/enemy_gun_2.tscn" id="2_v0xhd"]
 [ext_resource type="PackedScene" uid="uid://bp2tplg0cfckw" path="res://scenes/enemies/shield.tscn" id="5_utid4"]
-[ext_resource type="Script" path="res://script/EnemyStats.gd" id="6_glykt"]
+[ext_resource type="Script" uid="uid://b36s5d5e3v3h4" path="res://script/EnemyStats.gd" id="6_glykt"]
 [ext_resource type="PackedScene" uid="uid://bwix1bf5g1mjh" path="res://script/death_anim.tscn" id="7_htqq5"]
-[ext_resource type="Script" path="res://script/EnemyStateMachine.gd" id="7_wyk62"]
+[ext_resource type="Script" uid="uid://b8e2jlmuhbtm5" path="res://script/EnemyStateMachine.gd" id="7_wyk62"]
 [ext_resource type="PackedScene" uid="uid://dcixivms2uc75" path="res://script/enemy_hurt_floating_text.tscn" id="9_hj8wo"]
 [ext_resource type="PackedScene" uid="uid://btl1l8a33rp5b" path="res://scenes/manager/enemy_buff_manager.tscn" id="10_eumqg"]
+[ext_resource type="Script" uid="uid://cgyde7ws002vo" path="res://script/health_component.gd" id="12_eg0q1"]
+[ext_resource type="Script" uid="uid://cog8pvonoqtxu" path="res://script/hurt_box.gd" id="13_8aqal"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_jqf8s"]
 resource_local_to_scene = true
@@ -82,7 +84,7 @@ animations = [{
 "duration": 1.2,
 "texture": SubResource("AtlasTexture_vaj44")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 12.0
 }, {
@@ -111,7 +113,7 @@ animations = [{
 "duration": 0.8,
 "texture": SubResource("AtlasTexture_m4p62")
 }],
-"loop": true,
+"loop": 1,
 "name": &"run",
 "speed": 12.0
 }]
@@ -140,19 +142,21 @@ animations = [{
 "duration": 3.0,
 "texture": SubResource("AtlasTexture_5t1uq")
 }],
-"loop": true,
+"loop": 1,
 "name": &"default",
 "speed": 12.0
 }]
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_c5l7y"]
-radius = 15.0
-height = 52.0
+[sub_resource type="CircleShape2D" id="CircleShape2D_l1yns"]
+radius = 19.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_ckc1p"]
 radius = 13.0384
 
-[node name="TesterAutomatonShield" type="CharacterBody2D" node_paths=PackedStringArray("stats", "sprite_2d", "graphics", "collision_shape_2d", "enemy_buff_manager", "body_part") groups=["Enemy"]]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_tgqf2"]
+size = Vector2(48, 58)
+
+[node name="TesterAutomatonShield" type="CharacterBody2D" unique_id=968542746 node_paths=PackedStringArray("stats", "sprite_2d", "graphics", "collision_shape_2d", "enemy_buff_manager", "body_part") groups=["Enemy"]]
 collision_layer = 8
 collision_mask = 256
 motion_mode = 1
@@ -172,12 +176,12 @@ collision_shape_2d = NodePath("CollisionShape2D")
 enemy_buff_manager = NodePath("EnemyBuffManager")
 body_part = [NodePath("Graphics/Shield")]
 
-[node name="Graphics" type="Node2D" parent="."]
+[node name="Graphics" type="Node2D" parent="." unique_id=446142018]
 
-[node name="shadow" parent="Graphics" instance=ExtResource("2_qanj7")]
+[node name="shadow" parent="Graphics" unique_id=1093043427 instance=ExtResource("2_qanj7")]
 scale = Vector2(1.28125, 1.28125)
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Graphics"]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Graphics" unique_id=695332730]
 material = SubResource("ShaderMaterial_jqf8s")
 position = Vector2(0, -24)
 sprite_frames = SubResource("SpriteFrames_15via")
@@ -186,7 +190,7 @@ autoplay = "idle"
 frame_progress = 0.222215
 flip_h = true
 
-[node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="Graphics"]
+[node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="Graphics" unique_id=473620466]
 material = SubResource("ShaderMaterial_ldkw1")
 position = Vector2(0, -43)
 sprite_frames = SubResource("SpriteFrames_lyvaq")
@@ -194,60 +198,80 @@ autoplay = "default"
 frame_progress = 0.336934
 flip_h = true
 
-[node name="Gun" parent="Graphics" node_paths=PackedStringArray("stats") instance=ExtResource("2_v0xhd")]
+[node name="Gun" parent="Graphics" unique_id=1345990031 node_paths=PackedStringArray("stats") instance=ExtResource("2_v0xhd")]
 position = Vector2(-21, -24)
 shoot_count = 5
 shoot_arc = 30.0
 stats = NodePath("../../EnemyStats")
 
-[node name="Shield" parent="Graphics" instance=ExtResource("5_utid4")]
+[node name="Shield" parent="Graphics" unique_id=701880547 instance=ExtResource("5_utid4")]
+position = Vector2(25, 0)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, -27)
-shape = SubResource("CapsuleShape2D_c5l7y")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1677176932]
+position = Vector2(0, -19)
+shape = SubResource("CircleShape2D_l1yns")
 
-[node name="StateMachine" type="Node" parent="."]
+[node name="StateMachine" type="Node" parent="." unique_id=182256664]
 script = ExtResource("7_wyk62")
 
-[node name="EnemyStats" type="Node" parent="."]
+[node name="EnemyStats" type="Node" parent="." unique_id=2092722976]
 script = ExtResource("6_glykt")
+convert_resist = 45
+convert_threshold = 600
 score = 150
 max_hp = 380
-knockback_resis = 800
+knockback_resis = 80
 penetrate_resis = 5
 Enemy_damage = 15
 Enemy_coin = 12
 MAX_SPEED = 70
 SPEED_TIME = 0.3
-weigth_mult = 0.5
+weigth = 80.0
 
-[node name="DeathAnim" parent="." node_paths=PackedStringArray("stats") instance=ExtResource("7_htqq5")]
+[node name="DeathAnim" parent="." unique_id=1893559569 node_paths=PackedStringArray("stats") instance=ExtResource("7_htqq5")]
 stats = NodePath("../EnemyStats")
 y_position = 24
 
-[node name="Area2D" type="Area2D" parent="."]
+[node name="Area2D" type="Area2D" parent="." unique_id=904492310]
 collision_layer = 0
 collision_mask = 8
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=612895450]
 position = Vector2(0, -14)
 shape = SubResource("CircleShape2D_ckc1p")
 
-[node name="EnemyHurtFloatingText" parent="." instance=ExtResource("9_hj8wo")]
+[node name="EnemyHurtFloatingText" parent="." unique_id=1704086936 node_paths=PackedStringArray("health_component") instance=ExtResource("9_hj8wo")]
+health_component = NodePath("../HealthComponent")
 
-[node name="EnemyBuffManager" parent="." instance=ExtResource("10_eumqg")]
+[node name="EnemyBuffManager" parent="." unique_id=549534664 instance=ExtResource("10_eumqg")]
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1992199263]
 offset_left = -10.0
 offset_top = -71.0
 offset_right = 30.0
 offset_bottom = -45.0
 scale = Vector2(0.5, 0.5)
 
-[node name="BuffBox" type="HBoxContainer" parent="MarginContainer"]
+[node name="BuffBox" type="HBoxContainer" parent="MarginContainer" unique_id=897109649]
 unique_name_in_owner = true
 layout_mode = 2
 alignment = 1
+
+[node name="HealthComponent" type="Node" parent="." unique_id=1437113923 node_paths=PackedStringArray("stats", "hurt_box")]
+script = ExtResource("12_eg0q1")
+stats = NodePath("../EnemyStats")
+hurt_box = NodePath("../HurtBox")
+
+[node name="HurtBox" type="Area2D" parent="." unique_id=144626773 node_paths=PackedStringArray("body")]
+position = Vector2(0, -19)
+collision_layer = 16384
+collision_mask = 163840
+script = ExtResource("13_8aqal")
+body = NodePath("..")
+
+[node name="HurtBoxShape2D" type="CollisionShape2D" parent="HurtBox" unique_id=55640257]
+position = Vector2(0, -10)
+shape = SubResource("RectangleShape2D_tgqf2")
 
 [connection signal="shoot_end" from="Graphics/Gun" to="." method="_on_gun_shoot_end"]
 [connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]

@@ -23,9 +23,9 @@ func smoke_reset():
 	pass
 
 func smoke_anim():
+	if not PoolManager.fx_allowed(&"bullet_smoke"):
+		idle_state()
+		return
 	active_state()
 	animation_player.play("new_animation")
 	gpu_particles_2d.restart()
-
-func remove_pool():
-	pass

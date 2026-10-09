@@ -1,6 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://b3efg723bxoci"]
+[gd_scene format=3 uid="uid://b3efg723bxoci"]
 
-[ext_resource type="Script" path="res://scenes/update_item/black_ninpero.gd" id="1_4vheb"]
+[ext_resource type="Script" uid="uid://1xmjydfbu1sd" path="res://scenes/update_item/black_ninpero.gd" id="1_4vheb"]
 [ext_resource type="Resource" uid="uid://dkiajvvqe064e" path="res://resources/buff/enemy_buff/vuln_buff_2.tres" id="2_7oxjy"]
 
 [node name="BlackNinpero" type="Node2D"]

@@ -1,7 +1,7 @@
 [configuration]
 
-entry_symbol = "gdext_rust_init"
-compatibility_minimum = 4.3
+entry_symbol = "rapier_2d_init"
+compatibility_minimum = 4.7
 
 
 [libraries]
@@ -16,6 +16,12 @@ windows.debug.arm64 = "bin/libgodot_rapier.windows.aarch64-pc-windows-msvc.dll"
 windows.release.arm64 = "bin/libgodot_rapier.windows.aarch64-pc-windows-msvc.dll"
 linux.debug.x86_64 = "bin/libgodot_rapier.linux.x86_64-unknown-linux-gnu.so"
 linux.release.x86_64 = "bin/libgodot_rapier.linux.x86_64-unknown-linux-gnu.so"
+linux.debug.x86_32 = "bin/libgodot_rapier.linux.i686-unknown-linux-gnu.so"
+linux.release.x86_32 = "bin/libgodot_rapier.linux.i686-unknown-linux-gnu.so"
+linux.debug.arm64 = "bin/libgodot_rapier.linux.aarch64-unknown-linux-gnu.so"
+linux.release.arm64 = "bin/libgodot_rapier.linux.aarch64-unknown-linux-gnu.so"
+linux.debug.arm32 = "bin/libgodot_rapier.linux.armv7-unknown-linux-gnueabihf.so"
+linux.release.arm32 = "bin/libgodot_rapier.linux.armv7-unknown-linux-gnueabihf.so"
 android.debug.x86_64 = "bin/libgodot_rapier.android.x86_64-linux-android.so"
 android.release.x86_64 = "bin/libgodot_rapier.android.x86_64-linux-android.so"
 android.debug.x86_32 = "bin/libgodot_rapier.android.i686-linux-android.so"
@@ -35,4 +41,5 @@ web.release.wasm32 = "bin/wasm-nothreads/godot_rapier.wasm"
 
 [icons]
 
-Fluid2D = "Fluid2D.svg"
+Fluid2D = "icons/Fluid2D.svg"
+StateManager2D = "icons/StateManager2D.svg"

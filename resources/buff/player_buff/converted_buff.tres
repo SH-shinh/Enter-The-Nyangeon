@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="1_buff"]
+[ext_resource type="Texture2D" path="res://sprites/buff_icon/mark_buff_icon.png" id="1_icon"]
+
+[resource]
+script = ExtResource("1_buff")
+id = "converted_buff"
+icon = ExtResource("1_icon")
+name = "策反"
+remove_by_layer = false
+description = "被策反"
+audience = -1

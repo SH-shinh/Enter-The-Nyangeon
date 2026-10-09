@@ -1,16 +1,16 @@
-[gd_resource type="Resource" script_class="PlayerCard" load_steps=4 format=3 uid="uid://b7xuyu5df8nte"]
+[gd_resource type="Resource" script_class="PlayerCard" load_steps=3 format=3 uid="uid://b7xuyu5df8nte"]
 
 [ext_resource type="Texture2D" uid="uid://b3820wo0tcpvp" path="res://sprites/player/kasumi/kasumi_picture_halo.png" id="1_imkj1"]
 [ext_resource type="Script" path="res://resources/player/player.gd" id="2_i0xje"]
-[ext_resource type="Texture2D" uid="uid://blewkmtfbtqh2" path="res://sprites/player/kasumi/kasumi_picture.png" id="3_nt6ev"]
 
 [resource]
 script = ExtResource("2_i0xje")
 name = "KINUGAWA KASUMI"
 weapon = "RED RECTOR"
-sprite = ExtResource("3_nt6ev")
+sprite_path = "res://sprites/player/kasumi/kasumi_picture.png"
 halo = ExtResource("1_imkj1")
 color = Color(0.745098, 0.490196, 0.443137, 1)
 description = ""
 voice_name = "kasumi"
 id = "kasumi"
+scene_path = "res://scenes/player/kasumi/kasumi.tscn"

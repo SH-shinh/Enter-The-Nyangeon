@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://wjxq12mcyixh"]
+[gd_scene format=3 uid="uid://wjxq12mcyixh"]
 
-[ext_resource type="Script" path="res://scenes/update_item/intact_atlantis_medal.gd" id="1_84a6n"]
+[ext_resource type="Script" uid="uid://br7p5wu5gpl8m" path="res://scenes/update_item/intact_atlantis_medal.gd" id="1_84a6n"]
 
 [node name="intact_atlantis_medal" type="Node2D"]
 script = ExtResource("1_84a6n")

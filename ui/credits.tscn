@@ -1,0 +1,311 @@
+[gd_scene format=3 uid="uid://xtvvec0bqw71"]
+
+[ext_resource type="Script" uid="uid://c4a07ac318388" path="res://ui/credits.gd" id="1_credits"]
+[ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="2_42u7w"]
+[ext_resource type="Shader" uid="uid://chkj8wgi1ek5d" path="res://shaders/motion_screen.gdshader" id="2_blur"]
+[ext_resource type="FontFile" uid="uid://dj2ec7plgffvx" path="res://fonts/BoutiqueBitmap9x9_Bold_1.9.ttf" id="3_1bagf"]
+[ext_resource type="Texture2D" uid="uid://byi2qb7amfdk3" path="res://ui/ark_of_Shittim/ETN_key_visual.png" id="3_icdkc"]
+[ext_resource type="PackedScene" uid="uid://16ybq5tjkt1a" path="res://ui/return.tscn" id="3_return"]
+[ext_resource type="Script" uid="uid://cxexg1p6wvaks" path="res://script/ScrollBox.gd" id="6_d0gn6"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_credits"]
+shader = ExtResource("2_blur")
+shader_parameter/f = 3.0
+shader_parameter/v = 15.0
+shader_parameter/grayscale = false
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.08235294, 0.08235294, 0.08235294, 0.99215686)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="Gradient" id="Gradient_42u7w"]
+offsets = PackedFloat32Array(0.45398772, 1)
+colors = PackedColorArray(0, 0, 0, 0, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_wvhbo"]
+gradient = SubResource("Gradient_42u7w")
+width = 256
+height = 256
+fill_from = Vector2(1, 1)
+
+[sub_resource type="Gradient" id="Gradient_d0gn6"]
+offsets = PackedFloat32Array(0.1, 0.5, 0.9)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 0.09803922, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_ifow5"]
+gradient = SubResource("Gradient_d0gn6")
+width = 256
+height = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_d0gn6"]
+bg_color = Color(0.08235294, 0.08235294, 0.08235294, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+expand_margin_left = 2.0
+expand_margin_top = 2.0
+expand_margin_right = 2.0
+expand_margin_bottom = 2.0
+
+[sub_resource type="Animation" id="Animation_reset"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Panel:scale")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_enter"]
+resource_name = "enter_anim"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Panel:scale")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.1, 0.13333334, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0, 0), Vector2(0.8, 0.2), Vector2(1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_credits"]
+_data = {
+&"RESET": SubResource("Animation_reset"),
+&"enter_anim": SubResource("Animation_enter")
+}
+
+[sub_resource type="Animation" id="Animation_d0gn6"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Panel:offset_transform_position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Panel:offset_transform_position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="Animation" id="Animation_dyfqb"]
+resource_name = "new_animation"
+length = 2.0
+loop_mode = 1
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Panel:offset_transform_position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Panel:offset_transform_position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, 3, -0.083333336, 0, 0.083333336, 0, 0, -0.16666667, 0, 0, 0),
+"times": PackedFloat32Array(0, 1, 2)
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_swjq5"]
+_data = {
+&"RESET": SubResource("Animation_d0gn6"),
+&"new_animation": SubResource("Animation_dyfqb")
+}
+
+[node name="Credits" type="Control" unique_id=270174486]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_credits")
+font_type = ExtResource("2_42u7w")
+auto_scroll_speed = 8.0
+auto_scroll_return_speed = 8.0
+
+[node name="MotionScreen" type="ColorRect" parent="." unique_id=242359936]
+material = SubResource("ShaderMaterial_credits")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="DIM" type="ColorRect" parent="." unique_id=2072703000]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.54902)
+
+[node name="Panel" type="PanelContainer" parent="." unique_id=1543819815]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -150.0
+offset_right = 220.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(220, 150)
+offset_transform_enabled = true
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="TextureRect" type="TextureRect" parent="Panel" unique_id=1877250733]
+clip_children = 1
+layout_mode = 2
+texture = SubResource("GradientTexture2D_wvhbo")
+
+[node name="TextureRect" type="TextureRect" parent="Panel/TextureRect" unique_id=919315811]
+modulate = Color(1, 1, 1, 0.36862746)
+layout_mode = 0
+offset_top = -38.0
+offset_right = 436.0
+offset_bottom = 167.54286
+texture = ExtResource("3_icdkc")
+expand_mode = 5
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel" unique_id=581442669]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 51
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer" unique_id=327439029]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer" unique_id=1451622137]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Panel/MarginContainer/VBoxContainer/Header" unique_id=806986849]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_outline_color = Color(0.14509805, 0.14509805, 0.14509805, 1)
+theme_override_constants/outline_size = 10
+theme_override_fonts/font = ExtResource("3_1bagf")
+theme_override_font_sizes/font_size = 15
+text = "credits_title"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TextureRect" type="TextureRect" parent="Panel/MarginContainer/VBoxContainer/Header/Title" unique_id=1743821156]
+show_behind_parent = true
+layout_mode = 0
+offset_left = -16.0
+offset_top = 2.0
+offset_right = 420.0
+offset_bottom = 16.0
+texture = SubResource("GradientTexture2D_ifow5")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel/MarginContainer/VBoxContainer" unique_id=517665462]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
+script = ExtResource("6_d0gn6")
+
+[node name="ListBox" type="VBoxContainer" parent="Panel/MarginContainer/VBoxContainer/ScrollContainer" unique_id=1239798636]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="Panel" type="PanelContainer" parent="Panel" unique_id=1940383839]
+layout_mode = 2
+offset_transform_enabled = true
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_d0gn6")
+
+[node name="return" parent="." unique_id=463313431 instance=ExtResource("3_return")]
+custom_minimum_size = Vector2(26, 26)
+layout_mode = 0
+offset_left = 600.0
+offset_top = 12.0
+offset_right = 626.0
+offset_bottom = 38.0
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=174846904]
+libraries/ = SubResource("AnimationLibrary_credits")
+
+[node name="AnimationPlayer2" type="AnimationPlayer" parent="." unique_id=216740188]
+libraries/ = SubResource("AnimationLibrary_swjq5")
+autoplay = &"new_animation"

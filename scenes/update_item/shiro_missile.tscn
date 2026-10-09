@@ -1,9 +1,11 @@
-[gd_scene load_steps=14 format=3 uid="uid://bubi68pxb773j"]
+[gd_scene format=3 uid="uid://bubi68pxb773j"]
 
-[ext_resource type="Script" path="res://scenes/update_item/shiro_missile.gd" id="1_mh4cq"]
+[ext_resource type="Script" uid="uid://5y2eegdcuo88" path="res://scenes/update_item/shiro_missile.gd" id="1_mh4cq"]
 [ext_resource type="Texture2D" uid="uid://doi7ncqh514eo" path="res://sprites/update_item/shiro_missile_4.png" id="1_txd4u"]
 [ext_resource type="Texture2D" uid="uid://b5nbmcnfshgb8" path="res://sprites/particle/circular_1.png" id="2_5ntv6"]
-[ext_resource type="Script" path="res://scenes/update_item/Missile.gd" id="3_bk8d4"]
+[ext_resource type="Script" uid="uid://bf04bvdbu212f" path="res://scenes/update_item/Missile.gd" id="3_bk8d4"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ilx02"]
 
 [sub_resource type="Gradient" id="Gradient_e77ty"]
 colors = PackedColorArray(1, 1, 1, 1, 0.497474, 0.497474, 0.497474, 1)
@@ -35,49 +37,45 @@ color_ramp = SubResource("GradientTexture1D_maflr")
 color_initial_ramp = SubResource("GradientTexture1D_2w5bk")
 sub_emitter_keep_velocity = true
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_ilx02"]
-
 [sub_resource type="CircleShape2D" id="CircleShape2D_a5762"]
 radius = 100.0
 
-[node name="ShiroMissile" type="CharacterBody2D" groups=["PlayerBullet"]]
+[node name="ShiroMissile" type="Area2D" unique_id=846532675 groups=["PlayerBullet"]]
 z_index = 1
+collision_layer = 0
+collision_mask = 16384
+monitorable = false
 script = ExtResource("1_mh4cq")
 
-[node name="Missile" type="Sprite2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1107222994]
+position = Vector2(5, -2)
+shape = SubResource("CircleShape2D_ilx02")
+
+[node name="Missile" type="Sprite2D" parent="." unique_id=2047576006]
 texture = ExtResource("1_txd4u")
 hframes = 4
 script = ExtResource("3_bk8d4")
 rotate_sprites = true
 
-[node name="Marker2D" type="Marker2D" parent="Missile"]
+[node name="Marker2D" type="Marker2D" parent="Missile" unique_id=1357690920]
 position = Vector2(-10, -2)
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="Missile/Marker2D"]
-process_material = SubResource("ParticleProcessMaterial_0y46o")
+[node name="GPUParticles2D" type="GPUParticles2D" parent="Missile/Marker2D" unique_id=110948650]
 texture = ExtResource("2_5ntv6")
 lifetime = 0.2
 fixed_fps = 60
+process_material = SubResource("ParticleProcessMaterial_0y46o")
 
-[node name="HitBox" type="Area2D" parent="Missile/Marker2D"]
-position = Vector2(15, 0)
-collision_layer = 0
-collision_mask = 1032
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Missile/Marker2D/HitBox"]
-shape = SubResource("CircleShape2D_ilx02")
-
-[node name="TrackBox" type="Area2D" parent="."]
+[node name="TrackBox" type="Area2D" parent="." unique_id=640106494]
 collision_layer = 0
 collision_mask = 8
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="TrackBox"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TrackBox" unique_id=1386676639]
 shape = SubResource("CircleShape2D_a5762")
 
-[node name="Marker2D" type="Marker2D" parent="."]
+[node name="Marker2D" type="Marker2D" parent="." unique_id=82852096]
 unique_name_in_owner = true
 position = Vector2(12, -2)
 
-[connection signal="body_entered" from="Missile/Marker2D/HitBox" to="." method="_on_hit_box_body_entered"]
 [connection signal="body_entered" from="TrackBox" to="." method="_on_track_box_body_entered"]
 [connection signal="body_exited" from="TrackBox" to="." method="_on_track_box_body_exited"]

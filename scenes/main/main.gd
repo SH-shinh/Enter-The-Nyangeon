@@ -1,5 +1,7 @@
 extends Node2D
 
+const FLOATING_TEXT: PackedScene = preload("res://ui/floating_text.tscn")
+
 @export var bgm_first_cut: Array[AudioStream]
 @export var bgm_loop: Array[AudioStream]
 
@@ -7,8 +9,6 @@ extends Node2D
 @onready var round_manager = $RoundManager
 @onready var game_mode_manager: Node = $game_mode_manager
 @onready var BGM_timer: Timer = $BGMTimer
-
-signal check
 
 var bgm_num: int = 0
 
@@ -25,7 +25,6 @@ func _ready() -> void:
 	round_manager.backlayer_clear.connect(backlayer_clear_unit)
 	round_manager.item_clear.connect(item_clear_unit)
 	round_manager.player_portal.connect(player_portal_unit)
-	check.connect(check_enemies)
 	GameEvents.first_round_add.connect(first_round)
 	GameEvents.round_upgrade.connect(enemy_clear_unit)
 	GameEvents.round_upgrade_end.connect(enemy_clear_unit)
@@ -34,7 +33,7 @@ func _ready() -> void:
 	GameEvents.pyroxenes_pick_up.connect(_on_bgm_timer_timeout)
 	GameEvents.game_over.connect(game_over_true)
 
-func game_over_true(player_dead: bool):
+func game_over_true(_player_dead: bool):
 	game_over = true
 
 func bgm_loop_play():
@@ -54,11 +53,25 @@ func first_round():
 	BGM_timer.start()
 	
 	PlayerData.get_player()
+	if PlayerData.player == null:
+		# 防御：玩家尚未入组时不要用默认 base_* 重算（否则属性会塌成默认值）
+		for _i in 30:
+			await get_tree().process_frame
+			PlayerData.get_player()
+			if PlayerData.player != null:
+				break
+		if PlayerData.player == null:
+			push_warning("[main] first_round: player not ready, skip base capture")
+			return
 	PlayerData.get_player_base_ability()
 	PlayerData.emit_set_player()
 	PlayerData.update_player_ability()
 	
-	round_manager.first_round_start()
+	var start_local_round: bool = true
+	if ExtensionHooks.first_round_start_gate.is_valid():
+		start_local_round = bool(ExtensionHooks.first_round_start_gate.call())
+	if start_local_round:
+		round_manager.first_round_start()
 	
 	SupportData.game_add_support()
 	
@@ -67,14 +80,31 @@ func first_round():
 func get_player():
 	player = get_tree().get_first_node_in_group("Player")
 
-func check_enemies():
-	PoolManager.check_enemies()
-
 func enemy_clear_unit():
+	var total_coin: int = 0
 	for enemies in get_tree().get_first_node_in_group("EnemiesRoot").get_children():
 		if enemies.is_in_group("Enemy") and !enemies.is_in_group("EnemyPart"):
+			if enemies.is_in_group("Converted") and enemies.has_method("settle_converted_clear"):
+				total_coin += enemies.settle_converted_clear()
 			PoolManager.erase_pool(enemies.pool_id)
 			enemies.queue_free()
+	if total_coin > 0:
+		_show_converted_clear_coin(total_coin)
+
+# 清场时被策反敌人金币总额：在玩家处飘一次白→粉提示，并播放一次金币音效
+func _show_converted_clear_coin(value: int) -> void:
+	player = get_tree().get_first_node_in_group("Player")
+	if player == null:
+		return
+	SoundManager.play_sfx("CoinSounds")
+	var ft: Node2D = PoolManager.get_pool("floating_text")
+	if ft == null or ft.is_idle == 0:
+		ft = FLOATING_TEXT.instantiate() as Node2D
+		get_tree().get_first_node_in_group("ForegroundLayer").add_child(ft)
+	ft.global_position = player.global_position + (Vector2.UP * randf_range(30, 50))
+	ft.set_style(Color(1, 1, 1), 24)
+	ft.play_anim(Color(1, 1, 1), Color(0.986, 0.638, 0.855))
+	ft.start("+" + str(value))
 
 func coin_clear_unit():
 	for coins in get_tree().get_first_node_in_group("CoinRoot").get_children():
@@ -115,17 +145,6 @@ func boss_bgm():
 
 func boss_bgm_stop():
 	SoundManager.bgm_fade_out()
-
-func _on_check_box_body_entered(body):
-	if body.is_in_group("Enemy")  and !PoolManager.enemies_group.has(body):
-		PoolManager.enemies_group.append(body)
-		check.emit()
-
-func _on_check_box_body_exited(body):
-	if body.is_in_group("Enemy")  and PoolManager.enemies_group.has(body):
-		PoolManager.enemies_group.remove_at(PoolManager.enemies_group.find(body))
-		check.emit()
-
 
 func _on_bgm_timer_timeout() -> void:
 	var first_bgm = bgm_num

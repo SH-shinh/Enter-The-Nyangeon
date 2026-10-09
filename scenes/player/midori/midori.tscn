@@ -1,8 +1,8 @@
-[gd_scene load_steps=50 format=3 uid="uid://jwjknfghsmkj"]
+[gd_scene format=3 uid="uid://jwjknfghsmkj"]
 
-[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="1_6qbut"]
+[ext_resource type="Shader" uid="uid://bqypa5578tm8a" path="res://shaders/sprite_outline.gdshader" id="1_6qbut"]
 [ext_resource type="PackedScene" uid="uid://b78jo1set8q45" path="res://script/follow.tscn" id="1_cy7fs"]
-[ext_resource type="Script" path="res://scenes/player/momoi/momoi.gd" id="1_xc51m"]
+[ext_resource type="Script" uid="uid://ci8narxcxkq0w" path="res://script/player.gd" id="1_xc51m"]
 [ext_resource type="PackedScene" uid="uid://bdo12rjvieur7" path="res://scenes/shadow/shadow.tscn" id="2_bfnq2"]
 [ext_resource type="Texture2D" uid="uid://c8suqk0c38wco" path="res://sprites/player/midori/midori.png" id="2_j64wp"]
 [ext_resource type="Resource" uid="uid://c1w0eu7jam6k5" path="res://resources/player/midori.tres" id="2_wj45r"]
@@ -11,11 +11,12 @@
 [ext_resource type="Texture2D" uid="uid://ieu13vouw3p5" path="res://sprites/player/midori/midori_halo.png" id="5_6x16q"]
 [ext_resource type="PackedScene" uid="uid://wffnchsknkba" path="res://script/hat.tscn" id="7_qhay6"]
 [ext_resource type="PackedScene" uid="uid://bq1y56b2ams1g" path="res://scenes/weapon/Fresh_Inspiration/fresh_inspiration.tscn" id="8_yf6yq"]
-[ext_resource type="Script" path="res://scenes/player/StateMachine.gd" id="10_ico2i"]
+[ext_resource type="Script" uid="uid://e2gvf56eu6jb" path="res://scenes/player/StateMachine.gd" id="10_ico2i"]
 [ext_resource type="PackedScene" uid="uid://bkfr05lmqg3f7" path="res://scenes/bullet/midori_bullet.tscn" id="10_r0m8e"]
-[ext_resource type="Script" path="res://script/Stats.gd" id="11_rqsav"]
+[ext_resource type="Script" uid="uid://c5wxmcve7xpca" path="res://script/Stats.gd" id="11_rqsav"]
 [ext_resource type="AudioStream" uid="uid://5rnyiqxeiusa" path="res://sounds/RunSounds.wav" id="12_gqf8t"]
 [ext_resource type="AudioStream" uid="uid://b6t6pjb3evtw4" path="res://sounds/jump.wav" id="13_cetql"]
+[ext_resource type="Script" uid="uid://cog8pvonoqtxu" path="res://script/hurt_box.gd" id="13_hsbc4"]
 [ext_resource type="AudioStream" uid="uid://bqqs4akeispjg" path="res://sounds/OnHit.wav" id="14_lvimc"]
 [ext_resource type="AudioStream" uid="uid://b5fdodmk5utji" path="res://sounds/coin.wav" id="15_b3r53"]
 [ext_resource type="PackedScene" uid="uid://1th2ey27vgac" path="res://ui/game_ui.tscn" id="16_0xare"]
@@ -26,7 +27,9 @@
 [ext_resource type="PackedScene" uid="uid://ccbfmsfn7ay8r" path="res://script/kick.tscn" id="21_s3ohu"]
 [ext_resource type="PackedScene" uid="uid://voxip8vojin" path="res://scenes/manager/player_buff_manager.tscn" id="22_1db7o"]
 [ext_resource type="PackedScene" uid="uid://3fj0ks2ph6pn" path="res://scenes/player/midori/midori_ps.tscn" id="25_pfkt5"]
+[ext_resource type="Resource" uid="uid://dsblwps2uxvdu" path="res://resources/buff/enemy_buff/poison_dot.tres" id="27_vnq86"]
 [ext_resource type="PackedScene" uid="uid://c620jv6qq2f8w" path="res://scenes/player/t_hp_count.tscn" id="27_x4kv2"]
+[ext_resource type="Script" uid="uid://crtabh2xwunne" path="res://script/player_health_component.gd" id="30_c1gn1"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_olw4x"]
 radius = 7.0
@@ -94,7 +97,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_wdxij")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 13.0
 }, {
@@ -102,7 +105,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_bl5tg")
 }],
-"loop": true,
+"loop": 1,
 "name": &"jump",
 "speed": 5.0
 }, {
@@ -119,7 +122,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_wnsdq")
 }],
-"loop": true,
+"loop": 1,
 "name": &"run",
 "speed": 13.0
 }]
@@ -130,11 +133,6 @@ height = 2.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_c6dxl"]
 radius = 35.0
-
-[sub_resource type="Environment" id="Environment_ix0x3"]
-background_mode = 3
-glow_enabled = true
-glow_strength = 0.7
 
 [sub_resource type="Animation" id="Animation_quqct"]
 resource_name = "Invincible frame"
@@ -194,8 +192,8 @@ tracks/2/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_apy7m"]
 _data = {
-"Invincible frame": SubResource("Animation_quqct"),
-"RESET": SubResource("Animation_54v52")
+&"Invincible frame": SubResource("Animation_quqct"),
+&"RESET": SubResource("Animation_54v52")
 }
 
 [sub_resource type="Animation" id="Animation_btd8x"]
@@ -256,11 +254,11 @@ tracks/1/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_y8tsq"]
 _data = {
-"RESET": SubResource("Animation_btd8x"),
-"kick_anim": SubResource("Animation_kssmf")
+&"RESET": SubResource("Animation_btd8x"),
+&"kick_anim": SubResource("Animation_kssmf")
 }
 
-[node name="midori" type="CharacterBody2D" node_paths=PackedStringArray("stats") groups=["Player"]]
+[node name="midori" type="CharacterBody2D" unique_id=1185409959 node_paths=PackedStringArray("stats") groups=["Player"]]
 collision_mask = 256
 motion_mode = 1
 script = ExtResource("1_xc51m")
@@ -269,22 +267,22 @@ ps_card = ExtResource("3_pnjrc")
 stats = NodePath("Stats")
 player_color = Color(0.470197, 0.87084, 0.386237, 1)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=212315420]
 position = Vector2(0, -6)
 shape = SubResource("CircleShape2D_olw4x")
 
-[node name="Follow" parent="." instance=ExtResource("1_cy7fs")]
+[node name="Follow" parent="." unique_id=136568930 instance=ExtResource("1_cy7fs")]
 
-[node name="Shadow" parent="." instance=ExtResource("2_bfnq2")]
+[node name="Shadow" parent="." unique_id=817723468 instance=ExtResource("2_bfnq2")]
 scale = Vector2(0.445313, 0.445313)
 
-[node name="GPUParticles2D" parent="." instance=ExtResource("3_2f2lh")]
+[node name="GPUParticles2D" parent="." unique_id=1605939851 instance=ExtResource("3_2f2lh")]
 emitting = false
 
-[node name="Graphics" type="Node2D" parent="."]
+[node name="Graphics" type="Node2D" parent="." unique_id=932663807]
 unique_name_in_owner = true
 
-[node name="Halo" type="Sprite2D" parent="Graphics"]
+[node name="Halo" type="Sprite2D" parent="Graphics" unique_id=1734204769]
 unique_name_in_owner = true
 material = SubResource("ShaderMaterial_mvapb")
 position = Vector2(-10, -32)
@@ -292,7 +290,7 @@ rotation = 0.47822
 scale = Vector2(0.254, 0.276)
 texture = ExtResource("5_6x16q")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Graphics"]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Graphics" unique_id=1293520025]
 unique_name_in_owner = true
 material = SubResource("ShaderMaterial_gmsko")
 position = Vector2(0, -17)
@@ -301,61 +299,63 @@ animation = &"idle"
 autoplay = "idle"
 flip_h = true
 
-[node name="HaloRoot" type="Node2D" parent="Graphics/AnimatedSprite2D"]
+[node name="HaloRoot" type="Node2D" parent="Graphics/AnimatedSprite2D" unique_id=1470986867]
 unique_name_in_owner = true
 position = Vector2(-9, -28)
 
-[node name="Hat" parent="Graphics/AnimatedSprite2D" instance=ExtResource("7_qhay6")]
+[node name="Hat" parent="Graphics/AnimatedSprite2D" unique_id=678355785 instance=ExtResource("7_qhay6")]
 position = Vector2(1, -12)
 
-[node name="Gun" parent="Graphics" node_paths=PackedStringArray("stats") instance=ExtResource("8_yf6yq")]
+[node name="Gun" parent="Graphics" unique_id=1464381479 node_paths=PackedStringArray("stats") instance=ExtResource("8_yf6yq")]
 unique_name_in_owner = true
 position = Vector2(0, -8)
 stats = NodePath("../../Stats")
 bullet = ExtResource("10_r0m8e")
 
-[node name="HitBox" type="Area2D" parent="." groups=["PlayerBox"]]
+[node name="HurtBox" type="Area2D" parent="." unique_id=708945781 node_paths=PackedStringArray("body") groups=["PlayerBox"]]
 collision_layer = 2048
 collision_mask = 1160
+script = ExtResource("13_hsbc4")
+body = NodePath("..")
 
-[node name="HitboxShape" type="CollisionShape2D" parent="HitBox"]
+[node name="HurtboxShape" type="CollisionShape2D" parent="HurtBox" unique_id=73279442]
 position = Vector2(0, -8)
 rotation = 1.5708
 shape = SubResource("CapsuleShape2D_gf5ue")
 debug_color = Color(3.18866e-06, 0.0816588, 0.291816, 0.42)
 
-[node name="PickBox" type="Area2D" parent="."]
+[node name="PickBox" type="Area2D" parent="." unique_id=799897714]
 collision_layer = 0
 collision_mask = 64
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="PickBox"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PickBox" unique_id=1376066216]
 position = Vector2(0, -11)
 shape = SubResource("CircleShape2D_c6dxl")
 debug_color = Color(0.724221, 0.462988, 0.32265, 0.42)
 
-[node name="FlyTimer" type="Timer" parent="."]
+[node name="FlyTimer" type="Timer" parent="." unique_id=1474302765]
 wait_time = 0.3
 one_shot = true
 
-[node name="JumpTimer" type="Timer" parent="."]
+[node name="JumpTimer" type="Timer" parent="." unique_id=1515502541]
 wait_time = 0.1
 one_shot = true
 
-[node name="JumpCDTimer" type="Timer" parent="."]
+[node name="JumpCDTimer" type="Timer" parent="." unique_id=2031592576]
 one_shot = true
 
-[node name="RunSoundsTimer" type="Timer" parent="."]
+[node name="RunSoundsTimer" type="Timer" parent="." unique_id=1039419738]
 wait_time = 0.2
 one_shot = true
 
-[node name="InvincibleFrame" type="Timer" parent="."]
+[node name="InvincibleFrame" type="Timer" parent="." unique_id=1013727434]
 wait_time = 0.5
 one_shot = true
 
-[node name="StateMachine" type="Node" parent="."]
+[node name="StateMachine" type="Node" parent="." unique_id=1917069307]
 script = ExtResource("10_ico2i")
 
-[node name="Stats" type="Node" parent="."]
+[node name="Stats" type="Node" parent="." unique_id=249095698]
 script = ExtResource("11_rqsav")
 max_hp = 64
 max_ammo = 5
@@ -367,47 +367,42 @@ bullet_knockback = 150
 reload_timer = 1.2
 shake_mult = 2.0
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_ix0x3")
-
-[node name="RunSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="RunSounds" type="AudioStreamPlayer2D" parent="." unique_id=1239138067]
 process_mode = 3
 stream = ExtResource("12_gqf8t")
 volume_db = -6.0
 bus = &"SFX"
 
-[node name="JumpSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="JumpSounds" type="AudioStreamPlayer2D" parent="." unique_id=1175368119]
 process_mode = 3
 stream = ExtResource("13_cetql")
 bus = &"SFX"
 
-[node name="OnHitSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="OnHitSounds" type="AudioStreamPlayer2D" parent="." unique_id=394534706]
 process_mode = 3
 stream = ExtResource("14_lvimc")
 volume_db = 8.0
 bus = &"SFX"
 
-[node name="CoinSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="CoinSounds" type="AudioStreamPlayer2D" parent="." unique_id=1352564849]
 process_mode = 3
 stream = ExtResource("15_b3r53")
 volume_db = -2.0
 bus = &"SFX"
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_apy7m")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=786288221]
+libraries/ = SubResource("AnimationLibrary_apy7m")
 
-[node name="GameUI" parent="." node_paths=PackedStringArray("player", "stats") instance=ExtResource("16_0xare")]
+[node name="GameUI" parent="." unique_id=538661117 node_paths=PackedStringArray("player", "stats") instance=ExtResource("16_0xare")]
 player = NodePath("..")
 stats = NodePath("../Stats")
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1844544646]
 layer = 3
 
-[node name="PauseScreen" parent="CanvasLayer" instance=ExtResource("17_mkiga")]
+[node name="PauseScreen" parent="CanvasLayer" unique_id=23109733 instance=ExtResource("17_mkiga")]
 
-[node name="JumpCDBar" type="TextureProgressBar" parent="."]
+[node name="JumpCDBar" type="TextureProgressBar" parent="." unique_id=267816493]
 visible = false
 z_index = 20
 offset_left = -16.0
@@ -421,29 +416,33 @@ value = 0.355
 texture_under = ExtResource("18_wksst")
 texture_progress = ExtResource("19_qg0wu")
 
-[node name="Camera2D" parent="." instance=ExtResource("20_b7cn5")]
+[node name="Camera2D" parent="." unique_id=26431510 instance=ExtResource("20_b7cn5")]
 offset = Vector2(0, -15)
 
-[node name="Kick" parent="." node_paths=PackedStringArray("player") instance=ExtResource("21_s3ohu")]
+[node name="Kick" parent="." unique_id=904048276 node_paths=PackedStringArray("player") instance=ExtResource("21_s3ohu")]
 position = Vector2(0, -16)
 player = NodePath("..")
 
-[node name="AnimationPlayer2" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_y8tsq")
-}
+[node name="AnimationPlayer2" type="AnimationPlayer" parent="." unique_id=798224492]
+libraries/ = SubResource("AnimationLibrary_y8tsq")
 
-[node name="PlayerBuffManager" parent="." instance=ExtResource("22_1db7o")]
+[node name="PlayerBuffManager" parent="." unique_id=578372580 instance=ExtResource("22_1db7o")]
 
-[node name="MidoriPS" parent="." node_paths=PackedStringArray("stats") instance=ExtResource("25_pfkt5")]
+[node name="MidoriPS" parent="." unique_id=1374357352 node_paths=PackedStringArray("stats", "player", "gun") instance=ExtResource("25_pfkt5")]
+enemy_buff = ExtResource("27_vnq86")
+stats = NodePath("../Stats")
+player = NodePath("..")
+gun = NodePath("../Graphics/Gun")
+
+[node name="T_HP_Count" parent="." unique_id=1782090182 node_paths=PackedStringArray("stats") instance=ExtResource("27_x4kv2")]
 stats = NodePath("../Stats")
 
-[node name="T_HP_Count" parent="." node_paths=PackedStringArray("stats") instance=ExtResource("27_x4kv2")]
+[node name="HealthComponent" type="Node" parent="." unique_id=622306169 node_paths=PackedStringArray("stats", "hurt_box")]
+script = ExtResource("30_c1gn1")
 stats = NodePath("../Stats")
+hurt_box = NodePath("../HurtBox")
 
-[connection signal="is_health" from="." to="." method="_on_is_health"]
 [connection signal="is_hurt" from="." to="." method="_on_is_hurt"]
-[connection signal="body_entered" from="HitBox" to="." method="_on_hit_box_body_entered"]
 [connection signal="area_entered" from="PickBox" to="." method="_on_pick_box_area_entered"]
 [connection signal="timeout" from="JumpCDTimer" to="." method="_on_jump_cd_timer_timeout"]
 [connection signal="pick_up_range_changed" from="Stats" to="." method="_on_stats_pick_up_range_changed"]

@@ -9,3 +9,4 @@ id = "immune_damage_buff"
 icon = ExtResource("1_w8t6u")
 name = "免疫伤害"
 description = ""
+modifiers = Array[Dictionary]([{"key": "hurt_invalid_add", "mode": "add", "source": "value"}])

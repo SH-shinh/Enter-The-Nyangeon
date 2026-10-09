@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://cxt3kdfjmwfqj"]
+[gd_scene format=3 uid="uid://cxt3kdfjmwfqj"]
 
-[ext_resource type="Script" path="res://scenes/update_item/sports_gloves.gd" id="1_yterb"]
+[ext_resource type="Script" uid="uid://bm4c6trgskif8" path="res://scenes/update_item/sports_gloves.gd" id="1_yterb"]
 
 [node name="SportsGloves" type="Node2D"]
 script = ExtResource("1_yterb")

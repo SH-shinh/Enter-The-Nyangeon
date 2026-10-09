@@ -1,9 +1,9 @@
-[gd_scene load_steps=22 format=3 uid="uid://bn1f8nr3qe3s7"]
+[gd_scene format=3 uid="uid://bn1f8nr3qe3s7"]
 
-[ext_resource type="Shader" path="res://shaders/screen_outline.gdshader" id="1_fa8gc"]
-[ext_resource type="Script" path="res://scenes/item/medical_kit.gd" id="1_gho2d"]
+[ext_resource type="Shader" uid="uid://cmu3hnm13h23n" path="res://shaders/screen_outline.gdshader" id="1_fa8gc"]
+[ext_resource type="Script" uid="uid://bksujvky5fojc" path="res://scenes/item/medical_kit.gd" id="1_gho2d"]
 [ext_resource type="Texture2D" uid="uid://ck3v22o1gyhir" path="res://sprites/item/medical_kit_25.png" id="1_ivj56"]
-[ext_resource type="Script" path="res://scenes/item/MedicalKit.gd" id="2_1d733"]
+[ext_resource type="Script" uid="uid://cqcwy3ld2gkma" path="res://scenes/item/MedicalKit.gd" id="2_1d733"]
 [ext_resource type="Texture2D" uid="uid://b5nbmcnfshgb8" path="res://sprites/particle/circular_1.png" id="5_2lws0"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_b4ni0"]
@@ -191,9 +191,9 @@ tracks/3/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_cscq5"]
 _data = {
-"RESET": SubResource("Animation_61l3c"),
-"pick_anim": SubResource("Animation_lbvvm"),
-"spawn_anim": SubResource("Animation_3a8j4")
+&"RESET": SubResource("Animation_61l3c"),
+&"pick_anim": SubResource("Animation_lbvvm"),
+&"spawn_anim": SubResource("Animation_3a8j4")
 }
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_3tlmv"]
@@ -234,13 +234,13 @@ scale_curve = SubResource("CurveTexture_nyjfh")
 color_ramp = SubResource("GradientTexture1D_ypsq5")
 color_initial_ramp = SubResource("GradientTexture1D_pwdsm")
 
-[node name="MedicalKit" type="Node2D" groups=["HealthItem"]]
+[node name="MedicalKit" type="Node2D" unique_id=1610233245 groups=["HealthItem"]]
 script = ExtResource("1_gho2d")
 time_wait = 8
 
-[node name="CanvasGroup" type="CanvasGroup" parent="."]
+[node name="CanvasGroup" type="CanvasGroup" parent="." unique_id=118666808]
 
-[node name="TextureProgressBar" type="TextureProgressBar" parent="CanvasGroup"]
+[node name="TextureProgressBar" type="TextureProgressBar" parent="CanvasGroup" unique_id=1713087756]
 visible = false
 material = SubResource("CanvasItemMaterial_b4ni0")
 anchors_preset = 8
@@ -262,44 +262,42 @@ value = 0.945
 fill_mode = 4
 texture_progress = SubResource("GradientTexture2D_n7jmx")
 
-[node name="CharacterBody2D" type="CharacterBody2D" parent="."]
+[node name="CharacterBody2D" type="CharacterBody2D" parent="." unique_id=729538266]
 position = Vector2(0, -9)
 
-[node name="CanvasGroup" type="CanvasGroup" parent="CharacterBody2D"]
+[node name="CanvasGroup" type="CanvasGroup" parent="CharacterBody2D" unique_id=803764205]
 material = SubResource("ShaderMaterial_q85ap")
 
-[node name="MedicalKit" type="Sprite2D" parent="CharacterBody2D/CanvasGroup"]
+[node name="MedicalKit" type="Sprite2D" parent="CharacterBody2D/CanvasGroup" unique_id=1115599269]
 scale = Vector2(0.6, 0.6)
 texture = ExtResource("1_ivj56")
 hframes = 25
 script = ExtResource("2_1d733")
 rotate_sprites = true
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_cscq5")
-}
-autoplay = "spawn_anim"
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=684800862]
+libraries/ = SubResource("AnimationLibrary_cscq5")
+autoplay = &"spawn_anim"
 
-[node name="PickTimer" type="Timer" parent="."]
+[node name="PickTimer" type="Timer" parent="." unique_id=1185328018]
 wait_time = 0.05
 
-[node name="Area2D" type="Area2D" parent="."]
+[node name="Area2D" type="Area2D" parent="." unique_id=485825292]
 collision_layer = 0
-monitoring = false
+monitoring = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=1151830939]
 visible = false
 shape = SubResource("CircleShape2D_3tlmv")
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=1783571149]
 emitting = false
 amount = 6
-process_material = SubResource("ParticleProcessMaterial_x64l0")
 texture = ExtResource("5_2lws0")
 lifetime = 0.5
 one_shot = true
 explosiveness = 1.0
+process_material = SubResource("ParticleProcessMaterial_x64l0")
 
 [connection signal="timeout" from="PickTimer" to="." method="_on_pick_timer_timeout"]
 [connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]

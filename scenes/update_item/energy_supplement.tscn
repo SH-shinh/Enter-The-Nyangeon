@@ -1,6 +1,6 @@
-[gd_scene load_steps=12 format=3 uid="uid://c6wtgotgu2nys"]
+[gd_scene format=3 uid="uid://c6wtgotgu2nys"]
 
-[ext_resource type="Script" path="res://scenes/update_item/energy_supplement.gd" id="1_3jbpi"]
+[ext_resource type="Script" uid="uid://dwr24daxxldun" path="res://scenes/update_item/energy_supplement.gd" id="1_3jbpi"]
 [ext_resource type="Texture2D" uid="uid://el1pktitm5po" path="res://sprites/particle/wing_icon.png" id="2_mvkep"]
 
 [sub_resource type="Curve" id="Curve_m5s8y"]

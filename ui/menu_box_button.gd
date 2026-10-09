@@ -14,6 +14,7 @@ var player_card: PlayerCard
 
 
 var is_selected: bool = false
+var _revealed_path: String = ""
 
 func _ready() -> void:
 	self.gui_input.connect(button_pressed)
@@ -29,16 +30,41 @@ func update_button():
 		if player_card != null:
 			button_name = player_card.id
 			button_name_label.text = player_card.id
-			sprite_2d.texture = player_card.sprite
 		else:
 			button_name_label.text = button_name
-			sprite_2d.texture = null
+		sprite_2d.texture = null
 	elif button_type == "gamemode":
 		if button_name != "null":
 			button_name_label.text = button_name + "_id"
 		else:
 			button_name_label.text = button_name
 		sprite_2d.texture = null
+
+# 角色立绘按需加载/释放（列表可见性由 menu_box_character 调用）；幂等
+func reveal() -> void:
+	if button_type != "character" or player_card == null:
+		return
+	var p := player_card.sprite_path
+	if _revealed_path == p and sprite_2d.texture != null:
+		return
+	if _revealed_path != "":
+		LazyTexture.release(_revealed_path)
+	sprite_2d.texture = LazyTexture.acquire(p)
+	_revealed_path = p
+
+
+func conceal() -> void:
+	if _revealed_path != "":
+		LazyTexture.release(_revealed_path)
+		_revealed_path = ""
+	sprite_2d.texture = null
+
+
+func _exit_tree() -> void:
+	if _revealed_path != "":
+		LazyTexture.release(_revealed_path)
+		_revealed_path = ""
+
 
 func is_pressed():
 	if toggle_mode == true:

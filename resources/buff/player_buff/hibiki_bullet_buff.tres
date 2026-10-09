@@ -9,3 +9,4 @@ id = "hibiki_bullet_buff"
 icon = ExtResource("1_yg26r")
 name = "响子弹buff"
 description = ""
+modifiers = Array[Dictionary]([{"key": "damage_mult", "mode": "add", "source": "value"}])

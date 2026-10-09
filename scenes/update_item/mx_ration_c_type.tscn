@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://bmpxoxlkt2via"]
+[gd_scene format=3 uid="uid://bmpxoxlkt2via"]
 
-[ext_resource type="Script" path="res://scenes/update_item/mx_ration_c_type.gd" id="1_x6k3f"]
+[ext_resource type="Script" uid="uid://c33poivh64my2" path="res://scenes/update_item/mx_ration_c_type.gd" id="1_x6k3f"]
 
 [node name="mx_ration_c_type" type="Node2D"]
 script = ExtResource("1_x6k3f")

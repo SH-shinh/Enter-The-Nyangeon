@@ -32,7 +32,7 @@ func _ready():
 	GameEvents.round_num_changed.connect(round_num_count)
 	GameEvents.game_over.connect(is_game_over_true)
 
-func is_game_over_true(player_dead: bool):
+func is_game_over_true(_player_dead: bool):
 	is_game_over = true
 
 func round_num_count(round_num: int):
@@ -57,12 +57,12 @@ func emit_player_portal():
 	player_portal.emit()
 
 func selected_cost_count():
-	now_refresh_cost += selected_mult * round_mult + now_refresh_cost
+	now_refresh_cost += int(selected_mult * round_mult + now_refresh_cost)
 	refresh_cost_add_num += 0.2
 	GameEvents.emit_refresh_cost_count(now_refresh_cost)
 
 func refresh_cost_count():
-	now_refresh_cost += refresh_cost * refresh_cost_add
+	now_refresh_cost += int(refresh_cost * refresh_cost_add)
 	refresh_cost_add_num += 0.2
 	refresh_cost_add = refresh_cost_add_num * refresh_cost_add_num * refresh_cost_add_num
 	GameEvents.emit_refresh_cost_count(now_refresh_cost)
@@ -78,7 +78,6 @@ func first_round_start():
 	refresh_cost_add_num = 0
 	selected_cost_add = 0
 	
-	FloatingPool.empty_pool()
 	GameEvents.emit_get_player()
 	emit_player_portal()
 	Input.mouse_mode = Input.MOUSE_MODE_CONFINED_HIDDEN
@@ -89,16 +88,21 @@ func _on_round_start():
 	on_round_end = false
 	
 	round_mult += 0.2
-	refresh_cost = float(pow(round_mult,1)) + float(pow(round_mult,1.5)) * float(pow(round_mult,1.5))
+	refresh_cost = int(float(pow(round_mult,1)) + float(pow(round_mult,1.5)) * float(pow(round_mult,1.5)))
 	now_refresh_cost = refresh_cost
 	refresh_cost_add = 0
 	refresh_cost_add_num = 0
 	selected_cost_add = 0
 	
-	await get_tree().create_timer(0.1).timeout
-	Transition.play_left_start()
-	await Transition.left_end_start
+	# 联机：升级页点「继续」后由 mod 自行把过场推进到黑屏并保持；此处跳过前半封面，只播后半揭示
+	if ExtensionHooks.intercept(ExtensionHooks.round_upgrade_cover_hold, []):
+		ExtensionHooks.notify(ExtensionHooks.on_round_upgrade_cover_consumed, [])
+	else:
+		await get_tree().create_timer(0.1, true, false, true).timeout
+		Transition.play_left_start()
+		await Transition.left_end_start
 	get_tree().paused = false
+	GameEvents.emit_pause_lock(false)
 	Transition.play_left_end()
 	emit_player_portal()
 	Input.mouse_mode = Input.MOUSE_MODE_CONFINED_HIDDEN
@@ -110,13 +114,18 @@ func _on_round_end():
 		return
 	
 	on_round_end = true
+	# 回合收尾全程锁用户暂停（含 1s 等待 + 转场 + 升级页），避免转场前弹暂停菜单并在升级页丢失鼠标
+	GameEvents.emit_pause_lock(true)
 	
 	emit_enemy_clear()
 	emit_coin_clear()
-	await get_tree().create_timer(1.0).timeout
-	FloatingPool.empty_pool()
+	await get_tree().create_timer(1.0, true, false, true).timeout
 	
 	if is_game_over == true:
+		return
+	
+	# 联机客机：清场后不本地转场/升级（等 host 广播 round_upgrade 再展示）
+	if ExtensionHooks.intercept(ExtensionHooks.round_end_proceed_gate, []):
 		return
 	
 	if now_round_num >= max_round and !PlayerData.game_mode.has("endless"):

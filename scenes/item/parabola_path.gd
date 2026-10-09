@@ -9,7 +9,6 @@ func _ready() -> void:
 	body.free_self.connect(queue_free)
 
 func drop(center_pos: Vector2):
-	path.progress_ratio = 0
 	body.coin = coin_num
 	body.active_state()
 	SoundManager.play_sfx("ButtonSounds")
@@ -24,6 +23,8 @@ func drop(center_pos: Vector2):
 	for t in point_count:
 		var point = _quadratic_bezier(center_pos, ctrl_pos, end_pos, t * 1.0/point_count)
 		curve.add_point(point)
+	
+	path.progress_ratio = 0
 	
 	var tween = path.create_tween()
 	tween.tween_property(path, "progress_ratio", 1, 3).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)

@@ -8,6 +8,9 @@ extends RefCounted
 
 const MAX_PER_SCENE: int = 180
 const EFFECT_POOL_MAX: int = 24
+# "伤害洞"数值上限（纵深兜底：即使入参异常也不致一击必杀）
+const MAX_DAMAGE_HOLE: int = 100000
+const MAX_KNOCKBACK_HOLE: int = 100000
 
 var _pool: Dictionary = {}        # scene_path -> Array[Node]（子弹）
 var _effect_pool: Dictionary = {} # scene_path -> Array[Node]（可复用特效：有 is_idle）
@@ -91,6 +94,16 @@ func forget(sync_id: String) -> void:
 	_by_sync_id.erase(sync_id)
 
 
+# 按 effect_id 取回远端特效节点（供 follow/光束状态通道套用）。
+func get_effect(effect_id: String) -> Node:
+	if effect_id == "":
+		return null
+	var e = _by_effect_id.get(effect_id)
+	if e != null and is_instance_valid(e):
+		return e
+	return null
+
+
 # 收到「提前终止」：立即隐藏/回池，并标记 ended 防止迟到 spawn 复活。
 func despawn_visual_bullet(sync_id: String) -> void:
 	if sync_id == "":
@@ -155,7 +168,7 @@ func active_count() -> int:
 
 
 # 远程视觉特效（爆炸/范围/一次性粒子）：不池化，安全超时释放，纯表现无伤害。
-func spawn_visual_effect(tree: SceneTree, scene_path: String, position: Vector2, rotation: float, effect_scale: Vector2, root_group: String, method_name: String, properties: Dictionary, effect_id: String = "") -> void:
+func spawn_visual_effect(tree: SceneTree, scene_path: String, position: Vector2, rotation: float, effect_scale: Vector2, root_group: String, method_name: String, properties: Dictionary, effect_id: String = "", allow_hole: bool = true) -> void:
 	if tree == null or scene_path == "":
 		return
 	if effect_id != "" and _ended_effect.has(effect_id):
@@ -193,8 +206,8 @@ func spawn_visual_effect(tree: SceneTree, scene_path: String, position: Vector2,
 	_disable_damage(effect)
 	if method_name != "" and effect.has_method(method_name):
 		effect.call(method_name)
-	# 敌方激光等：对本地玩家开放"伤害洞"（仅表现端、只命中玩家）
-	if effect.has_method("open_network_player_damage_hole"):
+	# 敌方激光等：对本地玩家开放"伤害洞"（仅表现端、只命中玩家）。allow_hole=false（客机来源）时禁用。
+	if allow_hole and effect.has_method("open_network_player_damage_hole"):
 		effect.call("open_network_player_damage_hole")
 	# 可复用特效（有 is_idle，如爆炸/烟）入池复用；否则延时释放
 	if effect.get("is_idle") != null:
@@ -233,28 +246,8 @@ func _track_effect(scene_path: String, effect: Node) -> void:
 
 
 func _remove_effect_from_gameplay_pools(effect: Node) -> void:
-	var pid: String = ""
-	if effect.get("pool_id") != null:
-		pid = str(effect.pool_id)
-	# 爆炸场景无 pool_id 字段，按场景路径映射其本体池名，避免新实例污染 gameplay 池
-	if pid == "":
-		var sp: String = str(effect.scene_file_path)
-		if sp.contains("small_explosion"):
-			pid = "small_explosion"
-		elif sp.contains("explosion.tscn"):
-			pid = "big_explosion"
-		elif sp.contains("floating_text"):
-			pid = "floating_text"
-	if pid == "" or not PoolManager.pool.has(pid):
-		return
-	var entry: Dictionary = PoolManager.pool[pid]
-	var bodies: Array = entry.get("body", [])
-	bodies.erase(effect)
-	var size: int = bodies.size()
-	if size <= 0:
-		PoolManager.pool.erase(pid)
-	else:
-		entry["index"] = wrapi(int(entry.get("index", 0)), 0, size)
+	# 交由 PoolManager 按归属反查实际池名并剥离，避免 mod 触碰池内部结构。
+	PoolManager.detach(effect)
 
 
 func _queue_free_after(tree: SceneTree, node: Node, seconds: float) -> void:
@@ -292,31 +285,9 @@ func _acquire(scene: PackedScene, scene_path: String, sync_id: String) -> Node:
 	return new_b
 
 
-func _remove_from_gameplay_pools(bullet: Node, scene_path: String) -> void:
-	var ids: Array[String] = [_pool_id_for(scene_path)]
-	if bullet.get("pool_id") != null:
-		ids.append(str(bullet.pool_id))
-	for pid in ids:
-		if not PoolManager.pool.has(pid):
-			continue
-		var entry: Dictionary = PoolManager.pool[pid]
-		var bodies: Array = entry.get("body", [])
-		bodies.erase(bullet)
-		var size: int = bodies.size()
-		if size <= 0:
-			PoolManager.pool.erase(pid)
-		else:
-			entry["index"] = wrapi(int(entry.get("index", 0)), 0, size)
-
-
-func _pool_id_for(scene_path: String) -> String:
-	if scene_path.contains("normal_bullet"):
-		return "normal_bullet"
-	if scene_path.contains("shiro_missile"):
-		return "shiro_missile"
-	if scene_path.contains("mashiro"):
-		return "player_sniper_bullet"
-	return "player_bullet"
+func _remove_from_gameplay_pools(bullet: Node, _scene_path: String) -> void:
+	# 交由 PoolManager 按归属反查实际池名并剥离，避免 mod 触碰池内部结构。
+	PoolManager.detach(bullet)
 
 
 const ENEMY_BULLET_LAYER: int = 128  # project 层 8 = enemy_bullet
@@ -335,10 +306,10 @@ func _open_player_damage_hole(bullet: Node, damage: int, knockback: int) -> void
 		return
 	for hb in boxes:
 		var data: DamageData = DamageData.make({
-			"damage": maxi(1, damage),
+			"damage": clampi(damage, 1, MAX_DAMAGE_HOLE),
 			"type": GameTags.BULLET_DAMAGE,
 			"source": DamageRouter.source_tag(Faction.ENEMY_SIDE),
-			"knockback": maxi(0, knockback),
+			"knockback": clampi(knockback, 0, MAX_KNOCKBACK_HOLE),
 			"node": hb,
 		})
 		hb.set("damage_data", data)

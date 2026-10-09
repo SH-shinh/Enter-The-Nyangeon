@@ -1,0 +1,93 @@
+[gd_scene format=3 uid="uid://bfin2ksjqvipa"]
+
+[ext_resource type="Script" uid="uid://c60fml8ythnfj" path="res://scenes/update_item/yukari_doll.gd" id="1_script"]
+[ext_resource type="Shader" uid="uid://gm8hwecw36li" path="res://shaders/shock_wave.gdshader" id="2_shock"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_yukari"]
+resource_local_to_scene = true
+shader = ExtResource("2_shock")
+shader_parameter/center = Vector2(0.5, 0.5)
+shader_parameter/force = 0.05
+shader_parameter/size = 0.0
+shader_parameter/thickness = 0.0
+shader_parameter/strength = 1.0
+shader_parameter/color_add = -0.05
+
+[sub_resource type="Animation" id="Animation_reset"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:material:shader_parameter/size")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:material:shader_parameter/thickness")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="Animation" id="Animation_pulse"]
+resource_name = "new_animation"
+length = 0.5
+step = 0.01
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:material:shader_parameter/size")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0),
+"points": PackedFloat32Array(0.22, -0.25, 0, 0.25, 0, 0.8, 0, 0, 0, 0, 0.35, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 0.38, 0.5)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:material:shader_parameter/thickness")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0),
+"points": PackedFloat32Array(0.1, -0.25, 0, 0.25, 0, 0.3, 0, 0, 0, 0, 0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0.00804667, 0.17, 0.5)
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_yukari"]
+_data = {
+&"RESET": SubResource("Animation_reset"),
+&"new_animation": SubResource("Animation_pulse")
+}
+
+[node name="yukari_doll" type="Node2D" unique_id=92784152]
+script = ExtResource("1_script")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1826509342]
+
+[node name="ColorRect2" type="ColorRect" parent="CanvasLayer" unique_id=1316405108]
+material = SubResource("ShaderMaterial_yukari")
+offset_left = -20.0
+offset_top = -16.0
+offset_right = 672.0
+offset_bottom = 399.0
+mouse_filter = 2
+color = Color(4.205, 0.20340268, 3.8571627, 1)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="CanvasLayer/ColorRect2" unique_id=330132739]
+libraries/ = SubResource("AnimationLibrary_yukari")
+
+[node name="CDTimer" type="Timer" parent="." unique_id=1612931378]
+wait_time = 5.0
+one_shot = true

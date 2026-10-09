@@ -1,10 +1,11 @@
-[gd_resource type="Resource" script_class="EnemyCard" load_steps=3 format=3 uid="uid://dx43aolfidycr"]
+[gd_resource type="Resource" script_class="EnemyCard" format=3 uid="uid://dx43aolfidycr"]
 
 [ext_resource type="PackedScene" uid="uid://bv4btiolwh31t" path="res://scenes/enemies/mystic_sweeper.tscn" id="1_vdaxk"]
-[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_jrrjy"]
+[ext_resource type="Script" uid="uid://c2yv0iuw6g8oh" path="res://resources/enemy/enemy.gd" id="2_jrrjy"]
+[ext_resource type="Texture2D" uid="uid://d1j10a7wt8xc" path="res://sprites/enemies/mystic_sweeper_icon.png" id="2_mmhgy"]
 
 [resource]
 script = ExtResource("2_jrrjy")
 id = "mystic_sweeper"
 body = ExtResource("1_vdaxk")
-description = ""
+icon = ExtResource("2_mmhgy")

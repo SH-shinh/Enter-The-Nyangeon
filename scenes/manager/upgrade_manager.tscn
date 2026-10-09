@@ -1,7 +1,7 @@
-[gd_scene load_steps=114 format=3 uid="uid://b0w0jsdx61ped"]
+[gd_scene format=3 uid="uid://b0w0jsdx61ped"]
 
-[ext_resource type="Script" path="res://scenes/manager/upgrade_manager.gd" id="1_6mu84"]
-[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_c80r0"]
+[ext_resource type="Script" uid="uid://dek60goptpvcb" path="res://scenes/manager/upgrade_manager.gd" id="1_6mu84"]
+[ext_resource type="Script" uid="uid://cvlwfck2jbhvs" path="res://resources/upgrades/ability_upgrade.gd" id="2_c80r0"]
 [ext_resource type="Resource" uid="uid://codh4lifmmdn1" path="res://resources/upgrades/ap_bullet.tres" id="2_dexn7"]
 [ext_resource type="PackedScene" uid="uid://cukkukglw6jcu" path="res://ui/UpgradeScreen.tscn" id="3_kyw6m"]
 [ext_resource type="Resource" uid="uid://de5kkpvt6sfru" path="res://resources/upgrades/little_kei.tres" id="5_oav6f"]
@@ -107,7 +107,15 @@
 [ext_resource type="Resource" uid="uid://ffd7wvb1272l" path="res://resources/upgrades/aether_essence.tres" id="104_6nfqg"]
 [ext_resource type="Resource" uid="uid://hd0mety8e6cs" path="res://resources/upgrades/spiked_shell.tres" id="105_eqrs3"]
 [ext_resource type="Resource" uid="uid://bexr8gdhsisqj" path="res://resources/upgrades/puzzle_cube.tres" id="106_edx8g"]
-[ext_resource type="Script" path="res://scenes/manager/item_weight_manager.gd" id="107_ju31i"]
+[ext_resource type="Script" uid="uid://bknareboni1vp" path="res://scenes/manager/item_weight_manager.gd" id="107_ju31i"]
+[ext_resource type="Resource" uid="uid://cg24s0lqqdby8" path="res://resources/upgrades/homing_bullet.tres" id="108_homing"]
+[ext_resource type="Resource" uid="uid://dvr7x8v0obmmb" path="res://resources/upgrades/eggnog.tres" id="109_cljyb"]
+[ext_resource type="Resource" path="res://resources/upgrades/nagusa_doll.tres" id="109_nagusa"]
+[ext_resource type="Resource" path="res://resources/upgrades/sugar_cube.tres" id="110_sugarcube"]
+[ext_resource type="Resource" path="res://resources/upgrades/renge_doll.tres" id="111_renge"]
+[ext_resource type="Resource" uid="uid://bya7offrkkodg" path="res://resources/upgrades/yukari_doll.tres" id="112_yukari"]
+[ext_resource type="Resource" path="res://resources/upgrades/samuela_the_beyond.tres" id="113_samuela"]
+[ext_resource type="Resource" path="res://resources/upgrades/rapid_loader.tres" id="114_rapid"]
 
 [sub_resource type="Curve" id="Curve_ctswm"]
 _data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.35), 0.0, 0.0, 0, 0]
@@ -122,19 +130,19 @@ _data = [Vector2(0, 0.01), 0.0, 0.0, 0, 0, Vector2(1, 0.55), 0.0, 0.0, 0, 0]
 point_count = 2
 
 [sub_resource type="Curve" id="Curve_75u2i"]
-max_value = 100.0
+_limits = [0.0, 100.0, 0.0, 1.0]
 _data = [Vector2(0, 10), 0.0, 0.0, 0, 0, Vector2(0.5, 60), 0.0, 0.0, 0, 0]
 point_count = 2
 
 [sub_resource type="Curve" id="Curve_bo4do"]
-max_value = 2.0
+_limits = [0.0, 2.0, 0.0, 1.0]
 _data = [Vector2(0, 1.2), 0.0, 0.0, 0, 0, Vector2(0.4, 1), -1.03785, 0.0, 0, 0]
 point_count = 2
 
-[node name="UpgradeManager" type="Node" node_paths=PackedStringArray("weight_manager")]
+[node name="UpgradeManager" type="Node" unique_id=189927766 node_paths=PackedStringArray("weight_manager")]
 process_mode = 3
 script = ExtResource("1_6mu84")
-upgrade_pool = Array[ExtResource("2_c80r0")]([ExtResource("2_dexn7"), ExtResource("5_oav6f"), ExtResource("6_bsq5n"), ExtResource("7_t3q4y"), ExtResource("8_55w5r"), ExtResource("9_u8waj"), ExtResource("10_owpoc"), ExtResource("11_m7ype"), ExtResource("12_j28nm"), ExtResource("11_2kwoi"), ExtResource("12_ob3d1"), ExtResource("13_qcja7"), ExtResource("14_2tluk"), ExtResource("15_rrjfu"), ExtResource("16_mn4tm"), ExtResource("17_hca57"), ExtResource("18_n1vvq"), ExtResource("19_sjp0f"), ExtResource("20_7tgxw"), ExtResource("21_tdxwa"), ExtResource("22_o5fwl"), ExtResource("23_xcd5s"), ExtResource("24_1joxv"), ExtResource("25_xbxcg"), ExtResource("26_8kkcr"), ExtResource("27_66cu5"), ExtResource("28_sk0y4"), ExtResource("29_dltxa"), ExtResource("30_uay8x"), ExtResource("31_2ny7a"), ExtResource("32_pbf7e"), ExtResource("33_lsetm"), ExtResource("34_ivok8"), ExtResource("35_1sdvm"), ExtResource("36_87sqr"), ExtResource("38_75x0t"), ExtResource("41_x77ps"), ExtResource("42_nc15b"), ExtResource("43_w1irp"), ExtResource("44_oi8yu"), ExtResource("45_tewig"), ExtResource("46_4bkd0"), ExtResource("47_0fc1x"), ExtResource("48_hutjx"), ExtResource("49_31ufg"), ExtResource("50_vhfbu"), ExtResource("52_gxtll"), ExtResource("53_wumss"), ExtResource("54_axgpm"), ExtResource("55_bf7mq"), ExtResource("56_vjgt0"), ExtResource("57_yc4oc"), ExtResource("54_fo0lf"), ExtResource("55_j0idv"), ExtResource("56_g77sh"), ExtResource("57_rsydw"), ExtResource("58_qfmqd"), ExtResource("59_y7af0"), ExtResource("60_jjfnt"), ExtResource("61_e5mo7"), ExtResource("62_qwq2m"), ExtResource("63_ua4bi"), ExtResource("64_cbgrr"), ExtResource("65_aogkv"), ExtResource("66_2vyhy"), ExtResource("67_gi3qx"), ExtResource("68_rjwry"), ExtResource("69_pdpj8"), ExtResource("70_f0opl"), ExtResource("71_8owtn"), ExtResource("72_lb8ee"), ExtResource("73_u4juu"), ExtResource("74_wjw3e"), ExtResource("75_c4whr"), ExtResource("76_av423"), ExtResource("77_i3646"), ExtResource("78_om63g"), ExtResource("79_4w1lt"), ExtResource("80_imuvw"), ExtResource("81_lcgxf"), ExtResource("82_16ycx"), ExtResource("83_5s30r"), ExtResource("84_sbwym"), ExtResource("85_8y2p4"), ExtResource("86_xu6dn"), ExtResource("88_o8k4e"), ExtResource("89_ou7vg"), ExtResource("90_nc2c1"), ExtResource("91_a8dbf"), ExtResource("92_5sm05"), ExtResource("93_jibhf"), ExtResource("94_6qpgw"), ExtResource("95_7388j"), ExtResource("96_grs78"), ExtResource("97_igusm"), ExtResource("98_kild4"), ExtResource("99_jef4w"), ExtResource("100_wpeo2"), ExtResource("101_leskh"), ExtResource("102_p532m"), ExtResource("103_y64qr"), ExtResource("104_6nfqg"), ExtResource("105_eqrs3"), ExtResource("106_edx8g")])
+upgrade_pool = Array[ExtResource("2_c80r0")]([ExtResource("2_dexn7"), ExtResource("5_oav6f"), ExtResource("6_bsq5n"), ExtResource("7_t3q4y"), ExtResource("8_55w5r"), ExtResource("9_u8waj"), ExtResource("10_owpoc"), ExtResource("11_m7ype"), ExtResource("12_j28nm"), ExtResource("11_2kwoi"), ExtResource("12_ob3d1"), ExtResource("13_qcja7"), ExtResource("14_2tluk"), ExtResource("15_rrjfu"), ExtResource("16_mn4tm"), ExtResource("17_hca57"), ExtResource("18_n1vvq"), ExtResource("19_sjp0f"), ExtResource("20_7tgxw"), ExtResource("21_tdxwa"), ExtResource("22_o5fwl"), ExtResource("23_xcd5s"), ExtResource("24_1joxv"), ExtResource("25_xbxcg"), ExtResource("26_8kkcr"), ExtResource("27_66cu5"), ExtResource("28_sk0y4"), ExtResource("29_dltxa"), ExtResource("30_uay8x"), ExtResource("31_2ny7a"), ExtResource("32_pbf7e"), ExtResource("33_lsetm"), ExtResource("34_ivok8"), ExtResource("35_1sdvm"), ExtResource("36_87sqr"), ExtResource("38_75x0t"), ExtResource("41_x77ps"), ExtResource("42_nc15b"), ExtResource("43_w1irp"), ExtResource("44_oi8yu"), ExtResource("45_tewig"), ExtResource("46_4bkd0"), ExtResource("47_0fc1x"), ExtResource("48_hutjx"), ExtResource("49_31ufg"), ExtResource("50_vhfbu"), ExtResource("52_gxtll"), ExtResource("53_wumss"), ExtResource("54_axgpm"), ExtResource("55_bf7mq"), ExtResource("56_vjgt0"), ExtResource("57_yc4oc"), ExtResource("54_fo0lf"), ExtResource("55_j0idv"), ExtResource("56_g77sh"), ExtResource("57_rsydw"), ExtResource("58_qfmqd"), ExtResource("59_y7af0"), ExtResource("60_jjfnt"), ExtResource("61_e5mo7"), ExtResource("62_qwq2m"), ExtResource("63_ua4bi"), ExtResource("64_cbgrr"), ExtResource("65_aogkv"), ExtResource("66_2vyhy"), ExtResource("67_gi3qx"), ExtResource("68_rjwry"), ExtResource("69_pdpj8"), ExtResource("70_f0opl"), ExtResource("71_8owtn"), ExtResource("72_lb8ee"), ExtResource("73_u4juu"), ExtResource("74_wjw3e"), ExtResource("75_c4whr"), ExtResource("76_av423"), ExtResource("77_i3646"), ExtResource("78_om63g"), ExtResource("79_4w1lt"), ExtResource("80_imuvw"), ExtResource("81_lcgxf"), ExtResource("82_16ycx"), ExtResource("83_5s30r"), ExtResource("84_sbwym"), ExtResource("85_8y2p4"), ExtResource("86_xu6dn"), ExtResource("88_o8k4e"), ExtResource("89_ou7vg"), ExtResource("90_nc2c1"), ExtResource("91_a8dbf"), ExtResource("92_5sm05"), ExtResource("93_jibhf"), ExtResource("94_6qpgw"), ExtResource("95_7388j"), ExtResource("96_grs78"), ExtResource("97_igusm"), ExtResource("98_kild4"), ExtResource("99_jef4w"), ExtResource("100_wpeo2"), ExtResource("101_leskh"), ExtResource("102_p532m"), ExtResource("103_y64qr"), ExtResource("104_6nfqg"), ExtResource("105_eqrs3"), ExtResource("106_edx8g"), ExtResource("108_homing"), ExtResource("109_nagusa"), ExtResource("109_cljyb"), ExtResource("110_sugarcube"), ExtResource("111_renge"), ExtResource("112_yukari"), ExtResource("113_samuela"), ExtResource("114_rapid")])
 upgrade_screen_scene = ExtResource("3_kyw6m")
 weight_manager = NodePath("ItemWeightManager")
 round_weight_curve_1 = SubResource("Curve_ctswm")
@@ -142,7 +150,7 @@ round_weight_curve_2 = SubResource("Curve_4pml3")
 round_weight_curve_3 = SubResource("Curve_k1mt2")
 round_pool_curve = SubResource("Curve_75u2i")
 
-[node name="ItemWeightManager" type="Node" parent="." node_paths=PackedStringArray("upgrade_manager")]
+[node name="ItemWeightManager" type="Node" parent="." unique_id=575730405 node_paths=PackedStringArray("upgrade_manager")]
 script = ExtResource("107_ju31i")
 upgrade_manager = NodePath("..")
 round_weight_curve = SubResource("Curve_bo4do")

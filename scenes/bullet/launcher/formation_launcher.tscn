@@ -1,9 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://b4iitermsly76"]
+[gd_scene format=3 uid="uid://b4iitermsly76"]
 
-[ext_resource type="Script" path="res://scenes/bullet/launcher/formation_launcher.gd" id="1_u8dan"]
+[ext_resource type="Script" uid="uid://c6g3mxsda4q67" path="res://scenes/bullet/launcher/formation_launcher.gd" id="1_u8dan"]
 [ext_resource type="PackedScene" uid="uid://btv16sfw3hyx" path="res://scenes/bullet/enemy_bullet_3.tscn" id="2_3sog7"]
 
-[node name="FormationLauncher" type="Node2D"]
+[node name="FormationLauncher" type="Node2D" unique_id=1038125993]
 script = ExtResource("1_u8dan")
 bullet_speed = 120.0
 bullet_id = "enemy_bullet_3"

@@ -1,0 +1,4 @@
+[
+  { "op": "add", "target": "characters:example_hero", "field": "weapon", "value": "PATCHED" },
+  { "op": "inherit", "target": "characters:example_copy", "base": "characters:example_hero", "overrides": { "name": "EXAMPLE COPY" } }
+]

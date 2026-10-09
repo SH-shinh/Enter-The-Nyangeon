@@ -1,23 +1,12 @@
-extends Node2D
+extends EquipItem
 
-var num: int
 var damage_mult: float = 1.05
 
-func _ready():
-	first_activation()
-	GameEvents.ability_upgrade_added.connect(on_upgrade_added)
-
-func first_activation():
+func _on_equip():
 	damage_mult = 1.05
-	GameEvents.enemy_body.connect(update_damage)
+	GameEvents.enemy_damage_taken.connect(update_damage)
 
-func on_upgrade_added(upgrade: AbilityUpgrade, current_upgrade: Dictionary):
-	if upgrade.id != "aether_essence":
-		return
-	if current_upgrade["aether_essence"]["quantity"] == 1:
-		return
-	num = current_upgrade["aether_essence"]["quantity"]
-
-func update_damage(_body: Node, bullet: Node):
-	var damage: int = bullet.bullet_damage
-	bullet.bullet_damage = ceil(damage * damage_mult)
+func update_damage(_final_damage: int, damage_data: DamageData, _body_path: NodePath):
+	if damage_data.damage_type.has(GameTags.BULLET_DAMAGE):
+		var damage: int = damage_data.base_damage
+		damage_data.base_damage = ceil(damage * damage_mult)

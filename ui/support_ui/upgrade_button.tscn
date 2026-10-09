@@ -1,7 +1,7 @@
-[gd_scene load_steps=16 format=3 uid="uid://baierg5jhv2n3"]
+[gd_scene format=3 uid="uid://baierg5jhv2n3"]
 
 [ext_resource type="Theme" uid="uid://bxrwumqxp32a3" path="res://rounded_corner_theme.tres" id="1_hjbko"]
-[ext_resource type="Script" path="res://ui/support_ui/upgrade_button.gd" id="2_f1871"]
+[ext_resource type="Script" uid="uid://qk8s3mhyb7jv" path="res://ui/support_ui/upgrade_button.gd" id="2_f1871"]
 [ext_resource type="Texture2D" uid="uid://3kojmlxs38v7" path="res://sprites/item/pyroxenes.png" id="2_vk6wj"]
 [ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="3_ldb5i"]
 [ext_resource type="Texture2D" uid="uid://jcqmwo1t8vv0" path="res://ui/ui.png" id="4_5q5ci"]
@@ -127,9 +127,9 @@ tracks/3/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_lbopp"]
 _data = {
-"RESET": SubResource("Animation_gx7j7"),
-"mouse_in": SubResource("Animation_7hkhl"),
-"selected": SubResource("Animation_nvbhp")
+&"RESET": SubResource("Animation_gx7j7"),
+&"mouse_in": SubResource("Animation_7hkhl"),
+&"selected": SubResource("Animation_nvbhp")
 }
 
 [sub_resource type="Gradient" id="Gradient_nsp16"]
@@ -182,32 +182,30 @@ HSlider/styles/grabber_area = SubResource("StyleBoxTexture_kpu2a")
 HSlider/styles/grabber_area_highlight = SubResource("StyleBoxTexture_sxxo1")
 HSlider/styles/slider = SubResource("StyleBoxTexture_e747f")
 
-[node name="upgrade_button" type="PanelContainer"]
+[node name="upgrade_button" type="PanelContainer" unique_id=989388462]
 clip_children = 2
-offset_top = -41.0
 offset_right = 76.0
 offset_bottom = 26.0
 theme = ExtResource("1_hjbko")
 script = ExtResource("2_f1871")
 
-[node name="lv_button_anim" type="AnimationPlayer" parent="."]
+[node name="lv_button_anim" type="AnimationPlayer" parent="." unique_id=438881961]
 root_node = NodePath("../..")
-libraries = {
-"": SubResource("AnimationLibrary_lbopp")
-}
+libraries/ = SubResource("AnimationLibrary_lbopp")
 
-[node name="ColorRect" type="ColorRect" parent="."]
+[node name="ColorRect" type="ColorRect" parent="." unique_id=712121705]
 layout_mode = 2
 mouse_filter = 2
+color = Color(0.775209, 0.895785, 0.997106, 1)
 
-[node name="Node2D" type="Node2D" parent="."]
+[node name="Node2D" type="Node2D" parent="." unique_id=413044683]
 
-[node name="Sprite2D" type="Sprite2D" parent="Node2D"]
+[node name="Sprite2D" type="Sprite2D" parent="Node2D" unique_id=1956120992]
 position = Vector2(15.8, 12.8)
 scale = Vector2(0.8, 0.8)
 texture = ExtResource("2_vk6wj")
 
-[node name="Cost" type="Label" parent="Node2D"]
+[node name="Cost" type="Label" parent="Node2D" unique_id=960659576]
 unique_name_in_owner = true
 offset_left = 27.8
 offset_top = 9.0
@@ -224,9 +222,10 @@ theme_override_fonts/font = ExtResource("3_ldb5i")
 theme_override_font_sizes/font_size = 10
 text = "UPGRADE"
 
-[node name="Node2D2" type="Node2D" parent="."]
+[node name="Node2D2" type="Node2D" parent="." unique_id=1514503975]
+visible = false
 
-[node name="HSlider" type="HSlider" parent="Node2D2"]
+[node name="HSlider" type="HSlider" parent="Node2D2" unique_id=2003222364]
 offset_left = 6.0
 offset_top = 30.0
 offset_right = 73.0
@@ -234,7 +233,7 @@ offset_bottom = 46.0
 theme = SubResource("Theme_yq8b2")
 value = 44.0
 
-[node name="NowCost" type="Label" parent="Node2D2"]
+[node name="NowCost" type="Label" parent="Node2D2" unique_id=316798472]
 unique_name_in_owner = true
 offset_left = 65.0
 offset_top = 25.0
@@ -250,9 +249,8 @@ theme_override_constants/shadow_outline_size = 8
 theme_override_fonts/font = ExtResource("3_ldb5i")
 theme_override_font_sizes/font_size = 8
 text = "99"
-horizontal_alignment = 1
 
-[node name="sure" type="Label" parent="Node2D2"]
+[node name="sure" type="Label" parent="Node2D2" unique_id=168926564]
 unique_name_in_owner = true
 offset_top = 50.0
 offset_right = 76.0
@@ -269,6 +267,6 @@ theme_override_font_sizes/font_size = 10
 text = "button_confirm"
 horizontal_alignment = 1
 
-[node name="CloseTimer" type="Timer" parent="."]
-wait_time = 3.0
+[node name="CloseTimer" type="Timer" parent="." unique_id=1431529795]
+wait_time = 2.0
 one_shot = true

@@ -20,9 +20,8 @@ void fragment() {
 	float o = cos(TIME * speed);
 	float ring_size = ring_radius;
 
-	float inner_hardness = 0.0;
-	// Solve for ring alpha channel
-	float alpha = step(dist, ring_size) * smoothstep(0 , 0, dist);
+	// Solve for circle alpha channel
+	float alpha = step(dist, ring_size);
 
 	// Solve w mix amount for optional color lerping
 	float w = range_lerp(o, -1.0, 1.0, 1.0, 0.0);

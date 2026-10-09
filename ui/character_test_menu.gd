@@ -33,12 +33,13 @@ func reset_player():
 	GameEvents.emit_test_room_button_close()
 	Transition.play_left_start()
 	await Transition.left_end_start
-	var player = get_tree().get_first_node_in_group("Player")
-	if player != null:
-		player.queue_free()
-	var path = load(now_player_path)
-	var ins = path.instantiate()
-	get_tree().get_first_node_in_group("PlayerRoot").add_child(ins)
+	if not ExtensionHooks.intercept(ExtensionHooks.local_player_change_gate, [now_player_path, Vector2.ZERO]):
+		var player = get_tree().get_first_node_in_group("Player")
+		if player != null:
+			player.queue_free()
+		var path = load(now_player_path)
+		var ins = path.instantiate()
+		get_tree().get_first_node_in_group("PlayerRoot").add_child(ins)
 	Transition.play_left_end()
 	await Transition.animation_player.animation_finished
 	GameEvents.emit_test_room_reset()
@@ -56,12 +57,16 @@ func reset():
 		self.visible = false
 
 func add_player_card():
-	if !player_group.is_empty():
-		for i in player_group.size():
-			var card_ins = character_card.instantiate()
-			box.add_child(card_ins)
-			card_ins.player_card = player_group[i]
-			card_ins.load_player_card()
+	var cards: Array = []
+	cards.append_array(player_group)
+	for c in ModManager.get_content("characters"):
+		if c != null and not cards.has(c):
+			cards.append(c)
+	for i in cards.size():
+		var card_ins = character_card.instantiate()
+		box.add_child(card_ins)
+		card_ins.player_card = cards[i]
+		card_ins.load_player_card()
 
 func _unhandled_input(event):
 	if event.is_action_pressed("use"):
@@ -96,11 +101,6 @@ func _on_close_pressed() -> void:
 		GameEvents.emit_ui_visible(true)
 		self.visible = false
 		close_and_reset()
-
-func _on_close_gui_input(event: InputEvent) -> void:
-	if event as InputEventScreenTouch and event.pressed:
-		_on_close_pressed()
-
 
 func _on_button_pressed() -> void:
 	SupportData.game_support = kei_p

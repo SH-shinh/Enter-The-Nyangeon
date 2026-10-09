@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://pwm4egtk2til"]
+[gd_scene format=3 uid="uid://pwm4egtk2til"]
 
-[ext_resource type="Script" path="res://scenes/update_item/elasticity_bullet.gd" id="1_b642u"]
+[ext_resource type="Script" uid="uid://rawkluyxaje7" path="res://scenes/update_item/elasticity_bullet.gd" id="1_b642u"]
 
 [node name="ElasticityBullet" type="Node2D"]
 script = ExtResource("1_b642u")

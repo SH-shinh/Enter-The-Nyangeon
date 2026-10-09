@@ -1,0 +1,48 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://script/props/oil_barrel.gd" id="1_barrel"]
+[ext_resource type="Script" path="res://script/props/prop_soft_collision.gd" id="2_soft"]
+[ext_resource type="Script" path="res://script/props/prop_hurt_box.gd" id="3_hurt"]
+[ext_resource type="Script" path="res://script/props/prop_health.gd" id="4_health"]
+[ext_resource type="Script" path="res://script/props/prop_stats.gd" id="5_stats"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_soft"]
+radius = 14.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hurt"]
+radius = 16.0
+
+[node name="OilBarrel" type="Node2D"]
+script = ExtResource("1_barrel")
+prop_id = "oil_barrel"
+
+[node name="Visual" type="Polygon2D" parent="."]
+color = Color(0.72, 0.32, 0.09, 1)
+polygon = PackedVector2Array(-12, -26, 12, -26, 12, 4, -12, 4)
+
+[node name="Lid" type="Polygon2D" parent="."]
+color = Color(0.45, 0.2, 0.06, 1)
+polygon = PackedVector2Array(-12, -30, 12, -30, 12, -24, -12, -24)
+
+[node name="PropSoftCollision" type="Area2D" parent="."]
+script = ExtResource("2_soft")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PropSoftCollision"]
+shape = SubResource("CircleShape2D_soft")
+
+[node name="PropHurtBox" type="Area2D" parent="."]
+collision_layer = 262144
+collision_mask = 163844
+script = ExtResource("3_hurt")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PropHurtBox"]
+shape = SubResource("CircleShape2D_hurt")
+
+[node name="PropStats" type="Node" parent="."]
+script = ExtResource("5_stats")
+penetrate_resis = 999
+
+[node name="PropHealth" type="Node" parent="."]
+script = ExtResource("4_health")
+hurt_box = NodePath("../PropHurtBox")
+hit_count = 3

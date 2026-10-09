@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://ch34whgjwnglr"]
+[gd_scene format=3 uid="uid://ch34whgjwnglr"]
 
-[ext_resource type="Script" path="res://scenes/update_item/multivitamin_gummies.gd" id="1_a77ei"]
+[ext_resource type="Script" uid="uid://7xkv3lpik7xi" path="res://scenes/update_item/multivitamin_gummies.gd" id="1_a77ei"]
 
 [node name="multivitamin_gummies" type="Node2D"]
 script = ExtResource("1_a77ei")

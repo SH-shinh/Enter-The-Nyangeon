@@ -12,6 +12,8 @@ const NetDebugHudScript := preload("res://mods/etn_coop/ui/net_debug_hud.gd")
 const ScoreboardScene := preload("res://mods/etn_coop/ui/coop_scoreboard.tscn")
 const ChatScene := preload("res://mods/etn_coop/ui/coop_chat.tscn")
 const MenuButtonScene := preload("res://ui/menu_button.tscn")
+const OptionButtonScene := preload("res://ui/option_button.tscn")
+const CoopOptionPageScene := preload("res://mods/etn_coop/ui/coop_option_page.tscn")
 const CoopI18n := preload("res://mods/etn_coop/i18n/coop_i18n.gd")
 const MENU_FONT := preload("res://fonts/BoutiqueBitmap9x9_1.9.ttf")
 
@@ -23,6 +25,11 @@ var _scoreboard: Node = null
 var _chat: Node = null
 var _flow: Node = null
 var _room_label: Node = null
+var _dev_netcheck_lines: PackedStringArray = PackedStringArray()
+
+
+func _dev_on_netcheck(lines: PackedStringArray) -> void:
+	_dev_netcheck_lines = lines
 
 
 func _ready() -> void:
@@ -50,14 +57,15 @@ func _ready() -> void:
 	_chat.name = "CoopChat"
 	get_tree().root.add_child(_chat)
 	ExtensionHooks.populate_menu_buttons = Callable(self, "_populate_menu_buttons")
+	ExtensionHooks.populate_option_pages = Callable(self, "_populate_option_pages")
 	GameEvents.menu_button.connect(_on_menu_button)
 	_coop.get("character_select_requested").connect(_on_character_select_requested)
-	print("[etn_coop] entry ready: hooks installed; F9 net HUD / F10 host / F11 join 127.0.0.1 / F12 leave")
+	print("[etn_coop] entry ready: hooks installed; F4 net HUD / F10 host / F11 join 127.0.0.1 / F12 leave")
 	_handle_dev_args()
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F9:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F4:
 		if _hud != null and is_instance_valid(_hud):
 			_hud.call("toggle")
 			get_viewport().set_input_as_handled()
@@ -108,6 +116,41 @@ func _find_canvas_layer(node: Node) -> CanvasLayer:
 			return n
 		n = n.get_parent()
 	return null
+
+
+# 本体 option 菜单注入「COOP」页与页签按钮（经 ExtensionHooks.populate_option_pages）。
+# option.gd 会按 option_id/button_id 自动联动显隐，无需额外接线。
+func _populate_option_pages(menu_box: Node, button_box: Node) -> void:
+	if menu_box == null or button_box == null:
+		return
+	if menu_box.get_node_or_null("CoopOptionPage") != null:
+		return
+	var page = CoopOptionPageScene.instantiate()
+	page.name = "CoopOptionPage"
+	menu_box.add_child(page)
+
+	var btn = OptionButtonScene.instantiate()
+	btn.name = "CoopOptionButton"
+	btn.set("button_id", "option_coop")
+	var label := Label.new()
+	label.name = "coop_option"
+	label.text = "COOP"
+	label.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	label.add_theme_font_override("font", MENU_FONT)
+	label.add_theme_font_size_override("font_size", 19)
+	label.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	label.add_theme_color_override("font_shadow_color", Color(1, 1, 1, 1))
+	label.add_theme_color_override("font_outline_color", Color(1, 1, 1, 1))
+	label.add_theme_constant_override("shadow_offset_x", 0)
+	label.add_theme_constant_override("shadow_offset_y", 3)
+	label.add_theme_constant_override("outline_size", 4)
+	label.add_theme_constant_override("shadow_outline_size", 2)
+	btn.add_child(label)
+	button_box.add_child(btn)
+
+	# 初始隐藏（未被选中）——option.gd 打开时依赖各页 menu_hide 状态
+	if page.has_method("menu_hide"):
+		page.call("menu_hide")
 
 
 func _on_menu_button(button_id: String) -> void:
@@ -185,11 +228,17 @@ func _handle_dev_args() -> void:
 	var devabort := false
 	var devready := false
 	var devchat := false
+	var devdrop: float = 0.0
+	var devfreeze := false
 	var devmedkit := false
 	var devcine := false
 	var devfever := false
 	var devparabola := false
 	var devhina := false
+	var devupnp := false
+	var devshare := false
+	var devnetcheck := false
+	var devoptionpage := false
 	var use_relay := false
 	var relay_target := ""
 	for a in OS.get_cmdline_user_args():
@@ -296,6 +345,10 @@ func _handle_dev_args() -> void:
 			devready = true
 		elif a == "--coop-devchat":
 			devchat = true
+		elif a.begins_with("--coop-devdrop="):
+			devdrop = float(a.substr("--coop-devdrop=".length()))
+		elif a == "--coop-devfreeze":
+			devfreeze = true
 		elif a == "--coop-devmedkit":
 			devmedkit = true
 		elif a == "--coop-devcine":
@@ -306,6 +359,14 @@ func _handle_dev_args() -> void:
 			devparabola = true
 		elif a == "--coop-devhina":
 			devhina = true
+		elif a == "--coop-devupnp":
+			devupnp = true
+		elif a == "--coop-devshare":
+			devshare = true
+		elif a == "--coop-devnetcheck":
+			devnetcheck = true
+		elif a == "--coop-devoptionpage":
+			devoptionpage = true
 	# 旧的无头自测自行切换场景，禁用开房自动进准备房，避免重复切场景
 	if devbattle:
 		_coop.set("auto_enter_lobby", false)
@@ -336,6 +397,30 @@ func _handle_dev_args() -> void:
 		_coop.call("browse_lan_stop")
 		get_tree().quit()
 		return
+	if devnetcheck:
+		_coop.get("netcheck_result").connect(_dev_on_netcheck)
+		_coop.call("run_network_selfcheck")
+		# 先有本地结论；再等异步出口公网 IP（最多 5s），到时打印最新结果
+		await get_tree().create_timer(5.0).timeout
+		print("[etn_coop] dev-netcheck\n%s" % "\n".join(_dev_netcheck_lines))
+		get_tree().quit()
+		return
+	if devoptionpage:
+		var opt = preload("res://ui/option.tscn").instantiate()
+		get_tree().root.add_child(opt)
+		await get_tree().process_frame
+		await get_tree().process_frame
+		var mb = opt.get_node_or_null("menu_box")
+		var bb = opt.get_node_or_null("Node2D/option_button_box/VBoxContainer")
+		var page = mb.get_node_or_null("CoopOptionPage") if mb != null else null
+		var btn = null
+		if bb != null:
+			for c in bb.get_children():
+				if str(c.get("button_id")) == "option_coop":
+					btn = c
+		print("[etn_coop] dev-optionpage page=%s btn=%s" % [str(page != null), str(btn != null)])
+		get_tree().quit()
+		return
 	if devautoquit > 0.0:
 		_auto_quit_after(devautoquit)
 	if devmenu:
@@ -347,10 +432,31 @@ func _handle_dev_args() -> void:
 			print("[etn_coop] dev-menu: overlay null")
 		else:
 			var has_panel: bool = ov.get_node_or_null("%OptionPanel") != null
-			var has_eff: bool = ov.get_node_or_null("%RemoteEffectFreq") != null
-			var has_flash: bool = ov.get_node_or_null("%RemoteFlashFreq") != null
-			var has_text: bool = ov.get_node_or_null("%RemoteTextFreq") != null
-			print("[etn_coop] dev-menu nodes: panel=%s eff=%s flash=%s text=%s" % [str(has_panel), str(has_eff), str(has_flash), str(has_text)])
+			var coop_opt = ov.get_node_or_null("%CoopOption")
+			var ctrl_n: int = 0
+			var ctrls_ok: bool = coop_opt != null
+			if coop_opt != null and coop_opt.has_method("get_interactive_controls"):
+				for c in coop_opt.call("get_interactive_controls"):
+					ctrl_n += 1
+					if c == null or not is_instance_valid(c) or c.mouse_filter != Control.MOUSE_FILTER_STOP:
+						ctrls_ok = false
+			print("[etn_coop] dev-menu nodes: panel=%s coop_option=%s ctrls=%d all_stop=%s" % [str(has_panel), str(coop_opt != null), ctrl_n, str(ctrls_ok)])
+			var port_in = ov.get_node_or_null("%PortInput")
+			var lan_t = ov.get_node_or_null("%LanAddrToggle")
+			var pub_t = ov.get_node_or_null("%PublicAddrToggle")
+			var pub_ip = ov.get_node_or_null("%PublicIpInput")
+			var pub_clr = ov.get_node_or_null("%PublicIpClear")
+			print("[etn_coop] dev-menu ctrl (expect STOP/true): port=%s lan=%s pub=%s pubip=%s pubclr=%s" % [
+				str(port_in != null and port_in.mouse_filter == Control.MOUSE_FILTER_STOP),
+				str(lan_t != null and lan_t.mouse_filter == Control.MOUSE_FILTER_STOP),
+				str(pub_t != null and pub_t.mouse_filter == Control.MOUSE_FILTER_STOP),
+				str(pub_ip != null and pub_ip.mouse_filter == Control.MOUSE_FILTER_STOP),
+				str(pub_clr != null and pub_clr.mouse_filter == Control.MOUSE_FILTER_STOP)])
+			# 选公网不再回退：即使暂无公网地址，应用后 room_address_mode 仍应为 1(公网)
+			ov.call("_apply_addr_mode", 1)
+			await get_tree().process_frame
+			print("[etn_coop] dev-menu addr-mode after apply public: %d (expect 1)" % int(_coop.get("room_address_mode")))
+			ov.call("_apply_addr_mode", 0)
 			var pid_input = ov.get_node_or_null("%PlayerIdInput")
 			var pid_confirm = ov.get_node_or_null("%PlayerIdConfirm")
 			var pid_parent: String = str(pid_input.get_parent().name) if pid_input != null else "<none>"
@@ -389,9 +495,32 @@ func _handle_dev_args() -> void:
 			_coop.call("join_relay_room", rurl, rcode)
 	else:
 		if mode == "host":
+			if devupnp:
+				_coop.get("settings").set("upnp_enabled", true)
 			_coop.call("host_game")
 		else:
 			_coop.call("join_game", target)
+	if devupnp:
+		# 等 UPnP 后台线程完成（本机发现实测可达 ~8s，留余量）
+		await get_tree().create_timer(10.0).timeout
+		print("[etn_coop] dev-upnp %s" % str(_coop.call("dev_upnp_state")))
+		if not devbattle:
+			get_tree().quit()
+			return
+	if devshare:
+		_coop.call("set_room_address_mode", 1)
+		_coop.call("set_manual_public_ip", "abc.playit.gg:12345")
+		print("[etn_coop] dev-share hostport=%s (expect abc.playit.gg:12345)" % str(_coop.call("get_room_share_text")))
+		_coop.call("set_manual_public_ip", "1.2.3.4")
+		print("[etn_coop] dev-share ipv4=%s (expect 1.2.3.4:24591)" % str(_coop.call("get_room_share_text")))
+		_coop.call("set_manual_public_ip", "[2001:db8::1]:5000")
+		print("[etn_coop] dev-share ipv6=%s (expect [2001:db8::1]:5000)" % str(_coop.call("get_room_share_text")))
+		print("[etn_coop] dev-share parse=%s (expect host=abc.playit.gg port=12345)" % str(_coop.call("parse_host_port", "abc.playit.gg:12345")))
+		_coop.call("clear_manual_public_ip")
+		print("[etn_coop] dev-share cleared=%s" % str(_coop.call("get_room_share_text")))
+		if not devbattle:
+			get_tree().quit()
+			return
 	if devbattle:
 		var change_delay: float = 6.0 if mode == "host" else 1.5
 		await get_tree().create_timer(change_delay).timeout
@@ -473,6 +602,25 @@ func _handle_dev_args() -> void:
 				await get_tree().create_timer(4.0).timeout
 				print("[etn_coop] dev after-rescue downed=%s prompt=%s" % [
 					str(_coop.call("dev_local_downed")), str(_coop.call("dev_rescue_prompt_shown"))])
+	if mode == "host" and devfreeze:
+		var waited_fr: float = 0.0
+		while not _coop.battle_active and waited_fr < 15.0:
+			await get_tree().create_timer(0.2).timeout
+			waited_fr += 0.2
+		await get_tree().create_timer(1.0).timeout
+		print("[etn_coop] dev-freeze %s" % str(_coop.call("dev_freeze_probe")))
+	if mode == "join" and devdrop > 0.0:
+		var waited_drop: float = 0.0
+		while not _coop.battle_active and waited_drop < 15.0:
+			await get_tree().create_timer(0.2).timeout
+			waited_drop += 0.2
+		await get_tree().create_timer(devdrop).timeout
+		print("[etn_coop] dev-drop: forcing reconnect battle=%s peers=%d" % [str(_coop.battle_active), _coop.multiplayer.get_peers().size()])
+		_coop.call("dev_drop")
+		await get_tree().create_timer(2.0).timeout
+		print("[etn_coop] dev-drop state=%s" % str(_coop.call("dev_reconnect_state")))
+		await get_tree().create_timer(5.0).timeout
+		print("[etn_coop] dev-drop after state=%s" % str(_coop.call("dev_reconnect_state")))
 	if devpause:
 		await get_tree().create_timer(1.0).timeout
 		_coop.call("dev_pause_probe")
@@ -868,7 +1016,7 @@ func _handle_dev_args() -> void:
 	var tail: float = 8.0 if mode == "host" else 4.0
 	await get_tree().create_timer(tail).timeout
 	var api = _coop.multiplayer
-	print("[etn_coop] dev status: mode=%s id=%d peers=%s battle=%s remotes=%d enemies=%d enemy1=%d visuals=%d effects=%d coins=%d summons=%d rdown=%d downed=%s prompt=%s bev=%d ext=%d snap=%d hit=%d/%d team=%s" % [
+	print("[etn_coop] dev status: mode=%s id=%d peers=%s battle=%s remotes=%d enemies=%d enemy1=%d visuals=%d effects=%d coins=%d summons=%d rdown=%d downed=%s prompt=%s bev=%d ext=%d snap=%d hit=%d/%d rej=%d team=%s" % [
 		mode, api.get_unique_id(), str(api.get_peers()), str(_coop.battle_active),
 		_coop.player_by_peer_id.size(), _coop.enemy_by_net_id.size(),
 		int(_coop.call("dev_enemy_hp", 1)), int(_coop.call("dev_visual_count")),
@@ -876,7 +1024,7 @@ func _handle_dev_args() -> void:
 		int(_coop.call("dev_summoned_count")), int(_coop.call("dev_remote_downed_count")),
 		str(_coop.call("dev_local_downed")), str(_coop.call("dev_rescue_prompt_shown")),
 		int(_coop.call("dev_boss_events_received")), int(_coop.net_extrap_events), int(_coop.net_hard_snaps),
-		int(_coop.net_hits_accepted), int(_coop.net_hits_rejected), str(_coop.call("dev_team_stats"))])
+		int(_coop.net_hits_accepted), int(_coop.net_hits_rejected), int(_coop.get("_visual_reject_count")), str(_coop.call("dev_team_stats"))])
 	await get_tree().create_timer(3.0).timeout
 	# --coop-devquit：房主离开自测，不主动关连接，交给 CoopNet 检测并回主菜单后优雅退出
 	if "--coop-devquit" in OS.get_cmdline_user_args():

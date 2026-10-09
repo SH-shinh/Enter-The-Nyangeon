@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://dasoivow7naal"]
-
-[ext_resource type="Script" path="res://script/FloatingPool.gd" id="1_852rt"]
-
-[node name="FloatingPool" type="Node"]
-script = ExtResource("1_852rt")

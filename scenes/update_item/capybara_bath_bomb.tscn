@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://bdcidnonkheh4"]
+[gd_scene format=3 uid="uid://bdcidnonkheh4"]
 
-[ext_resource type="Script" path="res://scenes/update_item/capybara_bath_bomb.gd" id="1_wg3iq"]
+[ext_resource type="Script" uid="uid://dfv1wfei87opn" path="res://scenes/update_item/capybara_bath_bomb.gd" id="1_wg3iq"]
 
 [node name="capybara_bath_bomb" type="Node2D"]
 script = ExtResource("1_wg3iq")

@@ -5,19 +5,20 @@ signal player_card_clear_done
 @export var bgm_first_cut: AudioStream
 @export var bgm_loop: AudioStream
 
-@onready var test_room: PanelContainer = %TestRoom
-@onready var new_game = %NewGame
-@onready var option = %Option
-@onready var quit = %Quit
 @onready var menu_anim = $AnimationPlayer
 @onready var select_player = $SelectPlayer/AnimationPlayer
 @onready var player_card_box = $SelectPlayer/Node2D2/MarginContainer/PlayerCardBox
-@onready var gdd: PanelContainer = $SelectPlayer/Node2D/SocietyCardBox/ScrollContainer/VBoxContainer/GDD
 @onready var society_card_box = $SelectPlayer/Node2D/SocietyCardBox/ScrollContainer/VBoxContainer
 @onready var option_menu = $OptionMenu
 @onready var shop_menu: Node2D = $Node2D6/ShopMenu
 @onready var version: Label = %version
 @onready var scoreboard: Control = $scoreboard
+@onready var score_button = $Node2D6/TextureRect2/score_button
+@onready var credits: Control = $Credits
+@onready var credits_button: Button = $Node2D5/credits_button
+
+const MOD_SOCIETY_SCENE := preload("res://ui/mod_society_card.tscn")
+@onready var menu_button_box = $Node2D5/menu_button_box
 
 var on_select_anim: bool = false
 var on_select_player: bool = false
@@ -29,32 +30,79 @@ var option_on_touch: bool = false
 var quit_on_touch: bool = false
 
 var society_card_group: Array[Node] = []
+var _default_society: Node = null
+var _society_gids: Array = []
 
 func _ready():
 	SoundManager.cut_finish.connect(bgm_loop_play)
 	SoundManager.play_bgm_cut(bgm_first_cut)
-	test_room.mouse_entered.connect(test_room_select)
-	test_room.mouse_exited.connect(test_room_out)
-	test_room.gui_input.connect(on_test_room)
-	new_game.mouse_entered.connect(new_game_select)
-	new_game.mouse_exited.connect(new_game_out)
-	new_game.gui_input.connect(on_new_game)
-	option.mouse_entered.connect(option_select)
-	option.mouse_exited.connect(option_out)
-	option.gui_input.connect(on_option)
-	quit.mouse_entered.connect(quit_select)
-	quit.mouse_exited.connect(quit_out)
-	quit.gui_input.connect(on_quit)
 	GameEvents.society_card_selected.connect(society_card_filter)
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	GameEvents.player_card_selected.connect(on_level_select)
 	GameEvents.level_select_out.connect(out_level_select)
-	GameEvents.player_card_touch.connect(test_room_touch_out)
-	GameEvents.player_card_touch.connect(new_game_touch_out)
-	GameEvents.player_card_touch.connect(quit_touch_out)
-	GameEvents.player_card_touch.connect(option_touch_out)
 	version.text = Game.version_number
+	GameEvents.menu_button.connect(menu_button_press)
 	SupportData.reset_game_support()
+	ModManager.ensure_unlocked()
+	_setup_societies()
+	GameEvents.check_data.connect(_sync_societies)
+	if ExtensionHooks.populate_menu_buttons.is_valid():
+		ExtensionHooks.populate_menu_buttons.call(menu_button_box)
+
+
+# 只实例化「已解锁」的社团（本体注册表 + mod 社团 + MOD 通用卡）。
+func _setup_societies() -> void:
+	for child in society_card_box.get_children():
+		society_card_box.remove_child(child)
+		child.queue_free()
+	society_card_group.clear()
+	_default_society = null
+	for s in ModManager.get_base_societies():
+		if not PlayerData.group.has(str(s.get("group_id", ""))):
+			continue
+		var base_scene = s.get("scene")
+		if base_scene != null:
+			society_card_box.add_child(base_scene.instantiate())
+	for s in ModManager.get_mod_societies():
+		if not PlayerData.group.has(str(s.get("group_id", ""))):
+			continue
+		var scene = s.get("scene")
+		if scene != null:
+			society_card_box.add_child(scene.instantiate())
+	if not ModManager.get_unclaimed_unlocked_characters().is_empty():
+		society_card_box.add_child(MOD_SOCIETY_SCENE.instantiate())
+	_society_gids = _current_unlocked_gids()
+	_default_society = _first_society()
+
+
+func _current_unlocked_gids() -> Array:
+	var out: Array = []
+	for s in ModManager.get_base_societies():
+		var gid = str(s.get("group_id", ""))
+		if PlayerData.group.has(gid):
+			out.append(gid)
+	for s in ModManager.get_mod_societies():
+		var gid = str(s.get("group_id", ""))
+		if PlayerData.group.has(gid):
+			out.append(gid)
+	if not ModManager.get_unclaimed_unlocked_characters().is_empty():
+		out.append("__mod_generic__")
+	return out
+
+
+func _first_society() -> Node:
+	for c in society_card_box.get_children():
+		if c is CanvasItem and (c as CanvasItem).visible:
+			return c
+	return null
+
+
+# 解锁集合变化时才重建社团列（check_data 在菜单交互时也会发，用差异判断挡掉）。
+func _sync_societies() -> void:
+	if _current_unlocked_gids() == _society_gids:
+		return
+	_setup_societies()
+
 
 func on_level_select():
 	on_select_level = true
@@ -96,173 +144,50 @@ func on_select_player_false():
 	on_select_player = false
 
 func button_open():
-	test_room.mouse_filter = 0
-	new_game.mouse_filter = 0
-	option.mouse_filter = 0
-	quit.mouse_filter = 0
+	var buttons: Array = menu_button_box.get_children()
+	for i in buttons:
+		i.mouse_filter = Control.MOUSE_FILTER_STOP
 	shop_menu.button_open.emit()
 
 func button_close():
-	test_room.mouse_filter = 2
-	new_game.mouse_filter = 2
-	option.mouse_filter = 2
-	quit.mouse_filter = 2
+	var buttons: Array = menu_button_box.get_children()
+	for i in buttons:
+		i.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	shop_menu.button_close.emit()
 
 func bgm_loop_play():
 	SoundManager.play_bgm(bgm_loop)
 
-func test_room_select():
-	SoundManager.play_sfx("ButtonSounds2")
-	$Node2D5/TestRoom/AnimationPlayer.play("on_select")
-
-func test_room_out():
-	$Node2D5/TestRoom/AnimationPlayer.play_backwards("on_select")
-
-func on_test_room(event: InputEvent):
-	if event as InputEventScreenTouch and event.pressed:
-		if new_game_on_touch == false:
-			GameEvents.emit_player_card_touch()
-			await get_tree().create_timer(0.1).timeout
-			new_game_on_touch = true
-			SoundManager.play_sfx("ButtonSounds2")
-			$Node2D5/TestRoom/AnimationPlayer.play("on_select")
-		else:
-			SoundManager.play_sfx("ButtonSounds")
-			SoundManager.play_sfx("UISounds1")
+func menu_button_press(button_id: String):
+	
+	match button_id:
+		
+		"new_game":
+			menu_anim.play("select_anim")
+			select_player.play("select_player")
+			await select_player.animation_finished
+			if _default_society != null and is_instance_valid(_default_society):
+				_default_society.on_select_handle()
+		
+		"test_room":
 			SoundManager.bgm_fade_out()
 			Transition.play_left_start()
 			await Transition.left_end_start
 			GameEvents.change_scene("res://scenes/main/test_room.tscn","res://scenes/player/momoi/momoi.tscn")
-	
-	if event.is_action_pressed("shoot"):
-		SoundManager.play_sfx("ButtonSounds")
-		SoundManager.play_sfx("UISounds1")
-		SoundManager.bgm_fade_out()
-		Transition.play_left_start()
-		await Transition.left_end_start
-		GameEvents.change_scene("res://scenes/main/test_room.tscn","res://scenes/player/momoi/momoi.tscn")
-
-func test_room_touch_out():
-	await get_tree().create_timer(0.05).timeout
-	
-	if test_room_on_touch == true:
-		test_room_on_touch = false
-		$Node2D5/TestRoom/AnimationPlayer.play_backwards("on_select")
-
-func new_game_select():
-	SoundManager.play_sfx("ButtonSounds2")
-	$Node2D5/NewGame/AnimationPlayer.play("on_select")
-
-func new_game_out():
-	$Node2D5/NewGame/AnimationPlayer.play("on_out")
-
-func new_game_touch_out():
-	await get_tree().create_timer(0.05).timeout
-	
-	if new_game_on_touch == true:
-		new_game_on_touch = false
-		$Node2D5/NewGame/AnimationPlayer.play("on_out")
-
-func on_new_game(event: InputEvent):
-	
-	if event as InputEventScreenTouch and event.pressed:
-		if new_game_on_touch == false:
-			GameEvents.emit_player_card_touch()
-			await get_tree().create_timer(0.1).timeout
-			new_game_on_touch = true
-			SoundManager.play_sfx("ButtonSounds2")
-			$Node2D5/NewGame/AnimationPlayer.play("on_select")
-		else:
-			GameEvents.emit_check_data()
-			SoundManager.play_sfx("ButtonSounds")
-			SoundManager.play_sfx("UISounds1")
-			button_close()
-			menu_anim.play("select_anim")
-			select_player.play("select_player")
-			await select_player.animation_finished
-			gdd.on_select_handle()
-	
-	
-	if event.is_action_pressed("shoot"):
-		GameEvents.emit_check_data()
-		SoundManager.play_sfx("ButtonSounds")
-		SoundManager.play_sfx("UISounds1")
-		button_close()
-		menu_anim.play("select_anim")
-		select_player.play("select_player")
-		await select_player.animation_finished
-		gdd.on_select_handle()
-
-func option_select():
-	SoundManager.play_sfx("ButtonSounds2")
-	$Node2D5/Option/AnimationPlayer.play("on_select")
-
-func option_out():
-	$Node2D5/Option/AnimationPlayer.play("on_out")
-
-func option_touch_out():
-	await get_tree().create_timer(0.05).timeout
-	
-	if option_on_touch == true:
-		option_on_touch = false
-		$Node2D5/Option/AnimationPlayer.play("on_out")
-
-func on_option(event: InputEvent):
-	
-	if event as InputEventScreenTouch and event.pressed:
-		if option_on_touch == false:
-			GameEvents.emit_player_card_touch()
-			await get_tree().create_timer(0.1).timeout
-			option_on_touch = true
-			SoundManager.play_sfx("ButtonSounds2")
-			$Node2D5/Option/AnimationPlayer.play("on_select")
-		else:
-			SoundManager.play_sfx("ButtonSounds")
-			SoundManager.play_sfx("UISounds1")
+		
+		"option_menu":
 			button_close()
 			menu_anim.play("select_anim")
 			option_menu.on_option_selected()
-	
-	if event.is_action_pressed("shoot"):
-		SoundManager.play_sfx("ButtonSounds")
-		SoundManager.play_sfx("UISounds1")
-		button_close()
-		menu_anim.play("select_anim")
-		option_menu.on_option_selected()
-
-func quit_select():
-	SoundManager.play_sfx("ButtonSounds2")
-	$Node2D5/Quit/AnimationPlayer.play("on_select")
-
-func quit_out():
-	$Node2D5/Quit/AnimationPlayer.play("on_out")
-
-func quit_touch_out():
-	await get_tree().create_timer(0.05).timeout
-	
-	if quit_on_touch == true:
-		quit_on_touch = false
-		$Node2D5/Quit/AnimationPlayer.play("on_out")
-
-func on_quit(event: InputEvent):
-	
-	if event as InputEventScreenTouch and event.pressed:
-		if quit_on_touch == false:
-			GameEvents.emit_player_card_touch()
-			await get_tree().create_timer(0.1).timeout
-			quit_on_touch = true
-			SoundManager.play_sfx("ButtonSounds2")
-			$Node2D5/Quit/AnimationPlayer.play("on_select")
-		else:
-			SoundManager.play_sfx("ButtonSounds")
+		
+		"game_quit":
 			button_close()
 			get_tree().quit()
+		
+		_:
+			return
 	
-	if event.is_action_pressed("shoot"):
-		SoundManager.play_sfx("ButtonSounds")
-		button_close()
-		get_tree().quit()
+	button_close()
 
 func society_card_filter(society_card: Node):
 	society_card_group.push_back(society_card)
@@ -271,13 +196,8 @@ func society_card_filter(society_card: Node):
 		society_card_group.remove_at(0)
 	select_player.play("change_player_card")
 	await player_card_clear_done
-	
-	for i in 4:
-		if society_card.card_group[i] != "":
-			var card_ins = load(society_card.card_group[i]).instantiate()
-			if PlayerData.character.has(card_ins.player_card.id):
-				player_card_box.add_child(card_ins)
-				await get_tree().create_timer(0.07).timeout
+	if society_card.has_method("populate_player_cards"):
+		await society_card.populate_player_cards(player_card_box)
 
 func change_player_card():
 	var cards = player_card_box.get_children()
@@ -289,6 +209,26 @@ func _on_score_button_pressed() -> void:
 	SoundManager.play_sfx("UISounds2")
 	scoreboard.show_scoreboard()
 
-func _on_score_button_gui_input(event: InputEvent) -> void:
+func _is_button_press(event: InputEvent) -> bool:
 	if event as InputEventScreenTouch and event.pressed:
+		return true
+	if event as InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		return true
+	if event.is_action_pressed("ui_accept"):
+		return true
+	return false
+
+func _on_score_button_gui_input(event: InputEvent) -> void:
+	if _is_button_press(event):
+		score_button.accept_event()
 		_on_score_button_pressed()
+
+func _on_credits_button_pressed() -> void:
+	SoundManager.play_sfx("UISounds2")
+	GameEvents.emit_player_card_touch()
+	credits.show_credits()
+
+func _on_credits_button_gui_input(event: InputEvent) -> void:
+	if _is_button_press(event):
+		credits_button.accept_event()
+		_on_credits_button_pressed()

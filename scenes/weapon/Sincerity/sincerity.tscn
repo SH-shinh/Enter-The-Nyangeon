@@ -1,7 +1,7 @@
-[gd_scene load_steps=11 format=3 uid="uid://dx3j2mgd1neog"]
+[gd_scene format=3 uid="uid://dx3j2mgd1neog"]
 
-[ext_resource type="Script" path="res://scenes/weapon/Unique_Idea/unique_idea.gd" id="1_kph0e"]
-[ext_resource type="PackedScene" uid="uid://dpjbi3lq3fedn" path="res://scenes/bullet/momoi_bullet.tscn" id="2_hd0t8"]
+[ext_resource type="Script" uid="uid://ll1l3uf862v7" path="res://script/player_gun.gd" id="1_kph0e"]
+[ext_resource type="PackedScene" uid="uid://letrn1wr2i3n" path="res://scenes/bullet/momoi_bullet.tscn" id="2_hd0t8"]
 [ext_resource type="Texture2D" uid="uid://da1m8jg2fohgr" path="res://sprites/weapon/sincerity.png" id="2_qt2v2"]
 [ext_resource type="PackedScene" uid="uid://5xnka7kne7w" path="res://script/picatinny_rail.tscn" id="3_p5fw8"]
 [ext_resource type="PackedScene" uid="uid://bjvr1nuwo7ish" path="res://script/muzzle.tscn" id="4_ebmml"]
@@ -54,51 +54,89 @@ tracks/1/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_w0ptx"]
 _data = {
-"RESET": SubResource("Animation_yiltc"),
-"reload": SubResource("Animation_sw87n")
+&"RESET": SubResource("Animation_yiltc"),
+&"reload": SubResource("Animation_sw87n")
 }
 
-[node name="sincerity" type="Node2D"]
+[sub_resource type="Animation" id="Animation_tqh52"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0.6, 0.6)]
+}
+
+[sub_resource type="Animation" id="Animation_bqj5q"]
+resource_name = "fire"
+length = 0.3
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0.45, 1), Vector2(0.6, 0.6)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_0bi6h"]
+_data = {
+&"RESET": SubResource("Animation_tqh52"),
+&"fire": SubResource("Animation_bqj5q")
+}
+
+[node name="sincerity" type="Node2D" unique_id=856272282]
 script = ExtResource("1_kph0e")
 bullet = ExtResource("2_hd0t8")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=844649324]
 position = Vector2(7, 0)
 scale = Vector2(0.6, 0.6)
 texture = ExtResource("2_qt2v2")
 
-[node name="PicatinnyRail" parent="Sprite2D" instance=ExtResource("3_p5fw8")]
+[node name="PicatinnyRail" parent="Sprite2D" unique_id=1277056566 instance=ExtResource("3_p5fw8")]
 position = Vector2(-5, -9)
 scale = Vector2(1.66667, 1.66667)
 
-[node name="Muzzle" parent="Sprite2D" instance=ExtResource("4_ebmml")]
+[node name="Muzzle" parent="Sprite2D" unique_id=2107306575 instance=ExtResource("4_ebmml")]
 position = Vector2(30, -0.833333)
 scale = Vector2(1.66667, 1.66667)
 
-[node name="ShootPosition" type="Marker2D" parent="."]
+[node name="ShootPosition" type="Marker2D" parent="." unique_id=1459765067]
 position = Vector2(25, -0.5)
 
-[node name="ShootTimer" type="Timer" parent="."]
+[node name="ShootTimer" type="Timer" parent="." unique_id=691553680]
 wait_time = 0.2
 one_shot = true
 
-[node name="FireSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="FireSounds" type="AudioStreamPlayer2D" parent="." unique_id=1675542693]
 process_mode = 3
 stream = ExtResource("5_xr14f")
 volume_db = 8.0
 bus = &"SFX"
 
-[node name="ReloadAnim" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_w0ptx")
-}
+[node name="ReloadAnim" type="AnimationPlayer" parent="." unique_id=1327192594]
+libraries/ = SubResource("AnimationLibrary_w0ptx")
 
-[node name="AmmoReloadTimer" type="Timer" parent="."]
+[node name="AmmoReloadTimer" type="Timer" parent="." unique_id=384756624]
 wait_time = 0.5
 one_shot = true
 
-[node name="ReloadSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="ReloadSounds" type="AudioStreamPlayer2D" parent="." unique_id=456767679]
 process_mode = 3
 stream = ExtResource("6_fplac")
 volume_db = 8.0
 bus = &"SFX"
+
+[node name="FireAnim" type="AnimationPlayer" parent="." unique_id=1149362113]
+libraries/ = SubResource("AnimationLibrary_0bi6h")

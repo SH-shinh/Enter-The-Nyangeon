@@ -1,7 +1,7 @@
-[gd_scene load_steps=8 format=3 uid="uid://bdpbcjf0tfkpt"]
+[gd_scene format=3 uid="uid://bdpbcjf0tfkpt"]
 
-[ext_resource type="Script" path="res://scenes/update_item/lifebuoy.gd" id="1_oikiq"]
-[ext_resource type="Shader" path="res://shaders/shock_wave.gdshader" id="2_l4omk"]
+[ext_resource type="Script" uid="uid://dg3m6o7kx44xk" path="res://scenes/update_item/lifebuoy.gd" id="1_oikiq"]
+[ext_resource type="Shader" uid="uid://gm8hwecw36li" path="res://shaders/shock_wave.gdshader" id="2_l4omk"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_koord"]
 resource_local_to_scene = true
@@ -135,19 +135,19 @@ tracks/4/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_1wsmk"]
 _data = {
-"RESET": SubResource("Animation_63n8g"),
-"new_animation": SubResource("Animation_dhqvn")
+&"RESET": SubResource("Animation_63n8g"),
+&"new_animation": SubResource("Animation_dhqvn")
 }
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_4wirv"]
 radius = 120.0
 
-[node name="lifebuoy" type="Node2D"]
+[node name="lifebuoy" type="Node2D" unique_id=1138932635]
 script = ExtResource("1_oikiq")
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=824525586]
 
-[node name="ColorRect2" type="ColorRect" parent="CanvasLayer"]
+[node name="ColorRect2" type="ColorRect" parent="CanvasLayer" unique_id=282670847]
 material = SubResource("ShaderMaterial_koord")
 offset_left = -20.0
 offset_top = -16.0
@@ -155,22 +155,19 @@ offset_right = 672.0
 offset_bottom = 399.0
 mouse_filter = 2
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="CanvasLayer/ColorRect2"]
-libraries = {
-"": SubResource("AnimationLibrary_1wsmk")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="CanvasLayer/ColorRect2" unique_id=1204917977]
+libraries/ = SubResource("AnimationLibrary_1wsmk")
 
-[node name="Area2D" type="Area2D" parent="."]
+[node name="Area2D" type="Area2D" parent="." unique_id=603271972]
 position = Vector2(0, -17)
 scale = Vector2(1.01328e-05, 1.01328e-05)
 collision_layer = 0
-collision_mask = 128
+collision_mask = 65536
 monitoring = false
+monitorable = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=1403993077]
 shape = SubResource("CircleShape2D_4wirv")
 
-[node name="CDTimer" type="Timer" parent="."]
+[node name="CDTimer" type="Timer" parent="." unique_id=1093324490]
 one_shot = true
-
-[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]

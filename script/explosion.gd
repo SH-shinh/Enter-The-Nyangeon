@@ -38,6 +38,8 @@ func shoot_particles():
 	
 	if shoot == false:
 		return
+	if not PoolManager.fx_allowed(&"explosion"):
+		return
 	
 	for i in randi_range(1, 2):
 		var c1 = PoolManager.get_pool("explosion_particles")

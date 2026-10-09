@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" uid="uid://u50qje5k81ja" path="res://sprites/update_item/sugar_cube.png" id="1_sugarcube"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_sugarcube"]
+
+[resource]
+script = ExtResource("2_sugarcube")
+id = "sugar_cube"
+icon = ExtResource("1_sugarcube")
+name = "方糖"
+rare = 1
+order_num = 1
+special_rules = 0
+description = "方糖。对处于燃烧上限的敌人施加恶寒伤害时，造成其最大生命值10%的真实伤害，并清除燃烧与恶寒。"
+forward = "独特
+对处于燃烧上限的敌人施加恶寒伤害时
+造成10%最大生命值的真实伤害，并清除燃烧与恶寒"
+negative = ""
+item_tags = 160
+tags = Array[String](["燃烧", "恶寒"])
+weight = 1.0

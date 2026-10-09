@@ -1,7 +1,6 @@
 extends PanelContainer
 
 @onready var item_icon = $Node2D/TextureRect
-@onready var text = $Node2D/Label
 @onready var item_text = %ItemText
 @onready var text_show = $Node2D/Text
 @onready var item_text_4: Label = %ItemText4

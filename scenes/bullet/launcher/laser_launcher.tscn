@@ -1,11 +1,11 @@
-[gd_scene load_steps=3 format=3 uid="uid://u30xiq6ajqci"]
+[gd_scene format=3 uid="uid://u30xiq6ajqci"]
 
-[ext_resource type="Script" path="res://scenes/bullet/launcher/laser_launcher.gd" id="1_dha1v"]
+[ext_resource type="Script" uid="uid://dbjgkoxmkd3ks" path="res://scenes/bullet/launcher/laser_launcher.gd" id="1_dha1v"]
 [ext_resource type="PackedScene" uid="uid://2fjtsdxiqgus" path="res://scenes/bullet/laser_bullet.tscn" id="2_lu5d7"]
 
-[node name="laser_launcher" type="Node2D"]
+[node name="laser_launcher" type="Node2D" unique_id=597095634]
 script = ExtResource("1_dha1v")
 pool_id = "enemy_laser_launcher"
 laser_bullet = ExtResource("2_lu5d7")
 
-[node name="laser" type="Node2D" parent="."]
+[node name="laser" type="Node2D" parent="." unique_id=119258500]

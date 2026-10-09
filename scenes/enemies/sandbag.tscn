@@ -1,15 +1,17 @@
-[gd_scene load_steps=27 format=3 uid="uid://d1kkwxq6qwf4u"]
+[gd_scene format=3 uid="uid://d1kkwxq6qwf4u"]
 
-[ext_resource type="Script" path="res://scenes/enemies/sandbag.gd" id="1_ukibj"]
+[ext_resource type="Script" uid="uid://5s0i2falulb0" path="res://scenes/enemies/sandbag.gd" id="1_ukibj"]
+[ext_resource type="Script" uid="uid://cgyde7ws002vo" path="res://script/health_component.gd" id="2_2ubyj"]
 [ext_resource type="Texture2D" uid="uid://dfyj3mv4xs5m0" path="res://scenes/shadow/shadow.png" id="2_krn4y"]
-[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="3_pm3g5"]
+[ext_resource type="Shader" uid="uid://bqypa5578tm8a" path="res://shaders/sprite_outline.gdshader" id="3_pm3g5"]
 [ext_resource type="Texture2D" uid="uid://buqj8nx812gjt" path="res://sprites/enemies/sandbag.png" id="4_md65v"]
-[ext_resource type="Script" path="res://script/EnemyStateMachine.gd" id="5_j1kq3"]
-[ext_resource type="Script" path="res://script/EnemyStats.gd" id="6_yyw2h"]
+[ext_resource type="Script" uid="uid://b8e2jlmuhbtm5" path="res://script/EnemyStateMachine.gd" id="5_j1kq3"]
+[ext_resource type="Script" uid="uid://b36s5d5e3v3h4" path="res://script/EnemyStats.gd" id="6_yyw2h"]
 [ext_resource type="PackedScene" uid="uid://dcixivms2uc75" path="res://script/enemy_hurt_floating_text.tscn" id="8_p0kjc"]
-[ext_resource type="Script" path="res://scenes/enemies/dps_count.gd" id="9_aiumr"]
+[ext_resource type="Script" uid="uid://dw1yg7k8aa401" path="res://scenes/enemies/dps_count.gd" id="9_aiumr"]
 [ext_resource type="PackedScene" uid="uid://btl1l8a33rp5b" path="res://scenes/manager/enemy_buff_manager.tscn" id="9_wtq54"]
 [ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="10_g8mb8"]
+[ext_resource type="Script" uid="uid://cog8pvonoqtxu" path="res://script/hurt_box.gd" id="11_83rn5"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_4g834"]
 resource_local_to_scene = true
@@ -48,7 +50,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_8ks7v")
 }],
-"loop": true,
+"loop": 1,
 "name": &"hurt",
 "speed": 12.0
 }, {
@@ -65,7 +67,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_yqsf2")
 }],
-"loop": true,
+"loop": 1,
 "name": &"hurt_after",
 "speed": 6.0
 }, {
@@ -73,7 +75,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_xvrfe")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 2.0
 }]
@@ -200,11 +202,14 @@ tracks/3/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_kr5yj"]
 _data = {
-"RESET": SubResource("Animation_lbl53"),
-"new_animation": SubResource("Animation_scig3")
+&"RESET": SubResource("Animation_lbl53"),
+&"new_animation": SubResource("Animation_scig3")
 }
 
-[node name="sandbag" type="CharacterBody2D" node_paths=PackedStringArray("stats") groups=["Enemy"]]
+[sub_resource type="CircleShape2D" id="CircleShape2D_wvhbo"]
+radius = 18.0
+
+[node name="sandbag" type="CharacterBody2D" unique_id=575839243 node_paths=PackedStringArray("stats", "sprite_2d", "graphics", "collision_shape_2d", "enemy_buff_manager") groups=["Enemy"]]
 collision_layer = 8
 collision_mask = 256
 motion_mode = 1
@@ -213,14 +218,23 @@ platform_wall_layers = 2
 script = ExtResource("1_ukibj")
 pool_id = "sandbag"
 stats = NodePath("EnemyStats")
+sprite_2d = NodePath("Graphics/AnimatedSprite2D")
+graphics = NodePath("Graphics")
+collision_shape_2d = NodePath("CollisionShape2D")
+enemy_buff_manager = NodePath("EnemyBuffManager")
 
-[node name="Graphics" type="Node2D" parent="."]
+[node name="HealthComponent" type="Node" parent="." unique_id=1651526820 node_paths=PackedStringArray("stats", "hurt_box")]
+script = ExtResource("2_2ubyj")
+stats = NodePath("../EnemyStats")
+hurt_box = NodePath("../HurtBox")
 
-[node name="shadow" type="Sprite2D" parent="Graphics"]
+[node name="Graphics" type="Node2D" parent="." unique_id=547944479]
+
+[node name="shadow" type="Sprite2D" parent="Graphics" unique_id=1300422232]
 scale = Vector2(0.45, 0.45)
 texture = ExtResource("2_krn4y")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Graphics"]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Graphics" unique_id=61809597]
 material = SubResource("ShaderMaterial_4g834")
 position = Vector2(-0.5, -16)
 sprite_frames = SubResource("SpriteFrames_mfwo5")
@@ -228,42 +242,47 @@ animation = &"hurt_after"
 autoplay = "idle"
 flip_h = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1779529395]
 position = Vector2(0, -20)
 shape = SubResource("CircleShape2D_gvmi3")
 
-[node name="StateMachine" type="Node" parent="."]
+[node name="StateMachine" type="Node" parent="." unique_id=1855260391]
 script = ExtResource("5_j1kq3")
 
-[node name="EnemyStats" type="Node" parent="."]
+[node name="EnemyStats" type="Node" parent="." unique_id=1449026708]
 script = ExtResource("6_yyw2h")
 score = 0
 max_hp = 35
-knockback_resis = 60
+knockback_resis = 50
 Enemy_Knockback = 0
 Enemy_damage = 0
 Enemy_bullet_damage = 0
 Enemy_coin = 0
 MAX_SPEED = 60
 SPEED_TIME = 0.2
+convertible = false
+is_test_target = true
+convert_threshold = 500
 
-[node name="EnemyHurtFloatingText" parent="." instance=ExtResource("8_p0kjc")]
+[node name="EnemyHurtFloatingText" parent="." unique_id=1495857045 node_paths=PackedStringArray("health_component") instance=ExtResource("8_p0kjc")]
+health_component = NodePath("../HealthComponent")
 
-[node name="EnemyBuffManager" parent="." instance=ExtResource("9_wtq54")]
+[node name="EnemyBuffManager" parent="." unique_id=1815816955 node_paths=PackedStringArray("health_component") instance=ExtResource("9_wtq54")]
+health_component = NodePath("../HealthComponent")
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=2069162938]
 offset_left = -10.0
 offset_top = -57.0
 offset_right = 30.0
 offset_bottom = -31.0
 scale = Vector2(0.5, 0.5)
 
-[node name="BuffBox" type="HBoxContainer" parent="MarginContainer"]
+[node name="BuffBox" type="HBoxContainer" parent="MarginContainer" unique_id=323725133]
 unique_name_in_owner = true
 layout_mode = 2
 alignment = 1
 
-[node name="HPBar" type="TextureProgressBar" parent="."]
+[node name="HPBar" type="TextureProgressBar" parent="." unique_id=1806594969]
 offset_left = -9.0
 offset_top = -42.0
 offset_right = 9.0
@@ -275,11 +294,11 @@ texture_under = SubResource("GradientTexture2D_5ug2k")
 texture_progress = SubResource("GradientTexture2D_tqdgw")
 texture_progress_offset = Vector2(1, 1)
 
-[node name="DPS_count" type="Node2D" parent="." node_paths=PackedStringArray("body")]
+[node name="DPS_count" type="Node2D" parent="." unique_id=33098688 node_paths=PackedStringArray("health_component")]
 script = ExtResource("9_aiumr")
-body = NodePath("..")
+health_component = NodePath("../HealthComponent")
 
-[node name="Label" type="Label" parent="DPS_count"]
+[node name="Label" type="Label" parent="DPS_count" unique_id=373179537]
 visible = false
 anchors_preset = 8
 anchor_left = 0.5
@@ -297,10 +316,18 @@ theme_override_font_sizes/font_size = 8
 text = "DPS:0"
 horizontal_alignment = 1
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="DPS_count"]
-libraries = {
-"": SubResource("AnimationLibrary_kr5yj")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="DPS_count" unique_id=196843575]
+libraries/ = SubResource("AnimationLibrary_kr5yj")
+
+[node name="HurtBox" type="Area2D" parent="." unique_id=1126459329 node_paths=PackedStringArray("body")]
+position = Vector2(0, -19)
+collision_layer = 16384
+collision_mask = 163840
+script = ExtResource("11_83rn5")
+body = NodePath("..")
+
+[node name="HurtBoxShape2D" type="CollisionShape2D" parent="HurtBox" unique_id=399898194]
+shape = SubResource("CircleShape2D_wvhbo")
 
 [connection signal="is_dead" from="." to="." method="_on_is_dead"]
 [connection signal="is_hurt" from="." to="." method="_on_is_hurt"]

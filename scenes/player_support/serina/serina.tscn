@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://cs3neavnkxtnq"]
+
+[ext_resource type="Script" uid="uid://bgh0dum0v0hu5" path="res://scenes/player_support/serina/serina.gd" id="1_serina"]
+[ext_resource type="PackedScene" path="res://scenes/player_support/serina/serina_as.tscn" id="2_serinaas"]
+
+[node name="serina" type="Node2D" unique_id=1331984065]
+script = ExtResource("1_serina")
+
+[node name="serina_as" parent="." unique_id=1814687310 instance=ExtResource("2_serinaas")]

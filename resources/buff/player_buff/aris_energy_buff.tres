@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Buff" format=3 uid="uid://bfaeoowne1fql"]
+
+[ext_resource type="Texture2D" uid="uid://c8xygb0p4b7oi" path="res://sprites/buff_icon/aris_buff_icon.png" id="1_aris"]
+[ext_resource type="Script" uid="uid://dhb70b327wxvy" path="res://resources/buff/buff.gd" id="2_buff"]
+
+[resource]
+script = ExtResource("2_buff")
+id = "aris_energy_buff"
+icon = ExtResource("1_aris")
+name = "能量过载"
+modifiers = Array[Dictionary]([{
+"amount": 0.1,
+"key": "global_damage_mult",
+"mode": "add",
+"source": "const"
+}])

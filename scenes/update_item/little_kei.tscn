@@ -1,7 +1,7 @@
-[gd_scene load_steps=30 format=3 uid="uid://b6gdwa4cajm8k"]
+[gd_scene format=3 uid="uid://b6gdwa4cajm8k"]
 
-[ext_resource type="Script" path="res://scenes/update_item/little_kei.gd" id="1_y4i6w"]
-[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="2_a4va4"]
+[ext_resource type="Script" uid="uid://cmp4wkkv0gyrt" path="res://scenes/update_item/little_kei.gd" id="1_y4i6w"]
+[ext_resource type="Shader" uid="uid://bqypa5578tm8a" path="res://shaders/sprite_outline.gdshader" id="2_a4va4"]
 [ext_resource type="Texture2D" uid="uid://ildpleeii8ee" path="res://sprites/update_item/little_kei_icon.png" id="2_avt63"]
 [ext_resource type="Texture2D" uid="uid://bri1i5874m1li" path="res://sprites/particle/ball_shield.png" id="4_uauqe"]
 
@@ -110,7 +110,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_0bwym")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 16.0
 }]
@@ -148,8 +148,8 @@ tracks/0/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_qhdio"]
 _data = {
-"RESET": SubResource("Animation_fu6a1"),
-"new_animation": SubResource("Animation_kfy4u")
+&"RESET": SubResource("Animation_fu6a1"),
+&"new_animation": SubResource("Animation_kfy4u")
 }
 
 [sub_resource type="Animation" id="Animation_jqc0o"]
@@ -210,8 +210,8 @@ tracks/1/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_2jbrx"]
 _data = {
-"RESET": SubResource("Animation_jqc0o"),
-"new_animation": SubResource("Animation_ymvb0")
+&"RESET": SubResource("Animation_jqc0o"),
+&"new_animation": SubResource("Animation_ymvb0")
 }
 
 [sub_resource type="Gradient" id="Gradient_05fur"]
@@ -225,40 +225,41 @@ fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(0.5, 0)
 metadata/_snap_enabled = true
 
-[node name="LittleKei" type="Node2D"]
+[node name="LittleKei" type="Node2D" unique_id=620800392]
 script = ExtResource("1_y4i6w")
 
-[node name="Marker2D" type="Marker2D" parent="."]
+[node name="Marker2D" type="Marker2D" parent="." unique_id=327990404]
 position = Vector2(0, -8)
 
-[node name="Timer" type="Timer" parent="."]
+[node name="Timer" type="Timer" parent="." unique_id=1740026892]
 wait_time = 3.0
 autostart = true
 
-[node name="Path2D" type="Path2D" parent="."]
+[node name="Path2D" type="Path2D" parent="." unique_id=1073596319]
 curve = SubResource("Curve2D_gwhr8")
 
-[node name="PathFollow2D" type="PathFollow2D" parent="Path2D"]
+[node name="PathFollow2D" type="PathFollow2D" parent="Path2D" unique_id=1754658161]
 position = Vector2(0, -50)
 rotates = false
 
-[node name="Kei" type="Node2D" parent="Path2D/PathFollow2D"]
+[node name="Kei" type="Node2D" parent="Path2D/PathFollow2D" unique_id=2120979656]
 z_index = 1
 position = Vector2(0, -4)
 
-[node name="Sprite2D" type="Sprite2D" parent="Path2D/PathFollow2D/Kei"]
+[node name="Sprite2D" type="Sprite2D" parent="Path2D/PathFollow2D/Kei" unique_id=201165979]
 material = SubResource("ShaderMaterial_x72k8")
 texture = ExtResource("2_avt63")
 
-[node name="Area2D" type="Area2D" parent="Path2D/PathFollow2D/Kei"]
+[node name="Area2D" type="Area2D" parent="Path2D/PathFollow2D/Kei" unique_id=950935473]
 position = Vector2(0, -1)
 collision_layer = 0
-collision_mask = 128
+collision_mask = 65536
+monitorable = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Path2D/PathFollow2D/Kei/Area2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Path2D/PathFollow2D/Kei/Area2D" unique_id=1343306856]
 shape = SubResource("CircleShape2D_kywmk")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Path2D/PathFollow2D/Kei/Area2D"]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Path2D/PathFollow2D/Kei/Area2D" unique_id=1748442046]
 modulate = Color(0.368627, 0.760784, 0.964706, 0.329412)
 material = SubResource("CanvasItemMaterial_76eex")
 scale = Vector2(1.8125, 1.8125)
@@ -267,18 +268,14 @@ animation = &"idle"
 autoplay = "idle"
 frame_progress = 0.773524
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="Path2D/PathFollow2D/Kei/Area2D/AnimatedSprite2D"]
-libraries = {
-"": SubResource("AnimationLibrary_qhdio")
-}
-autoplay = "new_animation"
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Path2D/PathFollow2D/Kei/Area2D/AnimatedSprite2D" unique_id=794369850]
+libraries/ = SubResource("AnimationLibrary_qhdio")
+autoplay = &"new_animation"
 
-[node name="AnimationPlayer2" type="AnimationPlayer" parent="Path2D/PathFollow2D/Kei/Area2D/AnimatedSprite2D"]
-libraries = {
-"": SubResource("AnimationLibrary_2jbrx")
-}
+[node name="AnimationPlayer2" type="AnimationPlayer" parent="Path2D/PathFollow2D/Kei/Area2D/AnimatedSprite2D" unique_id=2077220359]
+libraries/ = SubResource("AnimationLibrary_2jbrx")
 
-[node name="PointLight2D" type="PointLight2D" parent="Path2D/PathFollow2D/Kei"]
+[node name="PointLight2D" type="PointLight2D" parent="Path2D/PathFollow2D/Kei" unique_id=1877536738]
 position = Vector2(0, 9.53674e-07)
 scale = Vector2(0.71875, 0.75)
 color = Color(1, 0.731663, 0.0573618, 1)
@@ -286,4 +283,3 @@ energy = 1.46
 texture = SubResource("GradientTexture2D_r5p2i")
 
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
-[connection signal="body_entered" from="Path2D/PathFollow2D/Kei/Area2D" to="." method="_on_area_2d_body_entered"]

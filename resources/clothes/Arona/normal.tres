@@ -1,9 +1,8 @@
-[gd_resource type="Resource" script_class="ClothesCard" load_steps=5 format=3 uid="uid://bcpcef6544p7s"]
+[gd_resource type="Resource" script_class="ClothesCard" load_steps=4 format=3 uid="uid://bcpcef6544p7s"]
 
 [ext_resource type="Texture2D" uid="uid://obsem4i861oq" path="res://ui/ark_of_Shittim/arona_icon.png" id="1_1kteg"]
 [ext_resource type="Texture2D" uid="uid://byy5gjbkl1vr" path="res://ui/ark_of_Shittim/arona_icon_2.png" id="2_2jv4a"]
 [ext_resource type="Script" path="res://resources/clothes/clothes_card.gd" id="3_5k2ob"]
-[ext_resource type="Texture2D" uid="uid://su6g33ylu4y6" path="res://ui/ark_of_Shittim/arona_picture.png" id="4_gj2fy"]
 
 [resource]
 script = ExtResource("3_5k2ob")
@@ -15,4 +14,4 @@ user_name = "ARONA"
 icon_1 = ExtResource("1_1kteg")
 icon_2 = ExtResource("2_2jv4a")
 cost = 0
-sprite = ExtResource("4_gj2fy")
+sprite_path = "res://ui/ark_of_Shittim/arona_picture.png"

@@ -1,10 +1,12 @@
-[gd_resource type="Resource" script_class="EnemyCard" load_steps=3 format=3 uid="uid://cjvrr0lb3dvye"]
+[gd_resource type="Resource" script_class="EnemyCard" format=3 uid="uid://cjvrr0lb3dvye"]
 
 [ext_resource type="PackedScene" uid="uid://c77figwu5shna" path="res://scenes/enemies/soldier_redhelmet_sr.tscn" id="1_mreka"]
-[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_pm2ul"]
+[ext_resource type="Texture2D" uid="uid://nmbpblkojgs0" path="res://sprites/enemies/soldier_redhelmet_icon.png" id="2_e17t8"]
+[ext_resource type="Script" uid="uid://c2yv0iuw6g8oh" path="res://resources/enemy/enemy.gd" id="2_pm2ul"]
 
 [resource]
 script = ExtResource("2_pm2ul")
 id = "soldier_redhelmet_sr"
 body = ExtResource("1_mreka")
-description = ""
+icon = ExtResource("2_e17t8")
+position_y = 45.0

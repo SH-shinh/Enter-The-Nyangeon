@@ -1,8 +1,8 @@
-[gd_scene load_steps=8 format=3 uid="uid://c8v7orhtcoc3n"]
+[gd_scene format=3 uid="uid://c8v7orhtcoc3n"]
 
-[ext_resource type="Script" path="res://scenes/update_item/student_council_hard_hat.gd" id="1_2sj6b"]
+[ext_resource type="Script" uid="uid://c1mmekuwglovw" path="res://scenes/update_item/student_council_hard_hat.gd" id="1_2sj6b"]
 [ext_resource type="Resource" uid="uid://dbfj6gjnteek8" path="res://resources/buff/player_buff/immune_damage_buff.tres" id="2_hiuwx"]
-[ext_resource type="Shader" path="res://shaders/shock_wave_2.gdshader" id="3_wwyfg"]
+[ext_resource type="Shader" uid="uid://dvycg6oyg2c0t" path="res://shaders/shock_wave_2.gdshader" id="3_wwyfg"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5qw5k"]
 shader = ExtResource("3_wwyfg")

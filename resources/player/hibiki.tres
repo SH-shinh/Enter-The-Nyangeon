@@ -1,16 +1,16 @@
-[gd_resource type="Resource" script_class="PlayerCard" load_steps=4 format=3 uid="uid://dr58vtkffgdqu"]
+[gd_resource type="Resource" script_class="PlayerCard" load_steps=3 format=3 uid="uid://dr58vtkffgdqu"]
 
 [ext_resource type="Texture2D" uid="uid://c6ld6ou04nq6s" path="res://sprites/player/hibiki/hibiki_picture_halo.png" id="1_llfm7"]
 [ext_resource type="Script" path="res://resources/player/player.gd" id="2_k172q"]
-[ext_resource type="Texture2D" uid="uid://bnpm8ybpxqxwi" path="res://sprites/player/hibiki/hibiki_picture.png" id="3_h7x8y"]
 
 [resource]
 script = ExtResource("2_k172q")
 name = "NEKOZUKA HIBIKI"
 weapon = "FANCY LIGHT"
-sprite = ExtResource("3_h7x8y")
+sprite_path = "res://sprites/player/hibiki/hibiki_picture.png"
 halo = ExtResource("1_llfm7")
 color = Color(0.792157, 0.85098, 1, 1)
 description = ""
 voice_name = "hibiki"
 id = "hibiki"
+scene_path = "res://scenes/player/hibiki/hibiki.tscn"

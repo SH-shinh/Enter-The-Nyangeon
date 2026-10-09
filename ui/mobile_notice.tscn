@@ -1,0 +1,38 @@
+[gd_scene format=3 uid="uid://c0wckt17iueow"]
+
+[ext_resource type="Texture2D" uid="uid://jcqmwo1t8vv0" path="res://ui/ui.png" id="1_2n3v1"]
+[ext_resource type="Script" uid="uid://chi7kkhcmpkw" path="res://ui/mobile_notice.gd" id="1_mnotice"]
+[ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="3_qsrpa"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_sv6yc"]
+content_margin_left = 6.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 6.0
+texture = ExtResource("1_2n3v1")
+texture_margin_left = 4.0
+texture_margin_top = 4.0
+texture_margin_right = 4.0
+texture_margin_bottom = 4.0
+region_rect = Rect2(3, 3, 26, 26)
+
+[node name="MobileNotice" type="PanelContainer" unique_id=179900573]
+process_mode = 3
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_sv6yc")
+script = ExtResource("1_mnotice")
+
+[node name="Label" type="Label" parent="." unique_id=203051045]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_qsrpa")
+theme_override_font_sizes/font_size = 14
+text = "option_mobile_only_notice"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=807695581]
+show_behind_parent = true
+layout_mode = 2
+offset_transform_enabled = true
+offset_transform_scale = Vector2(1.05, 1.5)
+color = Color(0.08235294, 0.08235294, 0.08235294, 0.9411765)

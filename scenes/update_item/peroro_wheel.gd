@@ -1,22 +1,12 @@
-extends Node2D
+extends EquipItem
 
-var num: int
+func _on_equip():
+	GameEvents.enemy_damage_taken.connect(melee_damage_count)
 
-
-func _ready():
-	first_activation()
-	GameEvents.ability_upgrade_added.connect(on_upgrade_added)
-
-func first_activation():
-	GameEvents.player_melee_hit_enemy.connect(melee_damage_count)
-
-func on_upgrade_added(upgrade: AbilityUpgrade, current_upgrade: Dictionary):
-	if upgrade.id != "peroro_wheel":
-		return
-	if current_upgrade["peroro_wheel"]["quantity"] == 1:
-		return
-	num = current_upgrade["peroro_wheel"]["quantity"]
-
-func melee_damage_count(body: Node):
-	if body.stats.hp == body.stats.max_hp:
-		body.hurt_damage *= 2
+func melee_damage_count(_final_damage: int, damage_data: DamageData, body_path: NodePath):
+	if damage_data.damage_type.has(GameTags.MELEE_DAMAGE):
+		var body: Node = get_node_or_null(body_path)
+		if body == null:
+			return
+		if body.stats.hp >= body.stats.max_hp:
+			body.health_component.damage_multiplier += 1

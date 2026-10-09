@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Buff" format=3 uid="uid://lmang0jl8vw2"]
+
+[ext_resource type="Texture2D" uid="uid://coa36y3olwqrj" path="res://sprites/buff_icon/chill_dot.png" id="1_nwy7x"]
+[ext_resource type="Script" uid="uid://dhb70b327wxvy" path="res://resources/buff/buff.gd" id="2_ay0xg"]
+
+[resource]
+script = ExtResource("2_ay0xg")
+id = "chill_dot"
+icon = ExtResource("1_nwy7x")
+name = "恶寒"
+ability = "MAX_SPEED_mult"

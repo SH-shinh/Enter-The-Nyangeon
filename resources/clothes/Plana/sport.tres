@@ -1,9 +1,8 @@
-[gd_resource type="Resource" script_class="ClothesCard" load_steps=5 format=3 uid="uid://capwr2qoi7au"]
+[gd_resource type="Resource" script_class="ClothesCard" load_steps=4 format=3 uid="uid://capwr2qoi7au"]
 
 [ext_resource type="Texture2D" uid="uid://biov2afsq7dng" path="res://ui/ark_of_Shittim/sport_plana_icon.png" id="1_t6dpc"]
 [ext_resource type="Texture2D" uid="uid://cyynr8pafbrji" path="res://ui/ark_of_Shittim/sport_plana_icon_2.png" id="2_hj8au"]
 [ext_resource type="Script" path="res://resources/clothes/clothes_card.gd" id="3_hb7ho"]
-[ext_resource type="Texture2D" uid="uid://oirh2lodcl6x" path="res://ui/ark_of_Shittim/sport_plana_picture.png" id="4_iuaw7"]
 
 [resource]
 script = ExtResource("3_hb7ho")
@@ -15,4 +14,4 @@ user_name = "PLANA"
 icon_1 = ExtResource("1_t6dpc")
 icon_2 = ExtResource("2_hj8au")
 cost = 12
-sprite = ExtResource("4_iuaw7")
+sprite_path = "res://ui/ark_of_Shittim/sport_plana_picture.png"

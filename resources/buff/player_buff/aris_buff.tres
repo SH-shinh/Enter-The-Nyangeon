@@ -8,4 +8,7 @@ script = ExtResource("2_84rju")
 id = "aris_buff"
 icon = ExtResource("1_4i82f")
 name = "爱丽丝buff"
+remove_by_layer = true
 description = ""
+modifiers = Array[Dictionary]([{"key": "crit_luck_add", "mode": "add", "source": "value"}, {"key": "damage_mult", "mode": "add", "source": "const", "amount": 0.5, "if_value": 25}])
+consume_event = "aris_heat_buff"

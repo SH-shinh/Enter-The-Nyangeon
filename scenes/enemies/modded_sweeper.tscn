@@ -1,17 +1,19 @@
-[gd_scene load_steps=33 format=3 uid="uid://jpy0bx2qrcgo"]
+[gd_scene format=3 uid="uid://jpy0bx2qrcgo"]
 
-[ext_resource type="Script" path="res://scenes/enemies/sweeper.gd" id="1_52grr"]
+[ext_resource type="Script" uid="uid://caqfbtqobq27l" path="res://scenes/enemies/sweeper.gd" id="1_52grr"]
 [ext_resource type="Texture2D" uid="uid://dfyj3mv4xs5m0" path="res://scenes/shadow/shadow.png" id="2_qkwpn"]
-[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="3_ta5in"]
+[ext_resource type="Shader" uid="uid://bqypa5578tm8a" path="res://shaders/sprite_outline.gdshader" id="3_ta5in"]
 [ext_resource type="Texture2D" uid="uid://c42cphtwvhnvk" path="res://sprites/enemies/modded_sweeper.png" id="4_gghyf"]
-[ext_resource type="Script" path="res://script/EnemyStateMachine.gd" id="5_ccltj"]
-[ext_resource type="Script" path="res://script/EnemyStats.gd" id="6_pl6a5"]
+[ext_resource type="Script" uid="uid://b8e2jlmuhbtm5" path="res://script/EnemyStateMachine.gd" id="5_ccltj"]
+[ext_resource type="Script" uid="uid://b36s5d5e3v3h4" path="res://script/EnemyStats.gd" id="6_pl6a5"]
 [ext_resource type="PackedScene" uid="uid://dcixivms2uc75" path="res://script/enemy_hurt_floating_text.tscn" id="7_n6107"]
 [ext_resource type="PackedScene" uid="uid://btl1l8a33rp5b" path="res://scenes/manager/enemy_buff_manager.tscn" id="8_th42h"]
 [ext_resource type="PackedScene" uid="uid://bwix1bf5g1mjh" path="res://script/death_anim.tscn" id="9_0ub6n"]
-[ext_resource type="Script" path="res://scenes/enemies/DeadShoot.gd" id="11_7pffi"]
+[ext_resource type="Script" uid="uid://bpxmwjl13qpal" path="res://scenes/enemies/DeadShoot.gd" id="11_7pffi"]
 [ext_resource type="PackedScene" uid="uid://bm6dimclh7dhb" path="res://script/bullet_launcher.tscn" id="11_tbr1k"]
 [ext_resource type="PackedScene" uid="uid://bhaktofgt0o5w" path="res://scenes/bullet/enemy_bullet.tscn" id="12_facr8"]
+[ext_resource type="Script" uid="uid://cgyde7ws002vo" path="res://script/health_component.gd" id="13_y1r2p"]
+[ext_resource type="Script" uid="uid://cog8pvonoqtxu" path="res://script/hurt_box.gd" id="14_lybb4"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_4g834"]
 resource_local_to_scene = true
@@ -99,7 +101,7 @@ animations = [{
 "duration": 0.5,
 "texture": SubResource("AtlasTexture_pklto")
 }],
-"loop": false,
+"loop": 0,
 "name": &"die",
 "speed": 12.0
 }, {
@@ -116,7 +118,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_hplwn")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 12.0
 }, {
@@ -145,7 +147,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_ifgth")
 }],
-"loop": true,
+"loop": 1,
 "name": &"run",
 "speed": 12.0
 }]
@@ -156,7 +158,10 @@ radius = 9.0
 [sub_resource type="CircleShape2D" id="CircleShape2D_mv6ug"]
 radius = 9.0
 
-[node name="ModdedSweeper" type="CharacterBody2D" node_paths=PackedStringArray("stats", "sprite_2d", "graphics", "collision_shape_2d", "enemy_buff_manager") groups=["Enemy"]]
+[sub_resource type="CircleShape2D" id="CircleShape2D_q3ple"]
+radius = 12.0
+
+[node name="ModdedSweeper" type="CharacterBody2D" unique_id=546338755 node_paths=PackedStringArray("stats", "sprite_2d", "graphics", "collision_shape_2d", "enemy_buff_manager") groups=["Enemy"]]
 collision_layer = 8
 collision_mask = 258
 motion_mode = 1
@@ -171,13 +176,13 @@ graphics = NodePath("Graphics")
 collision_shape_2d = NodePath("CollisionShape2D")
 enemy_buff_manager = NodePath("EnemyBuffManager")
 
-[node name="Graphics" type="Node2D" parent="."]
+[node name="Graphics" type="Node2D" parent="." unique_id=449808780]
 
-[node name="shadow" type="Sprite2D" parent="Graphics"]
+[node name="shadow" type="Sprite2D" parent="Graphics" unique_id=277408915]
 scale = Vector2(0.45, 0.45)
 texture = ExtResource("2_qkwpn")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Graphics"]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Graphics" unique_id=1993156887]
 material = SubResource("ShaderMaterial_4g834")
 position = Vector2(0, -15)
 sprite_frames = SubResource("SpriteFrames_p08w1")
@@ -186,58 +191,62 @@ autoplay = "idle"
 frame_progress = 0.145361
 flip_h = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1133675022]
 position = Vector2(0, -11)
 shape = SubResource("CircleShape2D_gvmi3")
 
-[node name="StateMachine" type="Node" parent="."]
+[node name="StateMachine" type="Node" parent="." unique_id=2038153786]
 script = ExtResource("5_ccltj")
 
-[node name="EnemyStats" type="Node" parent="."]
+[node name="EnemyStats" type="Node" parent="." unique_id=104532368]
 script = ExtResource("6_pl6a5")
+convert_resist = 5
 score = 20
 max_hp = 50
-knockback_resis = 40
+knockback_resis = 30
+Enemy_Knockback = 200
 Enemy_damage = 5
 Enemy_bullet_damage = 10
 Enemy_coin = 2
 MAX_SPEED = 50
 
-[node name="ShootPosition" type="Marker2D" parent="."]
+[node name="ShootPosition" type="Marker2D" parent="." unique_id=693327377]
 position = Vector2(1, -11)
 
-[node name="EnemyHurtFloatingText" parent="." instance=ExtResource("7_n6107")]
+[node name="EnemyHurtFloatingText" parent="." unique_id=384467696 node_paths=PackedStringArray("health_component") instance=ExtResource("7_n6107")]
+health_component = NodePath("../HealthComponent")
 
-[node name="EnemyBuffManager" parent="." instance=ExtResource("8_th42h")]
+[node name="EnemyBuffManager" parent="." unique_id=1044487845 instance=ExtResource("8_th42h")]
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=213950780]
 offset_left = -10.0
 offset_top = -37.0
 offset_right = 30.0
 offset_bottom = -11.0
 scale = Vector2(0.5, 0.5)
 
-[node name="BuffBox" type="HBoxContainer" parent="MarginContainer"]
+[node name="BuffBox" type="HBoxContainer" parent="MarginContainer" unique_id=862717699]
 unique_name_in_owner = true
 layout_mode = 2
 alignment = 1
 
-[node name="Area2D" type="Area2D" parent="."]
+[node name="Area2D" type="Area2D" parent="." unique_id=1947195597]
 collision_layer = 0
 collision_mask = 8
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=2023168726]
 position = Vector2(0, -11)
 shape = SubResource("CircleShape2D_mv6ug")
 
-[node name="DeathAnim" parent="." node_paths=PackedStringArray("stats") instance=ExtResource("9_0ub6n")]
+[node name="DeathAnim" parent="." unique_id=485745657 node_paths=PackedStringArray("stats") instance=ExtResource("9_0ub6n")]
 stats = NodePath("../EnemyStats")
 
-[node name="DeadShoot" type="Node2D" parent="." node_paths=PackedStringArray("stats")]
+[node name="DeadShoot" type="Node2D" parent="." unique_id=955847578 node_paths=PackedStringArray("stats", "bullet_launcher")]
 script = ExtResource("11_7pffi")
 stats = NodePath("../EnemyStats")
+bullet_launcher = NodePath("BulletLauncher")
 
-[node name="BulletLauncher" parent="DeadShoot" instance=ExtResource("11_tbr1k")]
+[node name="BulletLauncher" parent="DeadShoot" unique_id=1300604570 instance=ExtResource("11_tbr1k")]
 shoot_at_once = false
 bullet_count = 8
 bullet_arc = 315.0
@@ -249,6 +258,22 @@ decay_time = 1.0
 decay_speed = 1
 kill_time = 2.5
 bullet_id = "enemy_bullet_1"
+
+[node name="HealthComponent" type="Node" parent="." unique_id=1249892684 node_paths=PackedStringArray("stats", "hurt_box")]
+script = ExtResource("13_y1r2p")
+stats = NodePath("../EnemyStats")
+hurt_box = NodePath("../HurtBox")
+
+[node name="HurtBox" type="Area2D" parent="." unique_id=301896960 node_paths=PackedStringArray("body")]
+position = Vector2(0, -19)
+collision_layer = 16384
+collision_mask = 163840
+script = ExtResource("14_lybb4")
+body = NodePath("..")
+
+[node name="HurtBoxShape2D" type="CollisionShape2D" parent="HurtBox" unique_id=1233697842]
+position = Vector2(0, 8)
+shape = SubResource("CircleShape2D_q3ple")
 
 [connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
 [connection signal="body_exited" from="Area2D" to="." method="_on_area_2d_body_exited"]

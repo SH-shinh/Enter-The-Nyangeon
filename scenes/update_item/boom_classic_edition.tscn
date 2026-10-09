@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://b163mdbmmo6ym"]
+[gd_scene format=3 uid="uid://b163mdbmmo6ym"]
 
-[ext_resource type="Script" path="res://scenes/update_item/boom_classic_edition.gd" id="1_vi0ea"]
+[ext_resource type="Script" uid="uid://dwwa6peoc6exa" path="res://scenes/update_item/boom_classic_edition.gd" id="1_vi0ea"]
 
 [node name="boom_classic_edition" type="Node2D"]
 script = ExtResource("1_vi0ea")

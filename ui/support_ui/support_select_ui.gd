@@ -38,6 +38,8 @@ func check_data():
 				now_support = null_card
 			
 		SupportData.get_card(now_support)
+		if SupportData.game_support == null:
+			SupportData.game_support = now_support
 		update_card()
 	else:
 		now_support = null_card
@@ -94,7 +96,7 @@ func mouse_out():
 		ui_anim.play_backwards("select_anim")
 
 func update_card():
-	sprite_2d.texture = now_support.character_sprite
+	sprite_2d.texture = LazyTexture.load_uncached(now_support.character_sprite_path)
 	main_name.text = now_support.support_name2
 
 func change_card():
@@ -102,13 +104,12 @@ func change_card():
 	await card_anim.animation_finished
 	update_card()
 	card_anim.play_backwards("change_card")
-	await card_anim.animation_finished
-	card_anim.play("loop_anim")
 
 func add_null_card():
 	var ins = support_card.instantiate()
 	ins.shop_card = null_card
 	support_box.add_child(ins)
+	ins.reveal()
 
 func clear_box():
 	var cards = support_box.get_children()
@@ -125,12 +126,14 @@ func add_cards():
 			var ins = support_card.instantiate()
 			ins.shop_card = group[i]["resource"]
 			support_box.add_child(ins)
+			ins.reveal()
 	
 	if !SupportData.support_pool.is_empty() and test_menu == true:
 		for i in SupportData.support_pool.size():
 			var ins = support_card.instantiate()
 			ins.shop_card = SupportData.support_pool[i]
 			support_box.add_child(ins)
+			ins.reveal()
 	
 
 func _on_main_card_gui_input(event: InputEvent) -> void:

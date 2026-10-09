@@ -66,7 +66,7 @@ func print_player_score(player_id: String):
 		"level" : PlayerData.level_id,
 		"score" : score,
 		"player" : PlayerData.player_select,
-		"support" : SupportData.game_support.support_id,
+		"support" : SupportData.game_support.support_id if SupportData.game_support != null else "null",
 		"round" : round_num.text,
 		"defeats" : defeats,
 		"coins" : coins,
@@ -139,12 +139,12 @@ func time_count_stop(player_dead: bool):
 	player_id_input.input_screen_show()
 	button_open()
 
-func play_voice(name: String):
+func play_voice(name_local: String):
 	var n = randi_range(0,1)
 	if n == 0:
-		SoundManager.play_voice(player.player_card.voice_name, name + str(n + 1))
+		SoundManager.play_voice(player.player_card.voice_name, name_local + str(n + 1))
 	else:
-		SoundManager.play_voice(player.player_card.voice_name, name + str(n + 1))
+		SoundManager.play_voice(player.player_card.voice_name, name_local + str(n + 1))
 
 func play_win_loop():
 	SoundManager.play_bgm(bgm_loop_win)
@@ -152,7 +152,7 @@ func play_win_loop():
 func get_player():
 	player = get_tree().get_first_node_in_group("Player")
 	player_color.color = player.player_card.color
-	player_p.texture = player.player_card.sprite
+	player_p.texture = LazyTexture.load_uncached(player.player_card.sprite_path)
 	player_halo.texture = player.player_card.halo
 	player_name.text = player.player_card.name
 	player_weapon.text = player.player_card.weapon
@@ -177,7 +177,7 @@ func card_anim():
 		tween.tween_property(cards[i],"scale",Vector2(1,1),0.03).from(Vector2(1.1,1.1))
 		await tween.finished
 
-func add_player_up_item_card(upgrade: AbilityUpgrade, current_upgrade: Dictionary):
+func add_player_up_item_card(upgrade: AbilityUpgrade, _current_upgrade: Dictionary):
 	var has_card = current_card.has(upgrade.id)
 	if !has_card:
 		current_card[upgrade.id] = {

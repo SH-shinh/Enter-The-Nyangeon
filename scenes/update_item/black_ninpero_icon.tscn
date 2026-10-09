@@ -1,6 +1,6 @@
-[gd_scene load_steps=7 format=3 uid="uid://d22p32h7cyypc"]
+[gd_scene format=3 uid="uid://d22p32h7cyypc"]
 
-[ext_resource type="Script" path="res://scenes/update_item/follow_icon.gd" id="1_xf1kl"]
+[ext_resource type="Script" uid="uid://cgbhjohas2mdv" path="res://scenes/update_item/follow_icon.gd" id="1_xf1kl"]
 [ext_resource type="Texture2D" uid="uid://b6cflivetwmvv" path="res://sprites/update_item/black_ninpero_icon.png" id="2_64g7q"]
 [ext_resource type="PackedScene" uid="uid://b78jo1set8q45" path="res://script/follow.tscn" id="3_tm2eq"]
 
@@ -42,7 +42,7 @@ _data = {
 "move_anim": SubResource("Animation_p0thg")
 }
 
-[node name="BlackNinperoIcon" type="CharacterBody2D"]
+[node name="BlackNinperoIcon" type="Node2D"]
 script = ExtResource("1_xf1kl")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]

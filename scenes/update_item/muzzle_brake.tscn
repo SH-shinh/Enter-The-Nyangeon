@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://llm1ik1xao52"]
+[gd_scene format=3 uid="uid://llm1ik1xao52"]
 
-[ext_resource type="Script" path="res://scenes/update_item/muzzle_brake.gd" id="1_343rb"]
+[ext_resource type="Script" uid="uid://b6uxsbaysu7jx" path="res://scenes/update_item/muzzle_brake.gd" id="1_343rb"]
 
 [node name="MuzzleBrake" type="Node2D"]
 script = ExtResource("1_343rb")

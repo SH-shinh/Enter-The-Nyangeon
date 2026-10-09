@@ -1,23 +1,26 @@
-[gd_scene load_steps=20 format=3 uid="uid://cawafswp4jodm"]
+[gd_scene format=3 uid="uid://cawafswp4jodm"]
 
-[ext_resource type="Script" path="res://scenes/update_item/utaha_turret_body.gd" id="1_1jrni"]
-[ext_resource type="Shader" path="res://shaders/screen_outline.gdshader" id="1_c3cj2"]
+[ext_resource type="Script" uid="uid://dwgih0j5i2478" path="res://scenes/update_item/utaha_turret_body.gd" id="1_1jrni"]
+[ext_resource type="Shader" uid="uid://cmu3hnm13h23n" path="res://shaders/screen_outline.gdshader" id="1_c3cj2"]
 [ext_resource type="PackedScene" uid="uid://pkd8wgu6vmgs" path="res://scenes/update_item/utaha_turret_icon.tscn" id="1_rtjim"]
 [ext_resource type="Texture2D" uid="uid://caiblqa0ao53y" path="res://sprites/update_item/utaha_turret_2_8.png" id="2_kj1pj"]
 [ext_resource type="PackedScene" uid="uid://dogh3pe2fynxi" path="res://scenes/weapon/shoot_flash_2.tscn" id="2_to0me"]
-[ext_resource type="Script" path="res://script/render_sprites.gd" id="3_hlwy1"]
+[ext_resource type="Script" uid="uid://bxk770nst5tn4" path="res://script/render_sprites.gd" id="3_hlwy1"]
 [ext_resource type="Texture2D" uid="uid://owtvqmd3tfd2" path="res://sprites/update_item/refresh.png" id="3_i727h"]
-[ext_resource type="Script" path="res://scenes/player/StateMachine.gd" id="6_gao25"]
-[ext_resource type="Script" path="res://script/SummonedStats.gd" id="9_qmclt"]
+[ext_resource type="Script" uid="uid://e2gvf56eu6jb" path="res://scenes/player/StateMachine.gd" id="6_gao25"]
+[ext_resource type="Script" uid="uid://chj2ac0qka2mr" path="res://script/SummonedStats.gd" id="9_qmclt"]
 [ext_resource type="PackedScene" uid="uid://qh7xxgcqcqi" path="res://scenes/manager/summoned_buff_manager.tscn" id="10_yoxab"]
+[ext_resource type="Script" uid="uid://d2ab3bt8d0qlp" path="res://script/summoned_health_component.gd" id="11_dgiyb"]
+[ext_resource type="Script" uid="uid://cog8pvonoqtxu" path="res://script/hurt_box.gd" id="12_2melk"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_wxrt8"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_qxiu0"]
 shader = ExtResource("1_c3cj2")
-shader_parameter/outline_width = 2.0
+shader_parameter/outline_width = 1.0
 shader_parameter/outline_color = Color(20, 10, 20, 1)
 shader_parameter/flash_opacity = 0.0
+shader_parameter/design_size = Vector2(640, 360)
 
 [sub_resource type="Animation" id="Animation_knqgb"]
 length = 0.001
@@ -77,8 +80,8 @@ tracks/1/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_q4mcw"]
 _data = {
-"RESET": SubResource("Animation_knqgb"),
-"reload": SubResource("Animation_kepn4")
+&"RESET": SubResource("Animation_knqgb"),
+&"reload": SubResource("Animation_kepn4")
 }
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_5v2ei"]
@@ -186,45 +189,50 @@ tracks/3/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_cqq10"]
 _data = {
-"RESET": SubResource("Animation_wdkw6"),
-"spawn_anim": SubResource("Animation_n63ti")
+&"RESET": SubResource("Animation_wdkw6"),
+&"spawn_anim": SubResource("Animation_n63ti")
 }
 
-[node name="utaha_turret_body" type="CharacterBody2D" node_paths=PackedStringArray("stats") groups=["Summoned"]]
+[sub_resource type="CircleShape2D" id="CircleShape2D_dgiyb"]
+
+[node name="utaha_turret_body" type="CharacterBody2D" unique_id=1399907491 node_paths=PackedStringArray("stats") groups=["Summoned"]]
 scale = Vector2(0.7, 0.7)
 collision_layer = 512
 collision_mask = 256
 motion_mode = 1
 script = ExtResource("1_1jrni")
-stats = NodePath("Stats")
 rotate_sprites = true
 shoot_flash = ExtResource("2_to0me")
+stats = NodePath("Stats")
+level_display_height = 15.0
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="LevelDisplayAnchor" type="Marker2D" parent="." unique_id=167553588]
+unique_name_in_owner = true
+position = Vector2(0, -48)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2057046733]
 shape = SubResource("CircleShape2D_wxrt8")
 
-[node name="CanvasGroup" type="CanvasGroup" parent="."]
+[node name="CanvasGroup" type="CanvasGroup" parent="." unique_id=623818852]
 material = SubResource("ShaderMaterial_qxiu0")
 
-[node name="Reload" type="Node2D" parent="CanvasGroup"]
+[node name="Reload" type="Node2D" parent="CanvasGroup" unique_id=1734441975]
 visible = false
 
-[node name="Sprite2D" type="Sprite2D" parent="CanvasGroup/Reload"]
+[node name="Sprite2D" type="Sprite2D" parent="CanvasGroup/Reload" unique_id=1381069049]
 modulate = Color(0.140447, 0.140447, 0.140447, 1)
 position = Vector2(-1.42109e-13, -42.8571)
 scale = Vector2(0.25, 0.25)
 texture = ExtResource("3_i727h")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="CanvasGroup/Reload"]
-libraries = {
-"": SubResource("AnimationLibrary_q4mcw")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="CanvasGroup/Reload" unique_id=1567314485]
+libraries/ = SubResource("AnimationLibrary_q4mcw")
 
-[node name="utaha_turret_icon" parent="CanvasGroup" instance=ExtResource("1_rtjim")]
+[node name="utaha_turret_icon" parent="CanvasGroup" unique_id=456290907 instance=ExtResource("1_rtjim")]
 unique_name_in_owner = true
 scale = Vector2(0.8, 0.8)
 
-[node name="Sprite2D" type="Sprite2D" parent="CanvasGroup"]
+[node name="Sprite2D" type="Sprite2D" parent="CanvasGroup" unique_id=206384325]
 unique_name_in_owner = true
 position = Vector2(0, -11.2)
 texture = ExtResource("2_kj1pj")
@@ -232,58 +240,73 @@ hframes = 8
 frame = 4
 script = ExtResource("3_hlwy1")
 
-[node name="ShootR" type="Node2D" parent="."]
+[node name="ShootR" type="Node2D" parent="." unique_id=7765818]
 position = Vector2(0, -15.2)
 
-[node name="Shoot" type="Marker2D" parent="ShootR"]
+[node name="Shoot" type="Marker2D" parent="ShootR" unique_id=1516216624]
 unique_name_in_owner = true
 position = Vector2(14, 0)
 
-[node name="ReloadTimer" type="Timer" parent="."]
+[node name="ReloadTimer" type="Timer" parent="." unique_id=1826282469]
 wait_time = 2.0
 one_shot = true
 
-[node name="StateMachine" type="Node" parent="."]
+[node name="StateMachine" type="Node" parent="." unique_id=1820680326]
 script = ExtResource("6_gao25")
 
-[node name="Area2D" type="Area2D" parent="."]
+[node name="Area2D" type="Area2D" parent="." unique_id=1358445145]
 collision_layer = 0
 collision_mask = 8
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=496736588]
 shape = SubResource("CircleShape2D_5v2ei")
 
-[node name="ShootTimer" type="Timer" parent="."]
+[node name="ShootTimer" type="Timer" parent="." unique_id=1918151890]
 one_shot = true
 
-[node name="IdleTimer" type="Timer" parent="."]
+[node name="IdleTimer" type="Timer" parent="." unique_id=1778701892]
 wait_time = 2.5
 one_shot = true
 
-[node name="Stats" type="Node" parent="."]
+[node name="Stats" type="Node" parent="." unique_id=890532484]
 script = ExtResource("9_qmclt")
 summoned_damage = 10
 SPEED_TIME = 0.4
+summoned_knockback_resis = 99
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_cqq10")
-}
-autoplay = "spawn_anim"
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1067535785]
+libraries/ = SubResource("AnimationLibrary_cqq10")
+autoplay = &"spawn_anim"
 
-[node name="SummonedBuffManager" parent="." instance=ExtResource("10_yoxab")]
+[node name="SummonedBuffManager" parent="." unique_id=1671650075 instance=ExtResource("10_yoxab")]
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=205151274]
 offset_left = -10.0
 offset_top = -45.7143
 offset_right = 30.0
 offset_bottom = -19.7143
 scale = Vector2(0.5, 0.5)
 
-[node name="BuffBox" type="HBoxContainer" parent="MarginContainer"]
+[node name="BuffBox" type="HBoxContainer" parent="MarginContainer" unique_id=2081688792]
 unique_name_in_owner = true
 layout_mode = 2
 alignment = 1
+
+[node name="HealthComponent" type="Node" parent="." unique_id=771806951 node_paths=PackedStringArray("stats", "hurt_box")]
+script = ExtResource("11_dgiyb")
+stats = NodePath("../Stats")
+hurt_box = NodePath("../HurtBox")
+
+[node name="HurtBox" type="Area2D" parent="." unique_id=246854938 node_paths=PackedStringArray("body")]
+collision_layer = 8192
+collision_mask = 0
+script = ExtResource("12_2melk")
+body = NodePath("..")
+
+[node name="HurtboxShape" type="CollisionShape2D" parent="HurtBox" unique_id=1791205581]
+position = Vector2(0, -4.7683716e-07)
+shape = SubResource("CircleShape2D_dgiyb")
+debug_color = Color(3.18866e-06, 0.0816588, 0.291816, 0.42)
 
 [connection signal="timeout" from="ReloadTimer" to="." method="_on_reload_timer_timeout"]
 [connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]

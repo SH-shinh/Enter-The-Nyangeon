@@ -1,10 +1,9 @@
-[gd_resource type="Resource" script_class="EnemyCard" load_steps=3 format=3 uid="uid://clfthqwcs3aif"]
+[gd_resource type="Resource" script_class="EnemyCard" format=3 uid="uid://clfthqwcs3aif"]
 
 [ext_resource type="PackedScene" uid="uid://ch4rexhqn3q7q" path="res://scenes/enemies/boss/erosion_tower_group.tscn" id="1_hlqli"]
-[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_k04g3"]
+[ext_resource type="Script" uid="uid://c2yv0iuw6g8oh" path="res://resources/enemy/enemy.gd" id="2_k04g3"]
 
 [resource]
 script = ExtResource("2_k04g3")
 id = "erosion_tower"
 body = ExtResource("1_hlqli")
-description = ""

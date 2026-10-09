@@ -9,3 +9,4 @@ id = "critical_damage_buff_1"
 icon = ExtResource("1_xtffo")
 name = "暴击伤害"
 description = ""
+modifiers = Array[Dictionary]([{"key": "crit_damage_add", "mode": "add", "source": "value"}])

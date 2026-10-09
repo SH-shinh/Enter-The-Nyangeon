@@ -1,9 +1,15 @@
-[gd_scene load_steps=2 format=3 uid="uid://dwyhai3lnae8t"]
+[gd_scene format=3 uid="uid://dwyhai3lnae8t"]
 
-[ext_resource type="Script" path="res://scenes/update_item/mandrake_seed.gd" id="1_ovs72"]
+[ext_resource type="Script" uid="uid://7ngn5hrkjxeb" path="res://scenes/update_item/mandrake_seed.gd" id="1_ovs72"]
 
-[node name="MandrakeSeed" type="Node2D"]
+[node name="MandrakeSeed" type="Node2D" unique_id=1879169251]
 script = ExtResource("1_ovs72")
 
-[node name="HealthCDTimer" type="Timer" parent="."]
+[node name="HealthCDTimer" type="Timer" parent="." unique_id=70232448]
 one_shot = true
+
+[node name="CDDelayTimer" type="Timer" parent="." unique_id=1292179695]
+wait_time = 0.1
+one_shot = true
+
+[connection signal="timeout" from="CDDelayTimer" to="." method="_on_cd_delay_timer_timeout"]

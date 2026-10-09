@@ -1,20 +1,18 @@
-extends Node2D
+extends EquipItem
 
 @onready var follow_icon = preload("res://scenes/update_item/puzzle_cube_icon.tscn")
 
-var num: int
 var group: Array = []
 
 var overflow_count: int = 0
 var overflow_cd: int = 0
 
-func _ready():
-	first_activation()
-	GameEvents.ability_upgrade_added.connect(on_upgrade_added)
+var damage_data: DamageData
 
-func first_activation():
-	GameEvents.enemy_dead_overflow_hp.connect(dead_overflow_damage)
+func _on_equip():
+	GameEvents.enemy_over_kill_damage.connect(dead_overflow_damage)
 	GameEvents.global_time_count.connect(time_count)
+	damage_data = DamageData.new()
 	var sprite_2d = follow_icon.instantiate()
 	group = get_tree().get_nodes_in_group("Follow")
 	for i in group:
@@ -23,13 +21,6 @@ func first_activation():
 			sprite_2d.get_follow(i)
 			i.follow_use = true
 
-func on_upgrade_added(upgrade: AbilityUpgrade, current_upgrade: Dictionary):
-	if upgrade.id != "puzzle_cube":
-		return
-	if current_upgrade["puzzle_cube"]["quantity"] == 1:
-		return
-	num = current_upgrade["puzzle_cube"]["quantity"]
-
 func time_count():
 	if overflow_cd > 0:
 		overflow_cd -= 1
@@ -37,12 +28,12 @@ func time_count():
 			overflow_count_add()
 
 func overflow_count_add():
-	if !PoolManager.enemies_group.is_empty():
-		var i = randi_range(0, PoolManager.enemies_group.size() - 1)
-		PoolManager.enemies_group[i].hurt_damage = overflow_count
-		PoolManager.enemies_group[i].emit_signal("is_hurt")
+	var target: Node = PoolManager.get_random_active_enemy()
+	if target != null:
+		var true_damage: int = overflow_count
+		target.health_component.request_extra_damage(DamageData.true_hit(true_damage, GameTags.EQUIP, self))
 
-func dead_overflow_damage(overflow_hp: int):
+func dead_overflow_damage(overkill_damage: int, _taken_damage_data: DamageData, _body_path: NodePath):
 	if overflow_cd <= 0:
-		overflow_count = clamp(overflow_hp, 1, 9223372036854775807)
+		overflow_count = clamp(overkill_damage, 1, 9223372036854775807)
 		overflow_cd = 1

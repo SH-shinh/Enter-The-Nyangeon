@@ -1,10 +1,12 @@
-[gd_resource type="Resource" script_class="EnemyCard" load_steps=3 format=3 uid="uid://dmixiglqom01n"]
+[gd_resource type="Resource" script_class="EnemyCard" format=3 uid="uid://dmixiglqom01n"]
 
 [ext_resource type="PackedScene" uid="uid://bhyuj2aufn4nq" path="res://scenes/enemies/tester_automaton.tscn" id="1_i7ppx"]
-[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_w45k0"]
+[ext_resource type="Script" uid="uid://c2yv0iuw6g8oh" path="res://resources/enemy/enemy.gd" id="2_w45k0"]
+[ext_resource type="Texture2D" uid="uid://dlyawwlk67umn" path="res://sprites/enemies/tester_automaton_icon.png" id="2_yss8x"]
 
 [resource]
 script = ExtResource("2_w45k0")
 id = "tester_automaton"
 body = ExtResource("1_i7ppx")
-description = ""
+icon = ExtResource("2_yss8x")
+position_y = 52.0

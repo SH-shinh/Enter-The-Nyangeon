@@ -1,9 +1,10 @@
-[gd_scene load_steps=9 format=3 uid="uid://c1iqca0ybooeo"]
+[gd_scene format=3 uid="uid://c1iqca0ybooeo"]
 
-[ext_resource type="Script" path="res://scenes/bullet/stone_bullet.gd" id="1_pcgbe"]
+[ext_resource type="Script" uid="uid://dd0sdkxy0cv33" path="res://scenes/bullet/stone_bullet.gd" id="1_pcgbe"]
 [ext_resource type="Texture2D" uid="uid://dfyj3mv4xs5m0" path="res://scenes/shadow/shadow.png" id="2_d78xs"]
 [ext_resource type="Texture2D" uid="uid://clw0os3341kq8" path="res://sprites/bullet/stone.png" id="3_n1rty"]
 [ext_resource type="Texture2D" uid="uid://borrm23mqqubv" path="res://sprites/bullet/yuuka_stone.png" id="4_o2h1t"]
+[ext_resource type="Script" uid="uid://dgqq5631n3u32" path="res://script/hit_box.gd" id="5_8vw27"]
 
 [sub_resource type="Animation" id="Animation_414c7"]
 length = 0.001
@@ -213,41 +214,38 @@ tracks/8/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_vgsp7"]
 _data = {
-"RESET": SubResource("Animation_414c7"),
-"new_animation": SubResource("Animation_muyhr")
+&"RESET": SubResource("Animation_414c7"),
+&"new_animation": SubResource("Animation_muyhr")
 }
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_f1blx"]
 radius = 14.0
 
-[node name="stone_bullet" type="Node2D"]
+[node name="stone_bullet" type="Node2D" unique_id=1373892184]
 script = ExtResource("1_pcgbe")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=851558413]
 texture = ExtResource("2_d78xs")
 
-[node name="Node2D" type="Node2D" parent="."]
+[node name="Node2D" type="Node2D" parent="." unique_id=281219512]
 z_index = 1
 
-[node name="Sprite2D" type="Sprite2D" parent="Node2D"]
+[node name="Sprite2D" type="Sprite2D" parent="Node2D" unique_id=1193409615]
 texture = ExtResource("3_n1rty")
 
-[node name="Sprite2D2" type="Sprite2D" parent="Node2D"]
+[node name="Sprite2D2" type="Sprite2D" parent="Node2D" unique_id=329450600]
 visible = false
 rotation = 3.49066
 texture = ExtResource("4_o2h1t")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_vgsp7")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=716561515]
+libraries/ = SubResource("AnimationLibrary_vgsp7")
 
-[node name="Area2D" type="Area2D" parent="."]
-collision_layer = 0
-collision_mask = 8
+[node name="HitBox" type="Area2D" parent="." unique_id=1263003532]
+collision_layer = 32772
+collision_mask = 16384
 monitoring = false
+script = ExtResource("5_8vw27")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox" unique_id=1097807518]
 shape = SubResource("CircleShape2D_f1blx")
-
-[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]

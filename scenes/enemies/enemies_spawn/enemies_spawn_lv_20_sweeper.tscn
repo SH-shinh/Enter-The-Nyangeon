@@ -1,7 +1,7 @@
-[gd_scene load_steps=10 format=3 uid="uid://2v6jdtydno4k"]
+[gd_scene format=3 uid="uid://2v6jdtydno4k"]
 
-[ext_resource type="Script" path="res://script/enemies_spawn.gd" id="1_w52hb"]
-[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="2_ussu2"]
+[ext_resource type="Script" uid="uid://c0g58jmh6xmue" path="res://script/enemies_spawn.gd" id="1_w52hb"]
+[ext_resource type="Script" uid="uid://c2yv0iuw6g8oh" path="res://resources/enemy/enemy.gd" id="2_ussu2"]
 [ext_resource type="Resource" uid="uid://dx43aolfidycr" path="res://resources/enemy/mystic_sweeper.tres" id="3_n8a0h"]
 [ext_resource type="Resource" uid="uid://bo5aojm81wiil" path="res://resources/enemy/enhanced_sweeper.tres" id="4_rl7hh"]
 [ext_resource type="Resource" uid="uid://tyefl3u2oxr" path="res://resources/enemy/sweeper.tres" id="5_p5wi0"]
@@ -10,24 +10,22 @@
 [ext_resource type="Resource" uid="uid://doxv0u2ida458" path="res://resources/enemy/red_sweeper.tres" id="8_q5x5k"]
 [ext_resource type="PackedScene" uid="uid://cbpbf4l8gvrde" path="res://scenes/enemies/enemies_spawn/enemy_path.tscn" id="9_47p4v"]
 
-[node name="EnemiesSpawnLV20" type="Node2D"]
+[node name="EnemiesSpawnLV20" type="Node2D" unique_id=696231958]
 script = ExtResource("1_w52hb")
 num_mult = 2.0
 round_mult = 1.0
-hp_mult = 35.0
-damage_mult = 8.0
 enemy = Array[ExtResource("2_ussu2")]([ExtResource("3_n8a0h"), ExtResource("4_rl7hh"), ExtResource("5_p5wi0"), ExtResource("6_pywvt")])
 enemy_spawn_num = Array[int]([6, 4, 5, 2])
 enemy_spawn_time = Array[float]([25.0, 30.0, 25.0, 35.0])
 
-[node name="RoundTimer" type="Timer" parent="."]
+[node name="RoundTimer" type="Timer" parent="." unique_id=429338307]
 wait_time = 60.0
 one_shot = true
 
-[node name="EnemySpawnCDTime" type="Timer" parent="."]
+[node name="EnemySpawnCDTime" type="Timer" parent="." unique_id=2106148499]
 wait_time = 0.1
 
-[node name="path_spawn" parent="." instance=ExtResource("7_7y0b5")]
+[node name="path_spawn" parent="." unique_id=463497514 instance=ExtResource("7_7y0b5")]
 enemy_pool = Array[ExtResource("2_ussu2")]([ExtResource("8_q5x5k")])
 enemy_quantity = Array[int]([4])
 enemy_spawn_time = Array[float]([50.0])

@@ -1,6 +1,6 @@
-[gd_scene load_steps=7 format=3 uid="uid://cv2ko7d814p00"]
+[gd_scene format=3 uid="uid://cv2ko7d814p00"]
 
-[ext_resource type="Script" path="res://scenes/update_item/follow_icon.gd" id="1_sxm2n"]
+[ext_resource type="Script" uid="uid://cgbhjohas2mdv" path="res://scenes/update_item/follow_icon.gd" id="1_sxm2n"]
 [ext_resource type="Texture2D" uid="uid://cqfahm15ve5hk" path="res://sprites/update_item/millennium_flag_icon.png" id="2_qirq2"]
 [ext_resource type="PackedScene" uid="uid://b78jo1set8q45" path="res://script/follow.tscn" id="3_5h7tm"]
 
@@ -42,7 +42,7 @@ _data = {
 "move_anim": SubResource("Animation_p0thg")
 }
 
-[node name="MillenniumFlagIcon" type="CharacterBody2D"]
+[node name="MillenniumFlagIcon" type="Node2D"]
 script = ExtResource("1_sxm2n")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]

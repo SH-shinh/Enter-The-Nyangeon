@@ -1,21 +1,17 @@
-[gd_scene load_steps=19 format=3 uid="uid://bjqdmupa58lfc"]
+[gd_scene format=3 uid="uid://bjqdmupa58lfc"]
 
-[ext_resource type="Script" path="res://scenes/enemies/enemy_tank.gd" id="1_r0hvm"]
+[ext_resource type="Script" uid="uid://guqkmmakxgct" path="res://scenes/enemies/enemy_tank.gd" id="1_r0hvm"]
 [ext_resource type="PackedScene" uid="uid://dm63a0q5vhjbb" path="res://scenes/enemies/tank_gun_1.tscn" id="2_vlxww"]
-[ext_resource type="Script" path="res://script/EnemyStateMachine.gd" id="4_qgeae"]
-[ext_resource type="Shader" path="res://shaders/screen_outline.gdshader" id="5_6edg7"]
-[ext_resource type="Script" path="res://script/EnemyStats.gd" id="5_cbopt"]
+[ext_resource type="Script" uid="uid://b8e2jlmuhbtm5" path="res://script/EnemyStateMachine.gd" id="4_qgeae"]
+[ext_resource type="Script" uid="uid://b36s5d5e3v3h4" path="res://script/EnemyStats.gd" id="5_cbopt"]
 [ext_resource type="Texture2D" uid="uid://cno11sa17icbq" path="res://sprites/enemies/lighttank_helmet_vulcan_body.png" id="6_5p4o5"]
 [ext_resource type="PackedScene" uid="uid://dcixivms2uc75" path="res://script/enemy_hurt_floating_text.tscn" id="7_5re7q"]
-[ext_resource type="Script" path="res://scenes/enemies/tank_body.gd" id="7_kryrc"]
+[ext_resource type="Script" uid="uid://c6pvpvqy6bnx6" path="res://scenes/enemies/tank_body.gd" id="7_kryrc"]
 [ext_resource type="PackedScene" uid="uid://btl1l8a33rp5b" path="res://scenes/manager/enemy_buff_manager.tscn" id="8_a0a2n"]
 [ext_resource type="Texture2D" uid="uid://wygwemtmbdr6" path="res://sprites/enemies/lighttank_helmet_vulcan_turret.png" id="8_p784b"]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_qiv4e"]
-shader = ExtResource("5_6edg7")
-shader_parameter/outline_width = 2.0
-shader_parameter/outline_color = Color(0, 0, 0, 1)
-shader_parameter/flash_opacity = 0.0
+[ext_resource type="Script" uid="uid://c61u3l5efltda" path="res://script/weak_part.gd" id="9_ek2u3"]
+[ext_resource type="Script" uid="uid://cgyde7ws002vo" path="res://script/health_component.gd" id="11_3bkaf"]
+[ext_resource type="Script" uid="uid://cog8pvonoqtxu" path="res://script/hurt_box.gd" id="12_ek2u3"]
 
 [sub_resource type="Animation" id="Animation_x55hs"]
 length = 0.001
@@ -34,34 +30,22 @@ tracks/0/keys = {
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath(".:material:shader_parameter/outline_color")
+tracks/1/path = NodePath("..:modulate")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [Color(0, 0, 0, 1)]
+"values": [Color(1, 1, 1, 1)]
 }
 tracks/2/type = "value"
 tracks/2/imported = false
 tracks/2/enabled = true
-tracks/2/path = NodePath(".:material:shader_parameter/flash_opacity")
+tracks/2/path = NodePath("../..:scale")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [0.0]
-}
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath("../..:scale")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 0,
@@ -74,34 +58,22 @@ step = 0.01
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath(".:material:shader_parameter/outline_color")
-tracks/0/interp = 2
+tracks/0/path = NodePath("..:modulate")
+tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1),
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-"update": 0,
-"values": [Color(0, 0, 0, 1), Color(1, 0.0937453, 0.0260634, 1), Color(0, 0, 0, 1), Color(1, 0.0937453, 0.0260634, 1), Color(0, 0, 0, 1), Color(1, 0.0937453, 0.0260634, 1), Color(0, 0, 0, 1), Color(1, 0.0937453, 0.0260634, 1), Color(0, 0, 0, 1), Color(1, 0.0937453, 0.0260634, 1), Color(0, 0, 0, 1)]
+"update": 1,
+"values": [Color(1, 1, 1, 1), Color(1, 0.2, 0.1, 1), Color(1, 1, 1, 1), Color(1, 0.2, 0.1, 1), Color(1, 1, 1, 1), Color(1, 0.2, 0.1, 1), Color(1, 1, 1, 1), Color(1, 0.2, 0.1, 1), Color(1, 1, 1, 1), Color(1, 0.2, 0.1, 1), Color(1, 1, 1, 1)]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath(".:material:shader_parameter/flash_opacity")
+tracks/1/path = NodePath("../..:scale")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-"update": 1,
-"values": [0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("../..:scale")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
 "times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1),
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
 "update": 0,
@@ -128,9 +100,9 @@ tracks/0/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_co410"]
 _data = {
-"RESET": SubResource("Animation_x55hs"),
-"death_anim": SubResource("Animation_wx4ok"),
-"new_animation": SubResource("Animation_3mqjm")
+&"RESET": SubResource("Animation_x55hs"),
+&"death_anim": SubResource("Animation_wx4ok"),
+&"new_animation": SubResource("Animation_3mqjm")
 }
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hkw2s"]
@@ -142,13 +114,14 @@ size = Vector2(69, 50)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vtv3s"]
 size = Vector2(12, 38)
 
-[node name="lighttank_helmet" type="CharacterBody2D" node_paths=PackedStringArray("stats") groups=["Enemy"]]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hu768"]
+size = Vector2(60, 50)
+
+[node name="lighttank_helmet" type="CharacterBody2D" unique_id=287858796 node_paths=PackedStringArray("stats", "sprite_2d", "graphics", "collision_shape_2d", "enemy_buff_manager") groups=["Enemy"]]
 collision_layer = 8
 collision_mask = 258
 motion_mode = 1
 script = ExtResource("1_r0hvm")
-pool_id = "lighttank_helmet"
-stats = NodePath("EnemyStats")
 shoot_range = 650
 back_range = 20
 aim_and_move = 0.2
@@ -156,17 +129,22 @@ surround_tendency = 20
 surround_time = 20
 rand_length = 200.0
 shoot_cd_time = 80
+pool_id = "lighttank_helmet"
+stats = NodePath("EnemyStats")
+sprite_2d = NodePath("Graphics/TankGraphics")
+graphics = NodePath("Graphics")
+collision_shape_2d = NodePath("HurtBox/HurtBoxShape2D")
+enemy_buff_manager = NodePath("EnemyBuffManager")
 
-[node name="Graphics" type="Node2D" parent="."]
+[node name="Graphics" type="Node2D" parent="." unique_id=1818461488]
 
-[node name="Gun" parent="Graphics" node_paths=PackedStringArray("stats") instance=ExtResource("2_vlxww")]
+[node name="Gun" parent="Graphics" unique_id=652411021 node_paths=PackedStringArray("stats") instance=ExtResource("2_vlxww")]
 position = Vector2(0, -35.2)
 stats = NodePath("../../EnemyStats")
 
-[node name="TankGraphics" type="CanvasGroup" parent="Graphics"]
-material = SubResource("ShaderMaterial_qiv4e")
+[node name="TankGraphics" type="CanvasGroup" parent="Graphics" unique_id=1653041763]
 
-[node name="tank_body" type="Sprite2D" parent="Graphics/TankGraphics"]
+[node name="tank_body" type="Sprite2D" parent="Graphics/TankGraphics" unique_id=2090945990]
 unique_name_in_owner = true
 scale = Vector2(0.8, 0.8)
 texture = ExtResource("6_5p4o5")
@@ -175,7 +153,7 @@ script = ExtResource("7_kryrc")
 rotate_sprites = true
 rotation_velocity = 1.0
 
-[node name="tank_turret" type="Sprite2D" parent="Graphics/TankGraphics"]
+[node name="tank_turret" type="Sprite2D" parent="Graphics/TankGraphics" unique_id=1620605484]
 unique_name_in_owner = true
 position = Vector2(0, -31.2)
 scale = Vector2(0.8, 0.8)
@@ -185,69 +163,89 @@ script = ExtResource("7_kryrc")
 rotate_sprites = true
 rotation_velocity = 5.0
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="Graphics/TankGraphics"]
-libraries = {
-"": SubResource("AnimationLibrary_co410")
-}
-autoplay = "new_animation"
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Graphics/TankGraphics" unique_id=1974840225]
+libraries/ = SubResource("AnimationLibrary_co410")
+autoplay = &"new_animation"
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1499018226]
 position = Vector2(7, 0)
 shape = SubResource("RectangleShape2D_hkw2s")
 
-[node name="StateMachine" type="Node" parent="."]
+[node name="StateMachine" type="Node" parent="." unique_id=719879027]
 script = ExtResource("4_qgeae")
 
-[node name="EnemyStats" type="Node" parent="."]
+[node name="EnemyStats" type="Node" parent="." unique_id=170040083]
 script = ExtResource("5_cbopt")
 score = 320
 max_hp = 650
-knockback_resis = 1000
+knockback_resis = 100
 penetrate_resis = 300
 global_hurt_damage = 0.2
-Enemy_Knockback = 250
+Enemy_Knockback = 300
 Enemy_damage = 12
 Enemy_bullet_damage = 12
 Enemy_coin = 32
 MAX_SPEED = 100
 SPEED_TIME = 0.5
-weigth_mult = 0.0
+weigth = 200.0
+convertible = false
+convert_resist = 60
+convert_threshold = 600
 
-[node name="Area2D" type="Area2D" parent="."]
+[node name="Area2D" type="Area2D" parent="." unique_id=1778031245]
 collision_layer = 0
 collision_mask = 8
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=2090977662]
 position = Vector2(2.5, 0)
 shape = SubResource("RectangleShape2D_xdvwk")
 
-[node name="WeakPart" type="Area2D" parent="."]
-collision_layer = 0
-collision_mask = 4100
+[node name="WeakPart" type="Area2D" parent="." unique_id=1126987895 node_paths=PackedStringArray("health_component", "body")]
+collision_layer = 16384
+collision_mask = 163840
+script = ExtResource("9_ek2u3")
+health_component = NodePath("../HealthComponent")
+body = NodePath("..")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="WeakPart"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WeakPart" unique_id=223969104]
 position = Vector2(-26, 0)
 shape = SubResource("RectangleShape2D_vtv3s")
 
-[node name="EnemyHurtFloatingText" parent="." instance=ExtResource("7_5re7q")]
+[node name="EnemyHurtFloatingText" parent="." unique_id=1971049653 node_paths=PackedStringArray("health_component") instance=ExtResource("7_5re7q")]
+health_component = NodePath("../HealthComponent")
 
-[node name="EnemyBuffManager" parent="." instance=ExtResource("8_a0a2n")]
+[node name="EnemyBuffManager" parent="." unique_id=1477169430 node_paths=PackedStringArray("health_component") instance=ExtResource("8_a0a2n")]
+health_component = NodePath("../HealthComponent")
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=2130970755]
 offset_left = -10.0
 offset_top = -55.0
 offset_right = 30.0
 offset_bottom = -29.0
 scale = Vector2(0.5, 0.5)
 
-[node name="BuffBox" type="HBoxContainer" parent="MarginContainer"]
+[node name="BuffBox" type="HBoxContainer" parent="MarginContainer" unique_id=470218954]
 unique_name_in_owner = true
 layout_mode = 2
 alignment = 1
+
+[node name="HealthComponent" type="Node" parent="." unique_id=1736122668 node_paths=PackedStringArray("stats", "hurt_box")]
+script = ExtResource("11_3bkaf")
+stats = NodePath("../EnemyStats")
+hurt_box = NodePath("../HurtBox")
+
+[node name="HurtBox" type="Area2D" parent="." unique_id=553635480 node_paths=PackedStringArray("body")]
+collision_layer = 16384
+collision_mask = 163840
+script = ExtResource("12_ek2u3")
+body = NodePath("..")
+
+[node name="HurtBoxShape2D" type="CollisionShape2D" parent="HurtBox" unique_id=2103520951]
+position = Vector2(7, 0)
+shape = SubResource("RectangleShape2D_hu768")
 
 [connection signal="is_hurt" from="." to="." method="_on_is_hurt"]
 [connection signal="turning_mod" from="." to="." method="_on_turning_mod"]
 [connection signal="is_dead" from="EnemyStats" to="." method="_on_enemy_stats_is_dead"]
 [connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
 [connection signal="body_exited" from="Area2D" to="." method="_on_area_2d_body_exited"]
-[connection signal="body_entered" from="WeakPart" to="." method="_on_weak_part_body_entered"]

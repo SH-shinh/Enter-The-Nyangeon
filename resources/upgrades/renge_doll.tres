@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://sprites/update_item/renge_doll.png" id="1_renge"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_mv2vv"]
+
+[resource]
+script = ExtResource("2_mv2vv")
+id = "renge_doll"
+icon = ExtResource("1_renge")
+name = "莲华人偶"
+rare = 1
+order_num = 5
+special_rules = 0
+description = "莲华做的自己的木雕人偶。
+以人偶为中心，每0.2秒在其位置留下一个火场，灼烧范围内的敌人。"
+forward = "最大持有5个
+每0.2秒留下一个火场
+基础伤害15，每次升级+20"
+negative = ""
+item_tags = 36
+tags = Array[String](["装备", "燃烧"])
+weight = 1.0

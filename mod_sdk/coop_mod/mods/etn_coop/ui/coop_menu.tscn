@@ -5,7 +5,7 @@
 [ext_resource type="FontFile" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="4_font"]
 [ext_resource type="PackedScene" path="res://ui/return.tscn" id="5_return"]
 [ext_resource type="PackedScene" path="res://ui/option_button.tscn" id="6_button"]
-[ext_resource type="PackedScene" path="res://ui/damage_freq_slider.tscn" id="7_freq"]
+[ext_resource type="PackedScene" path="res://mods/etn_coop/ui/coop_option.tscn" id="7_coopopt"]
 [ext_resource type="PackedScene" path="res://ui/option_toggle.tscn" id="8_toggle"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_banner"]
@@ -370,7 +370,7 @@ theme_override_constants/separation = 5
 [node name="LanHeader" type="Label" parent="Panel/RootHBox/ContentRoot/LanPanel"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
-text = "coop_mode_lan"
+text = "coop_mode_lan_label"
 
 [node name="HostRow" type="HBoxContainer" parent="Panel/RootHBox/ContentRoot/LanPanel"]
 layout_mode = 2
@@ -392,6 +392,65 @@ theme_override_font_sizes/font_size = 10
 vertical_alignment = 1
 autowrap_mode = 3
 
+[node name="AddrModeRow" type="HBoxContainer" parent="Panel/RootHBox/ContentRoot/LanPanel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="AddrLabel" type="Label" parent="Panel/RootHBox/ContentRoot/LanPanel/AddrModeRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "coop_share_address"
+vertical_alignment = 1
+
+[node name="LanAddrLabel" type="Label" parent="Panel/RootHBox/ContentRoot/LanPanel/AddrModeRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "coop_addr_lan"
+vertical_alignment = 1
+
+[node name="LanAddrToggle" parent="Panel/RootHBox/ContentRoot/LanPanel/AddrModeRow" instance=ExtResource("8_toggle")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="PublicAddrLabel" type="Label" parent="Panel/RootHBox/ContentRoot/LanPanel/AddrModeRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "coop_addr_public"
+vertical_alignment = 1
+
+[node name="PublicAddrToggle" parent="Panel/RootHBox/ContentRoot/LanPanel/AddrModeRow" instance=ExtResource("8_toggle")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="ManualIpHint" type="Label" parent="Panel/RootHBox/ContentRoot/LanPanel"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 9
+text = "coop_upnp_failed_hint"
+autowrap_mode = 3
+
+[node name="ManualIpRow" type="HBoxContainer" parent="Panel/RootHBox/ContentRoot/LanPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PublicIpInput" type="LineEdit" parent="Panel/RootHBox/ContentRoot/LanPanel/ManualIpRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+placeholder_text = "coop_manual_ip_placeholder"
+
+[node name="PublicIpClear" type="Button" parent="Panel/RootHBox/ContentRoot/LanPanel/ManualIpRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 30)
+layout_mode = 2
+mouse_filter = 2
+text = "coop_manual_ip_clear"
+
 [node name="JoinRow" type="HBoxContainer" parent="Panel/RootHBox/ContentRoot/LanPanel"]
 layout_mode = 2
 theme_override_constants/separation = 8
@@ -410,6 +469,23 @@ custom_minimum_size = Vector2(80, 30)
 layout_mode = 2
 mouse_filter = 2
 text = "coop_join"
+
+[node name="PortRow" type="HBoxContainer" parent="Panel/RootHBox/ContentRoot/LanPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PortLabel" type="Label" parent="Panel/RootHBox/ContentRoot/LanPanel/PortRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "coop_lan_port"
+vertical_alignment = 1
+
+[node name="PortInput" type="LineEdit" parent="Panel/RootHBox/ContentRoot/LanPanel/PortRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(90, 26)
+layout_mode = 2
+mouse_filter = 2
+text = "24591"
 
 [node name="LanNote" type="Label" parent="Panel/RootHBox/ContentRoot/LanPanel"]
 layout_mode = 2
@@ -525,105 +601,9 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "coop_mode_option"
 
-[node name="RowRemoteEffect" type="HBoxContainer" parent="Panel/RootHBox/ContentRoot/OptionPanel"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="Label" type="Label" parent="Panel/RootHBox/ContentRoot/OptionPanel/RowRemoteEffect"]
-custom_minimum_size = Vector2(190, 22)
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "coop_option_remote_effect"
-vertical_alignment = 1
-
-[node name="RemoteEffectFreq" parent="Panel/RootHBox/ContentRoot/OptionPanel/RowRemoteEffect" instance=ExtResource("7_freq")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 16)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-
-[node name="RemoteEffectFreqValue" type="Label" parent="Panel/RootHBox/ContentRoot/OptionPanel/RowRemoteEffect"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(84, 20)
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-horizontal_alignment = 2
-vertical_alignment = 1
-
-[node name="RowRemoteFlash" type="HBoxContainer" parent="Panel/RootHBox/ContentRoot/OptionPanel"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="Label" type="Label" parent="Panel/RootHBox/ContentRoot/OptionPanel/RowRemoteFlash"]
-custom_minimum_size = Vector2(190, 22)
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "coop_option_remote_flash"
-vertical_alignment = 1
-
-[node name="RemoteFlashFreq" parent="Panel/RootHBox/ContentRoot/OptionPanel/RowRemoteFlash" instance=ExtResource("7_freq")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 16)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-
-[node name="RemoteFlashFreqValue" type="Label" parent="Panel/RootHBox/ContentRoot/OptionPanel/RowRemoteFlash"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(84, 20)
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-horizontal_alignment = 2
-vertical_alignment = 1
-
-[node name="RowRemoteText" type="HBoxContainer" parent="Panel/RootHBox/ContentRoot/OptionPanel"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="Label" type="Label" parent="Panel/RootHBox/ContentRoot/OptionPanel/RowRemoteText"]
-custom_minimum_size = Vector2(190, 22)
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "coop_option_remote_text"
-vertical_alignment = 1
-
-[node name="RemoteTextFreq" parent="Panel/RootHBox/ContentRoot/OptionPanel/RowRemoteText" instance=ExtResource("7_freq")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 16)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-
-[node name="RemoteTextFreqValue" type="Label" parent="Panel/RootHBox/ContentRoot/OptionPanel/RowRemoteText"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(84, 20)
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-horizontal_alignment = 2
-vertical_alignment = 1
-
-[node name="RowDebugHud" type="HBoxContainer" parent="Panel/RootHBox/ContentRoot/OptionPanel"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="Label" type="Label" parent="Panel/RootHBox/ContentRoot/OptionPanel/RowDebugHud"]
-custom_minimum_size = Vector2(190, 22)
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "coop_option_debug_hud"
-vertical_alignment = 1
-
-[node name="DebugHudToggle" parent="Panel/RootHBox/ContentRoot/OptionPanel/RowDebugHud" instance=ExtResource("8_toggle")]
+[node name="CoopOption" parent="Panel/RootHBox/ContentRoot/OptionPanel" instance=ExtResource("7_coopopt")]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 4
-
-[node name="OptionNote" type="Label" parent="Panel/RootHBox/ContentRoot/OptionPanel"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 9
-text = "coop_option_note"
-autowrap_mode = 3
 
 [node name="ContentSpacer" type="Control" parent="Panel/RootHBox/ContentRoot"]
 layout_mode = 2
@@ -707,8 +687,8 @@ theme_override_constants/shadow_offset_y = 3
 theme_override_constants/outline_size = 4
 theme_override_constants/shadow_outline_size = 2
 theme_override_fonts/font = ExtResource("4_font")
-theme_override_font_sizes/font_size = 19
-text = "coop_mode_lan"
+theme_override_font_sizes/font_size = 14
+text = "coop_mode_lan_label"
 
 [node name="Relay" parent="Node2D/VBoxContainer" instance=ExtResource("6_button")]
 unique_name_in_owner = true

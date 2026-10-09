@@ -17,6 +17,7 @@ func _ready():
 
 func idle_state():
 	is_idle = 1
+	set_physics_process(false)
 	if GameEvents.global_time_count.is_connected(set_value):
 		GameEvents.global_time_count.disconnect(set_value)
 	player_buff = null
@@ -27,9 +28,11 @@ func release_to_pool():
 	var box = PoolManager.buff_box
 	if box != null and is_instance_valid(box) and get_parent() != box:
 		self.reparent(box)
+	PoolManager.push_idle_buff_card(self)
 
 func active_state():
 	is_idle = 0
+	set_physics_process(true)
 	if !GameEvents.global_time_count.is_connected(set_value):
 		GameEvents.global_time_count.connect(set_value)
 	self.visible = true

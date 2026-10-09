@@ -27,6 +27,38 @@ func check_group():
 	else:
 		self.visible = false
 
+# 由 menu_screen.society_card_filter 调用；MOD 社团卡覆写此方法。
+# 只实例化「已解锁」角色；先不实例化地读出卡内 player_card.id 判断（兼容 uid:// 路径），
+# 读不到时回退“实例化后判断并释放”，避免遗漏。
+func populate_player_cards(box: Node) -> void:
+	for path in card_group:
+		if path == "":
+			continue
+		var pc = _peek_player_card(path)
+		if pc != null and not PlayerData.character.has(pc.id):
+			continue
+		var card_ins = load(path).instantiate()
+		var real_pc = card_ins.get("player_card")
+		if real_pc == null or not PlayerData.character.has(real_pc.id):
+			card_ins.free()
+			continue
+		box.add_child(card_ins)
+		await get_tree().create_timer(0.07).timeout
+
+
+# 不实例化卡场景，直接读 PackedScene 根节点导出的 player_card 资源。
+func _peek_player_card(scene_path: String):
+	var ps = load(scene_path)
+	if ps == null or not (ps is PackedScene):
+		return null
+	var st = (ps as PackedScene).get_state()
+	if st == null or st.get_node_count() == 0:
+		return null
+	for i in st.get_node_property_count(0):
+		if String(st.get_node_property_name(0, i)) == "player_card":
+			return st.get_node_property_value(0, i)
+	return null
+
 func open_card():
 	mouse_filter = 0
 

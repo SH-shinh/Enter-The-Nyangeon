@@ -1,22 +1,9 @@
-extends Node2D
+extends EquipItem
 
-var num: int
-
-
-func _ready():
-	first_activation()
-	GameEvents.ability_upgrade_added.connect(on_upgrade_added)
-
-func first_activation():
+func _on_equip():
 	PlayerData.bullet_shoot_time_mult += 0.08
-	PlayerData.update_player_ability()
-	
 
-func on_upgrade_added(upgrade: AbilityUpgrade, current_upgrade: Dictionary):
-	if upgrade.id != "rabbit_sticker":
+func _apply_effect(quantity: int):
+	if quantity == 1:
 		return
-	if current_upgrade["rabbit_sticker"]["quantity"] == 1:
-		return
-	num = current_upgrade["rabbit_sticker"]["quantity"]
 	PlayerData.bullet_shoot_time_mult += 0.08
-	PlayerData.update_player_ability()

@@ -1,7 +1,6 @@
-[gd_scene load_steps=39 format=3 uid="uid://c0lw16gu1j0y4"]
+[gd_scene load_steps=38 format=3 uid="uid://c0lw16gu1j0y4"]
 
 [ext_resource type="Texture2D" uid="uid://1wa2vvyr81kq" path="res://ui/ark_of_Shittim/arona_halo.png" id="1_4x0qi"]
-[ext_resource type="Texture2D" uid="uid://su6g33ylu4y6" path="res://ui/ark_of_Shittim/arona_picture.png" id="1_j4j3j"]
 [ext_resource type="Script" path="res://ui/ark_of_Shittim/arona.gd" id="1_khnfb"]
 [ext_resource type="Script" path="res://resources/talk/talk_formwork.gd" id="2_0xmg4"]
 [ext_resource type="Resource" uid="uid://cysx1mp8tg6wi" path="res://resources/talk/arona/arona_work_in_1.tres" id="3_1jjy3"]
@@ -300,7 +299,6 @@ flip_h = true
 texture_filter = 2
 position = Vector2(0, 220)
 scale = Vector2(0.46, 0.46)
-texture = ExtResource("1_j4j3j")
 hframes = 4
 vframes = 4
 

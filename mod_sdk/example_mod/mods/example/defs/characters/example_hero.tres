@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="PlayerCard" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://sprites/player/momoi/momoi_picture_halo.png" id="1"]
+[ext_resource type="Script" path="res://resources/player/player.gd" id="2"]
+
+[resource]
+script = ExtResource("2")
+name = "EXAMPLE HERO"
+weapon = "TEST"
+sprite_path = "res://sprites/player/momoi/momoi_picture.png"
+halo = ExtResource("1")
+voice_name = "momoi"
+id = "example_hero"
+scene_path = "res://scenes/player/momoi/momoi.tscn"

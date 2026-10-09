@@ -1,8 +1,8 @@
-[gd_scene load_steps=10 format=3 uid="uid://bkfr05lmqg3f7"]
+[gd_scene format=3 uid="uid://bkfr05lmqg3f7"]
 
-[ext_resource type="Script" path="res://scenes/bullet/momoi_bullet.gd" id="1_eyqje"]
+[ext_resource type="Script" uid="uid://oj3do5n5ujp1" path="res://script/player_bullet.gd" id="1_cybv3"]
 [ext_resource type="PackedScene" uid="uid://ygvqweawmhgs" path="res://scenes/line.tscn" id="2_lius5"]
-[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="3_mb461"]
+[ext_resource type="Shader" uid="uid://bqypa5578tm8a" path="res://shaders/sprite_outline.gdshader" id="3_mb461"]
 [ext_resource type="Texture2D" uid="uid://nsmg6eumcur2" path="res://sprites/bullet/midori_bullet.png" id="4_tlb8y"]
 
 [sub_resource type="Gradient" id="Gradient_opjdr"]
@@ -21,43 +21,33 @@ point_count = 2
 [sub_resource type="CircleShape2D" id="CircleShape2D_yrn22"]
 radius = 7.0
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_1qq3x"]
-radius = 7.0
-
-[node name="midori_bullet" type="CharacterBody2D" groups=["PlayerBullet"]]
+[node name="midori_bullet" type="Area2D" unique_id=688541812 groups=["PlayerBullet"]]
 z_index = 2
-collision_layer = 4
-collision_mask = 2
-motion_mode = 1
-script = ExtResource("1_eyqje")
-r_speed = 100
+collision_layer = 32772
+collision_mask = 16384
+script = ExtResource("1_cybv3")
 
-[node name="Line" parent="." instance=ExtResource("2_lius5")]
+[node name="Line" parent="." unique_id=1977636170 instance=ExtResource("2_lius5")]
 z_index = 1
 width = 12.0
 gradient = SubResource("Gradient_opjdr")
 texture_mode = 2
 width_f = 12.0
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1615897417]
 material = SubResource("ShaderMaterial_liqt8")
 scale = Vector2(0.4, 0.4)
 texture = ExtResource("4_tlb8y")
 
-[node name="Line2" parent="." instance=ExtResource("2_lius5")]
+[node name="Line2" parent="." unique_id=58913136 instance=ExtResource("2_lius5")]
 z_index = 2
 width = 7.0
 width_curve = SubResource("Curve_k8o8u")
 width_f = 7.0
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=67675137]
 shape = SubResource("CircleShape2D_yrn22")
 
-[node name="Area2D" type="Area2D" parent="."]
-collision_layer = 0
-collision_mask = 1032
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
-shape = SubResource("CircleShape2D_1qq3x")
-
-[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
+[node name="RayCast2D" type="RayCast2D" parent="." unique_id=291821999]
+target_position = Vector2(7, 0)
+collision_mask = 2

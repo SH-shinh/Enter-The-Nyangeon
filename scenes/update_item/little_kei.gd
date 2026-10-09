@@ -1,6 +1,5 @@
-extends Node2D
+extends EquipItem
 
-var num: int
 var kei_velocity: float = 0.003
 var dir: Vector2
 var player: Node
@@ -13,29 +12,23 @@ var player: Node
 @onready var path_follow_2d: PathFollow2D = $Path2D/PathFollow2D
 @onready var sprite_2d: Sprite2D = $Path2D/PathFollow2D/Kei/Sprite2D
 
-func _ready():
-	first_activation()
-	GameEvents.ability_upgrade_added.connect(on_upgrade_added)
-	player = get_tree().get_first_node_in_group("Player")
-
 func _physics_process(delta):
 	path_follow_2d.progress_ratio = wrapf(path_follow_2d.progress_ratio + kei_velocity, 0, 1)
 
-func first_activation():
+func _on_equip():
 	kei_velocity = 0.003
 	area_2d.scale = Vector2(1, 1)
-	PlayerData.update_player_ability()
 
-func on_upgrade_added(upgrade: AbilityUpgrade, current_upgrade: Dictionary):
-	if upgrade.id != "little_kei":
+func _setup():
+	player = get_tree().get_first_node_in_group("Player")
+	area_2d.area_entered.connect(_on_area_2d_area_entered)
+
+func _apply_effect(quantity: int):
+	if quantity == 1:
 		return
-	if current_upgrade["little_kei"]["quantity"] == 1:
-		return
-	num = current_upgrade["little_kei"]["quantity"]
 	if kei_velocity < 0.02:
 		kei_velocity *= 1.2
 	area_2d.scale *= 1.1
-	PlayerData.update_player_ability()
 
 func _on_timer_timeout():
 	var num = randf_range(-1, 1)
@@ -44,9 +37,9 @@ func _on_timer_timeout():
 	elif num < 0:
 		sprite_2d.scale.x = -1
 
-func _on_area_2d_body_entered(body):
-	if body.is_in_group("EnemyBullet"):
-		body.now_penetrate -= 1000
+func _on_area_2d_area_entered(body:Area2D):
+	if body.is_in_group("EnemyBullet") and body.has_method("bullet_clear"):
+		body.bullet_clear()
 		animation_player_2.play("new_animation")
 		SoundManager.play_sfx("EquipSounds1")
 		GameEvents.emit_player_is_hurt(player)

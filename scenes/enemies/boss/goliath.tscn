@@ -1,15 +1,15 @@
-[gd_scene load_steps=94 format=3 uid="uid://mo8qflfry764"]
+[gd_scene format=3 uid="uid://mo8qflfry764"]
 
 [ext_resource type="Texture2D" uid="uid://desx6l1figtxj" path="res://sprites/enemies/goliath.png" id="1_2cnvt"]
 [ext_resource type="PackedScene" uid="uid://bdo12rjvieur7" path="res://scenes/shadow/shadow.tscn" id="1_7go7x"]
-[ext_resource type="Script" path="res://scenes/enemies/boss/goliath.gd" id="1_aiayw"]
-[ext_resource type="Shader" path="res://shaders/screen_outline.gdshader" id="1_ialcu"]
+[ext_resource type="Script" uid="uid://piwcykkgsmb" path="res://scenes/enemies/boss/goliath.gd" id="1_aiayw"]
+[ext_resource type="Shader" uid="uid://cmu3hnm13h23n" path="res://shaders/screen_outline.gdshader" id="1_ialcu"]
 [ext_resource type="PackedScene" uid="uid://mtusmj2be5ae" path="res://scenes/bullet/launcher/static_bullet_1.tscn" id="3_6he4f"]
 [ext_resource type="PackedScene" uid="uid://bm6dimclh7dhb" path="res://script/bullet_launcher.tscn" id="5_0atki"]
 [ext_resource type="PackedScene" uid="uid://bhaktofgt0o5w" path="res://scenes/bullet/enemy_bullet.tscn" id="6_3vkxy"]
 [ext_resource type="Texture2D" uid="uid://b5nbmcnfshgb8" path="res://sprites/particle/circular_1.png" id="6_xca5e"]
-[ext_resource type="Script" path="res://script/EnemyStateMachine.gd" id="7_5vgmw"]
-[ext_resource type="Script" path="res://script/EnemyStats.gd" id="8_f6fdd"]
+[ext_resource type="Script" uid="uid://b8e2jlmuhbtm5" path="res://script/EnemyStateMachine.gd" id="7_5vgmw"]
+[ext_resource type="Script" uid="uid://b36s5d5e3v3h4" path="res://script/EnemyStats.gd" id="8_f6fdd"]
 [ext_resource type="PackedScene" uid="uid://dcixivms2uc75" path="res://script/enemy_hurt_floating_text.tscn" id="9_fg1oy"]
 [ext_resource type="PackedScene" uid="uid://btl1l8a33rp5b" path="res://scenes/manager/enemy_buff_manager.tscn" id="10_86ntb"]
 [ext_resource type="PackedScene" uid="uid://27vgyy58ukpo" path="res://scenes/enemies/boss/boss_hp.tscn" id="13_eidlj"]
@@ -21,6 +21,8 @@
 [ext_resource type="AudioStream" uid="uid://bvgphmefb6hna" path="res://sounds/mobile_suit2.wav" id="17_ej5yr"]
 [ext_resource type="AudioStream" uid="uid://dfbioaoepj5tf" path="res://sounds/machine_rotation1.wav" id="18_hrvoi"]
 [ext_resource type="Texture2D" uid="uid://bhm8gyj1xcfnv" path="res://sprites/particle/arrow.png" id="21_u4jtf"]
+[ext_resource type="Script" uid="uid://cgyde7ws002vo" path="res://script/health_component.gd" id="22_xac4j"]
+[ext_resource type="Script" uid="uid://cog8pvonoqtxu" path="res://script/hurt_box.gd" id="23_466xo"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_mk24p"]
 resource_local_to_scene = true
@@ -39,7 +41,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_irf2u")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 5.0
 }]
@@ -54,7 +56,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_hu32y")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 5.0
 }]
@@ -69,7 +71,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_d3kow")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 5.0
 }]
@@ -121,7 +123,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_lom0b")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 8.0
 }, {
@@ -138,7 +140,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_2hta5")
 }],
-"loop": true,
+"loop": 1,
 "name": &"shoot",
 "speed": 16.0
 }]
@@ -153,7 +155,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_4uag3")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 5.0
 }]
@@ -168,7 +170,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_d8che")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 5.0
 }]
@@ -183,13 +185,13 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_i2t7m")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 5.0
 }]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_2yuo1"]
-size = Vector2(72, 76)
+[sub_resource type="CircleShape2D" id="CircleShape2D_wjr0y"]
+radius = 23.0
 
 [sub_resource type="Animation" id="Animation_uejb1"]
 length = 0.001
@@ -524,7 +526,7 @@ tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0, 0.25, 0.5),
-"transitions": PackedFloat32Array(1e+06, 594603, 1e+06),
+"transitions": PackedFloat32Array(1000000, 594603, 1000000),
 "update": 0,
 "values": [Vector2(0, 0), Vector2(0, 1), Vector2(0, 0)]
 }
@@ -536,7 +538,7 @@ tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
 "times": PackedFloat32Array(0, 0.125, 0.25, 0.375, 0.5),
-"transitions": PackedFloat32Array(1e+06, 1e+06, 1e+06, 1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000, 1000000, 1000000, 1000000),
 "update": 0,
 "values": [Vector2(-21, -12), Vector2(-22, -12), Vector2(-22, -11), Vector2(-21, -11), Vector2(-21, -12)]
 }
@@ -548,7 +550,7 @@ tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
 "times": PackedFloat32Array(0, 0.125, 0.25, 0.375, 0.5),
-"transitions": PackedFloat32Array(1e+06, 1e+06, 1e+06, 1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000, 1000000, 1000000, 1000000),
 "update": 0,
 "values": [Vector2(15, -12), Vector2(16, -12), Vector2(16, -11), Vector2(15, -11), Vector2(15, -12)]
 }
@@ -560,7 +562,7 @@ tracks/3/interp = 1
 tracks/3/loop_wrap = true
 tracks/3/keys = {
 "times": PackedFloat32Array(0, 0.125, 0.25, 0.375),
-"transitions": PackedFloat32Array(1e+06, 1e+06, 1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000, 1000000, 1000000),
 "update": 0,
 "values": [Vector2(-5, -28), Vector2(-5, -29), Vector2(-5, -28), Vector2(-5, -27)]
 }
@@ -578,7 +580,7 @@ tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0, 0.0625),
-"transitions": PackedFloat32Array(1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000),
 "update": 0,
 "values": [Vector2(0, 0), Vector2(-1, 0)]
 }
@@ -590,7 +592,7 @@ tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
 "times": PackedFloat32Array(0, 0.0625, 0.125, 0.1875),
-"transitions": PackedFloat32Array(1e+06, 1e+06, 1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000, 1000000, 1000000),
 "update": 0,
 "values": [Vector2(-21, -12), Vector2(-22, -12), Vector2(-21, -11), Vector2(-21, -12)]
 }
@@ -602,7 +604,7 @@ tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
 "times": PackedFloat32Array(0, 0.0625, 0.125, 0.1875),
-"transitions": PackedFloat32Array(1e+06, 1e+06, 1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000, 1000000, 1000000),
 "update": 0,
 "values": [Vector2(15, -12), Vector2(16, -12), Vector2(15, -11), Vector2(16, -12)]
 }
@@ -614,7 +616,7 @@ tracks/3/interp = 1
 tracks/3/loop_wrap = true
 tracks/3/keys = {
 "times": PackedFloat32Array(0, 0.125),
-"transitions": PackedFloat32Array(1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000),
 "update": 0,
 "values": [Vector2(5.10889, 26.7756), Vector2(7.109, 27.776)]
 }
@@ -638,7 +640,7 @@ tracks/5/interp = 1
 tracks/5/loop_wrap = true
 tracks/5/keys = {
 "times": PackedFloat32Array(0, 0.125),
-"transitions": PackedFloat32Array(1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000),
 "update": 0,
 "values": [Vector2(2.10889, 32.7756), Vector2(2.109, 28.776)]
 }
@@ -662,7 +664,7 @@ tracks/7/interp = 1
 tracks/7/loop_wrap = true
 tracks/7/keys = {
 "times": PackedFloat32Array(0, 0.125),
-"transitions": PackedFloat32Array(1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000),
 "update": 0,
 "values": [Vector2(8.10889, 31.7755), Vector2(5.109, 33.775)]
 }
@@ -686,7 +688,7 @@ tracks/9/interp = 1
 tracks/9/loop_wrap = true
 tracks/9/keys = {
 "times": PackedFloat32Array(0, 0.125),
-"transitions": PackedFloat32Array(1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000),
 "update": 0,
 "values": [Vector2(23.1089, 26.1089), Vector2(25.109, 27.109)]
 }
@@ -710,7 +712,7 @@ tracks/11/interp = 1
 tracks/11/loop_wrap = true
 tracks/11/keys = {
 "times": PackedFloat32Array(0, 0.125),
-"transitions": PackedFloat32Array(435276, 1e+06),
+"transitions": PackedFloat32Array(435276, 1000000),
 "update": 0,
 "values": [Vector2(20.1089, 32.1089), Vector2(20.109, 28.109)]
 }
@@ -734,7 +736,7 @@ tracks/13/interp = 1
 tracks/13/loop_wrap = true
 tracks/13/keys = {
 "times": PackedFloat32Array(0, 0.125),
-"transitions": PackedFloat32Array(1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000),
 "update": 0,
 "values": [Vector2(26.1089, 31.1089), Vector2(23.109, 33.109)]
 }
@@ -758,7 +760,7 @@ tracks/15/interp = 1
 tracks/15/loop_wrap = true
 tracks/15/keys = {
 "times": PackedFloat32Array(0, 0.0625, 0.125),
-"transitions": PackedFloat32Array(1e+06, 1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000, 1000000),
 "update": 0,
 "values": [Vector2(-5, -28), Vector2(-6, -28), Vector2(-6, -27)]
 }
@@ -775,7 +777,7 @@ tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0, 0.1875, 0.375, 0.5, 0.625, 0.75, 0.875, 1.0625, 1.1875, 1.3125, 1.375, 1.4375, 1.5, 1.5625, 1.625, 1.6875, 1.75, 1.8125, 1.875, 1.9375, 2),
-"transitions": PackedFloat32Array(1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000),
 "update": 0,
 "values": [Vector2(5.10889, 26.7756), Vector2(6.109, 27.776), Vector2(7.109, 27.776), Vector2(8.109, 29.776), Vector2(5.10889, 26.7756), Vector2(6.109, 27.776), Vector2(7.109, 27.776), Vector2(8.109, 29.776), Vector2(5.10889, 26.7756), Vector2(6.109, 27.776), Vector2(7.109, 27.776), Vector2(8.109, 29.776), Vector2(5.10889, 26.7756), Vector2(6.109, 27.776), Vector2(7.109, 27.776), Vector2(8.109, 29.776), Vector2(5.10889, 26.7756), Vector2(6.109, 27.776), Vector2(7.109, 27.776), Vector2(8.109, 29.776), Vector2(5.10889, 26.7756)]
 }
@@ -787,7 +789,7 @@ tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
 "times": PackedFloat32Array(0, 0.1875, 0.375, 0.5, 0.625, 0.75, 0.875, 1.0625, 1.1875, 1.3125, 1.375, 1.4375, 1.5, 1.5625, 1.625, 1.6875, 1.75, 1.8125, 1.875, 1.9375, 2),
-"transitions": PackedFloat32Array(1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000),
 "update": 0,
 "values": [Vector2(2.10889, 32.7756), Vector2(2.109, 30.776), Vector2(2.109, 28.776), Vector2(3.109, 27.776), Vector2(2.10889, 32.7756), Vector2(2.109, 30.776), Vector2(2.109, 28.776), Vector2(3.109, 27.776), Vector2(2.10889, 32.7756), Vector2(2.109, 30.776), Vector2(2.109, 28.776), Vector2(3.109, 27.776), Vector2(2.10889, 32.7756), Vector2(2.109, 30.776), Vector2(2.109, 28.776), Vector2(3.109, 27.776), Vector2(2.10889, 32.7756), Vector2(2.109, 30.776), Vector2(2.109, 28.776), Vector2(3.109, 27.776), Vector2(2.10889, 32.7756)]
 }
@@ -799,7 +801,7 @@ tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
 "times": PackedFloat32Array(0, 0.1875, 0.375, 0.5, 0.625, 0.75, 0.875, 1.0625, 1.1875, 1.3125, 1.375, 1.4375, 1.5, 1.5625, 1.625, 1.6875, 1.75, 1.8125, 1.875, 1.9375, 2),
-"transitions": PackedFloat32Array(1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000),
 "update": 0,
 "values": [Vector2(8.10889, 31.7755), Vector2(6.109, 32.775), Vector2(5.109, 33.775), Vector2(3.109, 32.775), Vector2(8.10889, 31.7755), Vector2(6.109, 32.775), Vector2(5.109, 33.775), Vector2(3.109, 32.775), Vector2(8.10889, 31.7755), Vector2(6.109, 32.775), Vector2(5.109, 33.775), Vector2(3.109, 32.775), Vector2(8.10889, 31.7755), Vector2(6.109, 32.775), Vector2(5.109, 33.775), Vector2(3.109, 32.775), Vector2(8.10889, 31.7755), Vector2(6.109, 32.775), Vector2(5.109, 33.775), Vector2(3.109, 32.775), Vector2(8.10889, 31.7755)]
 }
@@ -811,7 +813,7 @@ tracks/3/interp = 1
 tracks/3/loop_wrap = true
 tracks/3/keys = {
 "times": PackedFloat32Array(0, 0.1875, 0.375, 0.5625, 0.6875, 0.8125, 0.9375, 1.0625, 1.1875, 1.3125, 1.375, 1.4375, 1.5, 1.5625, 1.625, 1.6875, 1.75, 1.8125, 1.875, 1.9375, 2),
-"transitions": PackedFloat32Array(1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000),
 "update": 0,
 "values": [Vector2(23.109, 26.109), Vector2(24.109, 27.109), Vector2(25.109, 27.109), Vector2(26.109, 29.109), Vector2(23.109, 26.109), Vector2(24.109, 27.109), Vector2(25.109, 27.109), Vector2(26.109, 29.109), Vector2(23.109, 26.109), Vector2(24.109, 27.109), Vector2(25.109, 27.109), Vector2(26.109, 29.109), Vector2(23.109, 26.109), Vector2(24.109, 27.109), Vector2(25.109, 27.109), Vector2(26.109, 29.109), Vector2(23.109, 26.109), Vector2(24.109, 27.109), Vector2(25.109, 27.109), Vector2(26.109, 29.109), Vector2(23.109, 26.109)]
 }
@@ -823,7 +825,7 @@ tracks/4/interp = 1
 tracks/4/loop_wrap = true
 tracks/4/keys = {
 "times": PackedFloat32Array(0, 0.1875, 0.375, 0.5625, 0.6875, 0.8125, 0.9375, 1.0625, 1.1875, 1.3125, 1.375, 1.4375, 1.5, 1.5625, 1.625, 1.6875, 1.75, 1.8125, 1.875, 1.9375, 2),
-"transitions": PackedFloat32Array(1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000),
 "update": 0,
 "values": [Vector2(20.109, 32.109), Vector2(20.109, 30.109), Vector2(20.109, 28.109), Vector2(21.109, 27.109), Vector2(20.109, 32.109), Vector2(20.109, 30.109), Vector2(20.109, 28.109), Vector2(21.109, 27.109), Vector2(20.109, 32.109), Vector2(20.109, 30.109), Vector2(20.109, 28.109), Vector2(21.109, 27.109), Vector2(20.109, 32.109), Vector2(20.109, 30.109), Vector2(20.109, 28.109), Vector2(21.109, 27.109), Vector2(20.109, 32.109), Vector2(20.109, 30.109), Vector2(20.109, 28.109), Vector2(21.109, 27.109), Vector2(20.109, 32.109)]
 }
@@ -835,7 +837,7 @@ tracks/5/interp = 1
 tracks/5/loop_wrap = true
 tracks/5/keys = {
 "times": PackedFloat32Array(0, 0.1875, 0.375, 0.5625, 0.6875, 0.8125, 0.9375, 1.0625, 1.1875, 1.3125, 1.375, 1.4375, 1.5, 1.5625, 1.625, 1.6875, 1.75, 1.8125, 1.875, 1.9375, 2),
-"transitions": PackedFloat32Array(1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000),
 "update": 0,
 "values": [Vector2(26.109, 31.109), Vector2(24.109, 32.109), Vector2(23.109, 33.109), Vector2(21.109, 32.109), Vector2(26.109, 31.109), Vector2(24.109, 32.109), Vector2(23.109, 33.109), Vector2(21.109, 32.109), Vector2(26.109, 31.109), Vector2(24.109, 32.109), Vector2(23.109, 33.109), Vector2(21.109, 32.109), Vector2(26.109, 31.109), Vector2(24.109, 32.109), Vector2(23.109, 33.109), Vector2(21.109, 32.109), Vector2(26.109, 31.109), Vector2(24.109, 32.109), Vector2(23.109, 33.109), Vector2(21.109, 32.109), Vector2(26.109, 31.109)]
 }
@@ -847,7 +849,7 @@ tracks/6/interp = 1
 tracks/6/loop_wrap = true
 tracks/6/keys = {
 "times": PackedFloat32Array(0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.6875, 1.875, 2),
-"transitions": PackedFloat32Array(1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000),
 "update": 0,
 "values": [Vector2(-5, -28), Vector2(-5, -29), Vector2(-5, -28), Vector2(-5, -29), Vector2(-5, -28), Vector2(-5, -29), Vector2(-5, -28), Vector2(-5, -29), Vector2(-5, -28), Vector2(-5, -29)]
 }
@@ -1022,13 +1024,13 @@ tracks/5/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_onbn5"]
 _data = {
-"RESET": SubResource("Animation_uejb1"),
-"charge": SubResource("Animation_eyktc"),
-"idle": SubResource("Animation_gex6j"),
-"shoot": SubResource("Animation_3fna8"),
-"shoot_ready": SubResource("Animation_lvk43"),
-"turret_shoot": SubResource("Animation_okfwi"),
-"turret_shoot_ready": SubResource("Animation_tuj3i")
+&"RESET": SubResource("Animation_uejb1"),
+&"charge": SubResource("Animation_eyktc"),
+&"idle": SubResource("Animation_gex6j"),
+&"shoot": SubResource("Animation_3fna8"),
+&"shoot_ready": SubResource("Animation_lvk43"),
+&"turret_shoot": SubResource("Animation_okfwi"),
+&"turret_shoot_ready": SubResource("Animation_tuj3i")
 }
 
 [sub_resource type="Animation" id="Animation_y00xb"]
@@ -1196,7 +1198,7 @@ tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0.125, 0.375),
-"transitions": PackedFloat32Array(1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000),
 "update": 0,
 "values": [Vector2(-16, 14), Vector2(-16, 15)]
 }
@@ -1208,7 +1210,7 @@ tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
 "times": PackedFloat32Array(0.125, 0.375),
-"transitions": PackedFloat32Array(1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000),
 "update": 0,
 "values": [Vector2(10.6667, 14), Vector2(10.667, 15)]
 }
@@ -1220,7 +1222,7 @@ tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
 "times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1e+06),
+"transitions": PackedFloat32Array(1000000),
 "update": 0,
 "values": [Vector2(-21.3333, 24.6667)]
 }
@@ -1244,7 +1246,7 @@ tracks/4/interp = 1
 tracks/4/loop_wrap = true
 tracks/4/keys = {
 "times": PackedFloat32Array(0.00203),
-"transitions": PackedFloat32Array(1e+06),
+"transitions": PackedFloat32Array(1000000),
 "update": 0,
 "values": [0.0]
 }
@@ -1256,7 +1258,7 @@ tracks/5/interp = 1
 tracks/5/loop_wrap = true
 tracks/5/keys = {
 "times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1e+06),
+"transitions": PackedFloat32Array(1000000),
 "update": 0,
 "values": [0.0]
 }
@@ -1274,7 +1276,7 @@ tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1, 1.125, 1.25, 1.375),
-"transitions": PackedFloat32Array(1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000),
 "update": 0,
 "values": [Vector2(-17, 15), Vector2(-18, 15), Vector2(-18, 16), Vector2(-19, 16), Vector2(-17, 16), Vector2(-14, 15), Vector2(-12, 14), Vector2(-10, 14), Vector2(-6, 18), Vector2(-7, 20), Vector2(-10, 20), Vector2(-14, 17)]
 }
@@ -1286,7 +1288,7 @@ tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
 "times": PackedFloat32Array(0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1, 1.125, 1.25, 1.375),
-"transitions": PackedFloat32Array(1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000),
 "update": 0,
 "values": [Vector2(11.667, 14), Vector2(12.667, 14), Vector2(13.667, 13), Vector2(13.667, 18), Vector2(12.667, 20), Vector2(7.667, 16), Vector2(4.667, 16), Vector2(3.667, 16), Vector2(2.667, 15), Vector2(3.667, 15), Vector2(5.667, 15), Vector2(9.667, 14)]
 }
@@ -1298,7 +1300,7 @@ tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
 "times": PackedFloat32Array(0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1, 1.125, 1.25, 1.375, 1.5),
-"transitions": PackedFloat32Array(933033, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06),
+"transitions": PackedFloat32Array(933033, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000),
 "update": 0,
 "values": [Vector2(-22.333, 24.667), Vector2(-24.333, 24.667), Vector2(-26.333, 24.667), Vector2(-27.333, 24.667), Vector2(-24.333, 24.667), Vector2(-21.333, 22.667), Vector2(-17.333, 20.667), Vector2(-14.333, 19.667), Vector2(-10.333, 24.667), Vector2(-12.333, 24.667), Vector2(-15.333, 24.667), Vector2(-17.333, 24.667), Vector2(-19.333, 24.667)]
 }
@@ -1310,7 +1312,7 @@ tracks/3/interp = 1
 tracks/3/loop_wrap = true
 tracks/3/keys = {
 "times": PackedFloat32Array(0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1, 1.125, 1.25, 1.375, 1.5),
-"transitions": PackedFloat32Array(1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 965937, 1e+06, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 965937, 1000000, 1000000),
 "update": 0,
 "values": [Vector2(10.667, 23.667), Vector2(12.667, 22.667), Vector2(13.667, 20.667), Vector2(15.667, 24.667), Vector2(11.667, 24.667), Vector2(3.667, 24.667), Vector2(0.667, 24.667), Vector2(-2.667, 24.667), Vector2(-6.667, 24.667), Vector2(0.667, 24.667), Vector2(3.667, 24.667), Vector2(6.667, 24.667), Vector2(8.667, 24.667)]
 }
@@ -1322,7 +1324,7 @@ tracks/4/interp = 1
 tracks/4/loop_wrap = true
 tracks/4/keys = {
 "times": PackedFloat32Array(0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1, 1.125, 1.25, 1.375),
-"transitions": PackedFloat32Array(1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 965937, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 965937, 1000000),
 "update": 0,
 "values": [-0.0349066, -0.0872665, -0.122173, 0.0, 0.0349066, 0.139626, 0.244346, 0.20944, 0.174533, 0.139626, 0.0872665, 0.0]
 }
@@ -1334,7 +1336,7 @@ tracks/5/interp = 1
 tracks/5/loop_wrap = true
 tracks/5/keys = {
 "times": PackedFloat32Array(0, 0.125, 0.25, 0.5, 0.625, 0.75, 0.875, 1, 1.125, 1.375),
-"transitions": PackedFloat32Array(1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 1e+06, 965937, 1e+06),
+"transitions": PackedFloat32Array(1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 965937, 1000000),
 "update": 0,
 "values": [0.0349066, 0.0872665, 0.174533, 0.0872665, 0.0349066, 0.0, -0.0349066, 0.0, 0.0349066, 0.0]
 }
@@ -1454,11 +1456,11 @@ tracks/7/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_t8o2r"]
 _data = {
-"RESET": SubResource("Animation_y00xb"),
-"charge": SubResource("Animation_tw44g"),
-"idle": SubResource("Animation_rm1iq"),
-"run": SubResource("Animation_6r1g3"),
-"turret_shoot": SubResource("Animation_20d6g")
+&"RESET": SubResource("Animation_y00xb"),
+&"charge": SubResource("Animation_tw44g"),
+&"idle": SubResource("Animation_rm1iq"),
+&"run": SubResource("Animation_6r1g3"),
+&"turret_shoot": SubResource("Animation_20d6g")
 }
 
 [sub_resource type="Gradient" id="Gradient_pneib"]
@@ -1954,8 +1956,8 @@ tracks/17/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_bn1sv"]
 _data = {
-"RESET": SubResource("Animation_fu0al"),
-"enter_anim": SubResource("Animation_wh6qa")
+&"RESET": SubResource("Animation_fu0al"),
+&"enter_anim": SubResource("Animation_wh6qa")
 }
 
 [sub_resource type="Gradient" id="Gradient_l66ug"]
@@ -1966,7 +1968,7 @@ colors = PackedColorArray(0, 0, 0, 0.968, 0.843, 0.843, 0.843, 0.709, 1, 1, 1, 0
 gradient = SubResource("Gradient_l66ug")
 
 [sub_resource type="Curve" id="Curve_iuxer"]
-max_value = 100.0
+_limits = [0.0, 100.0, 0.0, 1.0]
 _data = [Vector2(0, 0), 0.0, 703.297, 0, 0, Vector2(0.35625, 92.3077), 0.0, 0.0, 0, 0, Vector2(1, 0), -306.65, 0.0, 0, 0]
 point_count = 3
 
@@ -2413,8 +2415,8 @@ tracks/13/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_klfy0"]
 _data = {
-"RESET": SubResource("Animation_hc4si"),
-"death_anim": SubResource("Animation_14otn")
+&"RESET": SubResource("Animation_hc4si"),
+&"death_anim": SubResource("Animation_14otn")
 }
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_alkdj"]
@@ -2437,7 +2439,13 @@ scale_max = 0.8
 scale_curve = SubResource("CurveTexture_sf12s")
 color = Color(2, 0.193, 0.158, 1)
 
-[node name="Goliath" type="CharacterBody2D" node_paths=PackedStringArray("stats", "sprite_2d", "graphics", "collision_shape_2d", "enemy_buff_manager") groups=["BOSS", "Enemy"]]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_j6gdg"]
+size = Vector2(98, 97)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_soft_goliath"]
+radius = 50.0
+
+[node name="Goliath" type="CharacterBody2D" unique_id=1268293315 node_paths=PackedStringArray("stats", "sprite_2d", "graphics", "collision_shape_2d", "enemy_buff_manager") groups=["BOSS", "Enemy"]]
 visible = false
 collision_layer = 8
 collision_mask = 256
@@ -2451,23 +2459,23 @@ graphics = NodePath("Graphics")
 collision_shape_2d = NodePath("CollisionShape2D")
 enemy_buff_manager = NodePath("EnemyBuffManager")
 
-[node name="shadow" parent="." instance=ExtResource("1_7go7x")]
+[node name="shadow" parent="." unique_id=1383750021 instance=ExtResource("1_7go7x")]
 position = Vector2(-2, -1.52588e-05)
 scale = Vector2(2, 1.5)
 
-[node name="Graphics" type="CanvasGroup" parent="."]
+[node name="Graphics" type="CanvasGroup" parent="." unique_id=644586224]
 material = SubResource("ShaderMaterial_mk24p")
 position = Vector2(0, -55)
 scale = Vector2(1.2, 1.2)
 
-[node name="LArm" type="AnimatedSprite2D" parent="Graphics"]
+[node name="LArm" type="AnimatedSprite2D" parent="Graphics" unique_id=405181040]
 position = Vector2(15, -12)
 sprite_frames = SubResource("SpriteFrames_383d6")
 animation = &"idle"
 offset = Vector2(11, 13.6667)
 flip_h = true
 
-[node name="Gun3" type="Sprite2D" parent="Graphics/LArm"]
+[node name="Gun3" type="Sprite2D" parent="Graphics/LArm" unique_id=1837364024]
 show_behind_parent = true
 position = Vector2(26.1089, 31.1089)
 rotation = 0.138407
@@ -2477,7 +2485,7 @@ hframes = 8
 vframes = 3
 frame = 20
 
-[node name="Gun1" type="Sprite2D" parent="Graphics/LArm"]
+[node name="Gun1" type="Sprite2D" parent="Graphics/LArm" unique_id=1417098968]
 show_behind_parent = true
 position = Vector2(23.1089, 26.1089)
 rotation = 0.138407
@@ -2487,10 +2495,10 @@ hframes = 8
 vframes = 3
 frame = 20
 
-[node name="ShootPosition" type="Marker2D" parent="Graphics/LArm/Gun1"]
+[node name="ShootPosition" type="Marker2D" parent="Graphics/LArm/Gun1" unique_id=462132215]
 position = Vector2(12.0383, 0.23242)
 
-[node name="BulletLauncher" parent="Graphics/LArm/Gun1/ShootPosition" instance=ExtResource("5_0atki")]
+[node name="BulletLauncher" parent="Graphics/LArm/Gun1/ShootPosition" unique_id=1117526210 instance=ExtResource("5_0atki")]
 shoot_at_once = false
 bullet_scale = 0.6
 bullet_count = 1
@@ -2501,7 +2509,7 @@ bullet_penetrate = 1
 kill_time = 11.0
 bullet_id = "enemy_bullet_1"
 
-[node name="Gun2" type="Sprite2D" parent="Graphics/LArm"]
+[node name="Gun2" type="Sprite2D" parent="Graphics/LArm" unique_id=656644829]
 show_behind_parent = true
 position = Vector2(20.1089, 32.1089)
 rotation = 0.138407
@@ -2511,21 +2519,21 @@ hframes = 8
 vframes = 3
 frame = 20
 
-[node name="LFoot" type="AnimatedSprite2D" parent="Graphics"]
+[node name="LFoot" type="AnimatedSprite2D" parent="Graphics" unique_id=106210020]
 position = Vector2(10.6667, 24.6667)
 sprite_frames = SubResource("SpriteFrames_rkt08")
 animation = &"idle"
 offset = Vector2(4.33333, -2.66667)
 flip_h = true
 
-[node name="LLeg" type="AnimatedSprite2D" parent="Graphics"]
+[node name="LLeg" type="AnimatedSprite2D" parent="Graphics" unique_id=157239963]
 position = Vector2(10.6667, 14)
 sprite_frames = SubResource("SpriteFrames_l65kx")
 animation = &"idle"
 offset = Vector2(6.33333, 8)
 flip_h = true
 
-[node name="BigGun" type="Sprite2D" parent="Graphics"]
+[node name="BigGun" type="Sprite2D" parent="Graphics" unique_id=1550951025]
 position = Vector2(-5, -28)
 texture = ExtResource("1_2cnvt")
 offset = Vector2(11.3333, -0.333336)
@@ -2534,37 +2542,37 @@ hframes = 8
 vframes = 3
 frame = 21
 
-[node name="ShootPosition" type="Marker2D" parent="Graphics/BigGun"]
+[node name="ShootPosition" type="Marker2D" parent="Graphics/BigGun" unique_id=2096559023]
 position = Vector2(37, -0.666669)
 
-[node name="Body" type="AnimatedSprite2D" parent="Graphics"]
+[node name="Body" type="AnimatedSprite2D" parent="Graphics" unique_id=173279033]
 sprite_frames = SubResource("SpriteFrames_0bcbl")
 animation = &"idle"
 autoplay = "idle"
 flip_h = true
 
-[node name="RFoot" type="AnimatedSprite2D" parent="Graphics"]
+[node name="RFoot" type="AnimatedSprite2D" parent="Graphics" unique_id=1972788580]
 position = Vector2(-21.3333, 24.6667)
 sprite_frames = SubResource("SpriteFrames_hit2d")
 animation = &"idle"
 offset = Vector2(4.33333, -2.66667)
 flip_h = true
 
-[node name="RLeg" type="AnimatedSprite2D" parent="Graphics"]
+[node name="RLeg" type="AnimatedSprite2D" parent="Graphics" unique_id=586615242]
 position = Vector2(-16, 14)
 sprite_frames = SubResource("SpriteFrames_lq23a")
 animation = &"idle"
 offset = Vector2(1, 8)
 flip_h = true
 
-[node name="RArm" type="AnimatedSprite2D" parent="Graphics"]
+[node name="RArm" type="AnimatedSprite2D" parent="Graphics" unique_id=628454286]
 position = Vector2(-21, -12)
 sprite_frames = SubResource("SpriteFrames_6h6oy")
 animation = &"idle"
 offset = Vector2(-6.66667, 13.6667)
 flip_h = true
 
-[node name="Gun3" type="Sprite2D" parent="Graphics/RArm"]
+[node name="Gun3" type="Sprite2D" parent="Graphics/RArm" unique_id=2016992183]
 show_behind_parent = true
 position = Vector2(8.10889, 31.7755)
 rotation = 0.138407
@@ -2574,7 +2582,7 @@ hframes = 8
 vframes = 3
 frame = 20
 
-[node name="Gun1" type="Sprite2D" parent="Graphics/RArm"]
+[node name="Gun1" type="Sprite2D" parent="Graphics/RArm" unique_id=2044379909]
 show_behind_parent = true
 position = Vector2(5.10889, 26.7756)
 rotation = 0.138407
@@ -2584,10 +2592,10 @@ hframes = 8
 vframes = 3
 frame = 20
 
-[node name="ShootPosition" type="Marker2D" parent="Graphics/RArm/Gun1"]
+[node name="ShootPosition" type="Marker2D" parent="Graphics/RArm/Gun1" unique_id=1834141787]
 position = Vector2(12.0383, 0.23242)
 
-[node name="BulletLauncher" parent="Graphics/RArm/Gun1/ShootPosition" instance=ExtResource("5_0atki")]
+[node name="BulletLauncher" parent="Graphics/RArm/Gun1/ShootPosition" unique_id=611142771 instance=ExtResource("5_0atki")]
 shoot_at_once = false
 bullet_scale = 0.6
 bullet_count = 1
@@ -2598,7 +2606,7 @@ bullet_penetrate = 1
 kill_time = 11.0
 bullet_id = "enemy_bullet_1"
 
-[node name="Gun2" type="Sprite2D" parent="Graphics/RArm"]
+[node name="Gun2" type="Sprite2D" parent="Graphics/RArm" unique_id=1882735890]
 show_behind_parent = true
 position = Vector2(2.10889, 32.7756)
 rotation = 0.138407
@@ -2608,191 +2616,213 @@ hframes = 8
 vframes = 3
 frame = 20
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-visible = false
-position = Vector2(-2, -38)
-shape = SubResource("RectangleShape2D_2yuo1")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1327987578]
+position = Vector2(0, -23)
+shape = SubResource("CircleShape2D_wjr0y")
 
-[node name="BodyAnim" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_onbn5")
-}
-autoplay = "idle"
+[node name="BodyAnim" type="AnimationPlayer" parent="." unique_id=908840006]
+libraries/ = SubResource("AnimationLibrary_onbn5")
+autoplay = &"idle"
 
-[node name="LegAnim" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_t8o2r")
-}
-autoplay = "idle"
+[node name="LegAnim" type="AnimationPlayer" parent="." unique_id=1022952521]
+libraries/ = SubResource("AnimationLibrary_t8o2r")
+autoplay = &"idle"
 
-[node name="StaticBullet1" parent="." instance=ExtResource("3_6he4f")]
+[node name="StaticBullet1" parent="." unique_id=1611544234 instance=ExtResource("3_6he4f")]
 position = Vector2(0, -54)
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=1083055961]
 emitting = false
+texture = ExtResource("6_xca5e")
+lifetime = 1.5
 process_material = SubResource("ParticleProcessMaterial_mst7b")
-texture = ExtResource("6_xca5e")
-lifetime = 1.5
 
-[node name="GPUParticles2D2" type="GPUParticles2D" parent="."]
+[node name="GPUParticles2D2" type="GPUParticles2D" parent="." unique_id=57869681]
 emitting = false
-process_material = SubResource("ParticleProcessMaterial_grol0")
 texture = ExtResource("6_xca5e")
 lifetime = 1.5
+process_material = SubResource("ParticleProcessMaterial_grol0")
 
-[node name="StateMachine" type="Node" parent="."]
+[node name="StateMachine" type="Node" parent="." unique_id=1573283792]
 script = ExtResource("7_5vgmw")
 
-[node name="EnemyStats" type="Node" parent="."]
+[node name="EnemyStats" type="Node" parent="." unique_id=1745484097]
 script = ExtResource("8_f6fdd")
+convert_resist = 90
+convert_threshold = 2000
 score = 75000
 max_hp = 25000
-knockback_resis = 500
+knockback_resis = 100
+Enemy_Knockback = 400
 penetrate_resis = 50
 Enemy_damage = 14
 Enemy_bullet_damage = 12
 Enemy_coin = 600
 MAX_SPEED = 75
 SPEED_TIME = 0.2
-weigth_mult = 0.0
+weigth = 1000.0
+convertible = false
 
-[node name="EnemyHurtFloatingText" parent="." instance=ExtResource("9_fg1oy")]
+[node name="EnemyHurtFloatingText" parent="." unique_id=2130114702 node_paths=PackedStringArray("health_component") instance=ExtResource("9_fg1oy")]
 position = Vector2(0, -63)
+health_component = NodePath("../HealthComponent")
 
-[node name="EnemyBuffManager" parent="." instance=ExtResource("10_86ntb")]
+[node name="EnemyBuffManager" parent="." unique_id=111708547 instance=ExtResource("10_86ntb")]
 
-[node name="RandomShootTimer" type="Timer" parent="."]
+[node name="RandomShootTimer" type="Timer" parent="." unique_id=1719340227]
 wait_time = 0.1
 one_shot = true
 
-[node name="StrafeShootTimer" type="Timer" parent="."]
+[node name="StrafeShootTimer" type="Timer" parent="." unique_id=1518249228]
 wait_time = 0.08
 one_shot = true
 
-[node name="BigGunShootTimer" type="Timer" parent="."]
+[node name="BigGunShootTimer" type="Timer" parent="." unique_id=34975675]
 wait_time = 0.3
 one_shot = true
 
-[node name="DecisionTimer" type="Timer" parent="."]
+[node name="DecisionTimer" type="Timer" parent="." unique_id=1027511208]
 one_shot = true
 
-[node name="BossHP" parent="." node_paths=PackedStringArray("stats") instance=ExtResource("13_eidlj")]
+[node name="BossHP" parent="." unique_id=420535568 node_paths=PackedStringArray("stats") instance=ExtResource("13_eidlj")]
 visible = false
 stats = NodePath("../EnemyStats")
 boss_name = "-GOLIATH-"
 
-[node name="MarginContainer" type="MarginContainer" parent="BossHP"]
+[node name="MarginContainer" type="MarginContainer" parent="BossHP" unique_id=1799604784]
 offset_left = 36.0
 offset_top = 311.0
 offset_right = 1172.0
 offset_bottom = 337.0
 scale = Vector2(0.5, 0.5)
 
-[node name="BuffBox" type="HBoxContainer" parent="BossHP/MarginContainer"]
+[node name="BuffBox" type="HBoxContainer" parent="BossHP/MarginContainer" unique_id=366385260]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="BossEnter" type="Node2D" parent="."]
+[node name="BossEnter" type="Node2D" parent="." unique_id=1441462228]
 process_mode = 3
 
-[node name="EnterAnim" type="AnimationPlayer" parent="BossEnter"]
+[node name="EnterAnim" type="AnimationPlayer" parent="BossEnter" unique_id=1044941464]
 root_node = NodePath("../..")
-libraries = {
-"": SubResource("AnimationLibrary_bn1sv")
-}
+libraries/ = SubResource("AnimationLibrary_bn1sv")
 
-[node name="CameraMarker" type="Marker2D" parent="BossEnter"]
+[node name="CameraMarker" type="Marker2D" parent="BossEnter" unique_id=1109526671]
 position = Vector2(0, -43)
 
-[node name="GPUParticles2D2" type="GPUParticles2D" parent="BossEnter"]
+[node name="GPUParticles2D2" type="GPUParticles2D" parent="BossEnter" unique_id=1114127759]
 emitting = false
 amount = 35
+texture = ExtResource("6_xca5e")
+lifetime = 1.2
+one_shot = true
+explosiveness = 1.0
 process_material = SubResource("ParticleProcessMaterial_b2odf")
-texture = ExtResource("6_xca5e")
-lifetime = 1.2
-one_shot = true
-explosiveness = 1.0
 
-[node name="GPUParticles2D3" type="GPUParticles2D" parent="BossEnter"]
+[node name="GPUParticles2D3" type="GPUParticles2D" parent="BossEnter" unique_id=141240137]
 emitting = false
 amount = 35
-process_material = SubResource("ParticleProcessMaterial_skrak")
 texture = ExtResource("6_xca5e")
 lifetime = 1.2
 one_shot = true
 explosiveness = 1.0
+process_material = SubResource("ParticleProcessMaterial_skrak")
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="BossEnter"]
+[node name="GPUParticles2D" type="GPUParticles2D" parent="BossEnter" unique_id=33027811]
 emitting = false
 amount = 30
-process_material = SubResource("ParticleProcessMaterial_rqnr1")
 lifetime = 0.8
 one_shot = true
 explosiveness = 1.0
+process_material = SubResource("ParticleProcessMaterial_rqnr1")
 
-[node name="DeathAnim" type="Node2D" parent="."]
+[node name="DeathAnim" type="Node2D" parent="." unique_id=308361749]
 process_mode = 3
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="DeathAnim"]
+[node name="GPUParticles2D" type="GPUParticles2D" parent="DeathAnim" unique_id=12367209]
 material = SubResource("CanvasItemMaterial_iicht")
 position = Vector2(0, -55)
 emitting = false
 amount = 6
-process_material = SubResource("ParticleProcessMaterial_2wdx4")
 texture = ExtResource("14_0woii")
+process_material = SubResource("ParticleProcessMaterial_2wdx4")
 
-[node name="death_anim" type="AnimationPlayer" parent="DeathAnim"]
-libraries = {
-"": SubResource("AnimationLibrary_klfy0")
-}
+[node name="death_anim" type="AnimationPlayer" parent="DeathAnim" unique_id=121484939]
+libraries/ = SubResource("AnimationLibrary_klfy0")
 
-[node name="GatlingIn" type="AudioStreamPlayer2D" parent="DeathAnim"]
+[node name="GatlingIn" type="AudioStreamPlayer2D" parent="DeathAnim" unique_id=750756740]
 process_mode = 3
 stream = ExtResource("15_vhf8o")
 bus = &"SFX"
 
-[node name="GatlingIn" type="AudioStreamPlayer2D" parent="."]
+[node name="GatlingIn" type="AudioStreamPlayer2D" parent="." unique_id=1912771837]
 process_mode = 3
 stream = ExtResource("14_h68mo")
 volume_db = 12.0
 pitch_scale = 1.4
 bus = &"SFX"
 
-[node name="GatlingOut" type="AudioStreamPlayer2D" parent="."]
+[node name="GatlingOut" type="AudioStreamPlayer2D" parent="." unique_id=726534864]
 process_mode = 3
 stream = ExtResource("15_8op06")
 volume_db = 12.0
 pitch_scale = 1.4
 bus = &"SFX"
 
-[node name="Mobile" type="AudioStreamPlayer2D" parent="."]
+[node name="Mobile" type="AudioStreamPlayer2D" parent="." unique_id=573881799]
 process_mode = 3
 stream = ExtResource("16_2gf6b")
 volume_db = 6.0
 bus = &"SFX"
 
-[node name="Mobile2" type="AudioStreamPlayer2D" parent="."]
+[node name="Mobile2" type="AudioStreamPlayer2D" parent="." unique_id=974189242]
 process_mode = 3
 stream = ExtResource("17_ej5yr")
 volume_db = 12.0
 pitch_scale = 1.5
 bus = &"SFX"
 
-[node name="Mobile3" type="AudioStreamPlayer2D" parent="."]
+[node name="Mobile3" type="AudioStreamPlayer2D" parent="." unique_id=1568843093]
 process_mode = 3
 stream = ExtResource("18_hrvoi")
 volume_db = 15.0
 pitch_scale = 1.6
 bus = &"SFX"
 
-[node name="FeverGpu" type="GPUParticles2D" parent="."]
+[node name="FeverGpu" type="GPUParticles2D" parent="." unique_id=1364811087]
 material = SubResource("CanvasItemMaterial_alkdj")
 position = Vector2(0, -55)
 emitting = false
 amount = 6
-process_material = SubResource("ParticleProcessMaterial_dxwag")
 texture = ExtResource("21_u4jtf")
+process_material = SubResource("ParticleProcessMaterial_dxwag")
+
+[node name="HealthComponent" type="Node" parent="." unique_id=1923594485 node_paths=PackedStringArray("stats", "hurt_box")]
+script = ExtResource("22_xac4j")
+stats = NodePath("../EnemyStats")
+hurt_box = NodePath("../HurtBox")
+
+[node name="HurtBox" type="Area2D" parent="." unique_id=1031665120 node_paths=PackedStringArray("body")]
+position = Vector2(0, -19)
+collision_layer = 16384
+collision_mask = 163840
+script = ExtResource("23_466xo")
+body = NodePath("..")
+
+[node name="HurtBoxShape2D" type="CollisionShape2D" parent="HurtBox" unique_id=9988715]
+position = Vector2(0, -29.5)
+shape = SubResource("RectangleShape2D_j6gdg")
+
+[node name="SoftCollisionArea" type="Area2D" parent="." unique_id=1417491502]
+collision_layer = 0
+collision_mask = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SoftCollisionArea" unique_id=1380299806]
+position = Vector2(0, -19)
+shape = SubResource("CircleShape2D_soft_goliath")
 
 [connection signal="is_hurt" from="." to="." method="_on_is_hurt"]
 [connection signal="is_dead" from="EnemyStats" to="." method="_on_enemy_stats_is_dead"]
 [connection signal="timeout" from="DecisionTimer" to="." method="_on_decision_timer_timeout"]
+[connection signal="body_entered" from="SoftCollisionArea" to="." method="_on_area_2d_body_entered"]
+[connection signal="body_exited" from="SoftCollisionArea" to="." method="_on_area_2d_body_exited"]

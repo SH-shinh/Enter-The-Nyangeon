@@ -1,25 +1,25 @@
-[gd_scene load_steps=4 format=3 uid="uid://c3jn5xijv6niv"]
+[gd_scene format=3 uid="uid://c3jn5xijv6niv"]
 
-[ext_resource type="Script" path="res://scenes/debuff/poison_diffuse.gd" id="1_6b4au"]
+[ext_resource type="Script" uid="uid://cfq4xxsirwfkb" path="res://scenes/debuff/poison_diffuse.gd" id="1_6b4au"]
 [ext_resource type="Resource" uid="uid://dsblwps2uxvdu" path="res://resources/buff/enemy_buff/poison_dot.tres" id="2_cats1"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_ndhrx"]
 radius = 120.0
 
-[node name="poison_diffuse" type="Node2D"]
+[node name="poison_diffuse" type="Node2D" unique_id=985762521]
 script = ExtResource("1_6b4au")
 enemy_buff = ExtResource("2_cats1")
 buff_layer = 1
-buff_erase_timer = 3.5
+buff_erase_timer = 1.1
 
-[node name="Area2D" type="Area2D" parent="."]
+[node name="Area2D" type="Area2D" parent="." unique_id=406006598]
 collision_layer = 0
 collision_mask = 8
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=273655751]
 shape = SubResource("CircleShape2D_ndhrx")
 
-[node name="Timer" type="Timer" parent="."]
+[node name="Timer" type="Timer" parent="." unique_id=452150180]
 wait_time = 0.1
 
 [connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]

@@ -1,9 +1,10 @@
-[gd_scene load_steps=19 format=3 uid="uid://dbinwcloqxfbu"]
+[gd_scene format=3 uid="uid://dbinwcloqxfbu"]
 
-[ext_resource type="Script" path="res://scenes/player/kasumi/kasumi_drill.gd" id="1_blbim"]
+[ext_resource type="Script" uid="uid://b6kt5koa5arb4" path="res://scenes/player/kasumi/kasumi_drill.gd" id="1_blbim"]
 [ext_resource type="Texture2D" uid="uid://c4uywnbhriosv" path="res://sprites/player/kasumi/kasumi_drill.png" id="1_r7fcx"]
 [ext_resource type="Resource" uid="uid://dmur1plvar11c" path="res://resources/buff/player_buff/kasumi_drill_buff.tres" id="2_c8cn5"]
 [ext_resource type="Texture2D" uid="uid://b5nbmcnfshgb8" path="res://sprites/particle/circular_1.png" id="2_vmq0f"]
+[ext_resource type="Script" uid="uid://dgqq5631n3u32" path="res://script/hit_box.gd" id="4_cudgb"]
 [ext_resource type="AudioStream" uid="uid://o6drbfokgm3m" path="res://sounds/drill.wav" id="4_mr1in"]
 [ext_resource type="Texture2D" uid="uid://ccv20w8histyb" path="res://sprites/particle/explosion_0001.png" id="6_c0a7q"]
 [ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="7_8q2js"]
@@ -182,8 +183,8 @@ tracks/5/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_n6hlh"]
 _data = {
-"RESET": SubResource("Animation_f25c4"),
-"drill_anim": SubResource("Animation_1s4hh")
+&"RESET": SubResource("Animation_f25c4"),
+&"drill_anim": SubResource("Animation_1s4hh")
 }
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_o8ae1"]
@@ -205,11 +206,11 @@ scale_max = 0.8
 anim_speed_min = 1.0
 anim_speed_max = 1.0
 
-[node name="kasumi_drill" type="Node2D"]
+[node name="kasumi_drill" type="Node2D" unique_id=813908633]
 script = ExtResource("1_blbim")
 player_buff = ExtResource("2_c8cn5")
 
-[node name="ColorRect2" type="ColorRect" parent="."]
+[node name="ColorRect2" type="ColorRect" parent="." unique_id=1788221198]
 visible = false
 clip_children = 1
 offset_left = -27.0
@@ -217,52 +218,52 @@ offset_top = -53.0
 offset_right = 33.0
 mouse_filter = 2
 
-[node name="Sprite2D2" type="Sprite2D" parent="ColorRect2"]
+[node name="Sprite2D2" type="Sprite2D" parent="ColorRect2" unique_id=1896150920]
 position = Vector2(33, 39)
 rotation = 0.577096
 scale = Vector2(1.4, 1.4)
 texture = ExtResource("1_r7fcx")
 flip_h = true
 
-[node name="Area2D2" type="Area2D" parent="."]
-collision_layer = 0
-collision_mask = 8
+[node name="Area2D2" type="Area2D" parent="." unique_id=1328966286]
+collision_layer = 32768
+collision_mask = 286720
+monitorable = false
+script = ExtResource("4_cudgb")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D2"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D2" unique_id=2107741465]
 shape = SubResource("CircleShape2D_2p5c2")
 disabled = true
 
-[node name="GPUParticles2D2" type="GPUParticles2D" parent="."]
+[node name="GPUParticles2D2" type="GPUParticles2D" parent="." unique_id=1010669346]
 emitting = false
 amount = 16
-process_material = SubResource("ParticleProcessMaterial_my6fk")
 texture = ExtResource("2_vmq0f")
 lifetime = 0.5
 one_shot = true
 explosiveness = 1.0
+process_material = SubResource("ParticleProcessMaterial_my6fk")
 
-[node name="AnimationPlayer2" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_n6hlh")
-}
+[node name="AnimationPlayer2" type="AnimationPlayer" parent="." unique_id=1229727597]
+libraries/ = SubResource("AnimationLibrary_n6hlh")
 
-[node name="DrillSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="DrillSounds" type="AudioStreamPlayer2D" parent="." unique_id=1468552079]
 process_mode = 3
 stream = ExtResource("4_mr1in")
 volume_db = 6.0
 bus = &"SFX"
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=2108621811]
 z_index = 1
 material = SubResource("CanvasItemMaterial_o8ae1")
 emitting = false
-process_material = SubResource("ParticleProcessMaterial_yqip2")
 texture = ExtResource("6_c0a7q")
 lifetime = 0.4
 one_shot = true
 explosiveness = 1.0
+process_material = SubResource("ParticleProcessMaterial_yqip2")
 
-[node name="LVNum" type="Label" parent="."]
+[node name="LVNum" type="Label" parent="." unique_id=1256751779]
 modulate = Color(1, 1, 1, 0)
 offset_left = -27.0
 offset_top = -12.0
@@ -276,6 +277,3 @@ theme_override_fonts/font = ExtResource("7_8q2js")
 theme_override_font_sizes/font_size = 8
 text = "999%"
 horizontal_alignment = 1
-
-[connection signal="body_entered" from="Area2D2" to="." method="_on_area_2d_2_body_entered"]
-[connection signal="body_exited" from="Area2D2" to="." method="_on_area_2d_2_body_exited"]

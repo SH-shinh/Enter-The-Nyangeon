@@ -1,0 +1,117 @@
+[gd_scene format=3 uid="uid://b2eg0ex5y44la"]
+
+[ext_resource type="Shader" uid="uid://bqypa5578tm8a" path="res://shaders/sprite_outline.gdshader" id="1_3ohp1"]
+[ext_resource type="Texture2D" uid="uid://owtvqmd3tfd2" path="res://sprites/update_item/refresh.png" id="1_ekbq2"]
+[ext_resource type="Script" uid="uid://biuovivnrwr1v" path="res://ui/branch_button.gd" id="2_brbtn"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_43twi"]
+shader = ExtResource("1_3ohp1")
+shader_parameter/outline_width = 2.0
+shader_parameter/outline_color = Color(0.37413922, 0.37413928, 0.37413913, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ebsmd"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_g7o1h"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_hproo"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_4ucxl"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_4pqw1"]
+
+[sub_resource type="Animation" id="Animation_lsdxh"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:offset_transform_scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset_transform_rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.1, 0, 0.1, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="Animation" id="Animation_3ohp1"]
+resource_name = "hover_anim"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:offset_transform_scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(1.1, 1.1)]
+}
+
+[sub_resource type="Animation" id="Animation_diooi"]
+resource_name = "press_anim"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:offset_transform_scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(1.1, 1.1), Vector2(1.2, 1.2), Vector2(1, 1)]
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset_transform_rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0, 2),
+"points": PackedFloat32Array(0, -0.1, 0, 0.1, 0, -3.142, -0.033333335, 0, 0, 0),
+"times": PackedFloat32Array(0, 0.2)
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_tjgpk"]
+_data = {
+&"RESET": SubResource("Animation_lsdxh"),
+&"hover_anim": SubResource("Animation_3ohp1"),
+&"press_anim": SubResource("Animation_diooi")
+}
+
+[node name="BranchButton" type="Button" unique_id=1770954433]
+material = SubResource("ShaderMaterial_43twi")
+custom_minimum_size = Vector2(28, 28)
+custom_maximum_size = Vector2(32, 32)
+offset_right = 28.0
+offset_bottom = 28.0
+offset_transform_enabled = true
+theme_override_styles/normal = SubResource("StyleBoxEmpty_ebsmd")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_g7o1h")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_hproo")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_4ucxl")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_4pqw1")
+icon = ExtResource("1_ekbq2")
+icon_alignment = 1
+expand_icon = true
+script = ExtResource("2_brbtn")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1247333056]
+libraries/ = SubResource("AnimationLibrary_tjgpk")

@@ -1,0 +1,36 @@
+[gd_scene format=3 uid="uid://bllc2r3dg6tf4"]
+
+[ext_resource type="Script" uid="uid://bhjte3qkttgvc" path="res://ui/mod_player_card.gd" id="1_j28tn"]
+
+[node name="ModPlayerCard" type="Button" unique_id=1682977106]
+custom_minimum_size = Vector2(120, 170)
+script = ExtResource("1_j28tn")
+
+[node name="VBox" type="VBoxContainer" parent="." unique_id=1508483728]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Sprite" type="TextureRect" parent="VBox" unique_id=2125819884]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Name" type="Label" parent="VBox" unique_id=2074914040]
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="Weapon" type="Label" parent="VBox" unique_id=871883430]
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="BranchBtn" type="Button" parent="." unique_id=1464183785]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 45.0
+offset_bottom = 28.0
+text = "分支"

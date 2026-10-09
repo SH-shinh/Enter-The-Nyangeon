@@ -1,0 +1,61 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://script/summon_level_display.gd" id="1_sld"]
+[ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="2_font"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_bg"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_fill"]
+
+[sub_resource type="Theme" id="Theme_bar"]
+ProgressBar/styles/background = SubResource("StyleBoxEmpty_bg")
+ProgressBar/styles/fill = SubResource("StyleBoxEmpty_fill")
+
+[node name="SummonLevelDisplay" type="Node2D"]
+visible = false
+script = ExtResource("1_sld")
+
+[node name="ProgressBar" type="ProgressBar" parent="."]
+offset_left = -2.0
+offset_top = -22.0
+offset_right = 2.0
+offset_bottom = 0.0
+mouse_filter = 2
+theme = SubResource("Theme_bar")
+theme_override_colors/font_color = Color(0.931356, 0.865342, 0.340636, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 12
+max_value = 3.0
+value = 1.0
+
+[node name="LVNum" type="Label" parent="."]
+offset_left = -12.0
+offset_top = -30.0
+offset_right = 12.0
+offset_bottom = -23.0
+theme_override_colors/font_color = Color(0.991107, 0.979946, 0.873468, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 6
+text = "LV 1"
+horizontal_alignment = 1
+
+[node name="Label" type="Label" parent="."]
+visible = false
+offset_left = -16.0
+offset_top = -38.0
+offset_right = 24.0
+offset_bottom = -31.0
+theme_override_colors/font_color = Color(0.931356, 0.865342, 0.340636, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 6
+text = "LEVEL UP↑"
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 2.0
+one_shot = true

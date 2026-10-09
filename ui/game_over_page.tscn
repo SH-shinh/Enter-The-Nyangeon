@@ -1,19 +1,19 @@
-[gd_scene load_steps=46 format=3 uid="uid://c4x12s4ce50t2"]
+[gd_scene format=3 uid="uid://c4x12s4ce50t2"]
 
-[ext_resource type="Script" path="res://ui/game_over_page.gd" id="1_1ys6c"]
-[ext_resource type="Shader" path="res://shaders/scrolling_bkgd.gdshader" id="1_hd6qa"]
+[ext_resource type="Script" uid="uid://ulkwd8l2sju0" path="res://ui/game_over_page.gd" id="1_1ys6c"]
+[ext_resource type="Shader" uid="uid://d3frxix26ovel" path="res://shaders/scrolling_bkgd.gdshader" id="1_hd6qa"]
 [ext_resource type="Texture2D" uid="uid://dieipwoadjxoa" path="res://ui/title_picture_2.png" id="2_66gwr"]
 [ext_resource type="AudioStream" uid="uid://b0dcm8b1u3sjo" path="res://sounds/BGM/Snow Pantomime_cut.wav" id="2_okksg"]
 [ext_resource type="AudioStream" uid="uid://bmhge06wmp40e" path="res://sounds/BGM/Goal Wo Nerae! cut.wav" id="3_4sgnf"]
-[ext_resource type="Shader" path="res://shaders/motion_screen.gdshader" id="3_a8wq2"]
+[ext_resource type="Shader" uid="uid://chkj8wgi1ek5d" path="res://shaders/motion_screen.gdshader" id="3_a8wq2"]
 [ext_resource type="Texture2D" uid="uid://b20o1pcgeachj" path="res://sprites/player/momoi/momoi_picture_halo.png" id="3_m35dk"]
 [ext_resource type="AudioStream" uid="uid://pxu1rgyrulrb" path="res://sounds/BGM/Goal Wo Nerae! loop.wav" id="4_18y11"]
-[ext_resource type="Texture2D" uid="uid://ds8c5ssu2cqt7" path="res://sprites/player/momoi/momoi_picture.png" id="4_egsnu"]
 [ext_resource type="Texture2D" uid="uid://dplyefubyynt7" path="res://ui/game_over_text.png" id="4_i4vjr"]
 [ext_resource type="PackedScene" uid="uid://y8iidmw3064q" path="res://ui/upgrade_item_card.tscn" id="5_bvlw7"]
 [ext_resource type="Texture2D" uid="uid://dd7vnobcamv4q" path="res://sprites/test_BG.png" id="6_3y4ab"]
-[ext_resource type="Script" path="res://script/ScrollBox.gd" id="7_l1e2c"]
+[ext_resource type="Script" uid="uid://cxexg1p6wvaks" path="res://script/ScrollBox.gd" id="7_l1e2c"]
 [ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="8_xfd18"]
+[ext_resource type="Script" uid="uid://dkwqr377cp5yf" path="res://script/auto_text.gd" id="11_4som6"]
 [ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="12_uxs27"]
 [ext_resource type="Texture2D" uid="uid://m54grm4ymrn8" path="res://ui/line_point.png" id="14_el8t2"]
 [ext_resource type="Texture2D" uid="uid://denx2vpvhu224" path="res://ui/quit_icon.png" id="14_igbwd"]
@@ -417,8 +417,8 @@ tracks/15/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_akq3o"]
 _data = {
-"RESET": SubResource("Animation_cdrr6"),
-"game_over_in": SubResource("Animation_wl146")
+&"RESET": SubResource("Animation_cdrr6"),
+&"game_over_in": SubResource("Animation_wl146")
 }
 
 [sub_resource type="Animation" id="Animation_wqyno"]
@@ -454,8 +454,8 @@ tracks/0/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_53ryo"]
 _data = {
-"RESET": SubResource("Animation_wqyno"),
-"motion_anim": SubResource("Animation_27gap")
+&"RESET": SubResource("Animation_wqyno"),
+&"motion_anim": SubResource("Animation_27gap")
 }
 
 [sub_resource type="Gradient" id="Gradient_ok6o7"]
@@ -683,10 +683,10 @@ tracks/3/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_hkbya"]
 _data = {
-"RESET": SubResource("Animation_tv27i"),
-"mouse_in": SubResource("Animation_m177r"),
-"mouse_out": SubResource("Animation_5jq5y"),
-"selected": SubResource("Animation_gy8eh")
+&"RESET": SubResource("Animation_tv27i"),
+&"mouse_in": SubResource("Animation_m177r"),
+&"mouse_out": SubResource("Animation_5jq5y"),
+&"selected": SubResource("Animation_gy8eh")
 }
 
 [sub_resource type="Animation" id="Animation_x3v5l"]
@@ -747,11 +747,11 @@ tracks/1/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_r40bg"]
 _data = {
-"RESET": SubResource("Animation_x3v5l"),
-"win_anim": SubResource("Animation_rptm4")
+&"RESET": SubResource("Animation_x3v5l"),
+&"win_anim": SubResource("Animation_rptm4")
 }
 
-[node name="GameOverPage" type="CanvasLayer"]
+[node name="GameOverPage" type="CanvasLayer" unique_id=396713168]
 process_mode = 3
 layer = 2
 visible = false
@@ -762,7 +762,7 @@ bgm_loop_win = ExtResource("4_18y11")
 up_item_card = ExtResource("5_bvlw7")
 path = "res://scenes/main/menu_screen.tscn"
 
-[node name="MotionScreen" type="ColorRect" parent="."]
+[node name="MotionScreen" type="ColorRect" parent="." unique_id=287877157]
 modulate = Color(1, 1, 1, 0)
 material = SubResource("ShaderMaterial_33fix")
 anchors_preset = 15
@@ -772,28 +772,24 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_akq3o")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=147520076]
+libraries/ = SubResource("AnimationLibrary_akq3o")
 
-[node name="AnimationPlayer2" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_53ryo")
-}
+[node name="AnimationPlayer2" type="AnimationPlayer" parent="." unique_id=428912497]
+libraries/ = SubResource("AnimationLibrary_53ryo")
 
-[node name="Node2D" type="Node2D" parent="."]
+[node name="Node2D" type="Node2D" parent="." unique_id=2064350597]
 scale = Vector2(0.25, 0.25)
 
-[node name="Node2D2" type="Node2D" parent="Node2D"]
+[node name="Node2D2" type="Node2D" parent="Node2D" unique_id=266113393]
 
-[node name="ColorRect" type="ColorRect" parent="Node2D/Node2D2"]
+[node name="ColorRect" type="ColorRect" parent="Node2D/Node2D2" unique_id=2049373042]
 offset_right = 2560.0
 offset_bottom = 1440.0
 mouse_filter = 2
 color = Color(0, 0, 0, 0)
 
-[node name="TextureRect" type="TextureRect" parent="Node2D/Node2D2"]
+[node name="TextureRect" type="TextureRect" parent="Node2D/Node2D2" unique_id=1041639818]
 offset_left = 272.0
 offset_right = 2288.0
 offset_bottom = 1440.0
@@ -802,16 +798,16 @@ pivot_offset = Vector2(1008, 720)
 mouse_filter = 2
 texture = SubResource("GradientTexture2D_r1fve")
 
-[node name="Node2D" type="Node2D" parent="Node2D"]
+[node name="Node2D" type="Node2D" parent="Node2D" unique_id=936932045]
 position = Vector2(0, -300)
 
-[node name="ColorRect" type="ColorRect" parent="Node2D/Node2D"]
+[node name="ColorRect" type="ColorRect" parent="Node2D/Node2D" unique_id=553607855]
 z_index = 1
 offset_right = 2584.0
 offset_bottom = 80.0
 color = Color(0.101961, 0.101961, 0.101961, 1)
 
-[node name="TextureRect" type="TextureRect" parent="Node2D/Node2D"]
+[node name="TextureRect" type="TextureRect" parent="Node2D/Node2D" unique_id=469318832]
 z_index = 1
 material = SubResource("ShaderMaterial_tjgxw")
 offset_left = -20.0
@@ -822,17 +818,17 @@ mouse_filter = 2
 texture = ExtResource("4_i4vjr")
 stretch_mode = 1
 
-[node name="Node2D3" type="Node2D" parent="Node2D"]
+[node name="Node2D3" type="Node2D" parent="Node2D" unique_id=1716115493]
 position = Vector2(0, 300)
 
-[node name="ColorRect2" type="ColorRect" parent="Node2D/Node2D3"]
+[node name="ColorRect2" type="ColorRect" parent="Node2D/Node2D3" unique_id=1815256696]
 z_index = 2
 offset_top = 1364.0
 offset_right = 2584.0
 offset_bottom = 1444.0
 color = Color(0.101961, 0.101961, 0.101961, 1)
 
-[node name="TextureRect4" type="TextureRect" parent="Node2D/Node2D3"]
+[node name="TextureRect4" type="TextureRect" parent="Node2D/Node2D3" unique_id=1674081953]
 z_index = 2
 material = SubResource("ShaderMaterial_xq60i")
 offset_left = -20.0
@@ -843,11 +839,11 @@ mouse_filter = 2
 texture = ExtResource("4_i4vjr")
 stretch_mode = 1
 
-[node name="Node2D3" type="Node2D" parent="."]
+[node name="Node2D3" type="Node2D" parent="." unique_id=1597391871]
 
-[node name="Node2D" type="Node2D" parent="Node2D3"]
+[node name="Node2D" type="Node2D" parent="Node2D3" unique_id=289176440]
 
-[node name="ColorRect8" type="ColorRect" parent="Node2D3/Node2D"]
+[node name="ColorRect8" type="ColorRect" parent="Node2D3/Node2D" unique_id=1388427842]
 offset_left = 869.0
 offset_top = 20.0
 offset_right = 874.0
@@ -855,7 +851,7 @@ offset_bottom = 341.0
 mouse_filter = 2
 color = Color(6.73831e-07, 0.585768, 0.327942, 1)
 
-[node name="ColorRect9" type="ColorRect" parent="Node2D3/Node2D"]
+[node name="ColorRect9" type="ColorRect" parent="Node2D3/Node2D" unique_id=1561497266]
 offset_left = 864.0
 offset_top = 20.0
 offset_right = 869.0
@@ -863,7 +859,7 @@ offset_bottom = 341.0
 mouse_filter = 2
 color = Color(0.866196, 3.56168e-06, 0.549108, 1)
 
-[node name="ColorRect10" type="ColorRect" parent="Node2D3/Node2D"]
+[node name="ColorRect10" type="ColorRect" parent="Node2D3/Node2D" unique_id=225544586]
 offset_left = 859.0
 offset_top = 20.0
 offset_right = 864.0
@@ -871,7 +867,7 @@ offset_bottom = 341.0
 mouse_filter = 2
 color = Color(0.88881, 0.593432, 0, 1)
 
-[node name="ColorRect11" type="ColorRect" parent="Node2D3/Node2D"]
+[node name="ColorRect11" type="ColorRect" parent="Node2D3/Node2D" unique_id=986879456]
 offset_left = 854.0
 offset_top = 20.0
 offset_right = 859.0
@@ -879,23 +875,23 @@ offset_bottom = 341.0
 mouse_filter = 2
 color = Color(0, 0.393994, 0.880394, 1)
 
-[node name="Node2D6" type="Node2D" parent="Node2D3/Node2D"]
+[node name="Node2D6" type="Node2D" parent="Node2D3/Node2D" unique_id=1734223672]
 position = Vector2(494, 0)
 
-[node name="ColorRect" type="ColorRect" parent="Node2D3/Node2D/Node2D6"]
+[node name="ColorRect" type="ColorRect" parent="Node2D3/Node2D/Node2D6" unique_id=245624454]
 clip_children = 1
 offset_left = 383.0
 offset_top = 20.0
 offset_right = 501.0
 offset_bottom = 341.0
 
-[node name="PlayerColor" type="ColorRect" parent="Node2D3/Node2D/Node2D6/ColorRect"]
+[node name="PlayerColor" type="ColorRect" parent="Node2D3/Node2D/Node2D6/ColorRect" unique_id=778018354]
 layout_mode = 0
 offset_right = 155.0
 offset_bottom = 321.0
 color = Color(0.980392, 0.580392, 0.662745, 1)
 
-[node name="ColorRect2" type="ColorRect" parent="Node2D3/Node2D/Node2D6/ColorRect"]
+[node name="ColorRect2" type="ColorRect" parent="Node2D3/Node2D/Node2D6/ColorRect" unique_id=1874401961]
 layout_mode = 0
 offset_left = 78.0
 offset_top = -100.0
@@ -904,7 +900,7 @@ offset_bottom = 45.0
 rotation = 1.10332
 color = Color(1, 1, 1, 0.54902)
 
-[node name="PlayerHalo" type="Sprite2D" parent="Node2D3/Node2D/Node2D6/ColorRect"]
+[node name="PlayerHalo" type="Sprite2D" parent="Node2D3/Node2D/Node2D6/ColorRect" unique_id=1754267887]
 unique_name_in_owner = true
 position = Vector2(79, 23)
 rotation = -0.349066
@@ -912,17 +908,16 @@ scale = Vector2(0.4, 0.4)
 skew = -0.174533
 texture = ExtResource("3_m35dk")
 
-[node name="PlayerP" type="Sprite2D" parent="Node2D3/Node2D/Node2D6/ColorRect"]
+[node name="PlayerP" type="Sprite2D" parent="Node2D3/Node2D/Node2D6/ColorRect" unique_id=785135249]
 unique_name_in_owner = true
 texture_filter = 2
 material = SubResource("CanvasItemMaterial_kpat0")
 position = Vector2(72, 214)
 scale = Vector2(0.4, 0.4)
-texture = ExtResource("4_egsnu")
 hframes = 4
 frame = 3
 
-[node name="ColorRect4" type="ColorRect" parent="Node2D3/Node2D/Node2D6/ColorRect"]
+[node name="ColorRect4" type="ColorRect" parent="Node2D3/Node2D/Node2D6/ColorRect" unique_id=787383379]
 layout_mode = 0
 offset_left = -40.0
 offset_top = 500.0
@@ -933,7 +928,7 @@ scale = Vector2(0.8, 0.8)
 pivot_offset = Vector2(150, 0)
 mouse_filter = 2
 
-[node name="ColorRect2" type="ColorRect" parent="Node2D3/Node2D/Node2D6/ColorRect/ColorRect4"]
+[node name="ColorRect2" type="ColorRect" parent="Node2D3/Node2D/Node2D6/ColorRect/ColorRect4" unique_id=1192267136]
 show_behind_parent = true
 layout_mode = 0
 offset_left = -0.34223
@@ -944,26 +939,29 @@ pivot_offset = Vector2(150, 0)
 mouse_filter = 2
 color = Color(0.258824, 0.258824, 0.258824, 0.639216)
 
-[node name="PlayerName" type="Label" parent="Node2D3/Node2D/Node2D6/ColorRect/ColorRect4"]
+[node name="PlayerName" type="Label" parent="Node2D3/Node2D/Node2D6/ColorRect/ColorRect4" unique_id=217894965]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 16.1491
 offset_top = -15.3927
-offset_right = 130.149
-offset_bottom = 2.60729
+offset_right = 156.1491
+offset_bottom = 2.6072998
 theme_override_colors/font_shadow_color = Color(0.261088, 3.60981e-08, 0.130492, 1)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = -1
 theme_override_constants/shadow_outline_size = 7
 text = "SAIBA MOMOI"
+autowrap_mode = 1
+script = ExtResource("11_4som6")
+base_size_y = 18.0
 
-[node name="PlayerWeapon" type="Label" parent="Node2D3/Node2D/Node2D6/ColorRect/ColorRect4"]
+[node name="PlayerWeapon" type="Label" parent="Node2D3/Node2D/Node2D6/ColorRect/ColorRect4" unique_id=1405589458]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 16.3609
 offset_top = -24.4456
-offset_right = 120.361
-offset_bottom = -6.44563
+offset_right = 156.3609
+offset_bottom = -6.4456005
 theme_override_colors/font_color = Color(0.978947, 0.581021, 0.663484, 1)
 theme_override_colors/font_shadow_color = Color(0.261088, 3.60981e-08, 0.130492, 1)
 theme_override_colors/font_outline_color = Color(0.261088, 3.60981e-08, 0.130492, 1)
@@ -973,31 +971,34 @@ theme_override_constants/outline_size = 1
 theme_override_constants/shadow_outline_size = 6
 theme_override_font_sizes/font_size = 9
 text = "UNIQUE IDEA"
+autowrap_mode = 1
+script = ExtResource("11_4som6")
+base_size_y = 18.0
 
-[node name="ColorRect4" type="ColorRect" parent="Node2D3/Node2D/Node2D6"]
+[node name="ColorRect4" type="ColorRect" parent="Node2D3/Node2D/Node2D6" unique_id=1615993127]
 offset_left = 501.0
 offset_top = 20.0
 offset_right = 504.0
 offset_bottom = 341.0
 mouse_filter = 2
 
-[node name="ColorRect7" type="ColorRect" parent="Node2D3/Node2D/Node2D6"]
+[node name="ColorRect7" type="ColorRect" parent="Node2D3/Node2D/Node2D6" unique_id=1711215469]
 offset_left = 380.0
 offset_top = 20.0
 offset_right = 383.0
 offset_bottom = 341.0
 mouse_filter = 2
 
-[node name="Node2D3" type="Node2D" parent="Node2D3"]
+[node name="Node2D3" type="Node2D" parent="Node2D3" unique_id=293558805]
 position = Vector2(-500, 0)
 
-[node name="ColorRect3" type="ColorRect" parent="Node2D3/Node2D3"]
+[node name="ColorRect3" type="ColorRect" parent="Node2D3/Node2D3" unique_id=1583912784]
 offset_left = 145.0
 offset_right = 322.0
 offset_bottom = 360.0
 color = Color(0.564646, 0.14789, 0.135632, 1)
 
-[node name="TextureRect" type="TextureRect" parent="Node2D3/Node2D3"]
+[node name="TextureRect" type="TextureRect" parent="Node2D3/Node2D3" unique_id=1161998657]
 material = SubResource("ShaderMaterial_p3beg")
 offset_left = 145.0
 offset_top = 20.0
@@ -1006,7 +1007,7 @@ offset_bottom = 341.0
 texture = ExtResource("6_3y4ab")
 stretch_mode = 1
 
-[node name="TextureRect5" type="TextureRect" parent="Node2D3/Node2D3"]
+[node name="TextureRect5" type="TextureRect" parent="Node2D3/Node2D3" unique_id=786158646]
 visible = false
 material = SubResource("ShaderMaterial_yjv23")
 offset_left = 308.0
@@ -1018,7 +1019,7 @@ texture = ExtResource("2_66gwr")
 stretch_mode = 1
 flip_h = true
 
-[node name="TextureRect3" type="TextureRect" parent="Node2D3/Node2D3"]
+[node name="TextureRect3" type="TextureRect" parent="Node2D3/Node2D3" unique_id=1345845528]
 visible = false
 material = SubResource("ShaderMaterial_yjv23")
 offset_left = 139.0
@@ -1029,37 +1030,37 @@ scale = Vector2(0.04, 0.04)
 texture = ExtResource("2_66gwr")
 stretch_mode = 1
 
-[node name="ColorRect5" type="ColorRect" parent="Node2D3/Node2D3"]
+[node name="ColorRect5" type="ColorRect" parent="Node2D3/Node2D3" unique_id=180016554]
 offset_left = 142.0
 offset_top = 20.0
 offset_right = 145.0
 offset_bottom = 341.0
 mouse_filter = 2
 
-[node name="ColorRect6" type="ColorRect" parent="Node2D3/Node2D3"]
+[node name="ColorRect6" type="ColorRect" parent="Node2D3/Node2D3" unique_id=2004695580]
 offset_left = 322.0
 offset_top = 20.0
 offset_right = 325.0
 offset_bottom = 341.0
 mouse_filter = 2
 
-[node name="Node2D3" type="Node2D" parent="Node2D3/Node2D3"]
+[node name="Node2D3" type="Node2D" parent="Node2D3/Node2D3" unique_id=227720666]
 
-[node name="ColorRect4" type="ColorRect" parent="Node2D3/Node2D3/Node2D3"]
+[node name="ColorRect4" type="ColorRect" parent="Node2D3/Node2D3/Node2D3" unique_id=694058030]
 offset_left = 145.0
 offset_top = 154.0
 offset_right = 322.0
 offset_bottom = 257.0
 color = Color(0.103744, 0.103744, 0.103744, 1)
 
-[node name="ColorRect" type="ColorRect" parent="Node2D3/Node2D3/Node2D3"]
+[node name="ColorRect" type="ColorRect" parent="Node2D3/Node2D3/Node2D3" unique_id=172105256]
 offset_left = 147.0
 offset_top = 170.0
 offset_right = 320.0
 offset_bottom = 255.0
 color = Color(0.282353, 0.0862745, 0.0666667, 0.698039)
 
-[node name="MarginContainer" type="ScrollContainer" parent="Node2D3/Node2D3/Node2D3"]
+[node name="MarginContainer" type="ScrollContainer" parent="Node2D3/Node2D3/Node2D3" unique_id=78726300]
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -1072,21 +1073,21 @@ horizontal_scroll_mode = 3
 vertical_scroll_mode = 3
 script = ExtResource("7_l1e2c")
 
-[node name="card_box" type="GridContainer" parent="Node2D3/Node2D3/Node2D3/MarginContainer"]
+[node name="card_box" type="GridContainer" parent="Node2D3/Node2D3/Node2D3/MarginContainer" unique_id=1849908644]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/h_separation = -4
 theme_override_constants/v_separation = -2
 columns = 8
 
-[node name="ColorRect2" type="ColorRect" parent="Node2D3/Node2D3/Node2D3"]
+[node name="ColorRect2" type="ColorRect" parent="Node2D3/Node2D3/Node2D3" unique_id=1223680160]
 visible = false
 offset_left = 139.0
 offset_top = 322.0
 offset_right = 316.0
 offset_bottom = 324.0
 
-[node name="Label" type="Label" parent="Node2D3/Node2D3/Node2D3"]
+[node name="Label" type="Label" parent="Node2D3/Node2D3/Node2D3" unique_id=113397376]
 offset_left = 155.0
 offset_top = 158.0
 offset_right = 269.0
@@ -1095,9 +1096,9 @@ theme_override_fonts/font = ExtResource("8_xfd18")
 theme_override_font_sizes/font_size = 13
 text = "EQUIPMENT"
 
-[node name="Node2D2" type="Node2D" parent="Node2D3/Node2D3"]
+[node name="Node2D2" type="Node2D" parent="Node2D3/Node2D3" unique_id=1341684174]
 
-[node name="TextureRect2" type="TextureRect" parent="Node2D3/Node2D3/Node2D2"]
+[node name="TextureRect2" type="TextureRect" parent="Node2D3/Node2D3/Node2D2" unique_id=1243292183]
 offset_left = 148.0
 offset_top = 24.0
 offset_right = 319.0
@@ -1105,34 +1106,34 @@ offset_bottom = 84.0
 mouse_filter = 2
 texture = SubResource("GradientTexture2D_ty2gq")
 
-[node name="ColorRect" type="ColorRect" parent="Node2D3/Node2D3/Node2D2"]
+[node name="ColorRect" type="ColorRect" parent="Node2D3/Node2D3/Node2D2" unique_id=1796062856]
 offset_left = 148.0
 offset_top = 87.0
 offset_right = 319.0
 offset_bottom = 101.0
 
-[node name="ColorRect11" type="ColorRect" parent="Node2D3/Node2D3/Node2D2"]
+[node name="ColorRect11" type="ColorRect" parent="Node2D3/Node2D3/Node2D2" unique_id=1611284358]
 offset_left = 148.0
 offset_top = 103.0
 offset_right = 319.0
 offset_bottom = 117.0
 color = Color(0.738528, 0.353292, 0.310217, 1)
 
-[node name="ColorRect12" type="ColorRect" parent="Node2D3/Node2D3/Node2D2"]
+[node name="ColorRect12" type="ColorRect" parent="Node2D3/Node2D3/Node2D2" unique_id=583042685]
 offset_left = 148.0
 offset_top = 119.0
 offset_right = 319.0
 offset_bottom = 133.0
 color = Color(0.738528, 0.353292, 0.310217, 1)
 
-[node name="ColorRect13" type="ColorRect" parent="Node2D3/Node2D3/Node2D2"]
+[node name="ColorRect13" type="ColorRect" parent="Node2D3/Node2D3/Node2D2" unique_id=903511564]
 offset_left = 148.0
 offset_top = 135.0
 offset_right = 319.0
 offset_bottom = 149.0
 color = Color(0.738528, 0.353292, 0.310217, 1)
 
-[node name="Label2" type="Label" parent="Node2D3/Node2D3/Node2D2"]
+[node name="Label2" type="Label" parent="Node2D3/Node2D3/Node2D2" unique_id=79321461]
 offset_left = 150.0
 offset_top = 31.0
 offset_right = 317.0
@@ -1142,7 +1143,7 @@ theme_override_font_sizes/font_size = 17
 text = "SCORE"
 horizontal_alignment = 1
 
-[node name="Label3" type="Label" parent="Node2D3/Node2D3/Node2D2"]
+[node name="Label3" type="Label" parent="Node2D3/Node2D3/Node2D2" unique_id=1406899052]
 offset_left = 167.0
 offset_top = 86.0
 offset_right = 239.0
@@ -1153,7 +1154,7 @@ theme_override_font_sizes/font_size = 15
 text = "ROUND"
 horizontal_alignment = 2
 
-[node name="Label4" type="Label" parent="Node2D3/Node2D3/Node2D2"]
+[node name="Label4" type="Label" parent="Node2D3/Node2D3/Node2D2" unique_id=2025179765]
 offset_left = 155.0
 offset_top = 102.0
 offset_right = 227.0
@@ -1169,7 +1170,7 @@ theme_override_font_sizes/font_size = 12
 text = "TIME:"
 horizontal_alignment = 2
 
-[node name="Label5" type="Label" parent="Node2D3/Node2D3/Node2D2"]
+[node name="Label5" type="Label" parent="Node2D3/Node2D3/Node2D2" unique_id=1526061888]
 offset_left = 155.0
 offset_top = 118.0
 offset_right = 227.0
@@ -1185,7 +1186,7 @@ theme_override_font_sizes/font_size = 12
 text = "DEFEATS:"
 horizontal_alignment = 2
 
-[node name="Label6" type="Label" parent="Node2D3/Node2D3/Node2D2"]
+[node name="Label6" type="Label" parent="Node2D3/Node2D3/Node2D2" unique_id=42917715]
 offset_left = 155.0
 offset_top = 134.0
 offset_right = 227.0
@@ -1201,7 +1202,7 @@ theme_override_font_sizes/font_size = 12
 text = "COINS:"
 horizontal_alignment = 2
 
-[node name="RoundNum" type="Label" parent="Node2D3/Node2D3/Node2D2"]
+[node name="RoundNum" type="Label" parent="Node2D3/Node2D3/Node2D2" unique_id=1491888777]
 unique_name_in_owner = true
 offset_left = 250.0
 offset_top = 88.0
@@ -1212,7 +1213,7 @@ theme_override_fonts/font = ExtResource("8_xfd18")
 theme_override_font_sizes/font_size = 15
 text = "20"
 
-[node name="ScoreNum" type="Label" parent="Node2D3/Node2D3/Node2D2"]
+[node name="ScoreNum" type="Label" parent="Node2D3/Node2D3/Node2D2" unique_id=764007552]
 unique_name_in_owner = true
 offset_left = 150.0
 offset_top = 54.0
@@ -1224,7 +1225,7 @@ theme_override_font_sizes/font_size = 28
 text = "9999999"
 horizontal_alignment = 1
 
-[node name="TimeNum" type="Label" parent="Node2D3/Node2D3/Node2D2"]
+[node name="TimeNum" type="Label" parent="Node2D3/Node2D3/Node2D2" unique_id=1023572926]
 unique_name_in_owner = true
 offset_left = 238.0
 offset_top = 105.0
@@ -1241,7 +1242,7 @@ theme_override_fonts/font = ExtResource("8_xfd18")
 theme_override_font_sizes/font_size = 12
 text = "00:00:00"
 
-[node name="DefeatsNum" type="Label" parent="Node2D3/Node2D3/Node2D2"]
+[node name="DefeatsNum" type="Label" parent="Node2D3/Node2D3/Node2D2" unique_id=427978567]
 unique_name_in_owner = true
 offset_left = 238.0
 offset_top = 121.0
@@ -1258,7 +1259,7 @@ theme_override_fonts/font = ExtResource("8_xfd18")
 theme_override_font_sizes/font_size = 12
 text = "9999999"
 
-[node name="CoinsNum" type="Label" parent="Node2D3/Node2D3/Node2D2"]
+[node name="CoinsNum" type="Label" parent="Node2D3/Node2D3/Node2D2" unique_id=1904343303]
 unique_name_in_owner = true
 offset_left = 238.0
 offset_top = 137.0
@@ -1275,10 +1276,10 @@ theme_override_fonts/font = ExtResource("8_xfd18")
 theme_override_font_sizes/font_size = 12
 text = "9999999"
 
-[node name="Node2D6" type="Node2D" parent="Node2D3/Node2D3"]
+[node name="Node2D6" type="Node2D" parent="Node2D3/Node2D3" unique_id=1041565227]
 scale = Vector2(0.25, 0.25)
 
-[node name="ReturnButton" type="PanelContainer" parent="Node2D3/Node2D3/Node2D6"]
+[node name="ReturnButton" type="PanelContainer" parent="Node2D3/Node2D3/Node2D6" unique_id=2140804622]
 unique_name_in_owner = true
 offset_left = 608.0
 offset_top = 1084.0
@@ -1289,14 +1290,14 @@ pivot_offset = Vector2(326, 76)
 mouse_filter = 2
 theme = SubResource("Theme_xn4sn")
 
-[node name="ColorRect" type="ColorRect" parent="Node2D3/Node2D3/Node2D6/ReturnButton"]
+[node name="ColorRect" type="ColorRect" parent="Node2D3/Node2D3/Node2D6/ReturnButton" unique_id=1075602481]
 layout_mode = 2
 mouse_filter = 2
 color = Color(0.945098, 0.760784, 0.729412, 0.145098)
 
-[node name="Node2D" type="Node2D" parent="Node2D3/Node2D3/Node2D6/ReturnButton"]
+[node name="Node2D" type="Node2D" parent="Node2D3/Node2D3/Node2D6/ReturnButton" unique_id=1551855983]
 
-[node name="Label" type="Label" parent="Node2D3/Node2D3/Node2D6/ReturnButton/Node2D"]
+[node name="Label" type="Label" parent="Node2D3/Node2D3/Node2D6/ReturnButton/Node2D" unique_id=795224700]
 offset_left = 156.0
 offset_top = 48.0
 offset_right = 606.0
@@ -1306,7 +1307,7 @@ theme_override_font_sizes/font_size = 50
 text = "RETURN TO TITLE"
 horizontal_alignment = 1
 
-[node name="Label2" type="Label" parent="Node2D3/Node2D3/Node2D6/ReturnButton/Node2D"]
+[node name="Label2" type="Label" parent="Node2D3/Node2D3/Node2D6/ReturnButton/Node2D" unique_id=286021510]
 visible = false
 offset_top = 52.0
 offset_right = 200.0
@@ -1316,7 +1317,7 @@ text = "TO
 TITLE"
 horizontal_alignment = 1
 
-[node name="Line2D" type="Line2D" parent="Node2D3/Node2D3/Node2D6/ReturnButton/Node2D"]
+[node name="Line2D" type="Line2D" parent="Node2D3/Node2D3/Node2D6/ReturnButton/Node2D" unique_id=1531207279]
 texture_repeat = 2
 material = SubResource("ShaderMaterial_aipcn")
 points = PackedVector2Array(0, 0, 652, 0, 652, 152, 0, 152)
@@ -1329,7 +1330,7 @@ joint_mode = 2
 begin_cap_mode = 2
 end_cap_mode = 2
 
-[node name="TextureRect" type="TextureRect" parent="Node2D3/Node2D3/Node2D6/ReturnButton/Node2D"]
+[node name="TextureRect" type="TextureRect" parent="Node2D3/Node2D3/Node2D6/ReturnButton/Node2D" unique_id=1201535771]
 offset_left = 52.0
 offset_top = 4.0
 offset_right = 156.0
@@ -1338,20 +1339,18 @@ mouse_filter = 2
 texture = ExtResource("14_igbwd")
 expand_mode = 1
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="Node2D3/Node2D3/Node2D6/ReturnButton"]
-libraries = {
-"": SubResource("AnimationLibrary_hkbya")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Node2D3/Node2D3/Node2D6/ReturnButton" unique_id=185806805]
+libraries/ = SubResource("AnimationLibrary_hkbya")
 
-[node name="TimeCount" type="Timer" parent="."]
+[node name="TimeCount" type="Timer" parent="." unique_id=1717895446]
 
-[node name="Node2D2" type="Node2D" parent="."]
+[node name="Node2D2" type="Node2D" parent="." unique_id=1802101391]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(320, 160)
 scale = Vector2(1e-05, 1e-05)
 skew = 0.0349066
 
-[node name="Label" type="Label" parent="Node2D2"]
+[node name="Label" type="Label" parent="Node2D2" unique_id=2073828411]
 offset_left = -312.937
 offset_top = -170.104
 offset_right = 327.063
@@ -1368,12 +1367,10 @@ text = "VICTORY"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="Node2D2"]
-libraries = {
-"": SubResource("AnimationLibrary_r40bg")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Node2D2" unique_id=1126296771]
+libraries/ = SubResource("AnimationLibrary_r40bg")
 
-[node name="player_id_input" parent="." instance=ExtResource("18_j6166")]
+[node name="player_id_input" parent="." unique_id=281860864 instance=ExtResource("18_j6166")]
 can_input = true
 
 [connection signal="timeout" from="TimeCount" to="." method="_on_time_count_timeout"]

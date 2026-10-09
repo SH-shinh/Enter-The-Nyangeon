@@ -1,14 +1,13 @@
-[gd_scene load_steps=39 format=3 uid="uid://1th2ey27vgac"]
+[gd_scene format=3 uid="uid://1th2ey27vgac"]
 
-[ext_resource type="Script" path="res://ui/game_ui.gd" id="1_0k31i"]
-[ext_resource type="Script" path="res://script/auto_text.gd" id="5_nnofx"]
+[ext_resource type="Script" uid="uid://ttmgr0objxfk" path="res://ui/game_ui.gd" id="1_0k31i"]
+[ext_resource type="Script" uid="uid://dkwqr377cp5yf" path="res://script/auto_text.gd" id="5_nnofx"]
 [ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="6_lvkqd"]
 [ext_resource type="Texture2D" uid="uid://qxdl6g1po36p" path="res://sprites/item/coin.png" id="8_2qj50"]
 [ext_resource type="PackedScene" uid="uid://c7nl2ikg66rdb" path="res://ui/virtual_joypad.tscn" id="8_7djh1"]
-[ext_resource type="Texture2D" uid="uid://ds8c5ssu2cqt7" path="res://sprites/player/momoi/momoi_picture.png" id="9_1hl3j"]
-[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="9_7nctg"]
+[ext_resource type="Shader" uid="uid://bqypa5578tm8a" path="res://shaders/sprite_outline.gdshader" id="9_7nctg"]
 [ext_resource type="Texture2D" uid="uid://dq3d42f42dmmy" path="res://ui/ammo.png" id="12_g3myh"]
-[ext_resource type="Script" path="res://ui/AmmoPosition.gd" id="12_xvfck"]
+[ext_resource type="Script" uid="uid://cwwu3eflmqvlj" path="res://ui/AmmoPosition.gd" id="12_xvfck"]
 
 [sub_resource type="Gradient" id="Gradient_gei1w"]
 offsets = PackedFloat32Array(0.454545, 0.88961)
@@ -45,6 +44,7 @@ shader = ExtResource("9_7nctg")
 shader_parameter/outline_width = 0.0
 shader_parameter/outline_color = Color(60, 60, 60, 1)
 shader_parameter/flash_opacity = 0.0
+shader_parameter/outline_glow_strength = 20.0
 
 [sub_resource type="Gradient" id="Gradient_43u6i"]
 offsets = PackedFloat32Array(1)
@@ -60,6 +60,7 @@ shader = ExtResource("9_7nctg")
 shader_parameter/outline_width = 0.0
 shader_parameter/outline_color = Color(2, 2, 2, 1)
 shader_parameter/flash_opacity = 1.0
+shader_parameter/outline_glow_strength = 20.0
 
 [sub_resource type="Gradient" id="Gradient_n3mwk"]
 offsets = PackedFloat32Array(0)
@@ -84,6 +85,7 @@ shader = ExtResource("9_7nctg")
 shader_parameter/outline_width = 1.0
 shader_parameter/outline_color = Color(1, 1, 1, 1)
 shader_parameter/flash_opacity = 0.0
+shader_parameter/outline_glow_strength = 20.0
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_8dfw8"]
 atlas = ExtResource("8_2qj50")
@@ -172,23 +174,19 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_vltlb")
 }],
-"loop": true,
+"loop": 1,
 "name": &"default",
 "speed": 16.0
 }]
 
-[sub_resource type="Environment" id="Environment_n4i6l"]
-background_mode = 3
-glow_enabled = true
-
-[node name="GameUI" type="CanvasLayer" groups=["GameUI"]]
+[node name="GameUI" type="CanvasLayer" unique_id=1487541693 groups=["GameUI"]]
 offset = Vector2(9, 6)
 transform = Transform2D(1, 0, 0, 1, 9, 6)
 script = ExtResource("1_0k31i")
 
-[node name="Node2D" type="Node2D" parent="."]
+[node name="Node2D" type="Node2D" parent="." unique_id=518937973]
 
-[node name="TextureRect" type="TextureRect" parent="Node2D"]
+[node name="TextureRect" type="TextureRect" parent="Node2D" unique_id=1098577634]
 offset_top = 88.0
 offset_right = 186.0
 offset_bottom = 121.0
@@ -198,53 +196,53 @@ texture = SubResource("GradientTexture2D_2fyf0")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="ColorRect3" type="TextureRect" parent="."]
+[node name="ColorRect3" type="TextureRect" parent="." unique_id=954313382]
 offset_top = 27.0
 offset_right = 186.0
 offset_bottom = 55.0
 texture = SubResource("GradientTexture2D_rwjku")
 
-[node name="ColorRect2" type="ColorRect" parent="."]
+[node name="ColorRect2" type="ColorRect" parent="." unique_id=973402194]
 offset_top = 29.0
 offset_right = 50.0
 offset_bottom = 47.0
 color = Color(0.14902, 0.14902, 0.14902, 1)
 
-[node name="ColorRect" type="ColorRect" parent="."]
+[node name="ColorRect" type="ColorRect" parent="." unique_id=811936699]
 offset_top = 29.0
 offset_right = 49.0
 offset_bottom = 47.0
 color = Color(0.690196, 0.92549, 0.278431, 1)
 
-[node name="Node2D2" type="Node2D" parent="."]
+[node name="Node2D2" type="Node2D" parent="." unique_id=547540060]
 
-[node name="ColorRect" type="ColorRect" parent="Node2D2"]
+[node name="ColorRect" type="ColorRect" parent="Node2D2" unique_id=159089072]
 offset_top = 47.0
 offset_right = 183.0
 offset_bottom = 53.0
 color = Color(0.14902, 0.14902, 0.14902, 1)
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1186698025]
 offset_left = 50.0
 offset_top = 29.0
 offset_right = 184.0
 offset_bottom = 47.0
 
-[node name="HpValue" type="TextureRect" parent="MarginContainer"]
+[node name="HpValue" type="TextureRect" parent="MarginContainer" unique_id=1787922192]
 layout_mode = 2
 
-[node name="TextureRect" type="TextureRect" parent="MarginContainer/HpValue"]
+[node name="TextureRect" type="TextureRect" parent="MarginContainer/HpValue" unique_id=1421921655]
 show_behind_parent = true
 layout_mode = 0
 offset_right = 133.0
 offset_bottom = 18.0
 texture = SubResource("GradientTexture2D_882il")
 
-[node name="HP_BAR" type="TextureProgressBar" parent="MarginContainer/HpValue"]
+[node name="HP_BAR" type="TextureProgressBar" parent="MarginContainer/HpValue" unique_id=1923677269]
 unique_name_in_owner = true
 show_behind_parent = true
 material = SubResource("ShaderMaterial_7id10")
-layout_mode = 2
+layout_mode = 0
 offset_right = 133.0
 offset_bottom = 18.0
 max_value = 1.0
@@ -252,7 +250,7 @@ step = 0.0
 value = 0.72
 texture_progress = SubResource("GradientTexture2D_q8o5j")
 
-[node name="HP_BAR_3" type="TextureProgressBar" parent="MarginContainer/HpValue/HP_BAR"]
+[node name="HP_BAR_3" type="TextureProgressBar" parent="MarginContainer/HpValue/HP_BAR" unique_id=1591268696]
 unique_name_in_owner = true
 show_behind_parent = true
 material = SubResource("ShaderMaterial_i6qlm")
@@ -264,7 +262,7 @@ step = 0.0
 value = 0.83
 texture_progress = SubResource("GradientTexture2D_mwv4o")
 
-[node name="Temporary_HP_BAR2" type="TextureProgressBar" parent="MarginContainer/HpValue/HP_BAR"]
+[node name="Temporary_HP_BAR2" type="TextureProgressBar" parent="MarginContainer/HpValue/HP_BAR" unique_id=1496938624]
 unique_name_in_owner = true
 show_behind_parent = true
 layout_mode = 0
@@ -275,7 +273,7 @@ step = 0.0
 value = 0.79
 texture_progress = SubResource("GradientTexture2D_nhiaj")
 
-[node name="Temporary_HP_BAR" type="TextureProgressBar" parent="MarginContainer/HpValue/HP_BAR"]
+[node name="Temporary_HP_BAR" type="TextureProgressBar" parent="MarginContainer/HpValue/HP_BAR" unique_id=1227277397]
 unique_name_in_owner = true
 layout_mode = 0
 offset_right = 111.0
@@ -285,7 +283,7 @@ step = 0.0
 value = 0.215
 texture_progress = SubResource("GradientTexture2D_nhiaj")
 
-[node name="HP_VAL" type="Label" parent="MarginContainer/HpValue"]
+[node name="HP_VAL" type="Label" parent="MarginContainer/HpValue" unique_id=1183293518]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 8
@@ -311,7 +309,7 @@ theme_override_font_sizes/font_size = 10
 text = "60/60"
 horizontal_alignment = 1
 
-[node name="T_HP_VAL" type="Label" parent="MarginContainer/HpValue"]
+[node name="T_HP_VAL" type="Label" parent="MarginContainer/HpValue" unique_id=1330361200]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 8
@@ -337,7 +335,7 @@ theme_override_font_sizes/font_size = 10
 text = "+150"
 horizontal_alignment = 2
 
-[node name="Life_value" type="Label" parent="MarginContainer/HpValue"]
+[node name="Life_value" type="Label" parent="MarginContainer/HpValue" unique_id=1472518298]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
@@ -363,7 +361,7 @@ theme_override_fonts/font = ExtResource("6_lvkqd")
 theme_override_font_sizes/font_size = 9
 text = "x3"
 
-[node name="TextureRect" type="ColorRect" parent="."]
+[node name="TextureRect" type="ColorRect" parent="." unique_id=618739092]
 clip_children = 1
 texture_filter = 2
 offset_top = -5.0
@@ -371,24 +369,23 @@ offset_right = 195.0
 offset_bottom = 201.0
 scale = Vector2(0.252, 0.252)
 
-[node name="PlayerIcon" type="Sprite2D" parent="TextureRect"]
+[node name="PlayerIcon" type="Sprite2D" parent="TextureRect" unique_id=24903163]
 unique_name_in_owner = true
 position = Vector2(67.4603, 436.508)
-texture = ExtResource("9_1hl3j")
 flip_h = true
 hframes = 4
 
-[node name="BuffBox" type="MarginContainer" parent="."]
+[node name="BuffBox" type="MarginContainer" parent="." unique_id=1727414121]
 offset_left = 50.0
 offset_top = -5.0
 offset_right = 184.0
 offset_bottom = 20.0
 
-[node name="HBoxContainer" type="HBoxContainer" parent="BuffBox"]
+[node name="HBoxContainer" type="HBoxContainer" parent="BuffBox" unique_id=1442226629]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="PlayerName" type="Label" parent="."]
+[node name="PlayerName" type="Label" parent="." unique_id=2130047553]
 unique_name_in_owner = true
 offset_top = 51.0
 offset_right = 114.0
@@ -403,7 +400,7 @@ autowrap_mode = 1
 script = ExtResource("5_nnofx")
 base_size_y = 14.0
 
-[node name="WeaponName" type="Label" parent="."]
+[node name="WeaponName" type="Label" parent="." unique_id=434054087]
 unique_name_in_owner = true
 offset_left = 1.0
 offset_top = 61.0
@@ -423,12 +420,12 @@ script = ExtResource("5_nnofx")
 base_font_size = 10
 base_size_y = 11.0
 
-[node name="AmmoPosition" type="Node2D" parent="."]
+[node name="AmmoPosition" type="Node2D" parent="." unique_id=1745618910]
 position = Vector2(-9, -6)
 scale = Vector2(0.9, 0.9)
 script = ExtResource("12_xvfck")
 
-[node name="Ammo" type="Label" parent="AmmoPosition"]
+[node name="Ammo" type="Label" parent="AmmoPosition" unique_id=417457618]
 unique_name_in_owner = true
 offset_left = 111.111
 offset_top = 75.5556
@@ -446,7 +443,7 @@ theme_override_font_sizes/font_size = 12
 text = "12/15"
 horizontal_alignment = 2
 
-[node name="Ammo2" type="Label" parent="AmmoPosition"]
+[node name="Ammo2" type="Label" parent="AmmoPosition" unique_id=168411113]
 unique_name_in_owner = true
 offset_left = 168.889
 offset_top = 75.5556
@@ -464,21 +461,21 @@ theme_override_font_sizes/font_size = 12
 text = "|AMMO|"
 horizontal_alignment = 2
 
-[node name="support_ui" type="Node2D" parent="."]
+[node name="support_ui" type="Node2D" parent="." unique_id=538652227]
 
-[node name="support_box" type="MarginContainer" parent="support_ui"]
+[node name="support_box" type="MarginContainer" parent="support_ui" unique_id=30590761]
 offset_top = 89.0
 offset_right = 187.0
 offset_bottom = 113.0
 mouse_filter = 2
 
-[node name="support_box" type="VBoxContainer" parent="support_ui/support_box"]
+[node name="support_box" type="VBoxContainer" parent="support_ui/support_box" unique_id=1428384885]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 0
 
-[node name="Control" type="Control" parent="."]
+[node name="Control" type="Control" parent="." unique_id=1144655909]
 layout_mode = 3
 anchors_preset = 0
 offset_left = 20.0
@@ -487,7 +484,7 @@ offset_right = 60.0
 offset_bottom = 114.0
 mouse_filter = 2
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Control"]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Control" unique_id=347641645]
 material = SubResource("ShaderMaterial_liufe")
 position = Vector2(-15, 8)
 scale = Vector2(0.65, 0.65)
@@ -495,7 +492,7 @@ sprite_frames = SubResource("SpriteFrames_7r7ql")
 autoplay = "default"
 frame_progress = 0.498841
 
-[node name="Coin2" type="Label" parent="Control"]
+[node name="Coin2" type="Label" parent="Control" unique_id=1499335039]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = -1
@@ -515,7 +512,7 @@ theme_override_font_sizes/font_size = 10
 text = "X"
 metadata/_edit_use_anchors_ = true
 
-[node name="Coin" type="Label" parent="Control"]
+[node name="Coin" type="Label" parent="Control" unique_id=945890571]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = -1
@@ -536,9 +533,9 @@ theme_override_fonts/font = ExtResource("6_lvkqd")
 theme_override_font_sizes/font_size = 12
 text = "9999999"
 
-[node name="TextureRect" type="TextureRect" parent="Control"]
+[node name="TextureRect" type="TextureRect" parent="Control" unique_id=1067614435]
 visible = false
-layout_mode = 2
+layout_mode = 0
 offset_left = 36.0
 offset_top = -23.4737
 offset_right = 65.0
@@ -546,14 +543,11 @@ offset_bottom = -0.473701
 scale = Vector2(1, 0.92)
 texture = ExtResource("12_g3myh")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_n4i6l")
-
-[node name="Timer" type="Timer" parent="."]
+[node name="Timer" type="Timer" parent="." unique_id=435367621]
 wait_time = 0.5
 one_shot = true
 
-[node name="VirtualJoypad" parent="." instance=ExtResource("8_7djh1")]
+[node name="VirtualJoypad" parent="." unique_id=1466035227 instance=ExtResource("8_7djh1")]
 visible = false
 
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

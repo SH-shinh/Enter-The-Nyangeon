@@ -1,6 +1,6 @@
 extends Node2D
 
-@export var body: Node
+@export var health_component: HealthComponent
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
 @onready var label: Label = $Label
 
@@ -13,14 +13,14 @@ var now_dps_count: bool = false
 
 func _ready() -> void:
 	GameEvents.global_time_count.connect(time_count)
-	body.hurt_count.connect(dps_count)
+	health_component.damage_taken.connect(dps_count)
 
-func dps_count(hurt_damage: int):
+func dps_count(actual_damage: int, damage_data: DamageData):
 	if now_dps_count == false:
 		now_dps_count = true
 		animation_player.play("new_animation")
 	dps_count_cd = 30
-	dps_value += hurt_damage
+	dps_value += actual_damage
 
 func time_count():
 	if now_dps_count == true:

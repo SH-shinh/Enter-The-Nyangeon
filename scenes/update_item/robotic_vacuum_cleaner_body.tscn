@@ -1,9 +1,9 @@
-[gd_scene load_steps=11 format=3 uid="uid://dj2sj81jqmul6"]
+[gd_scene format=3 uid="uid://dj2sj81jqmul6"]
 
-[ext_resource type="Script" path="res://scenes/update_item/robotic_vacuum_cleaner_body.gd" id="1_x50r6"]
-[ext_resource type="Shader" path="res://shaders/screen_outline.gdshader" id="2_ypwd8"]
-[ext_resource type="Texture2D" uid="uid://bkfa0k2lb4m4k" path="res://sprites/update_item/robotic_vacuum_cleaner_5.png" id="3_3q6em"]
-[ext_resource type="Script" path="res://scenes/update_item/robottic_vacuum_cleaner_sprite.gd" id="4_2hd7a"]
+[ext_resource type="Script" uid="uid://6c3n415o68s5" path="res://scenes/update_item/robotic_vacuum_cleaner_body.gd" id="1_tws7s"]
+[ext_resource type="Shader" uid="uid://cmu3hnm13h23n" path="res://shaders/screen_outline.gdshader" id="2_6us5o"]
+[ext_resource type="Texture2D" uid="uid://bkfa0k2lb4m4k" path="res://sprites/update_item/robotic_vacuum_cleaner_5.png" id="3_utx52"]
+[ext_resource type="Script" uid="uid://f48k56wwqstc" path="res://scenes/update_item/robottic_vacuum_cleaner_sprite.gd" id="4_b5nrs"]
 
 [sub_resource type="Curve" id="Curve_55juh"]
 _data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.433333, 0.945055), -0.0366298, -0.0366298, 0, 0, Vector2(1, 0), -4.83517, 0.0, 0, 0]
@@ -19,6 +19,7 @@ emission_ring_axis = Vector3(0, 0, 1)
 emission_ring_height = 0.0
 emission_ring_radius = 15.0
 emission_ring_inner_radius = 15.0
+emission_ring_cone_angle = 90.0
 inherit_velocity_ratio = 0.5
 spread = 0.0
 angular_velocity_min = -180.0
@@ -30,8 +31,8 @@ scale_max = 3.0
 scale_curve = SubResource("CurveTexture_vclaf")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_uxr07"]
-shader = ExtResource("2_ypwd8")
-shader_parameter/outline_width = 2.0
+shader = ExtResource("2_6us5o")
+shader_parameter/outline_width = 1.0
 shader_parameter/outline_color = Color(1, 8, 10, 1)
 shader_parameter/flash_opacity = 0.0
 
@@ -41,39 +42,39 @@ radius = 250.0
 [sub_resource type="CircleShape2D" id="CircleShape2D_5g05b"]
 radius = 36.0
 
-[node name="RoboticVacuumCleanerBody" type="CharacterBody2D" groups=["RoboticCleaner"]]
-script = ExtResource("1_x50r6")
+[node name="RoboticVacuumCleanerBody" type="CharacterBody2D" unique_id=1602352299 groups=["RoboticCleaner"]]
+script = ExtResource("1_tws7s")
 
-[node name="Node2D" type="Node2D" parent="."]
+[node name="Node2D" type="Node2D" parent="." unique_id=1947016198]
 position = Vector2(0, 9)
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="Node2D"]
+[node name="GPUParticles2D" type="GPUParticles2D" parent="Node2D" unique_id=1989043772]
 modulate = Color(1, 5, 6, 1)
 amount = 12
 process_material = SubResource("ParticleProcessMaterial_f4gu4")
 
-[node name="CanvasGroup" type="CanvasGroup" parent="Node2D"]
+[node name="CanvasGroup" type="CanvasGroup" parent="Node2D" unique_id=806705856]
 material = SubResource("ShaderMaterial_uxr07")
 
-[node name="Sprite2D" type="Sprite2D" parent="Node2D/CanvasGroup"]
-texture = ExtResource("3_3q6em")
+[node name="Sprite2D" type="Sprite2D" parent="Node2D/CanvasGroup" unique_id=414208224]
+texture = ExtResource("3_utx52")
 hframes = 5
-script = ExtResource("4_2hd7a")
+script = ExtResource("4_b5nrs")
 rotate_sprites = true
 
-[node name="FindBox" type="Area2D" parent="Node2D"]
+[node name="FindBox" type="Area2D" parent="Node2D" unique_id=1280953691]
 visible = false
 collision_layer = 0
 collision_mask = 64
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Node2D/FindBox"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Node2D/FindBox" unique_id=1913383770]
 shape = SubResource("CircleShape2D_mq5pm")
 
-[node name="PickBox" type="Area2D" parent="Node2D"]
+[node name="PickBox" type="Area2D" parent="Node2D" unique_id=56744429]
 collision_layer = 0
 collision_mask = 64
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Node2D/PickBox"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Node2D/PickBox" unique_id=1244135349]
 shape = SubResource("CircleShape2D_5g05b")
 
 [connection signal="get_target" from="." to="." method="_on_get_target"]

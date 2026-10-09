@@ -1,24 +1,15 @@
-[gd_scene load_steps=17 format=3 uid="uid://bqttxcv5qb727"]
+[gd_scene format=3 uid="uid://bqttxcv5qb727"]
 
-[ext_resource type="Script" path="res://scenes/bullet/megu_bullet.gd" id="1_jp8k8"]
+[ext_resource type="Script" uid="uid://bspjbjiqghwp4" path="res://scenes/bullet/megu_bullet.gd" id="1_jp8k8"]
 [ext_resource type="Resource" uid="uid://ddlwsbdn8hn6j" path="res://resources/buff/enemy_buff/fire_dot.tres" id="2_5wx3u"]
-[ext_resource type="Texture2D" uid="uid://brv03dvygp4nl" path="res://sprites/particle/smoke.png" id="3_bg6c1"]
+[ext_resource type="Texture2D" uid="uid://dcdfpkuwxmvxf" path="res://sprites/particle/fire-0001.png" id="3_qtimd"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_3dik1"]
 blend_mode = 1
-
-[sub_resource type="Gradient" id="Gradient_muk64"]
-colors = PackedColorArray(0.953541, 0.601758, 7.70092e-07, 1, 1, 0.439843, 0.533998, 1)
-
-[sub_resource type="GradientTexture1D" id="GradientTexture1D_peupp"]
-gradient = SubResource("Gradient_muk64")
-
-[sub_resource type="Gradient" id="Gradient_kqux8"]
-offsets = PackedFloat32Array(0.272727, 1)
-colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
-
-[sub_resource type="GradientTexture1D" id="GradientTexture1D_na0vc"]
-gradient = SubResource("Gradient_kqux8")
+particles_animation = true
+particles_anim_h_frames = 12
+particles_anim_v_frames = 1
+particles_anim_loop = true
 
 [sub_resource type="Curve" id="Curve_exngh"]
 _data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -1.99267, 0.0, 0, 0]
@@ -30,20 +21,32 @@ curve = SubResource("Curve_exngh")
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_t2bqm"]
 particle_flag_disable_z = true
 emission_shape_scale = Vector3(5, 1, 1)
-angle_min = -45.0
-angle_max = 45.0
+angle_min = -14.9999895
+angle_max = 15.0000105
 direction = Vector3(0, -1, 0)
 spread = 10.0
-initial_velocity_min = 11.24
-initial_velocity_max = 179.78
+initial_velocity_min = 10.0
+initial_velocity_max = 170.0
 gravity = Vector3(0, -500, 0)
-scale_min = 0.8
-scale_max = 1.2
+scale_min = 2.0
+scale_max = 3.0
 scale_curve = SubResource("CurveTexture_ca7vr")
-color = Color(1, 0.510185, 0.25415, 1)
-color_ramp = SubResource("GradientTexture1D_na0vc")
-color_initial_ramp = SubResource("GradientTexture1D_peupp")
 hue_variation_max = 0.05
+anim_speed_min = 1.0
+anim_speed_max = 1.0
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_c4yrn"]
+particles_animation = true
+particles_anim_h_frames = 12
+particles_anim_v_frames = 1
+particles_anim_loop = true
+
+[sub_resource type="Gradient" id="Gradient_kqux8"]
+offsets = PackedFloat32Array(0.272727, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_na0vc"]
+gradient = SubResource("Gradient_kqux8")
 
 [sub_resource type="Curve" id="Curve_yjuuo"]
 _data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -1.26374, 0.0, 0, 0]
@@ -55,54 +58,48 @@ curve = SubResource("Curve_yjuuo")
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_6daev"]
 particle_flag_disable_z = true
 emission_shape_scale = Vector3(5, 1, 1)
-angle_min = -45.0
-angle_max = 45.0
+angle_min = -14.9999895
+angle_max = 15.0000105
 direction = Vector3(0, -1, 0)
 spread = 20.0
-initial_velocity_min = 6.14
-initial_velocity_max = 42.02
+initial_velocity_min = 20.0
+initial_velocity_max = 40.0
 gravity = Vector3(0, -500, 0)
-scale_min = 0.4
-scale_max = 0.8
+scale_max = 1.5
 scale_curve = SubResource("CurveTexture_1i6a6")
+color = Color(18.892157, 18.892157, 18.892157, 1)
 color_ramp = SubResource("GradientTexture1D_na0vc")
 hue_variation_max = 0.05
+anim_speed_min = 1.0
+anim_speed_max = 1.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_k2cyk"]
 radius = 7.0
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_hqkud"]
-radius = 7.0
-
-[node name="megu_bullet" type="CharacterBody2D" groups=["PlayerBullet"]]
+[node name="megu_bullet" type="Area2D" unique_id=1719100281 groups=["PlayerBullet"]]
 z_index = 2
-collision_layer = 4
-collision_mask = 2
-motion_mode = 1
+collision_layer = 32772
+collision_mask = 16384
 script = ExtResource("1_jp8k8")
 enemy_buff = ExtResource("2_5wx3u")
 slow_down = true
 slow_time = 1.0
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=934281217]
 material = SubResource("CanvasItemMaterial_3dik1")
+texture = ExtResource("3_qtimd")
+lifetime = 0.2
 process_material = SubResource("ParticleProcessMaterial_t2bqm")
-texture = ExtResource("3_bg6c1")
-lifetime = 0.2
 
-[node name="GPUParticles2D2" type="GPUParticles2D" parent="."]
+[node name="GPUParticles2D2" type="GPUParticles2D" parent="." unique_id=1430895522]
+material = SubResource("CanvasItemMaterial_c4yrn")
+texture = ExtResource("3_qtimd")
+lifetime = 0.2
 process_material = SubResource("ParticleProcessMaterial_6daev")
-texture = ExtResource("3_bg6c1")
-lifetime = 0.2
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=866276433]
 shape = SubResource("CircleShape2D_k2cyk")
 
-[node name="Area2D" type="Area2D" parent="."]
-collision_layer = 0
-collision_mask = 1032
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
-shape = SubResource("CircleShape2D_hqkud")
-
-[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
+[node name="RayCast2D" type="RayCast2D" parent="." unique_id=1848724742]
+target_position = Vector2(7, 0)
+collision_mask = 2

@@ -11,7 +11,8 @@ var num: float
 
 var on_touch: bool = false
 
-var color_group: Array = [Color(0.159, 0.27, 0.419), Color(0.567, 0.399, 0.116), Color(0.96, 0.38, 0.535)]
+# 稀有度配色统一取自 AbilityUpgrade.RARITY_COLORS
+var color_group: Array = AbilityUpgrade.RARITY_COLORS
 
 @onready var texture_rect: TextureRect = $%TextureRect
 @onready var name_label: Label = $%NameLabel
@@ -44,7 +45,7 @@ func _auto_text():
 			forward.set("theme_override_font_sizes/font_size", new_font)
 			negative.set("theme_override_font_sizes/font_size", new_font)
 
-func _process(delta):
+func _process(_delta):
 	if on_select == true:
 		if on_touch == false:
 			look_at = (get_global_mouse_position() - (self.global_position + Vector2(75,95))).normalized().angle() + PI/2
@@ -79,24 +80,7 @@ func set_ability_upgrade(upgrade:AbilityUpgrade):
 
 func on_gui_input(event: InputEvent):
 	if event as InputEventScreenTouch and event.pressed:
-		if on_touch == false:
-			if can_select == true:
-				
-				GameEvents.emit_player_card_touch()
-				await get_tree().create_timer(0.1).timeout
-				on_touch = true
-				
-				SoundManager.play_sfx("ButtonSounds2")
-				$SelectCardAnim.play("select_enter")
-				await  get_tree().create_timer(0.1).timeout
-				on_select = true
-		else:
-			if can_select == true and on_select == true:
-				SoundManager.play_sfx("ButtonSounds")
-				selected.emit()
-				GameEvents.emit_on_selected()
-				on_select = false
-				$SelectCardAnim.play("selected")
+		button_pressed()
 	
 	if event.is_action_pressed("shoot") and can_select == true and on_select == true:
 		SoundManager.play_sfx("ButtonSounds")
@@ -104,6 +88,26 @@ func on_gui_input(event: InputEvent):
 		GameEvents.emit_on_selected()
 		on_select = false
 		$SelectCardAnim.play("selected")
+
+func button_pressed():
+	if on_touch == false:
+		if can_select == true:
+			
+			GameEvents.emit_player_card_touch()
+			await get_tree().create_timer(0.1).timeout
+			on_touch = true
+			
+			SoundManager.play_sfx("ButtonSounds2")
+			$SelectCardAnim.play("select_enter")
+			await  get_tree().create_timer(0.1).timeout
+			on_select = true
+	else:
+		if can_select == true and on_select == true:
+			SoundManager.play_sfx("ButtonSounds")
+			selected.emit()
+			GameEvents.emit_on_selected()
+			on_select = false
+			$SelectCardAnim.play("selected")
 
 func card_dis():
 	$SelectCardAnim.play("discard")

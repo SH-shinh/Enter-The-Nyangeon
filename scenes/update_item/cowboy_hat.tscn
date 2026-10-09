@@ -1,6 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://chcls4o4vp0sh"]
+[gd_scene format=3 uid="uid://chcls4o4vp0sh"]
 
-[ext_resource type="Script" path="res://scenes/update_item/cowboy_hat.gd" id="1_2lsv8"]
+[ext_resource type="Script" uid="uid://gsokxer4s221" path="res://scenes/update_item/cowboy_hat.gd" id="1_2lsv8"]
 [ext_resource type="Resource" uid="uid://bwxyvlrn2eu1a" path="res://resources/buff/player_buff/critical_sure_buff.tres" id="2_noeir"]
 
 [node name="CowboyHat" type="Node2D"]

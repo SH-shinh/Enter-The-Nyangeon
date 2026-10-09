@@ -1,0 +1,209 @@
+[gd_scene format=3 uid="uid://b3f8ws1vbq4so"]
+
+[ext_resource type="Script" uid="uid://cq0sc8t8m6n1t" path="res://scenes/player/chinatsu/chinatsu_melee.gd" id="1_w2bv2"]
+[ext_resource type="Script" uid="uid://dgqq5631n3u32" path="res://script/hit_box.gd" id="2_w2bv2"]
+[ext_resource type="Texture2D" uid="uid://doun5jcik2002" path="res://sprites/player/chinatsu/chinatsu_bag.png" id="3_r4j6e"]
+[ext_resource type="Texture2D" uid="uid://bktvrhtntrcqa" path="res://sprites/particle/bullet_smoke.png" id="3_vyc1b"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_o4lbv"]
+particles_animation = true
+particles_anim_h_frames = 4
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="Gradient" id="Gradient_mmdf3"]
+colors = PackedColorArray(1, 1, 1, 1, 0.752113, 0.51758, 0, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_ihuyg"]
+gradient = SubResource("Gradient_mmdf3")
+
+[sub_resource type="Gradient" id="Gradient_fdoju"]
+offsets = PackedFloat32Array(0, 0.745902, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0.606557, 0.606557, 0.606557, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_qymq3"]
+gradient = SubResource("Gradient_fdoju")
+
+[sub_resource type="Curve" id="Curve_s43ic"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.706667, 0.824176), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_2mf5o"]
+curve = SubResource("Curve_s43ic")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_p1jb4"]
+particle_flag_disable_z = true
+angle_max = 40.0
+inherit_velocity_ratio = 1.0
+spread = 121.348
+initial_velocity_min = 100.0
+initial_velocity_max = 150.0
+angular_velocity_min = 50.0
+angular_velocity_max = 300.0
+gravity = Vector3(0, 0, 0)
+linear_accel_min = -80.0
+linear_accel_max = -10.0
+scale_min = 0.8
+scale_curve = SubResource("CurveTexture_2mf5o")
+color_ramp = SubResource("GradientTexture1D_qymq3")
+color_initial_ramp = SubResource("GradientTexture1D_ihuyg")
+hue_variation_max = 0.01
+anim_speed_min = 2.0
+anim_speed_max = 3.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_wvhbo"]
+radius = 25.0
+
+[sub_resource type="Animation" id="Animation_r4j6e"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-5, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:show_behind_parent")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Sprite2D/HitBox/CollisionShape2D:disabled")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+
+[sub_resource type="Animation" id="Animation_w2bv2"]
+resource_name = "melee_anim"
+length = 0.3
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:position")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.06666667, 0.16666667, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(-5, 0), Vector2(25, -2), Vector2(-10, -3), Vector2(-5, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:rotation")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.13333334, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [0.0, 0.17453292519943295, 0.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:show_behind_parent")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.23333333),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [false, true, false]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Sprite2D/HitBox/CollisionShape2D:disabled")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.033333335, 0.23333333),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [true, false, true]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_vyc1b"]
+_data = {
+&"RESET": SubResource("Animation_r4j6e"),
+&"melee_anim": SubResource("Animation_w2bv2")
+}
+
+[node name="chinatsu_melee" type="Node2D" unique_id=1499904704]
+unique_name_in_owner = true
+script = ExtResource("1_w2bv2")
+can_r = false
+
+[node name="Timer" type="Timer" parent="." unique_id=885058904]
+wait_time = 0.2
+one_shot = true
+
+[node name="Timer2" type="Timer" parent="." unique_id=832186657]
+wait_time = 0.1
+one_shot = true
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=1357171602]
+material = SubResource("CanvasItemMaterial_o4lbv")
+position = Vector2(31, 0)
+emitting = false
+texture = ExtResource("3_vyc1b")
+lifetime = 0.2
+one_shot = true
+explosiveness = 0.9
+process_material = SubResource("ParticleProcessMaterial_p1jb4")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=27656621]
+position = Vector2(-5, 0)
+texture = ExtResource("3_r4j6e")
+
+[node name="HitBox" type="Area2D" parent="Sprite2D" unique_id=841754664]
+collision_layer = 32768
+collision_mask = 24576
+monitorable = false
+script = ExtResource("2_w2bv2")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitBox" unique_id=175577608]
+position = Vector2(0, -9)
+shape = SubResource("CircleShape2D_wvhbo")
+disabled = true
+one_way_collision_margin = 0.0
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=202331964]
+libraries/ = SubResource("AnimationLibrary_vyc1b")
+
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
+[connection signal="timeout" from="Timer2" to="." method="_on_timer_2_timeout"]

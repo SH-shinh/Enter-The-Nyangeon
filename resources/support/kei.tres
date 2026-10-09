@@ -1,9 +1,8 @@
-[gd_resource type="Resource" script_class="SupportCard" load_steps=14 format=3 uid="uid://co6lsyyeqxcbe"]
+[gd_resource type="Resource" script_class="SupportCard" format=3 uid="uid://co6lsyyeqxcbe"]
 
 [ext_resource type="Texture2D" uid="uid://cmeqcei7xbnk7" path="res://sprites/player_support/kei/kei_picture_halo.png" id="1_x4elb"]
-[ext_resource type="Texture2D" uid="uid://dukre71u1l6r7" path="res://sprites/player_support/kei/kei_picture.png" id="2_h8sgp"]
 [ext_resource type="AudioStream" uid="uid://dprfydrd440fn" path="res://sounds/voice/kei/ch0335_exskill_level_1.ogg" id="3_uqt8m"]
-[ext_resource type="Script" path="res://resources/support/support_card.gd" id="3_wb2j4"]
+[ext_resource type="Script" uid="uid://cfk5elvy16xk6" path="res://resources/support/support_card.gd" id="3_wb2j4"]
 [ext_resource type="AudioStream" uid="uid://b5u0gkafh58hu" path="res://sounds/voice/kei/ch0335_exskill_level_2.ogg" id="4_41e0p"]
 [ext_resource type="Texture2D" uid="uid://cj8og3c8hrv1j" path="res://sprites/player_support/kei/luminous_nova.png" id="4_206rk"]
 [ext_resource type="PackedScene" uid="uid://cl6yolgfhidvv" path="res://scenes/player_support/kei/kei.tscn" id="4_aii4p"]
@@ -14,14 +13,13 @@
 [ext_resource type="AudioStream" uid="uid://bjmtvu747q2pg" path="res://sounds/voice/kei/ch0335_growup_4.ogg" id="9_11wpy"]
 
 [sub_resource type="Curve" id="Curve_cq148"]
-min_value = 0.01
-max_value = 0.5
+_limits = [0.01, 0.5, 0.0, 1.0]
 _data = [Vector2(0, 0.01), 0.0, 0.75, 0, 0, Vector2(1, 0.5), 0.0, 0.0, 0, 0]
 point_count = 2
 
 [resource]
 script = ExtResource("3_wb2j4")
-character_sprite = ExtResource("2_h8sgp")
+character_sprite_path = "res://sprites/player_support/kei/kei_picture.png"
 character_halo = ExtResource("1_x4elb")
 weapon_icon = ExtResource("4_206rk")
 support_id = "kei"
@@ -29,8 +27,6 @@ support_name = "TENDOU KEI"
 support_name2 = "KEI"
 weapon_name = "LUMINOUS NOVA"
 ex_cost = 30
-unlock_cost = 20
-max_lv = 100
 pa_ability = "player_bullet_damage"
 ability_id = "bullet_damage_mult"
 pa_value = SubResource("Curve_cq148")

@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://bilbu5hp8ipml"]
+[gd_scene format=3 uid="uid://bilbu5hp8ipml"]
 
-[ext_resource type="Script" path="res://scenes/update_item/solvent_extraction_set.gd" id="1_h58m0"]
+[ext_resource type="Script" uid="uid://ducqq4dge80h5" path="res://scenes/update_item/solvent_extraction_set.gd" id="1_h58m0"]
 
 [node name="solvent_extraction_set" type="Node2D"]
 script = ExtResource("1_h58m0")

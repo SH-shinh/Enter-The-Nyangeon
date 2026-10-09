@@ -9,3 +9,5 @@ id = "yuzu_combo_buff"
 icon = ExtResource("1_660rh")
 name = "柚子连击伤害"
 description = ""
+modifiers = Array[Dictionary]([{"key": "damage_mult", "mode": "add", "source": "const", "amount": 0.02}, {"key": "crit_damage_add", "mode": "add", "source": "const", "amount": 0.05, "if_value": 0.2}])
+consume_event = "player_combo_clear"

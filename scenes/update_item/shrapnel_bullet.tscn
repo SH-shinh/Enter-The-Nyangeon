@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://bd3b5sss4gatn"]
+[gd_scene format=3 uid="uid://bd3b5sss4gatn"]
 
-[ext_resource type="Script" path="res://scenes/update_item/shrapnel_bullet.gd" id="1_2exlh"]
+[ext_resource type="Script" uid="uid://bi0d14qnlyjps" path="res://scenes/update_item/shrapnel_bullet.gd" id="1_2exlh"]
 
-[node name="ShrapnelBullet" type="Node2D"]
+[node name="ShrapnelBullet" type="Node2D" unique_id=358664881]
 script = ExtResource("1_2exlh")

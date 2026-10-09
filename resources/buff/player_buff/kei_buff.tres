@@ -1,13 +1,16 @@
-[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://dc4dj2kyyk4rx"]
+[gd_resource type="Resource" script_class="Buff" format=3 uid="uid://dc4dj2kyyk4rx"]
 
 [ext_resource type="Texture2D" uid="uid://iaelkd8kfdhi" path="res://sprites/buff_icon/bullet_damage_buff_icon.png" id="1_oh2a4"]
-[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_q4gvs"]
+[ext_resource type="Script" uid="uid://dhb70b327wxvy" path="res://resources/buff/buff.gd" id="2_q4gvs"]
 
 [resource]
 script = ExtResource("2_q4gvs")
 id = "kei_buff"
 icon = ExtResource("1_oh2a4")
 name = "kei子弹伤害buff"
-ability = ""
-remove_by_layer = false
-description = ""
+source_refcount = true
+modifiers = Array[Dictionary]([{
+"key": "damage_mult",
+"mode": "add",
+"source": "value"
+}])

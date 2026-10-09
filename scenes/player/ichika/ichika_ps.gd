@@ -1,13 +1,11 @@
-extends Node2D
+extends PlayerPS
 
 signal mobu_group_changed
 
-@export var stats: Stats
 @export var mobu_pack: PackedScene
 
 var mobu_group: Array[Node]
 var ps_luck: int = 70
-var now_t:int
 var revive_hp: float = 0.5
 var now_rate_value:float = 0
 var summoned_damage_count: float = 0
@@ -74,3 +72,5 @@ func round_start_add_mobu():
 	PlayerData.life_num_add += 1
 	PlayerData.update_player_ability()
 	round_start_rand_mobu_position()
+	if !GameEvents.deal_damage_to_player.is_connected(player.health_component.take_damage):
+		GameEvents.deal_damage_to_player.connect(player.health_component.take_damage)

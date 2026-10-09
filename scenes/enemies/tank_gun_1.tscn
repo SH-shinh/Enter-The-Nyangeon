@@ -1,14 +1,17 @@
-[gd_scene load_steps=3 format=3 uid="uid://dm63a0q5vhjbb"]
+[gd_scene format=3 uid="uid://dm63a0q5vhjbb"]
 
-[ext_resource type="Script" path="res://scenes/enemies/tank_gun_1.gd" id="1_t5p17"]
+[ext_resource type="Script" uid="uid://djoyh4q8h1qpt" path="res://scenes/enemies/tank_gun_1.gd" id="1_t5p17"]
 [ext_resource type="PackedScene" uid="uid://bhyw00fayomdu" path="res://scenes/enemies/tank_bullet_1.tscn" id="2_bl4yu"]
+[ext_resource type="PackedScene" uid="uid://b270hj1cvg6qf" path="res://scenes/enemies/cannon_flash.tscn" id="3_00kmk"]
 
-[node name="tank_gun_1" type="Node2D"]
+[node name="tank_gun_1" type="Node2D" unique_id=225060122]
 scale = Vector2(0.8, 0.8)
 script = ExtResource("1_t5p17")
 tank_bullet = ExtResource("2_bl4yu")
 pool_id = "tank_bullet_1"
 shoot_offeset = 50.0
+knockback_force = 200
+shoot_flash = ExtResource("3_00kmk")
 
-[node name="Marker2D" type="Marker2D" parent="."]
+[node name="Marker2D" type="Marker2D" parent="." unique_id=1673235923]
 position = Vector2(42, 0)

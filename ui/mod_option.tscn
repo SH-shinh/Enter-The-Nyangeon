@@ -1,0 +1,333 @@
+[gd_scene format=3 uid="uid://dc68yuhrg5tet"]
+
+[ext_resource type="Script" uid="uid://obo6qkt5sj40" path="res://script/mod_option.gd" id="1_mod"]
+[ext_resource type="Script" uid="uid://cxexg1p6wvaks" path="res://script/ScrollBox.gd" id="2_scroll"]
+[ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="3_font7"]
+[ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="4_font9"]
+[ext_resource type="Texture2D" uid="uid://jcqmwo1t8vv0" path="res://ui/ui.png" id="5_ui"]
+[ext_resource type="Texture2D" uid="uid://bhm8gyj1xcfnv" path="res://sprites/particle/arrow.png" id="6_arrow"]
+
+[sub_resource type="Animation" id="Animation_26t6y"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 0)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".:scale")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_j1eo2"]
+resource_name = "option_in"
+length = 0.1
+step = 0.01
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.1),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(20, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.1),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.03, 0.07),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".:scale")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.07, 0.1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0, 1), Vector2(1.1, 1), Vector2(1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_y35uc"]
+_data = {
+&"RESET": SubResource("Animation_26t6y"),
+&"option_in": SubResource("Animation_j1eo2")
+}
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_focus"]
+texture = ExtResource("5_ui")
+texture_margin_left = 5.0
+texture_margin_top = 5.0
+texture_margin_right = 5.0
+texture_margin_bottom = 5.0
+region_rect = Rect2(37, 35, 23, 25)
+modulate_color = Color(0.282353, 0.282353, 0.282353, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_hover"]
+texture = ExtResource("5_ui")
+texture_margin_left = 5.0
+texture_margin_top = 5.0
+texture_margin_right = 5.0
+texture_margin_bottom = 5.0
+region_rect = Rect2(37, 35, 23, 25)
+modulate_color = Color(0.281187, 0.281187, 0.281187, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_normal"]
+texture = ExtResource("5_ui")
+texture_margin_left = 5.0
+texture_margin_top = 5.0
+texture_margin_right = 5.0
+texture_margin_bottom = 5.0
+region_rect = Rect2(37, 35, 23, 25)
+modulate_color = Color(0.212, 0.212, 0.212, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_pressed"]
+texture = ExtResource("5_ui")
+texture_margin_left = 5.0
+texture_margin_top = 5.0
+texture_margin_right = 5.0
+texture_margin_bottom = 5.0
+region_rect = Rect2(37, 35, 23, 25)
+modulate_color = Color(0.458405, 0.458405, 0.458405, 1)
+
+[sub_resource type="Theme" id="Theme_btn"]
+Button/styles/focus = SubResource("StyleBoxTexture_focus")
+Button/styles/hover = SubResource("StyleBoxTexture_hover")
+Button/styles/normal = SubResource("StyleBoxTexture_normal")
+Button/styles/pressed = SubResource("StyleBoxTexture_pressed")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_tip"]
+texture = ExtResource("5_ui")
+texture_margin_left = 1.0
+texture_margin_top = 1.0
+texture_margin_right = 1.0
+texture_margin_bottom = 1.0
+expand_margin_left = 2.0
+expand_margin_top = 2.0
+expand_margin_right = 2.0
+expand_margin_bottom = 2.0
+region_rect = Rect2(44, 12, 8, 8)
+
+[node name="Mod" type="Control" unique_id=2125108724]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 588.0
+offset_bottom = 360.0
+scale = Vector2(1e-05, 1)
+script = ExtResource("1_mod")
+option_id = "option_mod"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1524665370]
+libraries/ = SubResource("AnimationLibrary_y35uc")
+
+[node name="Scroll" type="ScrollContainer" parent="." unique_id=322113445]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 122.0
+offset_top = 20.0
+offset_right = 4.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
+script = ExtResource("2_scroll")
+
+[node name="Content" type="VBoxContainer" parent="Scroll" unique_id=1073865100]
+custom_minimum_size = Vector2(0, 340)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Scroll/Content" unique_id=1613939147]
+layout_mode = 2
+theme_override_constants/separation = -4
+
+[node name="Header" type="Label" parent="Scroll/Content/VBoxContainer" unique_id=1981632970]
+layout_mode = 2
+offset_transform_enabled = true
+offset_transform_position = Vector2(20, 0)
+theme_override_fonts/font = ExtResource("3_font7")
+theme_override_font_sizes/font_size = 16
+text = "MOD"
+
+[node name="Divider" type="ColorRect" parent="Scroll/Content/VBoxContainer" unique_id=1188440104]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Status" type="Label" parent="Scroll/Content" unique_id=471033552]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 4
+theme_override_constants/shadow_outline_size = 2
+theme_override_fonts/font = ExtResource("4_font9")
+theme_override_font_sizes/font_size = 13
+text = "mod_reorder_hint"
+autowrap_mode = 3
+
+[node name="Buttons" type="HBoxContainer" parent="Scroll/Content" unique_id=703764642]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 2
+
+[node name="UpBtn" type="TextureButton" parent="Scroll/Content/Buttons" unique_id=1161376238]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+size_flags_vertical = 4
+texture_normal = ExtResource("6_arrow")
+ignore_texture_size = true
+stretch_mode = 5
+flip_v = true
+
+[node name="DownBtn" type="TextureButton" parent="Scroll/Content/Buttons" unique_id=1831821006]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+size_flags_vertical = 4
+texture_normal = ExtResource("6_arrow")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="ImportBtn" type="Button" parent="Scroll/Content/Buttons" unique_id=743692818]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+theme = SubResource("Theme_btn")
+theme_override_colors/font_outline_color = Color(0.136826, 0.136826, 0.136826, 1)
+theme_override_constants/outline_size = 5
+theme_override_fonts/font = ExtResource("3_font7")
+theme_override_font_sizes/font_size = 16
+text = "mod_import"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Scroll/Content" unique_id=740221431]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 274)
+layout_mode = 2
+horizontal_scroll_mode = 3
+vertical_scroll_mode = 3
+script = ExtResource("2_scroll")
+
+[node name="List" type="VBoxContainer" parent="Scroll/Content/ScrollContainer" unique_id=397026933]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="DragLayer" type="Control" parent="." unique_id=1569081371]
+unique_name_in_owner = true
+z_index = 10
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Tooltip" type="PanelContainer" parent="." unique_id=797788170]
+unique_name_in_owner = true
+visible = false
+z_index = 20
+layout_mode = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_tip")
+
+[node name="VBox" type="VBoxContainer" parent="Tooltip" unique_id=52083502]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 1
+
+[node name="TipName" type="Label" parent="Tooltip/VBox" unique_id=1181752594]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.815686, 0.701961, 0.0235294, 1)
+theme_override_fonts/font = ExtResource("4_font9")
+theme_override_font_sizes/font_size = 12
+
+[node name="TipMeta" type="Label" parent="Tooltip/VBox" unique_id=1650638190]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.74902, 0.74902, 0.74902, 1)
+theme_override_fonts/font = ExtResource("4_font9")
+theme_override_font_sizes/font_size = 10
+
+[node name="TipDesc" type="Label" parent="Tooltip/VBox" unique_id=1590170705]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(170, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("4_font9")
+theme_override_font_sizes/font_size = 10
+autowrap_mode = 1

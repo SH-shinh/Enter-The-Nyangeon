@@ -1,0 +1,547 @@
+[gd_scene format=3 uid="uid://b6bjht461h2us"]
+
+[ext_resource type="Script" uid="uid://ci8narxcxkq0w" path="res://script/player.gd" id="1_fjcrt"]
+[ext_resource type="Resource" uid="uid://bmjwea0iigo2u" path="res://resources/player/chinatsu.tres" id="2_fjcrt"]
+[ext_resource type="Resource" uid="uid://dq4j3yxklg57l" path="res://resources/player/PS/chinatsu_ps.tres" id="3_2grtf"]
+[ext_resource type="PackedScene" uid="uid://b78jo1set8q45" path="res://script/follow.tscn" id="4_01ak0"]
+[ext_resource type="PackedScene" uid="uid://bdo12rjvieur7" path="res://scenes/shadow/shadow.tscn" id="5_05fum"]
+[ext_resource type="PackedScene" uid="uid://ceydnirh2w7yb" path="res://scenes/player/smoke.tscn" id="6_0yc3f"]
+[ext_resource type="Texture2D" uid="uid://b5gqd51vrvimq" path="res://sprites/player/chinatsu/chinatsu_halo.png" id="7_fjcrt"]
+[ext_resource type="Texture2D" uid="uid://cxqhhnh1qclia" path="res://sprites/player/chinatsu/chinatsu.png" id="8_2grtf"]
+[ext_resource type="PackedScene" uid="uid://wffnchsknkba" path="res://script/hat.tscn" id="9_vn855"]
+[ext_resource type="PackedScene" uid="uid://cr0lds23gdefx" path="res://scenes/weapon/support_pointer/support_pointer.tscn" id="10_8a4lu"]
+[ext_resource type="Script" uid="uid://cog8pvonoqtxu" path="res://script/hurt_box.gd" id="11_i70cc"]
+[ext_resource type="Script" uid="uid://e2gvf56eu6jb" path="res://scenes/player/StateMachine.gd" id="12_s04bo"]
+[ext_resource type="Script" uid="uid://c5wxmcve7xpca" path="res://script/Stats.gd" id="13_vmdju"]
+[ext_resource type="AudioStream" uid="uid://5rnyiqxeiusa" path="res://sounds/RunSounds.wav" id="14_b7vmo"]
+[ext_resource type="AudioStream" uid="uid://b6t6pjb3evtw4" path="res://sounds/jump.wav" id="15_n64jl"]
+[ext_resource type="AudioStream" uid="uid://bqqs4akeispjg" path="res://sounds/OnHit.wav" id="16_2tlno"]
+[ext_resource type="AudioStream" uid="uid://b5fdodmk5utji" path="res://sounds/coin.wav" id="17_fdjxs"]
+[ext_resource type="PackedScene" uid="uid://1th2ey27vgac" path="res://ui/game_ui.tscn" id="18_qww1a"]
+[ext_resource type="PackedScene" uid="uid://cb5gh3hfe077g" path="res://ui/pause_screen.tscn" id="19_jomwy"]
+[ext_resource type="Texture2D" uid="uid://nu6i7yovali6" path="res://ui/cd_bar.png" id="20_24l85"]
+[ext_resource type="Texture2D" uid="uid://ben34oyvgea61" path="res://ui/cd_bar_2.png" id="21_xk22k"]
+[ext_resource type="PackedScene" uid="uid://d1gmjbadbxsjp" path="res://scenes/game_camera/gamecamera.tscn" id="22_e5b5d"]
+[ext_resource type="PackedScene" uid="uid://voxip8vojin" path="res://scenes/manager/player_buff_manager.tscn" id="23_a1pkh"]
+[ext_resource type="PackedScene" uid="uid://c620jv6qq2f8w" path="res://scenes/player/t_hp_count.tscn" id="24_dq4m3"]
+[ext_resource type="Script" uid="uid://crtabh2xwunne" path="res://script/player_health_component.gd" id="25_2xsdn"]
+[ext_resource type="PackedScene" uid="uid://b3f8ws1vbq4so" path="res://scenes/player/chinatsu/chinatsu_melee.tscn" id="26_fjcrt"]
+[ext_resource type="Script" uid="uid://clhgg5qcrc4fg" path="res://scenes/player/chinatsu/chinatsu_ps.gd" id="27_2grtf"]
+[ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="28_01ak0"]
+[ext_resource type="PackedScene" uid="uid://deslsifmchexn" path="res://scenes/player/chinatsu/neddle_anim.tscn" id="28_8a4lu"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_l238d"]
+radius = 7.0
+
+[sub_resource type="Shader" id="Shader_cgwu2"]
+code = "shader_type canvas_item;
+
+uniform float outline_width = 1.0;
+uniform vec4 outline_color :source_color = vec4(0, 0, 0, 1 );
+uniform float flash_opacity: hint_range(0.0, 1.0, 0.1) = 0.0;
+
+
+
+void fragment() {
+
+	vec2 uv = UV;
+
+	vec2 uv_up = uv + vec2(0, TEXTURE_PIXEL_SIZE.y) * outline_width;
+	vec2 uv_down = uv + vec2(0, -TEXTURE_PIXEL_SIZE.y) * outline_width;
+	vec2 uv_left = uv + vec2(TEXTURE_PIXEL_SIZE.x, 0) * outline_width;
+	vec2 uv_right = uv + vec2(-TEXTURE_PIXEL_SIZE.x, 0) * outline_width;
+
+	vec4 color_up = texture(TEXTURE, uv_up);
+	vec4 color_down = texture(TEXTURE, uv_down);
+	vec4 color_left = texture(TEXTURE, uv_left);
+	vec4 color_right = texture(TEXTURE, uv_right);
+
+	vec4 outline = color_up + color_down + color_left + color_right;
+
+	outline.rgb = outline_color.rgb;
+
+	outline.a = min(outline.a, 1);
+
+	vec4 orginal_color = texture(TEXTURE, UV);
+	orginal_color.rgb = mix(orginal_color.rgb, outline_color.rgb, flash_opacity);
+
+	COLOR = mix(outline, orginal_color, orginal_color.a);
+
+}"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_3cnyu"]
+shader = SubResource("Shader_cgwu2")
+shader_parameter/outline_width = 2.0
+shader_parameter/outline_color = Color(35.702, 20.469, 15.079, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="Shader" id="Shader_fwunk"]
+code = "shader_type canvas_item;
+
+uniform float outline_width = 1.0;
+uniform vec4 outline_color :source_color = vec4(0, 0, 0, 1 );
+uniform float flash_opacity: hint_range(0.0, 1.0, 0.1) = 0.0;
+
+
+
+void fragment() {
+
+	vec2 uv = UV;
+
+	vec2 uv_up = uv + vec2(0, TEXTURE_PIXEL_SIZE.y) * outline_width;
+	vec2 uv_down = uv + vec2(0, -TEXTURE_PIXEL_SIZE.y) * outline_width;
+	vec2 uv_left = uv + vec2(TEXTURE_PIXEL_SIZE.x, 0) * outline_width;
+	vec2 uv_right = uv + vec2(-TEXTURE_PIXEL_SIZE.x, 0) * outline_width;
+
+	vec4 color_up = texture(TEXTURE, uv_up);
+	vec4 color_down = texture(TEXTURE, uv_down);
+	vec4 color_left = texture(TEXTURE, uv_left);
+	vec4 color_right = texture(TEXTURE, uv_right);
+
+	vec4 outline = color_up + color_down + color_left + color_right;
+
+	outline.rgb = outline_color.rgb;
+
+	outline.a = min(outline.a, 1);
+
+	vec4 orginal_color = texture(TEXTURE, UV);
+	orginal_color.rgb = mix(orginal_color.rgb, outline_color.rgb, flash_opacity);
+
+	COLOR = mix(outline, orginal_color, orginal_color.a);
+
+}"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_x4hvo"]
+shader = SubResource("Shader_fwunk")
+shader_parameter/outline_width = 1.0
+shader_parameter/outline_color = Color(35.702, 20.469168, 15.07938, 1)
+shader_parameter/flash_opacity = 0.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_01ak0"]
+atlas = ExtResource("8_2grtf")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_05fum"]
+atlas = ExtResource("8_2grtf")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0yc3f"]
+atlas = ExtResource("8_2grtf")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jvb3f"]
+atlas = ExtResource("8_2grtf")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dlpn5"]
+atlas = ExtResource("8_2grtf")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vn855"]
+atlas = ExtResource("8_2grtf")
+region = Rect2(64, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4hgd2"]
+atlas = ExtResource("8_2grtf")
+region = Rect2(128, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_i70cc"]
+atlas = ExtResource("8_2grtf")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_s04bo"]
+atlas = ExtResource("8_2grtf")
+region = Rect2(0, 64, 64, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_vmdju"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_01ak0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_05fum")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0yc3f")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jvb3f")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 13.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_dlpn5")
+}],
+"loop": 1,
+"name": &"jump",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_vn855")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4hgd2")
+}, {
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_i70cc")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_s04bo")
+}],
+"loop": 1,
+"name": &"run",
+"speed": 13.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_dqk1k"]
+radius = 1.0
+height = 2.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_4tsyc"]
+radius = 35.0
+
+[sub_resource type="Animation" id="Animation_quqct"]
+resource_name = "Invincible frame"
+length = 0.5
+step = 0.075
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.075, 0.15, 0.225, 0.3, 0.375, 0.45),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [true, false, true, false, true, false, true]
+}
+
+[sub_resource type="Animation" id="Animation_54v52"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Graphics:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Graphics:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_apy7m"]
+_data = {
+&"Invincible frame": SubResource("Animation_quqct"),
+&"RESET": SubResource("Animation_54v52")
+}
+
+[sub_resource type="Animation" id="Animation_btd8x"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics/AnimatedSprite2D:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Graphics/AnimatedSprite2D:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, -17)]
+}
+
+[sub_resource type="Animation" id="Animation_kssmf"]
+resource_name = "kick_anim"
+length = 0.1
+step = 0.01
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics/AnimatedSprite2D:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.03, 0.1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [0.0, -0.698132, 0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Graphics/AnimatedSprite2D:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.03, 0.1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0, -17), Vector2(5, -20), Vector2(0, -17)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_y8tsq"]
+_data = {
+&"RESET": SubResource("Animation_btd8x"),
+&"kick_anim": SubResource("Animation_kssmf")
+}
+
+[node name="chinatsu" type="CharacterBody2D" unique_id=814336257 node_paths=PackedStringArray("stats") groups=["Player"]]
+collision_mask = 256
+motion_mode = 1
+platform_floor_layers = 4294967040
+script = ExtResource("1_fjcrt")
+player_card = ExtResource("2_fjcrt")
+ps_card = ExtResource("3_2grtf")
+stats = NodePath("Stats")
+player_color = Color(0.99607843, 0.54509807, 0.37254903, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1307134586]
+position = Vector2(0, -6)
+shape = SubResource("CircleShape2D_l238d")
+
+[node name="Follow" parent="." unique_id=670549565 instance=ExtResource("4_01ak0")]
+
+[node name="Shadow" parent="." unique_id=1387453203 instance=ExtResource("5_05fum")]
+scale = Vector2(0.445313, 0.445313)
+
+[node name="GPUParticles2D" parent="." unique_id=1412145173 instance=ExtResource("6_0yc3f")]
+emitting = false
+
+[node name="Graphics" type="Node2D" parent="." unique_id=1473084420]
+unique_name_in_owner = true
+
+[node name="Halo" type="Sprite2D" parent="Graphics" unique_id=645409445]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_3cnyu")
+position = Vector2(-10, -32)
+rotation = 0.47822
+scale = Vector2(0.254, 0.276)
+texture = ExtResource("7_fjcrt")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Graphics" unique_id=647433233]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_x4hvo")
+position = Vector2(0, -17)
+sprite_frames = SubResource("SpriteFrames_vmdju")
+animation = &"run"
+autoplay = "idle"
+flip_h = true
+
+[node name="HaloRoot" type="Node2D" parent="Graphics/AnimatedSprite2D" unique_id=338191493]
+unique_name_in_owner = true
+position = Vector2(-9, -28)
+
+[node name="Hat" parent="Graphics/AnimatedSprite2D" unique_id=730565075 instance=ExtResource("9_vn855")]
+position = Vector2(1, -12)
+
+[node name="Gun" parent="Graphics" unique_id=1981837391 node_paths=PackedStringArray("stats") instance=ExtResource("10_8a4lu")]
+unique_name_in_owner = true
+position = Vector2(7, -8)
+stats = NodePath("../../Stats")
+
+[node name="HurtBox" type="Area2D" parent="." unique_id=335900981 node_paths=PackedStringArray("body") groups=["PlayerBox"]]
+collision_layer = 2048
+collision_mask = 1160
+script = ExtResource("11_i70cc")
+body = NodePath("..")
+is_player = true
+
+[node name="HurtboxShape" type="CollisionShape2D" parent="HurtBox" unique_id=2002508033]
+position = Vector2(0, -8)
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_dqk1k")
+debug_color = Color(3.18866e-06, 0.0816588, 0.291816, 0.42)
+
+[node name="PickBox" type="Area2D" parent="." unique_id=725312478]
+collision_layer = 0
+collision_mask = 64
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PickBox" unique_id=311131848]
+position = Vector2(0, -11)
+shape = SubResource("CircleShape2D_4tsyc")
+debug_color = Color(0.724221, 0.462988, 0.32265, 0.42)
+
+[node name="FlyTimer" type="Timer" parent="." unique_id=591006984]
+wait_time = 0.3
+one_shot = true
+
+[node name="JumpTimer" type="Timer" parent="." unique_id=1588867141]
+wait_time = 0.1
+one_shot = true
+
+[node name="JumpCDTimer" type="Timer" parent="." unique_id=1835168107]
+one_shot = true
+
+[node name="RunSoundsTimer" type="Timer" parent="." unique_id=1538906868]
+wait_time = 0.2
+one_shot = true
+
+[node name="InvincibleFrame" type="Timer" parent="." unique_id=1779296011]
+wait_time = 0.5
+one_shot = true
+
+[node name="StateMachine" type="Node" parent="." unique_id=1506302176]
+script = ExtResource("12_s04bo")
+
+[node name="Stats" type="Node" parent="." unique_id=2122875524]
+script = ExtResource("13_vmdju")
+max_hp = 58
+critical_luck = 10
+critical_damage = 3.0
+MAX_SPEED = 160
+max_ammo = 12
+bullet_damage = 16
+bullet_shoot_time = 320
+bullet_speed = 950
+bullet_recoil = 50
+reload_timer = 0.6
+shake_mult = 1.2
+
+[node name="RunSounds" type="AudioStreamPlayer2D" parent="." unique_id=302917896]
+process_mode = 3
+stream = ExtResource("14_b7vmo")
+volume_db = -6.0
+bus = &"SFX"
+
+[node name="JumpSounds" type="AudioStreamPlayer2D" parent="." unique_id=1309017338]
+process_mode = 3
+stream = ExtResource("15_n64jl")
+bus = &"SFX"
+
+[node name="OnHitSounds" type="AudioStreamPlayer2D" parent="." unique_id=449247452]
+process_mode = 3
+stream = ExtResource("16_2tlno")
+volume_db = 8.0
+bus = &"SFX"
+
+[node name="CoinSounds" type="AudioStreamPlayer2D" parent="." unique_id=882990323]
+process_mode = 3
+stream = ExtResource("17_fdjxs")
+volume_db = -2.0
+bus = &"SFX"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=693419034]
+libraries/ = SubResource("AnimationLibrary_apy7m")
+
+[node name="GameUI" parent="." unique_id=1010579495 node_paths=PackedStringArray("player", "stats") instance=ExtResource("18_qww1a")]
+player = NodePath("..")
+stats = NodePath("../Stats")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1376125162]
+layer = 3
+
+[node name="PauseScreen" parent="CanvasLayer" unique_id=995634183 instance=ExtResource("19_jomwy")]
+visible = false
+
+[node name="JumpCDBar" type="TextureProgressBar" parent="." unique_id=1083567095]
+visible = false
+z_index = 20
+offset_left = -16.0
+offset_top = 7.0
+offset_right = 16.0
+offset_bottom = 13.0
+size_flags_horizontal = 4
+max_value = 1.0
+step = 0.0
+value = 0.355
+texture_under = ExtResource("20_24l85")
+texture_progress = ExtResource("21_xk22k")
+
+[node name="Camera2D" parent="." unique_id=721135821 instance=ExtResource("22_e5b5d")]
+offset = Vector2(0, -15)
+
+[node name="AnimationPlayer2" type="AnimationPlayer" parent="." unique_id=1778237123]
+libraries/ = SubResource("AnimationLibrary_y8tsq")
+
+[node name="PlayerBuffManager" parent="." unique_id=1313312428 instance=ExtResource("23_a1pkh")]
+
+[node name="T_HP_Count" parent="." unique_id=1823330357 node_paths=PackedStringArray("stats") instance=ExtResource("24_dq4m3")]
+stats = NodePath("../Stats")
+
+[node name="HealthComponent" type="Node" parent="." unique_id=136328311 node_paths=PackedStringArray("stats", "hurt_box")]
+script = ExtResource("25_2xsdn")
+stats = NodePath("../Stats")
+hurt_box = NodePath("../HurtBox")
+
+[node name="Kick" parent="." unique_id=1499904704 node_paths=PackedStringArray("player", "ps_node") instance=ExtResource("26_fjcrt")]
+position = Vector2(0, -6)
+player = NodePath("..")
+ps_node = NodePath("../ChinatsuPS")
+
+[node name="ChinatsuPS" type="Node2D" parent="." unique_id=898215233 node_paths=PackedStringArray("neddle_anim", "stats", "player", "gun")]
+script = ExtResource("27_2grtf")
+neddle_anim = NodePath("../neddle_anim")
+stats = NodePath("../Stats")
+player = NodePath("..")
+gun = NodePath("../Graphics/Gun")
+
+[node name="ChargeCount" type="Node2D" parent="ChinatsuPS" unique_id=272432956]
+position = Vector2(0, -30)
+
+[node name="Label" type="Label" parent="ChinatsuPS/ChargeCount" unique_id=371033999]
+offset_left = -18.0
+offset_top = 16.0
+offset_right = -10.0
+offset_bottom = 34.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.20541742, 0.14210954, 0.113339595, 1)
+theme_override_constants/line_spacing = -3
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("28_01ak0")
+theme_override_font_sizes/font_size = 8
+text = "0
+--
+10"
+horizontal_alignment = 1
+
+[node name="neddle_anim" parent="." unique_id=1434271911 instance=ExtResource("28_8a4lu")]
+position = Vector2(0, -30)
+
+[connection signal="is_hurt" from="." to="." method="_on_is_hurt"]
+[connection signal="area_entered" from="PickBox" to="." method="_on_pick_box_area_entered"]
+[connection signal="timeout" from="JumpCDTimer" to="." method="_on_jump_cd_timer_timeout"]
+[connection signal="pick_up_range_changed" from="Stats" to="." method="_on_stats_pick_up_range_changed"]

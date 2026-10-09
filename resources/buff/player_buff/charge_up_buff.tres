@@ -11,3 +11,5 @@ name = "蓄力buff"
 ability = ""
 remove_by_layer = false
 description = ""
+modifiers = Array[Dictionary]([{"key": "damage_mult", "mode": "add", "source": "value"}, {"key": "bullet_scale_mult", "mode": "add", "source": "const", "amount": 0.03}])
+consume_event = "player_gun_shoot"

@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://ctbjb6ep2cwjw"]
+
+[ext_resource type="Script" uid="uid://ciwrreeqqovnc" path="res://scenes/update_item/eggnog.gd" id="1_v2ugi"]
+
+[node name="eggnog" type="Node2D" unique_id=1123747437]
+script = ExtResource("1_v2ugi")

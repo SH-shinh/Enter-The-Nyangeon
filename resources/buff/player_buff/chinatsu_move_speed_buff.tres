@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://cq1ntsms3w8u2"]
+
+[ext_resource type="Texture2D" uid="uid://tn6yc26pfiky" path="res://sprites/buff_icon/max_speed_buff_icon.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://dhb70b327wxvy" path="res://resources/buff/buff.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = "chinatsu_move_speed_buff"
+icon = ExtResource("1_icon")
+name = "强化针·移速"
+remove_by_layer = false
+description = ""
+modifiers = Array[Dictionary]([{"key": "speed_mult", "mode": "add", "source": "value"}])

@@ -1,46 +1,51 @@
-[gd_scene load_steps=7 format=3 uid="uid://bu2sh628j4cww"]
+[gd_scene format=3 uid="uid://bu2sh628j4cww"]
 
-[ext_resource type="Script" path="res://scenes/update_item/shiroko_drone_icon_2.gd" id="1_h5a0s"]
+[ext_resource type="Script" uid="uid://8ftbbqcim055" path="res://scenes/update_item/shiroko_drone_icon_2.gd" id="1_h5a0s"]
 [ext_resource type="PackedScene" uid="uid://bdo12rjvieur7" path="res://scenes/shadow/shadow.tscn" id="2_u8kyf"]
-[ext_resource type="Shader" path="res://shaders/screen_outline.gdshader" id="3_fy25j"]
+[ext_resource type="Shader" uid="uid://cmu3hnm13h23n" path="res://shaders/screen_outline.gdshader" id="3_fy25j"]
 [ext_resource type="PackedScene" uid="uid://cepkmg6axb2lu" path="res://scenes/update_item/shiroko_drone_icon.tscn" id="3_rmhxb"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_mw54a"]
 shader = ExtResource("3_fy25j")
-shader_parameter/outline_width = 2.0
+shader_parameter/outline_width = 1.0
 shader_parameter/outline_color = Color(20, 20, 20, 1)
 shader_parameter/flash_opacity = 0.0
+shader_parameter/design_size = Vector2(640, 360)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_cc1ss"]
 radius = 183.33
 
-[node name="ShirokoDroneBody" type="CharacterBody2D" groups=["ShirokoDrone"]]
+[node name="ShirokoDroneBody" type="CharacterBody2D" unique_id=1005595162 groups=["ShirokoDrone"]]
 script = ExtResource("1_h5a0s")
 
-[node name="ShootCDTimer" type="Timer" parent="."]
+[node name="ShootCDTimer" type="Timer" parent="." unique_id=541085783]
 wait_time = 3.0
 one_shot = true
 
-[node name="Sprite2D" parent="." instance=ExtResource("2_u8kyf")]
+[node name="ShootIntervalTimer" type="Timer" parent="." unique_id=447824070]
+wait_time = 0.1
+one_shot = true
+
+[node name="Sprite2D" parent="." unique_id=2081848113 instance=ExtResource("2_u8kyf")]
 position = Vector2(0, 20)
 scale = Vector2(0.7, 1.4375)
 
-[node name="CanvasGroup" type="CanvasGroup" parent="."]
+[node name="CanvasGroup" type="CanvasGroup" parent="." unique_id=1727026256]
 material = SubResource("ShaderMaterial_mw54a")
 
-[node name="ShirokoDrone" parent="CanvasGroup" instance=ExtResource("3_rmhxb")]
+[node name="ShirokoDrone" parent="CanvasGroup" unique_id=1974001730 instance=ExtResource("3_rmhxb")]
 unique_name_in_owner = true
 
-[node name="ShootPosition" type="Marker2D" parent="."]
+[node name="ShootPosition" type="Marker2D" parent="." unique_id=180467827]
 
-[node name="TrackBox" type="Area2D" parent="."]
+[node name="TrackBox" type="Area2D" parent="." unique_id=783581227]
 collision_layer = 0
 collision_mask = 8
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="TrackBox"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TrackBox" unique_id=1098169987]
 shape = SubResource("CircleShape2D_cc1ss")
 
-[node name="FireSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="FireSounds" type="AudioStreamPlayer2D" parent="." unique_id=128213864]
 
 [connection signal="timeout" from="ShootCDTimer" to="." method="_on_shoot_cd_timer_timeout"]
 [connection signal="body_entered" from="TrackBox" to="." method="_on_track_box_body_entered"]

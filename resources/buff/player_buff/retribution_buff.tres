@@ -11,3 +11,4 @@ name = "惩戒"
 ability = ""
 remove_by_layer = true
 description = ""
+modifiers = Array[Dictionary]([{"key": "bullet_count_add", "mode": "add", "source": "const", "amount": 1}, {"key": "bullet_arc_add", "mode": "add", "source": "const", "amount": 15}, {"key": "damage_mult", "mode": "add", "source": "value"}])

@@ -1,6 +1,6 @@
-[gd_scene load_steps=11 format=3 uid="uid://cro37xmm6sk3w"]
+[gd_scene format=3 uid="uid://cro37xmm6sk3w"]
 
-[ext_resource type="Script" path="res://scenes/update_item/cathedral_candle.gd" id="1_lnef4"]
+[ext_resource type="Script" uid="uid://rbe7wwotw4m8" path="res://scenes/update_item/cathedral_candle.gd" id="1_lnef4"]
 [ext_resource type="Texture2D" uid="uid://c7vyq0e22y2jl" path="res://sprites/particle/point_5.png" id="2_3da8p"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_qs5my"]
@@ -28,6 +28,7 @@ emission_ring_axis = Vector3(0, 0, 1)
 emission_ring_height = 0.0
 emission_ring_radius = 85.0
 emission_ring_inner_radius = 84.0
+emission_ring_cone_angle = 90.0
 inherit_velocity_ratio = 0.5
 direction = Vector3(0, -1, 0)
 spread = 0.0
@@ -55,13 +56,13 @@ fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(0.5, 0)
 metadata/_snap_enabled = true
 
-[node name="CathedralCandle" type="Node2D"]
+[node name="CathedralCandle" type="Node2D" unique_id=764395192]
 script = ExtResource("1_lnef4")
 
-[node name="Node2D" type="Node2D" parent="."]
+[node name="Node2D" type="Node2D" parent="." unique_id=2112007017]
 position = Vector2(0, -12)
 
-[node name="TextureRect" type="TextureRect" parent="Node2D"]
+[node name="TextureRect" type="TextureRect" parent="Node2D" unique_id=907405310]
 modulate = Color(1, 0.215686, 0.415686, 0.027451)
 z_index = 1
 material = SubResource("CanvasItemMaterial_qs5my")
@@ -78,20 +79,20 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = SubResource("GradientTexture2D_05xkt")
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="Node2D"]
+[node name="GPUParticles2D" type="GPUParticles2D" parent="Node2D" unique_id=1716620664]
 modulate = Color(9.189, 0, 5.404, 0.02)
 amount = 12
-process_material = SubResource("ParticleProcessMaterial_e6bqe")
 texture = ExtResource("2_3da8p")
+process_material = SubResource("ParticleProcessMaterial_e6bqe")
 
-[node name="Area2D" type="Area2D" parent="Node2D"]
+[node name="Area2D" type="Area2D" parent="Node2D" unique_id=1093770391]
 collision_layer = 0
 collision_mask = 8
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Node2D/Area2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Node2D/Area2D" unique_id=2081012653]
 shape = SubResource("CircleShape2D_v78as")
 
-[node name="TextureRect2" type="TextureRect" parent="Node2D"]
+[node name="TextureRect2" type="TextureRect" parent="Node2D" unique_id=1207861813]
 modulate = Color(2, 1, 0.049, 0.011)
 material = SubResource("CanvasItemMaterial_6lgyj")
 anchors_preset = 8

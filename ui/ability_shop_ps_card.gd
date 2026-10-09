@@ -52,7 +52,7 @@ func reset_data():
 	t_num_l.text = "T" + str(t_num)
 	reset_font_color()
 
-func _process(delta):
+func _process(_delta):
 	if on_text_follow == true:
 		if on_touch == false:
 			text_follow.global_position = get_global_mouse_position()
@@ -83,34 +83,36 @@ func touch_out():
 		on_text_follow = false
 		text_follow.visible = false
 
+func touch_button():
+	if on_touch == false:
+		GameEvents.emit_player_card_touch()
+		await get_tree().create_timer(0.1).timeout
+		on_touch = true
+		SoundManager.play_sfx("ButtonSounds2")
+		$Node2D/upgrade/AnimationPlayer.play("mouse_in")
+		$Node2D/upgrade/Node2D/ColorRect/AnimationPlayer.play("hammer_anim")
+		on_text_follow = true
+		text_follow.visible = true
+		
+	else:
+		
+		if t_num >= 3:
+			$Node2D/upgrade/AnimationPlayer.play("coin_lack")
+			return
+		
+		if player.stats.usable_coin < coin_cost:
+			$Node2D/upgrade/AnimationPlayer.play("coin_lack")
+		else:
+			SoundManager.play_sfx("ButtonSounds")
+			GameEvents.emit_player_coins_cost(coin_cost)
+			item_upgrade()
+			GameEvents.emit_player_ps_upgrade(t_num)
+
 func mouse_selected(event: InputEvent):
 	
 	
 	if event as InputEventScreenTouch and event.pressed:
-		if on_touch == false:
-			GameEvents.emit_player_card_touch()
-			await get_tree().create_timer(0.1).timeout
-			on_touch = true
-			touch_position = event.position * get_canvas_transform()
-			SoundManager.play_sfx("ButtonSounds2")
-			$Node2D/upgrade/AnimationPlayer.play("mouse_in")
-			$Node2D/upgrade/Node2D/ColorRect/AnimationPlayer.play("hammer_anim")
-			on_text_follow = true
-			text_follow.visible = true
-			
-		else:
-			
-			if t_num >= 3:
-				$Node2D/upgrade/AnimationPlayer.play("coin_lack")
-				return
-			
-			if player.stats.usable_coin < coin_cost:
-				$Node2D/upgrade/AnimationPlayer.play("coin_lack")
-			else:
-				SoundManager.play_sfx("ButtonSounds")
-				GameEvents.emit_player_coins_cost(coin_cost)
-				item_upgrade()
-				GameEvents.emit_player_ps_upgrade(t_num)
+		touch_button()
 	
 	if event.is_action_pressed("shoot"):
 		
@@ -150,7 +152,7 @@ func reset_font_color():
 func item_text_get():
 	
 	weapon_icon.texture = player.ps_card.weapon_icon
-	var text_1: String = ""
+	var _text_1: String = ""
 	
 	if t_num == 0:
 		rare_color_c.color = rare_color[0]
@@ -165,10 +167,20 @@ func item_text_get():
 		rare_color_c.color = rare_color[3]
 		t_3.set("theme_override_colors/font_color", Color(1,1,1))
 	
-	t_0.text = player.player_card.id + "_ps_0"
-	t_1.text = player.player_card.id + "_ps_1"
-	t_2.text = player.player_card.id + "_ps_2"
-	t_3.text = player.player_card.id + "_ps_3"
+	var pc = player.player_card if player != null else null
+	t_0.text = _ps_text(pc, 0)
+	t_1.text = _ps_text(pc, 1)
+	t_2.text = _ps_text(pc, 2)
+	t_3.text = _ps_text(pc, 3)
+
+
+# 本地化缺失时回退到角色描述，避免显示原始键（如 xxx_ps_1）
+func _ps_text(card, idx: int) -> String:
+	if card == null:
+		return ""
+	var key: String = str(card.id) + "_ps_" + str(idx)
+	var t := tr(key)
+	return t if t != key else str(card.description)
 
 func smoke_anim():
 	var ins = smoke.instantiate()

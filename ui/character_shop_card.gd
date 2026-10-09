@@ -21,6 +21,7 @@ extends PanelContainer
 @onready var no_anim: AnimationPlayer = $Node2D3/Panel/TextureRect/No/Node2D/NoAnim
 
 var is_confirm: bool = false
+var _revealed_path: String = ""
 
 func _ready() -> void:
 	mouse_entered.connect(mouse_select)
@@ -52,14 +53,41 @@ func get_card():
 	if shop_card != null:
 		name_1.text = shop_card.name_1
 		name_2.text = shop_card.name_2
-		character_1.texture = shop_card.character_sprite
-		character_2.texture = shop_card.character_sprite
 		weapon_name.text = shop_card.weapon_name
 		weapon.text = shop_card.weapon_type_name
 		weapon_icon.texture = shop_card.weapon_icon
 		school.text = shop_card.school_name
 		school_icon.texture = shop_card.school_icon
 		cost.text = str(shop_card.cost)
+
+# 立绘大图按需加载/释放（列表可见性由 shop_menu 调用）；幂等，避免重复解码
+func reveal() -> void:
+	if shop_card == null:
+		return
+	var p := shop_card.character_sprite_path
+	if _revealed_path == p and character_1.texture != null:
+		return
+	if _revealed_path != "":
+		LazyTexture.release(_revealed_path)
+	var tex := LazyTexture.acquire(p)
+	character_1.texture = tex
+	character_2.texture = tex
+	_revealed_path = p
+
+
+func conceal() -> void:
+	if _revealed_path != "":
+		LazyTexture.release(_revealed_path)
+		_revealed_path = ""
+	character_1.texture = null
+	character_2.texture = null
+
+
+func _exit_tree() -> void:
+	if _revealed_path != "":
+		LazyTexture.release(_revealed_path)
+		_revealed_path = ""
+
 
 func check_data():
 	if shop_card != null:
@@ -129,6 +157,8 @@ func add_character():
 	if !PlayerData.group.has(shop_card.group):
 		PlayerData.group.push_back(shop_card.group)
 		Game.save_playerdata()
+	# 解锁后通知各处刷新（社团列表动态补建 / 角色卡过滤等）
+	GameEvents.emit_check_data()
 
 func no_deal(event: InputEvent):
 	if event as InputEventScreenTouch and event.pressed:

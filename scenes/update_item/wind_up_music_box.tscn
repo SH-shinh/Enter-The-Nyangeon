@@ -1,6 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://cpdn3oyx2l6g0"]
+[gd_scene format=3 uid="uid://cpdn3oyx2l6g0"]
 
-[ext_resource type="Script" path="res://scenes/update_item/wind_up_music_box.gd" id="1_4xmlw"]
+[ext_resource type="Script" uid="uid://y48e57wrt4u7" path="res://scenes/update_item/wind_up_music_box.gd" id="1_4xmlw"]
 [ext_resource type="Resource" uid="uid://bhfy50nhnjylj" path="res://resources/buff/player_buff/global_damage_1_buff.tres" id="2_8qpqt"]
 
 [node name="WindUpMusicBox" type="Node2D"]

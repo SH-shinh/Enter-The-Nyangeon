@@ -11,9 +11,6 @@ var color_2: Color
 #var scale_tween: Tween
 var is_idle:int = 1
 
-var _last_color: Color = Color(-1, -1, -1, -1)
-var _last_size: int = -1
-
 func _ready():
 	PoolManager.add_pool("floating_text", self)
 
@@ -34,13 +31,12 @@ func start(text: String):
 	label.text = text
 	animation_player_2.play("new_animation")
 
+# 始终写入：不能靠“与上次相同就跳过”的缓存——本节点来自共享池，
+# 而拾取物（pyroxenes / player.add_text）会直接改 Label 的 font_color/font_size
+# 或播放颜色动画，导致缓存与实际不一致；跳过会残留白色 / 24 号（见 LEARNINGS）。
 func set_style(text_color: Color, text_size: int):
-	if text_color != _last_color:
-		label.set("theme_override_colors/font_color", text_color)
-		_last_color = text_color
-	if text_size != _last_size:
-		label.set("theme_override_font_sizes/font_size", text_size)
-		_last_size = text_size
+	label.set("theme_override_colors/font_color", text_color)
+	label.set("theme_override_font_sizes/font_size", text_size)
 
 func play_anim(color_a: Color, color_b: Color):
 	color_1 = color_a

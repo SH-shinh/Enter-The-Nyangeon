@@ -23,8 +23,12 @@ var rage_time: int = 0
 
 var time_mult: float = 1
 var is_game_mode_1: bool = false
+# 联机客机首轮本地倒计时（对齐联机版）：host 广播 round_end 驱动，客机只本地计时显示
+var client_round_countdown_started: bool = false
 
+@warning_ignore("unused_signal")
 signal round_start
+@warning_ignore("unused_signal")
 signal round_end
 signal round_time_warning
 signal round_time_out
@@ -39,14 +43,14 @@ var now_round_num = 0:
 var round_time = 0:
 	set(v):
 		round_time = v
-		if floor(v / 60 ) < 10:
-			minute_show.text = str( "0",str(floor(v / 60 )),":")
+		if floor(float(v) / 60.0 ) < 10:
+			minute_show.text = str( "0",str(int(floor(float(v) / 60.0 ))),":")
 		else:
-			minute_show.text = str( str(floor(v / 60 )),":")
-		if v - (floor(v / 60 ) * 60 ) < 10:
-			second_show.text = str("0", str(v - (floor(v / 60 ) * 60 )),":")
+			minute_show.text = str( str(int(floor(float(v) / 60.0 ))),":")
+		if v - (floor(float(v) / 60.0 ) * 60 ) < 10:
+			second_show.text = str("0", str(int(v - (floor(float(v) / 60.0 ) * 60 ))),":")
 		else:
-			second_show.text = str( str(v - (floor(v / 60 ) * 60 )),":")
+			second_show.text = str( str(int(v - (floor(float(v) / 60.0 ) * 60 ))),":")
 		if v < 10:
 			emit_signal("round_time_warning")
 
@@ -58,11 +62,24 @@ func _ready():
 	GameEvents.game_over.connect(game_over_stop)
 	GameEvents.ui_visible.connect(game_ui_visible)
 	GameEvents.fever_time_start.connect(play_fever_anim)
+	GameEvents.first_round_add.connect(_on_first_round_add)
+
+# 联机会话判定（未注入 mod 时始终 false → 单机原行为）
+func _is_lan_session() -> bool:
+	return ExtensionHooks.is_lan_session.is_valid() and bool(ExtensionHooks.is_lan_session.call())
+
+# 是否禁止本端自发 emit_round_end（客机由 host 广播 round_end）
+func _round_end_emit_blocked() -> bool:
+	return ExtensionHooks.intercept(ExtensionHooks.round_end_emit_gate, [])
+
+# 是否禁止本端本地触发 FEVER/rage（客机由 host 广播 fever_time_start / rage buff）
+func _fever_time_handled() -> bool:
+	return ExtensionHooks.intercept(ExtensionHooks.fever_time_gate, [])
 
 func game_ui_visible(now_visible: bool):
 	visible = now_visible
 
-func _physics_process(delta):
+func _physics_process(_delta):
 	
 	time_bar.value = round_timer.time_left / round_timer.wait_time
 	if int(timer.time_left * 100) < 10:
@@ -79,6 +96,10 @@ func boss_round():
 
 func init_round():
 	now_round_num += 1
+	_start_round_countdown()
+
+# 启动一次本地倒计时（正常按钮/首轮客机共用；抽自原 init_round 计时部分）
+func _start_round_countdown():
 	round_time = 60 * time_mult - 1
 	round_timer.wait_time = 60
 	timer.start()
@@ -90,7 +111,23 @@ func init_round():
 	$Control/HBoxContainer/SecondShow.set("theme_override_colors/font_color", Color(1, 1, 1))
 	$Control/HBoxContainer/MillisecondShow.set("theme_override_colors/font_color", Color(1, 1, 1))
 
-func game_over_stop(player_dead: bool):
+# 联机客机：首轮本体不调 round_manager.first_round_start()，故不 emit round_start，
+# 需在 first_round_add 时本地起一轮倒计时（对齐联机版）；round_end 由 host 广播驱动。
+func _on_first_round_add() -> void:
+	if not _is_lan_session() or multiplayer.is_server():
+		return
+	if client_round_countdown_started or now_round_num > 0:
+		return
+	_start_client_round_countdown.call_deferred()
+
+func _start_client_round_countdown() -> void:
+	if client_round_countdown_started or now_round_num > 0:
+		return
+	client_round_countdown_started = true
+	now_round_num = maxi(now_round_num + 1, PlayerData.now_round)
+	_start_round_countdown()
+
+func game_over_stop(_player_dead: bool):
 	SoundManager.game_end = true
 	timer.stop()
 	global_timer.stop()
@@ -102,26 +139,32 @@ func _on_timer_timeout():
 		round_time -=1
 		if round_time <= 0:
 			if is_boss_round == false:
+				# 倒计时归 0 起到 round_end 之间的窗口也要锁暂停（否则转场前可弹暂停菜单）
+				GameEvents.emit_pause_lock(true)
 				await get_tree().create_timer(0.9).timeout
 				timer.stop()
 				round_time_out.emit()
-				GameEvents.emit_round_end()
+				if not _round_end_emit_blocked():
+					GameEvents.emit_round_end()
 			else:
 				if PlayerData.game_mode.has("hujiu"):
 					timer.stop()
 					round_time_out.emit()
-					GameEvents.emit_round_end()
+					if not _round_end_emit_blocked():
+						GameEvents.emit_round_end()
 				else:
 					round_time_out.emit()
 					rage_mode = true
 					boss_group = get_tree().get_nodes_in_group("BOSS")
-					GameEvents.emit_fever_time_start()
+					if not _fever_time_handled():
+						GameEvents.emit_fever_time_start()
 	else:
 		round_time += 1
 		rage_time += 1
 		if rage_time > 5:
 			rage_time = 0
-			add_rage_buff()
+			if not _fever_time_handled():
+				add_rage_buff()
 
 func add_rage_buff():
 	if boss_group.size() > 0:
@@ -135,7 +178,8 @@ func rage_mode_end():
 
 func end_boss_round():
 	await get_tree().create_timer(3.5).timeout
-	GameEvents.emit_round_end()
+	if not _round_end_emit_blocked():
+		GameEvents.emit_round_end()
 
 func set_font_red():
 	$Control/NowRound.set("theme_override_colors/font_color", Color(0.923, 0, 0.261))

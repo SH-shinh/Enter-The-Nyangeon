@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CharacterCard" format=3 uid="uid://c2b2c3dnu7qek"]
+
+[ext_resource type="Texture2D" uid="uid://ca7j4dmko8tds" path="res://ui/school/MILLENNIUM_icon.png" id="2_oynya"]
+[ext_resource type="Script" uid="uid://c0xho6kcxb134" path="res://resources/shop/character/character_card.gd" id="3_maxsp"]
+[ext_resource type="Texture2D" uid="uid://csb12yhlnb4sr" path="res://ui/weapon/AR_icon.png" id="4_st2q3"]
+
+[resource]
+script = ExtResource("3_maxsp")
+cost = 6
+name_1 = "TENDOU"
+name_2 = "ARIS (ARMED)"
+character_sprite_path = "res://sprites/player/aris_armed/aris_armed_picture.png"
+weapon_name = "ABI-ESHUH'S SWORD OF LIGHT"
+weapon_type_name = "AR"
+weapon_icon = ExtResource("4_st2q3")
+school_name = "MILLENNIUM"
+school_icon = ExtResource("2_oynya")
+id = "aris_armed"
+group = "GDD"

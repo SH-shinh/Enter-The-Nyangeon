@@ -1,6 +1,10 @@
-[gd_scene load_steps=2 format=3 uid="uid://cqexsldwd6i4l"]
+[gd_scene format=3 uid="uid://cqexsldwd6i4l"]
 
-[ext_resource type="Script" path="res://scenes/update_item/ink_cartridge.gd" id="1_nuv4a"]
+[ext_resource type="Script" uid="uid://6u36y0k10t5m" path="res://scenes/update_item/ink_cartridge.gd" id="1_nuv4a"]
 
-[node name="InkCartridge" type="Node2D"]
+[node name="InkCartridge" type="Node2D" unique_id=632155555]
 script = ExtResource("1_nuv4a")
+
+[node name="ExplosionIntervalTimer" type="Timer" parent="."]
+wait_time = 0.1
+one_shot = true

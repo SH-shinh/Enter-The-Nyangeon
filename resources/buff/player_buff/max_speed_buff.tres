@@ -9,3 +9,4 @@ id = "max_speed_buff"
 icon = ExtResource("1_e7g5o")
 name = "移动速度"
 description = ""
+modifiers = Array[Dictionary]([{"key": "speed_mult", "mode": "add", "source": "value"}])

@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://dl60tolouk4lv"]
-
-[ext_resource type="Script" path="res://scenes/update_item/test_ammo.gd" id="1_f0weq"]
-
-[node name="test_ammo" type="Node2D"]
-script = ExtResource("1_f0weq")

@@ -6,6 +6,9 @@ extends Node2D
 @onready var grid_container: GridContainer = $MarginContainer/ScrollContainer/GridContainer
 
 func _ready() -> void:
+	for m in ModManager.get_content("game_modes"):
+		if m != null and not gamemode_card.has(m):
+			gamemode_card.append(m)
 	add_gamemode_card()
 
 func add_gamemode_card():

@@ -160,7 +160,9 @@ color = Color(4.5, 2, 1.2, 1)
 anim_speed_min = 1.0
 anim_speed_max = 1.0
 
-[node name="tank_bullet_1" type="Node2D"]
+[node name="tank_bullet_1" type="Area2D"]
+collision_layer = 0
+monitorable = false
 script = ExtResource("1_0r786")
 bullet_id = "tank_bullet_1"
 

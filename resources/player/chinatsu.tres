@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PlayerCard" format=3 uid="uid://bmjwea0iigo2u"]
+
+[ext_resource type="Script" uid="uid://mhculkp4opo6" path="res://resources/player/player.gd" id="1_vrucv"]
+[ext_resource type="Texture2D" uid="uid://ceop6dgrcn0b2" path="res://sprites/player/chinatsu/chinatsu_picture_halo.png" id="2_jr2y8"]
+
+[resource]
+script = ExtResource("1_vrucv")
+name = "HINOMIYA CHINATSU"
+weapon = "SUPPORT POINTER"
+sprite_path = "res://sprites/player/chinatsu/chinatsu_picture.png"
+halo = ExtResource("2_jr2y8")
+color = Color(0.9959995, 0.54703337, 0.37284824, 1)
+description = ""
+voice_name = "chinatsu"
+id = "chinatsu"
+scene_path = "res://scenes/player/chinatsu/chinatsu.tscn"

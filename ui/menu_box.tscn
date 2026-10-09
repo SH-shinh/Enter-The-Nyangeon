@@ -1,7 +1,8 @@
-[gd_scene load_steps=9 format=3 uid="uid://c0abd03p7kvxx"]
+[gd_scene load_steps=10 format=3 uid="uid://c0abd03p7kvxx"]
 
 [ext_resource type="Theme" uid="uid://igkipbye612g" path="res://empty_theme.tres" id="1_87dtv"]
 [ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="2_7hmsc"]
+[ext_resource type="Script" uid="uid://dkwqr377cp5yf" path="res://script/auto_text.gd" id="99_autotx"]
 [ext_resource type="Script" path="res://ui/menu_box.gd" id="2_tc3gt"]
 [ext_resource type="Script" path="res://script/ScrollBox.gd" id="3_mw0tl"]
 [ext_resource type="PackedScene" uid="uid://8ycqggrgg1x5" path="res://ui/menu_box_button.tscn" id="4_g1fkc"]
@@ -87,6 +88,11 @@ theme_override_constants/shadow_outline_size = 0
 theme_override_fonts/font = ExtResource("2_7hmsc")
 theme_override_font_sizes/font_size = 10
 text = "button_date"
+script = ExtResource("99_autotx")
+base_font_size = 10
+base_size_x = 60.0
+base_size_y = 12.0
+min_font_size = 7
 horizontal_alignment = 1
 vertical_alignment = 1
 clip_text = true

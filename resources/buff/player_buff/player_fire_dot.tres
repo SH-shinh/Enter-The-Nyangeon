@@ -1,7 +1,9 @@
-[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://b71qgg62orgs2"]
+[gd_resource type="Resource" script_class="Buff" load_steps=4 format=3 uid="uid://b71qgg62orgs2"]
 
 [ext_resource type="Texture2D" uid="uid://c57l35qcln0a6" path="res://sprites/buff_icon/fire_dot_icon.png" id="1_be2ur"]
 [ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_epotc"]
+
+[ext_resource type="PackedScene" path="res://resources/buff/components/player_fire_dot_component.tscn" id="3_comp"]
 
 [resource]
 script = ExtResource("2_epotc")
@@ -11,3 +13,5 @@ name = "玩家火dot伤害"
 ability = ""
 remove_by_layer = false
 description = ""
+is_debuff = true
+component_scene = ExtResource("3_comp")

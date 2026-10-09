@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://dwsl2iml1in1a"]
+[gd_scene format=3 uid="uid://dwsl2iml1in1a"]
 
-[ext_resource type="Script" path="res://scenes/update_item/buried_treasure_map.gd" id="1_geatn"]
+[ext_resource type="Script" uid="uid://bqgh78f0242vf" path="res://scenes/update_item/buried_treasure_map.gd" id="1_geatn"]
 
 [node name="buried_treasure_map" type="Node2D"]
 script = ExtResource("1_geatn")

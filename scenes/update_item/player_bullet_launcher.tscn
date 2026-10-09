@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://bi0b5ycx6td33"]
+[gd_scene format=3 uid="uid://bi0b5ycx6td33"]
 
-[ext_resource type="Script" path="res://scenes/update_item/player_bullet_launcher.gd" id="1_jo58g"]
+[ext_resource type="Script" uid="uid://8llblubfyypt" path="res://scenes/update_item/player_bullet_launcher.gd" id="1_jo58g"]
 
-[node name="PlayerBulletLauncher" type="Node2D"]
+[node name="PlayerBulletLauncher" type="Node2D" unique_id=2097460712]
 script = ExtResource("1_jo58g")
 
-[node name="ShootPosition" type="Marker2D" parent="."]
+[node name="ShootPosition" type="Marker2D" parent="." unique_id=1944710019]

@@ -1,6 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://drptrgb6aq8hq"]
+[gd_scene format=3 uid="uid://drptrgb6aq8hq"]
 
-[ext_resource type="Script" path="res://scenes/update_item/millennium_flag.gd" id="1_0a2c2"]
+[ext_resource type="Script" uid="uid://1clwxr5jbpkn" path="res://scenes/update_item/millennium_flag.gd" id="1_0a2c2"]
 [ext_resource type="Resource" uid="uid://cwonfqopcwqnd" path="res://resources/buff/player_buff/bullet_shoot_time_buff.tres" id="2_0rowv"]
 
 [node name="MillenniumFlag" type="Node2D"]

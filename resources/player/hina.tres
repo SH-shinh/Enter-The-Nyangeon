@@ -1,16 +1,16 @@
-[gd_resource type="Resource" script_class="PlayerCard" load_steps=4 format=3 uid="uid://dd0vndh2c4w8h"]
+[gd_resource type="Resource" script_class="PlayerCard" load_steps=3 format=3 uid="uid://dd0vndh2c4w8h"]
 
 [ext_resource type="Texture2D" uid="uid://cw0xdob5wbp5o" path="res://sprites/player/hina/hina_picture_halo.png" id="1_p6ltb"]
 [ext_resource type="Script" path="res://resources/player/player.gd" id="2_ficon"]
-[ext_resource type="Texture2D" uid="uid://bqdyikqbnp6h" path="res://sprites/player/hina/hina_picture.png" id="3_0t4l2"]
 
 [resource]
 script = ExtResource("2_ficon")
 name = "SORASAKI HINA"
 weapon = "DESTROYER OF DENOUEMENT"
-sprite = ExtResource("3_0t4l2")
+sprite_path = "res://sprites/player/hina/hina_picture.png"
 halo = ExtResource("1_p6ltb")
 color = Color(0.976471, 0.698039, 0.905882, 1)
 description = ""
 voice_name = "hina"
 id = "hina"
+scene_path = "res://scenes/player/hina/hina.tscn"

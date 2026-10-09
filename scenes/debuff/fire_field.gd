@@ -76,39 +76,44 @@ func time_count():
 			idle_state()	
 
 func apply_fire_damage_data():
-	if hit_box.damage_data == null:
-		hit_box.damage_data = DamageData.new()
-	else:
-		hit_box.damage_data.reset_data()
-	
-	hit_box.damage_data.knockback_force = 0
-	hit_box.damage_data.damage_type.append(GameTags.FIRE_DAMAGE)
-	hit_box.damage_data.source_node = self.get_path()
-	hit_box.damage_data.source_type.append(GameTags.PS_DAMAGE)
+	hit_box.damage_data = DamageData.fill(hit_box.damage_data, {
+		"knockback": 0,
+		"type": GameTags.FIRE_DAMAGE,
+		"source": GameTags.PS_DAMAGE,
+		"node": self,
+	})
 
 func add_damage_data():
 	if !body_group.is_empty():
 		for i in body_group:
 			if i == null or not is_instance_valid(i):
 				continue
+			var body = i.owner
+			if body == null or not is_instance_valid(body):
+				continue
 			var damage_value: int
 			if damage_count < 8:
 				damage_value = 8 * player.stats.fire_dot_layer * player.stats.dot_damage * player.stats.global_damage
 			else:
 				damage_count = 0
-				damage_value = i.owner.stats.max_hp * hp_mult
-				if i.owner.is_in_group("BOSS"):
-					damage_value = i.owner.stats.max_hp * 0.01
+				damage_value = body.stats.max_hp * hp_mult
+				if body.is_in_group("BOSS"):
+					damage_value = body.stats.max_hp * 0.01
 			hit_box.damage_data.base_damage = damage_value
 			hit_box.damage_data.flags.append(GameTags.TRUE_DAMAGE)
 			i.hit_received.emit(hit_box.damage_data)
-			i.owner.enemy_buff_manager.apply_buff(enemy_buff, value)
+			if is_instance_valid(body) and body.get("enemy_buff_manager") != null:
+				body.enemy_buff_manager.apply_buff(enemy_buff, value)
 			damage_count += 1
 
 func _on_hit_box_entered(hurtbox: Area2D):
+	if hurtbox == null or not is_instance_valid(hurtbox):
+		return
 	if hurtbox is HurtBox and !body_group.has(hurtbox):
 		body_group.push_back(hurtbox)
 
 func _on_hit_box_exited(hurtbox: Area2D):
+	if hurtbox == null or not is_instance_valid(hurtbox):
+		return
 	if hurtbox is HurtBox and body_group.has(hurtbox):
 		body_group.remove_at(body_group.find(hurtbox))

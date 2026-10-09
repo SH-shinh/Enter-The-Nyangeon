@@ -57,7 +57,8 @@ func get_card():
 
 func check_data():
 	if shop_card != null:
-		if PlayerData.clothes_group[shop_card.id_name].has(shop_card.id):
+		var group: Array = PlayerData.clothes_group.get(shop_card.id_name, [])
+		if group.has(shop_card.id):
 			close_main_button()
 			close_button()
 			animation_player_2.play("deal_anim")
@@ -117,8 +118,10 @@ func yes_deal(event: InputEvent):
 			GameEvents.emit_pyroxenes_not_enough("Arona")
 
 func add_item():
-	if !PlayerData.clothes_group[shop_card.id_name].has(shop_card.id):
-		PlayerData.clothes_group[shop_card.id_name].push_back(shop_card.id)
+	var group: Array = PlayerData.clothes_group.get(shop_card.id_name, [])
+	if !group.has(shop_card.id):
+		group.push_back(shop_card.id)
+		PlayerData.clothes_group[shop_card.id_name] = group
 		Game.save_playerdata()
 
 func no_deal(event: InputEvent):

@@ -1,0 +1,100 @@
+[gd_scene format=3 uid="uid://4h3kh0yk2gyu"]
+
+[ext_resource type="Texture2D" uid="uid://bhm8gyj1xcfnv" path="res://sprites/particle/arrow.png" id="1_ebsmd"]
+[ext_resource type="Script" path="res://scenes/debuff/convert_damage.gd" id="2_convert"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_5vsm0"]
+blend_mode = 1
+
+[sub_resource type="Gradient" id="Gradient_g7o1h"]
+offsets = PackedFloat32Array(0.5294118, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_mvnuh"]
+gradient = SubResource("Gradient_g7o1h")
+
+[sub_resource type="Curve" id="Curve_hproo"]
+_data = [Vector2(0, 0), 0.0, 3.7597237, 0, 0, Vector2(1, 1), 0.19748043, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_4ucxl"]
+curve = SubResource("Curve_hproo")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_4pqw1"]
+particle_flag_disable_z = true
+emission_shape = 3
+emission_box_extents = Vector3(20, 20, 1)
+angle_min = 180.00002
+angle_max = 180.00002
+direction = Vector3(0, -1, 0)
+spread = 0.0
+gravity = Vector3(0, -98, 0)
+scale_curve = SubResource("CurveTexture_4ucxl")
+color = Color(0.9979903, 0, 0.11595941, 1)
+color_ramp = SubResource("GradientTexture1D_mvnuh")
+
+[sub_resource type="Animation" id="Animation_ejqmy"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("GPUParticles2D:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_bjyl3"]
+resource_name = "new_animation"
+length = 0.3
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("GPUParticles2D:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.3),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"idle_state"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_gc3tg"]
+_data = {
+&"RESET": SubResource("Animation_ejqmy"),
+&"new_animation": SubResource("Animation_bjyl3")
+}
+
+[node name="convert_damage" type="Node2D" unique_id=1342222629]
+script = ExtResource("2_convert")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=1451529730]
+material = SubResource("CanvasItemMaterial_5vsm0")
+position = Vector2(0, -15)
+emitting = false
+texture = ExtResource("1_ebsmd")
+lifetime = 0.3
+explosiveness = 0.3
+process_material = SubResource("ParticleProcessMaterial_4pqw1")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=890664985]
+libraries/ = SubResource("AnimationLibrary_gc3tg")

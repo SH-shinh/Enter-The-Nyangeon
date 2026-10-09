@@ -19,6 +19,9 @@ func time_count():
 		cd_time -= 1
 
 func _physics_process(delta: float) -> void:
+	if owner.get("frozen") == true:
+		owner.velocity = Vector2.ZERO
+		return
 	if cd_time <= 0:
 		cd_time = 3
 		while  true:

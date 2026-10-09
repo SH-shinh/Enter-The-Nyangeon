@@ -1,6 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://cj8ee8yesbo8y"]
+[gd_scene format=3 uid="uid://cj8ee8yesbo8y"]
 
-[ext_resource type="Script" path="res://scenes/update_item/red_ninpero.gd" id="1_y1gts"]
+[ext_resource type="Script" uid="uid://bt03gp8kt24v7" path="res://scenes/update_item/red_ninpero.gd" id="1_y1gts"]
 [ext_resource type="Resource" uid="uid://byim7jof6jy0" path="res://resources/buff/enemy_buff/vuln_buff.tres" id="2_0cliw"]
 
 [node name="RedNinpero" type="Node2D"]

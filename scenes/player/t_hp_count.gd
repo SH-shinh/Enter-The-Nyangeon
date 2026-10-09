@@ -12,6 +12,7 @@ func _ready():
 
 func t_hp_clear():
 	stats.t_hp = 0
+	stats.heal_overflow_to_t_hp = false
 	count_timer.stop()
 
 func timer_start():

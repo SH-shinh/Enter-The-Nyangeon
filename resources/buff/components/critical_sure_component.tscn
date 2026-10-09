@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/buff/components/critical_sure_component.gd" id="1_cs"]
+
+[node name="CriticalSureComponent" type="Node"]
+script = ExtResource("1_cs")

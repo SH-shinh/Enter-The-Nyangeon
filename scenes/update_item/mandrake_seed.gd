@@ -1,34 +1,35 @@
-extends Node2D
+extends EquipItem
 
-var num: int
 var player: Node
 var health_num: float = 0.01
 @onready var health_cd_timer = $HealthCDTimer
+@onready var cd_delay_timer = $CDDelayTimer
 
-func _ready():
+func _on_equip():
 	player = get_tree().get_first_node_in_group("Player")
-	first_activation()
-	GameEvents.ability_upgrade_added.connect(on_upgrade_added)
-	GameEvents.enemy_dead_hurt_damage.connect(dead_health)
-
-func first_activation():
 	PlayerData.max_hp_add += 10
 	health_num = 0.01
-	PlayerData.update_player_ability()
 
-func on_upgrade_added(upgrade: AbilityUpgrade, current_upgrade: Dictionary):
-	if upgrade.id != "mandrake_seed":
+func _setup():
+	GameEvents.enemy_damage_taken_dead.connect(dead_health)
+
+func _apply_effect(quantity: int):
+	if quantity == 1:
 		return
-	if current_upgrade["mandrake_seed"]["quantity"] == 1:
-		return
-	num = current_upgrade["mandrake_seed"]["quantity"]
 	PlayerData.max_hp_add += 10
 	health_num += 0.01
-	PlayerData.update_player_ability()
 
-func dead_health(hurt_damage):
+func dead_health(final_damage: int, _damage_data: DamageData, _body_path: NodePath):
 	if health_cd_timer.time_left <= 0:
-		player.health_hp = ceil(hurt_damage * health_num)
-		player.emit_signal("is_health")
-		await get_tree().create_timer(0.1).timeout
-		health_cd_timer.start()
+		var health_hp = ceil(final_damage * health_num)
+		HealData.fill(player.health_component.heal_data, {
+			"amount": health_hp,
+			"source": GameTags.MAP,
+			"node": self,
+		})
+		player.health_component.take_damage(player.health_component.heal_data)
+		if cd_delay_timer.is_stopped():
+			cd_delay_timer.start()
+
+func _on_cd_delay_timer_timeout():
+	health_cd_timer.start()

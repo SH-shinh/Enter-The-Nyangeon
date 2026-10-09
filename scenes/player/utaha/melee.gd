@@ -7,7 +7,6 @@ extends Node2D
 @onready var gpu_particles_2d = $GPUParticles2D
 @onready var hit_box = $Area2D
 
-var summoned_group: Dictionary = {}
 var sort_group: Array = []
 var body_group: Array[Node]
 
@@ -45,51 +44,30 @@ func sort_summoned():
 
 func upgrade_summoned():
 	
-	if !sort_group.is_empty():
-		
-		if sort_group[0] == null or not is_instance_valid(sort_group[0]):
-			sort_group.clear()
-			return
-		SoundManager.play_sfx("FlyingPan1")
-		gpu_particles_2d.emitting = true
-		var body = sort_group[0].owner
-		var has_summoned := summoned_group.has(body)
-		
-		var s_data: DamageData = DamageData.new()
-		s_data = hit_box.damage_data.duplicate(true)
-		s_data.knockback_force = 50
-		sort_group[0].hit_received.emit(s_data)
-		
-		if !has_summoned:
-			summoned_group[body] = {
-				"quantity": 1,
-				"level": 1,
-				"level_count": 0,
-				"level_add": 0
-			}
-			player_ps.show_progress((3 + summoned_group[body]["level_add"]), summoned_group[body]["quantity"], summoned_group[body]["level"])
-		else:
-			summoned_group[body]["quantity"] += 1
-			
-			player_ps.show_progress((3 + summoned_group[body]["level_add"]), summoned_group[body]["quantity"], summoned_group[body]["level"])
-			
-			if summoned_group[body]["quantity"] >= 3 + summoned_group[body]["level_add"]:
-				summoned_group[body]["quantity"] = 0
-				summoned_group[body]["level"] += 1
-				summoned_group[body]["level_count"] += 1
-				if summoned_group[body]["level_count"] >= 10:
-					summoned_group[body]["level_count"] = 0
-					summoned_group[body]["level_add"] += 1
-				body.stats.summoned_damage_add += player_ps.up_v
-				body.stats.update_body_ability()
-			
-			
+	if sort_group.is_empty():
+		return
+	
+	if sort_group[0] == null or not is_instance_valid(sort_group[0]):
+		sort_group.clear()
+		return
+	var body = sort_group[0].owner
+	if body == null or not is_instance_valid(body):
+		sort_group.clear()
+		return
+	SoundManager.play_sfx("FlyingPan1")
+	gpu_particles_2d.emitting = true
+	# 等级/经验是召唤物固有属性：统一喂经验（up_v：6，utaha 技能升级后 12，覆盖固有 6）
+	if body.has_method("add_summon_exp"):
+		body.add_summon_exp(1, &"utaha", player_ps.up_v)
 
 func apply_melee_damage_data():
-	if hit_box.damage_data == null:
-		hit_box.damage_data = DamageData.new()
-	else:
-		hit_box.damage_data.reset_data()
+	hit_box.damage_data = DamageData.fill(hit_box.damage_data, {
+		"knockback": max(player.stats.bullet_knockback + 100, 1),
+		"direction": Vector2.RIGHT.rotated(global_rotation),
+		"type": GameTags.MELEE_DAMAGE,
+		"source": GameTags.PLAYER,
+		"node": self,
+	})
 	
 	var luck = randf_range(0, 100)
 	if luck < player.stats.critical_luck:
@@ -98,16 +76,11 @@ func apply_melee_damage_data():
 	else:
 		hit_box.damage_data.base_damage = max(1, round(player.stats.kick_damage * player.stats.global_damage))
 		hit_box.damage_data.is_crit = false
-	
-	hit_box.damage_data.knockback_force = max( player.stats.bullet_knockback + 200, 1)
-	hit_box.damage_data.knockback_direction = Vector2.RIGHT.rotated(global_rotation)
-	hit_box.damage_data.damage_type.append(GameTags.MELEE_DAMAGE)
-	hit_box.damage_data.source_node = self.get_path()
-	hit_box.damage_data.source_type.append(GameTags.PLAYER)
 
 func add_damage_data():
 	if !body_group.is_empty():
 		SoundManager.play_sfx("HurtSounds2")
+		ExtensionHooks.notify(ExtensionHooks.on_hit_sfx, ["HurtSounds2", global_position])
 		for i in body_group:
 			if i == null or not is_instance_valid(i):
 				continue
@@ -116,51 +89,19 @@ func add_damage_data():
 	if !sort_group.is_empty():
 		sort_summoned()
 		upgrade_summoned()
+		# 只击退被升级的那个（最近的一个），与 upgrade_summoned 的目标严格一致
+		if sort_group.size() > 0:
+			var target = sort_group[0]
+			if target != null and is_instance_valid(target):
+				target.hit_received.emit(hit_box.damage_data)
 		sort_group.clear()
-	
-	
-
-func _on_area_2d_body_entered(body):
-	if body.is_in_group("Enemy"):
-		
-		var hit_direction = (body.position - player.position).normalized()
-		
-		var luck = randf_range(0, 100)
-		if luck < player.stats.critical_luck:
-			body.hurt_damage = player.stats.kick_damage * player.stats.global_damage * player.stats.critical_damage
-			body.is_critical_hit = true
-			GameEvents.emit_player_melee_critical_hit_enemy(body)
-		else:
-			body.hurt_damage = player.stats.kick_damage * player.stats.global_damage
-		
-		body.hurt_knockback = min( player.stats.bullet_knockback + 200, 1000 )
-		body.hurt_direction = hit_direction
-		GameEvents.emit_player_melee_hit_enemy(body)
-		body.emit_signal("is_hurt")
-		SoundManager.play_sfx("HurtSounds2")
-	
-	if body.is_in_group("Summoned"):
-		
-		sort_group.append(body)
-		sort_summoned()
-		
-		upgrade_summoned()
-		
-		var hit_direction = (body.position - player.position).normalized()
-		body.hurt_knockback = 50
-		body.hurt_dir = hit_direction
-		
-		body.stats.emit_signal("is_hurt")
-	
 
 func _on_hit_box_entered(hurtbox: Area2D):
+	if hurtbox == null or not is_instance_valid(hurtbox):
+		return
 	if hurtbox is HurtBox and !body_group.has(hurtbox):
-		if hurtbox.owner.is_in_group("Summoned"):
+		var body = hurtbox.owner
+		if body != null and is_instance_valid(body) and body.is_in_group("Summoned"):
 			sort_group.append(hurtbox)
 		else:
 			body_group.push_back(hurtbox)
-
-func _on_area_2d_body_exited(body):
-	if body.is_in_group("Summoned"):
-		sort_group.remove_at(sort_group.find(body))
-		sort_summoned()

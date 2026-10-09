@@ -1,45 +1,75 @@
-[gd_scene load_steps=8 format=3 uid="uid://mbskkmxmp1c0"]
+[gd_scene format=3 uid="uid://mbskkmxmp1c0"]
 
 [ext_resource type="Texture2D" uid="uid://cj8og3c8hrv1j" path="res://sprites/player_support/kei/luminous_nova.png" id="1_6ibj1"]
-[ext_resource type="Script" path="res://scenes/player_support/kei/luminous_nova.gd" id="1_mib7t"]
-[ext_resource type="PackedScene" uid="uid://5xnka7kne7w" path="res://script/picatinny_rail.tscn" id="2_f037n"]
+[ext_resource type="Script" uid="uid://dvm50818snysn" path="res://scenes/player_support/kei/luminous_nova.gd" id="1_mib7t"]
 [ext_resource type="PackedScene" uid="uid://dc24nwj07d4cw" path="res://scenes/bullet/kei_bullet.tscn" id="2_qdm2n"]
 [ext_resource type="PackedScene" uid="uid://dogh3pe2fynxi" path="res://scenes/weapon/shoot_flash_2.tscn" id="3_filcn"]
-[ext_resource type="PackedScene" uid="uid://bjvr1nuwo7ish" path="res://script/muzzle.tscn" id="3_keoth"]
 [ext_resource type="AudioStream" uid="uid://cfick73t3w2wv" path="res://sounds/ELECArc_Gauss Cannon Electric Arc_01.wav" id="4_ubrg7"]
 
-[node name="luminous_nova" type="Node2D"]
+[sub_resource type="Animation" id="Animation_d24ot"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0.7, 0.7)]
+}
+
+[sub_resource type="Animation" id="Animation_nqxbl"]
+resource_name = "fire"
+length = 0.3
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0.55, 1.1), Vector2(0.7, 0.7)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_xuvud"]
+_data = {
+&"RESET": SubResource("Animation_d24ot"),
+&"fire": SubResource("Animation_nqxbl")
+}
+
+[node name="luminous_nova" type="Node2D" unique_id=1452671558]
 script = ExtResource("1_mib7t")
 pool_id = "support_bullet"
 bullet = ExtResource("2_qdm2n")
 shoot_flash = ExtResource("3_filcn")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=2146852079]
 position = Vector2(6.4001, 0.400099)
 scale = Vector2(0.7, 0.7)
 texture = ExtResource("1_6ibj1")
 
-[node name="PicatinnyRail" parent="Sprite2D" instance=ExtResource("2_f037n")]
-position = Vector2(0, -9)
-scale = Vector2(1.429, 1.429)
-
-[node name="Muzzle" parent="Sprite2D" instance=ExtResource("3_keoth")]
-position = Vector2(29.993, -0.572)
-scale = Vector2(1.429, 1.429)
-
-[node name="ShootPosition" type="Marker2D" parent="."]
+[node name="ShootPosition" type="Marker2D" parent="." unique_id=1844294542]
 position = Vector2(27.395, 0)
 
-[node name="ShootTimer" type="Timer" parent="."]
+[node name="ShootTimer" type="Timer" parent="." unique_id=1691469655]
 wait_time = 0.2
 one_shot = true
 
-[node name="ReloadTimer" type="Timer" parent="."]
+[node name="ReloadTimer" type="Timer" parent="." unique_id=2092631210]
 wait_time = 0.1
 one_shot = true
 
-[node name="FireSounds" type="AudioStreamPlayer2D" parent="."]
+[node name="FireSounds" type="AudioStreamPlayer2D" parent="." unique_id=1876105259]
 process_mode = 3
 stream = ExtResource("4_ubrg7")
 volume_db = 5.0
 pitch_scale = 0.6
+
+[node name="FireAnim" type="AnimationPlayer" parent="." unique_id=1057364130]
+libraries/ = SubResource("AnimationLibrary_xuvud")

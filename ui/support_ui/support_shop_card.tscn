@@ -1,8 +1,7 @@
-[gd_scene load_steps=9 format=3 uid="uid://bmgdyaumkmynv"]
+[gd_scene load_steps=8 format=3 uid="uid://bmgdyaumkmynv"]
 
 [ext_resource type="Script" path="res://ui/support_ui/support_shop_card.gd" id="1_gvk2x"]
 [ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="2_01e1t"]
-[ext_resource type="Texture2D" uid="uid://dsxq2scs6kcep" path="res://sprites/player_support/null_picture.png" id="2_jercv"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jfl7t"]
 
@@ -64,7 +63,6 @@ unique_name_in_owner = true
 texture_filter = 2
 position = Vector2(45, 115.005)
 scale = Vector2(0.3, 0.3)
-texture = ExtResource("2_jercv")
 hframes = 4
 
 [node name="MainName" type="Label" parent="ColorRect"]

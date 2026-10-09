@@ -1,6 +1,6 @@
-[gd_scene load_steps=191 format=3 uid="uid://c15663ri7ekj1"]
+[gd_scene format=3 uid="uid://c15663ri7ekj1"]
 
-[ext_resource type="Script" path="res://scenes/manager/SoundManager.gd" id="1_fvbol"]
+[ext_resource type="Script" uid="uid://dtu4rmflmo1ed" path="res://scenes/manager/SoundManager.gd" id="1_fvbol"]
 [ext_resource type="AudioStream" uid="uid://dbvrnpaktc5pm" path="res://sounds/hurt_sound_3.wav" id="2_d30cq"]
 [ext_resource type="AudioStream" uid="uid://u6p5v72je6as" path="res://sounds/hurt_sound_1.wav" id="3_ir5kp"]
 [ext_resource type="AudioStream" uid="uid://dsfgy3khubhem" path="res://sounds/damage5.wav" id="3_mfdhk"]
@@ -53,12 +53,19 @@
 [ext_resource type="AudioStream" uid="uid://bcfbqd4nxa6c6" path="res://sounds/voice/yuzu/Yuzu_Tactic_Victory_2.ogg" id="35_xbfkg"]
 [ext_resource type="AudioStream" uid="uid://nhtkxi5306se" path="res://sounds/voice/yuzu/Yuzu_Tactic_Defeat_1.ogg" id="36_5s4nw"]
 [ext_resource type="AudioStream" uid="uid://bqa1kr63dcf86" path="res://sounds/voice/yuzu/Yuzu_Tactic_Defeat_2.ogg" id="36_a31ub"]
+[ext_resource type="AudioStream" uid="uid://bkyrbf8lggs6k" path="res://sounds/jump_sound_2.wav" id="36_caah6"]
+[ext_resource type="AudioStream" uid="uid://cg8jaffrjqk4n" path="res://sounds/laser_3.wav" id="37_toeaa"]
 [ext_resource type="AudioStream" uid="uid://s4hxy32w8x1q" path="res://sounds/voice/aris/Aris_Formation_In_1.ogg" id="37_ymk2i"]
 [ext_resource type="AudioStream" uid="uid://c71dwq4j68bv0" path="res://sounds/voice/aris/Aris_Formation_In_2.ogg" id="38_ch7nk"]
+[ext_resource type="AudioStream" uid="uid://dsqrgauvwos1i" path="res://sounds/laser_4.wav" id="38_whr0h"]
+[ext_resource type="AudioStream" uid="uid://jdy26mbmlmpc" path="res://sounds/sword_attack2.wav" id="39_ifp04"]
 [ext_resource type="AudioStream" uid="uid://cw50dktiwy8qp" path="res://sounds/voice/aris/Aris_Tactic_Victory_1.ogg" id="39_psmb0"]
 [ext_resource type="AudioStream" uid="uid://bkqcupu7tklcp" path="res://sounds/voice/aris/Aris_Tactic_Victory_2.ogg" id="40_11jej"]
+[ext_resource type="AudioStream" uid="uid://bhh4h8ts1wfyq" path="res://sounds/packun_eating.wav" id="40_atuts"]
+[ext_resource type="AudioStream" uid="uid://c2y703roym7pv" path="res://sounds/fuse2.wav" id="41_5awck"]
 [ext_resource type="AudioStream" uid="uid://mj51meuitlgv" path="res://sounds/voice/aris/Aris_Tactic_Defeat_1.ogg" id="41_rww5l"]
 [ext_resource type="AudioStream" uid="uid://bish4j6b1iobe" path="res://sounds/voice/aris/Aris_Tactic_Defeat_2.ogg" id="42_6qaaf"]
+[ext_resource type="AudioStream" uid="uid://6tn6kb2wqbf6" path="res://sounds/laser_beam.wav" id="42_xatox"]
 [ext_resource type="AudioStream" uid="uid://dwhj454to6gek" path="res://sounds/voice/utaha/Utaha_Formation_In_1.ogg" id="46_n7abv"]
 [ext_resource type="AudioStream" uid="uid://bc262qn7s7whb" path="res://sounds/voice/utaha/Utaha_Formation_In_2.ogg" id="47_ncccv"]
 [ext_resource type="AudioStream" uid="uid://bchjeso7ejcc7" path="res://sounds/voice/utaha/CH0182_Tactic_Victory_1.ogg" id="48_m53uw"]
@@ -186,6 +193,24 @@
 [ext_resource type="AudioStream" uid="uid://cttcipmq7nc5m" path="res://sounds/voice/iori/Iori_Tactic_Victory_2.ogg" id="147_vvotc"]
 [ext_resource type="AudioStream" uid="uid://br64ynb8x4ikf" path="res://sounds/voice/iori/Iori_Tactic_Defeat_1.ogg" id="148_e3dpu"]
 [ext_resource type="AudioStream" uid="uid://bhi2wkjev5spf" path="res://sounds/voice/iori/Iori_Tactic_Defeat_2.ogg" id="149_t7qf5"]
+[ext_resource type="AudioStream" uid="uid://8hsl7xpbfn3" path="res://sounds/voice/aris_armed/ch0334_formation_in_1.ogg" id="153_rd4wq"]
+[ext_resource type="AudioStream" uid="uid://q5f51eed6edo" path="res://sounds/voice/aris_armed/ch0334_formation_in_2.ogg" id="154_ifp04"]
+[ext_resource type="AudioStream" uid="uid://c3s1sjvxlixot" path="res://sounds/voice/aris_armed/ch0334_tactic_victory_1.ogg" id="155_7dj7h"]
+[ext_resource type="AudioStream" uid="uid://cqj54aumgvchg" path="res://sounds/voice/aris_armed/ch0334_tactic_victory_2.ogg" id="156_gb02s"]
+[ext_resource type="AudioStream" uid="uid://0wpx37s3kiyr" path="res://sounds/voice/aris_armed/ch0334_tactic_defeat_1.ogg" id="157_f3gbs"]
+[ext_resource type="AudioStream" uid="uid://opv786tfiylm" path="res://sounds/voice/aris_armed/ch0334_tactic_defeat_2.ogg" id="158_32qhv"]
+[ext_resource type="AudioStream" uid="uid://c3y6fqht8qinq" path="res://sounds/voice/ako/Ako_Formation_In_1.ogg" id="160_1kjcs"]
+[ext_resource type="AudioStream" uid="uid://ej87cpel5b4v" path="res://sounds/voice/ako/Ako_Formation_In_2.ogg" id="161_atuts"]
+[ext_resource type="AudioStream" uid="uid://db5mt2k0j8b05" path="res://sounds/voice/ako/Ako_ExSkill_3.ogg" id="162_5awck"]
+[ext_resource type="AudioStream" uid="uid://b0jggoudrbitx" path="res://sounds/voice/ako/Ako_ExSkill_Level_3.ogg" id="163_3ed33"]
+[ext_resource type="AudioStream" uid="uid://iwe1wpobpmmm" path="res://sounds/voice/ako/Ako_MemorialLobby_1.ogg" id="164_vgkly"]
+[ext_resource type="AudioStream" uid="uid://dodnbcpwj7t3m" path="res://sounds/voice/ako/Ako_MemorialLobby_2.ogg" id="165_heam3"]
+[ext_resource type="AudioStream" uid="uid://de35jhnufhcr0" path="res://sounds/voice/chinatsu/Chinatsu_Formation_In_1.ogg" id="168_h3kud"]
+[ext_resource type="AudioStream" uid="uid://bi2avsbeidx06" path="res://sounds/voice/chinatsu/Chinatsu_Formation_In_2.ogg" id="169_xatox"]
+[ext_resource type="AudioStream" uid="uid://cfi3hrpbqd2c5" path="res://sounds/voice/chinatsu/Chinatsu_ExSkill_2.ogg" id="170_j27j0"]
+[ext_resource type="AudioStream" uid="uid://7t6p4l4ppubr" path="res://sounds/voice/chinatsu/Chinatsu_Cafe_monolog_2.ogg" id="171_848ts"]
+[ext_resource type="AudioStream" uid="uid://dwywku5g3oll8" path="res://sounds/voice/chinatsu/CH0163_Tactic_Defeat_1.ogg" id="172_1lc1w"]
+[ext_resource type="AudioStream" uid="uid://dyfien3qmac4r" path="res://sounds/voice/chinatsu/CH0163_Tactic_Defeat_2.ogg" id="173_sans8"]
 
 [sub_resource type="Animation" id="Animation_4rqlr"]
 resource_name = "1s"
@@ -235,864 +260,984 @@ tracks/0/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_c2aud"]
 _data = {
-"1s": SubResource("Animation_4rqlr"),
-"4s": SubResource("Animation_nnt0m"),
-"RESET": SubResource("Animation_74w0b")
+&"1s": SubResource("Animation_4rqlr"),
+&"4s": SubResource("Animation_nnt0m"),
+&"RESET": SubResource("Animation_74w0b")
 }
 
-[node name="SoundManager" type="Node"]
+[node name="SoundManager" type="Node" unique_id=1737293246]
 process_mode = 3
 script = ExtResource("1_fvbol")
 
-[node name="SFX" type="Node" parent="."]
+[node name="SFX" type="Node" parent="." unique_id=672496890]
 
-[node name="HurtSounds" type="AudioStreamPlayer" parent="SFX"]
+[node name="HurtSounds" type="AudioStreamPlayer" parent="SFX" unique_id=605111533]
 stream = ExtResource("2_d30cq")
 volume_db = 2.0
 bus = &"SFX"
 
-[node name="HurtSounds2" type="AudioStreamPlayer" parent="SFX"]
+[node name="HurtSounds2" type="AudioStreamPlayer" parent="SFX" unique_id=1864230774]
 stream = ExtResource("3_mfdhk")
 volume_db = -4.0
 pitch_scale = 1.3
 bus = &"SFX"
 
-[node name="HurtSounds3" type="AudioStreamPlayer" parent="SFX"]
+[node name="HurtSounds3" type="AudioStreamPlayer" parent="SFX" unique_id=1059670455]
 stream = ExtResource("4_22kva")
 volume_db = -3.0
 pitch_scale = 1.3
 bus = &"SFX"
 
-[node name="DeadSounds" type="AudioStreamPlayer" parent="SFX"]
+[node name="DeadSounds" type="AudioStreamPlayer" parent="SFX" unique_id=552932220]
 stream = ExtResource("3_ir5kp")
 bus = &"SFX"
 
-[node name="ExplosionSounds" type="AudioStreamPlayer" parent="SFX"]
+[node name="ExplosionSounds" type="AudioStreamPlayer" parent="SFX" unique_id=468164300]
 stream = ExtResource("4_4kyom")
 bus = &"SFX"
 
-[node name="ExplosionSounds2" type="AudioStreamPlayer" parent="SFX"]
+[node name="ExplosionSounds2" type="AudioStreamPlayer" parent="SFX" unique_id=461685397]
 stream = ExtResource("5_nw8bs")
 volume_db = -4.0
 bus = &"SFX"
 
-[node name="ExplosionSounds3" type="AudioStreamPlayer" parent="SFX"]
+[node name="ExplosionSounds3" type="AudioStreamPlayer" parent="SFX" unique_id=1529593901]
 stream = ExtResource("6_3x7h5")
 volume_db = 2.0
 bus = &"SFX"
 
-[node name="GunSounds3" type="AudioStreamPlayer" parent="SFX"]
+[node name="GunSounds3" type="AudioStreamPlayer" parent="SFX" unique_id=1670236268]
 stream = ExtResource("5_bi6s0")
 volume_db = -2.0
 pitch_scale = 0.8
 bus = &"SFX"
 
-[node name="GunSounds4" type="AudioStreamPlayer" parent="SFX"]
+[node name="GunSounds4" type="AudioStreamPlayer" parent="SFX" unique_id=200031265]
 stream = ExtResource("15_jouju")
 volume_db = -10.0
 bus = &"SFX"
 
-[node name="GunSounds5" type="AudioStreamPlayer" parent="SFX"]
+[node name="GunSounds5" type="AudioStreamPlayer" parent="SFX" unique_id=1648530597]
 stream = ExtResource("10_cto4u")
 pitch_scale = 0.8
 bus = &"SFX"
 
-[node name="GunSounds6" type="AudioStreamPlayer" parent="SFX"]
+[node name="GunSounds6" type="AudioStreamPlayer" parent="SFX" unique_id=1416280704]
 stream = ExtResource("11_cvbot")
 pitch_scale = 0.8
 bus = &"SFX"
 
-[node name="GunSounds7" type="AudioStreamPlayer" parent="SFX"]
+[node name="GunSounds7" type="AudioStreamPlayer" parent="SFX" unique_id=216325346]
 stream = ExtResource("12_kbuyr")
 volume_db = -2.0
 bus = &"SFX"
 
-[node name="GameOver" type="AudioStreamPlayer" parent="SFX"]
+[node name="GameOver" type="AudioStreamPlayer" parent="SFX" unique_id=672464727]
 stream = ExtResource("6_wypnx")
 bus = &"SFX"
 
-[node name="ButtonSounds" type="AudioStreamPlayer" parent="SFX"]
+[node name="ButtonSounds" type="AudioStreamPlayer" parent="SFX" unique_id=582200803]
 stream = ExtResource("7_q2o72")
 volume_db = 4.0
 pitch_scale = 1.5
 bus = &"SFX"
 
-[node name="CoinSounds" type="AudioStreamPlayer" parent="SFX"]
+[node name="CoinSounds" type="AudioStreamPlayer" parent="SFX" unique_id=683477646]
 stream = ExtResource("8_k0gvk")
 bus = &"SFX"
 
-[node name="CoinCostSounds" type="AudioStreamPlayer" parent="SFX"]
+[node name="CoinCostSounds" type="AudioStreamPlayer" parent="SFX" unique_id=1631803522]
 stream = ExtResource("8_k0gvk")
 volume_db = -8.0
 pitch_scale = 0.7
 bus = &"SFX"
 
-[node name="ButtonSounds2" type="AudioStreamPlayer" parent="SFX"]
+[node name="ButtonSounds2" type="AudioStreamPlayer" parent="SFX" unique_id=1501592114]
 stream = ExtResource("9_ltpf3")
 volume_db = -2.0
 pitch_scale = 1.1
 bus = &"SFX"
 
-[node name="Win" type="AudioStreamPlayer" parent="SFX"]
+[node name="Win" type="AudioStreamPlayer" parent="SFX" unique_id=523767657]
 stream = ExtResource("10_c8pg8")
 bus = &"SFX"
 
-[node name="WarringSounds" type="AudioStreamPlayer" parent="SFX"]
+[node name="WarringSounds" type="AudioStreamPlayer" parent="SFX" unique_id=1056598248]
 stream = ExtResource("11_dgxpn")
 volume_db = 2.0
 bus = &"SFX"
 
-[node name="EquipSounds1" type="AudioStreamPlayer" parent="SFX"]
+[node name="EquipSounds1" type="AudioStreamPlayer" parent="SFX" unique_id=426234698]
 stream = ExtResource("12_demxj")
 volume_db = -10.0
 bus = &"SFX"
 
-[node name="EquipSounds2" type="AudioStreamPlayer" parent="SFX"]
+[node name="EquipSounds2" type="AudioStreamPlayer" parent="SFX" unique_id=1623124827]
 stream = ExtResource("13_1rb70")
 volume_db = -4.0
 bus = &"SFX"
 
-[node name="EquipSounds3" type="AudioStreamPlayer" parent="SFX"]
+[node name="EquipSounds3" type="AudioStreamPlayer" parent="SFX" unique_id=427058252]
 stream = ExtResource("14_c3mre")
 volume_db = -4.0
 bus = &"SFX"
 
-[node name="EquipSounds4" type="AudioStreamPlayer" parent="SFX"]
+[node name="EquipSounds4" type="AudioStreamPlayer" parent="SFX" unique_id=2113339324]
 stream = ExtResource("16_w1j2s")
 volume_db = -8.0
 bus = &"SFX"
 
-[node name="EquipSounds5" type="AudioStreamPlayer" parent="SFX"]
+[node name="EquipSounds5" type="AudioStreamPlayer" parent="SFX" unique_id=598815682]
 stream = ExtResource("17_omv7x")
 bus = &"SFX"
 
-[node name="UISounds1" type="AudioStreamPlayer" parent="SFX"]
+[node name="UISounds1" type="AudioStreamPlayer" parent="SFX" unique_id=802385921]
 stream = ExtResource("18_v8auv")
 volume_db = -1.0
 bus = &"SFX"
 
-[node name="UISounds2" type="AudioStreamPlayer" parent="SFX"]
+[node name="UISounds2" type="AudioStreamPlayer" parent="SFX" unique_id=1036114929]
 stream = ExtResource("19_kewmw")
 bus = &"SFX"
 
-[node name="Swing1" type="AudioStreamPlayer" parent="SFX"]
+[node name="Swing1" type="AudioStreamPlayer" parent="SFX" unique_id=150057517]
 stream = ExtResource("20_6by0w")
 volume_db = -4.0
 bus = &"SFX"
 
-[node name="FlyingPan1" type="AudioStreamPlayer" parent="SFX"]
+[node name="FlyingPan1" type="AudioStreamPlayer" parent="SFX" unique_id=439446173]
 stream = ExtResource("21_phc8b")
 volume_db = -8.0
 pitch_scale = 1.2
 bus = &"SFX"
 
-[node name="CannonSounds1" type="AudioStreamPlayer" parent="SFX"]
+[node name="FlyingPan2" type="AudioStreamPlayer" parent="SFX" unique_id=1786473036]
+stream = ExtResource("21_phc8b")
+volume_db = -8.0
+pitch_scale = 2.5
+bus = &"SFX"
+
+[node name="CannonSounds1" type="AudioStreamPlayer" parent="SFX" unique_id=1145385167]
 stream = ExtResource("22_sppuy")
 volume_db = 4.0
 pitch_scale = 1.24
 bus = &"SFX"
 
-[node name="CannonSounds2" type="AudioStreamPlayer" parent="SFX"]
+[node name="CannonSounds2" type="AudioStreamPlayer" parent="SFX" unique_id=1220731615]
 stream = ExtResource("28_vuuyk")
 pitch_scale = 0.9
 bus = &"SFX"
 
-[node name="LaserSounds1" type="AudioStreamPlayer" parent="SFX"]
+[node name="LaserSounds1" type="AudioStreamPlayer" parent="SFX" unique_id=233819704]
 stream = ExtResource("24_xv0x7")
 volume_db = 4.0
 bus = &"SFX"
 
-[node name="PowerUp1" type="AudioStreamPlayer" parent="SFX"]
+[node name="PowerUp1" type="AudioStreamPlayer" parent="SFX" unique_id=519716242]
 stream = ExtResource("30_bgxan")
 volume_db = 4.0
 pitch_scale = 0.9
 bus = &"SFX"
 
-[node name="ReloadSounds" type="AudioStreamPlayer" parent="SFX"]
+[node name="ReloadSounds" type="AudioStreamPlayer" parent="SFX" unique_id=2052936645]
 stream = ExtResource("33_f7pgi")
 volume_db = 2.0
 bus = &"SFX"
 
-[node name="LaserSounds" type="AudioStreamPlayer" parent="SFX"]
+[node name="LaserSounds" type="AudioStreamPlayer" parent="SFX" unique_id=2037105615]
 process_mode = 1
 stream = ExtResource("34_i7um8")
 volume_db = -5.0
 bus = &"SFX"
 
-[node name="ReloadSounds2" type="AudioStreamPlayer" parent="SFX"]
+[node name="ReloadSounds2" type="AudioStreamPlayer" parent="SFX" unique_id=1073314662]
 stream = ExtResource("35_aa6tp")
 volume_db = 20.0
 pitch_scale = 0.8
 bus = &"SFX"
 
-[node name="BGM" type="Node" parent="."]
+[node name="JumpSounds" type="AudioStreamPlayer" parent="SFX" unique_id=1424221350]
+stream = ExtResource("36_caah6")
+volume_db = 8.0
+bus = &"SFX"
 
-[node name="BGMPlayer" type="AudioStreamPlayer" parent="BGM"]
+[node name="LaserSounds2" type="AudioStreamPlayer" parent="SFX" unique_id=871660566]
+process_mode = 1
+stream = ExtResource("37_toeaa")
+volume_db = 5.0
+pitch_scale = 0.8
+bus = &"SFX"
+
+[node name="LaserSounds3" type="AudioStreamPlayer" parent="SFX" unique_id=965361776]
+process_mode = 1
+stream = ExtResource("38_whr0h")
+volume_db = 2.0
+bus = &"SFX"
+
+[node name="SwordSounds1" type="AudioStreamPlayer" parent="SFX" unique_id=1868816918]
+stream = ExtResource("39_ifp04")
+volume_db = -4.0
+bus = &"SFX"
+
+[node name="EquipSounds6" type="AudioStreamPlayer" parent="SFX" unique_id=661519174]
+stream = ExtResource("40_atuts")
+pitch_scale = 1.2
+bus = &"SFX"
+
+[node name="EquipSounds7" type="AudioStreamPlayer" parent="SFX" unique_id=2132902742]
+stream = ExtResource("41_5awck")
+volume_db = 8.0
+bus = &"SFX"
+
+[node name="EquipSounds8" type="AudioStreamPlayer" parent="SFX" unique_id=371931944]
+stream = ExtResource("42_xatox")
+volume_db = -4.0
+bus = &"SFX"
+
+[node name="BGM" type="Node" parent="." unique_id=526097621]
+
+[node name="BGMPlayer" type="AudioStreamPlayer" parent="BGM" unique_id=1986692081]
 bus = &"BGM"
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="BGM"]
-libraries = {
-"": SubResource("AnimationLibrary_c2aud")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="BGM" unique_id=1596287025]
+libraries/ = SubResource("AnimationLibrary_c2aud")
 
-[node name="VOICE" type="Node" parent="."]
+[node name="VOICE" type="Node" parent="." unique_id=1347563685]
 
-[node name="momoi" type="Node" parent="VOICE"]
+[node name="momoi" type="Node" parent="VOICE" unique_id=1219635189]
 
-[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/momoi"]
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/momoi" unique_id=2096780368]
 stream = ExtResource("20_wgv6f")
 bus = &"VOICE"
 
-[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/momoi"]
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/momoi" unique_id=919785903]
 stream = ExtResource("21_u8y3e")
 bus = &"VOICE"
 
-[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/momoi"]
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/momoi" unique_id=1525325678]
 stream = ExtResource("22_1n1k4")
 bus = &"VOICE"
 
-[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/momoi"]
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/momoi" unique_id=360607986]
 stream = ExtResource("23_q0it3")
 bus = &"VOICE"
 
-[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/momoi"]
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/momoi" unique_id=529779285]
 stream = ExtResource("24_iqepu")
 bus = &"VOICE"
 
-[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/momoi"]
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/momoi" unique_id=409821923]
 stream = ExtResource("25_8j5hr")
 bus = &"VOICE"
 
-[node name="midori" type="Node" parent="VOICE"]
+[node name="midori" type="Node" parent="VOICE" unique_id=1787021979]
 
-[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/midori"]
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/midori" unique_id=2126245048]
 stream = ExtResource("26_bfbq7")
 bus = &"VOICE"
 
-[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/midori"]
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/midori" unique_id=692935031]
 stream = ExtResource("27_xeds2")
 bus = &"VOICE"
 
-[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/midori"]
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/midori" unique_id=1123899526]
 stream = ExtResource("28_rdc76")
 bus = &"VOICE"
 
-[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/midori"]
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/midori" unique_id=2136651217]
 stream = ExtResource("29_pfdop")
 bus = &"VOICE"
 
-[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/midori"]
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/midori" unique_id=669972638]
 stream = ExtResource("30_ki2kk")
 bus = &"VOICE"
 
-[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/midori"]
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/midori" unique_id=2107843247]
 stream = ExtResource("31_4i1bg")
 bus = &"VOICE"
 
-[node name="yuzu" type="Node" parent="VOICE"]
+[node name="yuzu" type="Node" parent="VOICE" unique_id=2056851586]
 
-[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/yuzu"]
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/yuzu" unique_id=1076768051]
 stream = ExtResource("32_mjjnu")
 bus = &"VOICE"
 
-[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/yuzu"]
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/yuzu" unique_id=270762355]
 stream = ExtResource("33_b65c4")
 bus = &"VOICE"
 
-[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/yuzu"]
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/yuzu" unique_id=1014748179]
 stream = ExtResource("34_1ecbs")
 bus = &"VOICE"
 
-[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/yuzu"]
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/yuzu" unique_id=824225349]
 stream = ExtResource("35_xbfkg")
 bus = &"VOICE"
 
-[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/yuzu"]
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/yuzu" unique_id=1883408594]
 stream = ExtResource("36_5s4nw")
 bus = &"VOICE"
 
-[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/yuzu"]
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/yuzu" unique_id=708160389]
 stream = ExtResource("36_a31ub")
 bus = &"VOICE"
 
-[node name="aris" type="Node" parent="VOICE"]
+[node name="aris" type="Node" parent="VOICE" unique_id=1061194565]
 
-[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/aris"]
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/aris" unique_id=1451671224]
 stream = ExtResource("37_ymk2i")
 bus = &"VOICE"
 
-[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/aris"]
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/aris" unique_id=863641771]
 stream = ExtResource("38_ch7nk")
 bus = &"VOICE"
 
-[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/aris"]
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/aris" unique_id=2075658373]
 stream = ExtResource("39_psmb0")
 bus = &"VOICE"
 
-[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/aris"]
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/aris" unique_id=214554515]
 stream = ExtResource("40_11jej")
 bus = &"VOICE"
 
-[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/aris"]
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/aris" unique_id=1553006237]
 stream = ExtResource("41_rww5l")
 bus = &"VOICE"
 
-[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/aris"]
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/aris" unique_id=179926960]
 stream = ExtResource("42_6qaaf")
 bus = &"VOICE"
 
-[node name="utaha" type="Node" parent="VOICE"]
+[node name="utaha" type="Node" parent="VOICE" unique_id=1088007623]
 
-[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/utaha"]
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/utaha" unique_id=1352588863]
 stream = ExtResource("46_n7abv")
 bus = &"VOICE"
 
-[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/utaha"]
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/utaha" unique_id=1784787378]
 stream = ExtResource("47_ncccv")
 bus = &"VOICE"
 
-[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/utaha"]
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/utaha" unique_id=1859685588]
 stream = ExtResource("48_m53uw")
 bus = &"VOICE"
 
-[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/utaha"]
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/utaha" unique_id=2043167621]
 stream = ExtResource("49_d2t6m")
 bus = &"VOICE"
 
-[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/utaha"]
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/utaha" unique_id=355384235]
 stream = ExtResource("50_8kcil")
 bus = &"VOICE"
 
-[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/utaha"]
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/utaha" unique_id=1622958794]
 stream = ExtResource("51_dbduw")
 bus = &"VOICE"
 
-[node name="kotori" type="Node" parent="VOICE"]
+[node name="kotori" type="Node" parent="VOICE" unique_id=1477081620]
 
-[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/kotori"]
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/kotori" unique_id=854526330]
 stream = ExtResource("52_yl1uk")
 bus = &"VOICE"
 
-[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/kotori"]
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/kotori" unique_id=1627690776]
 stream = ExtResource("53_eylkr")
 bus = &"VOICE"
 
-[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/kotori"]
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/kotori" unique_id=335546932]
 stream = ExtResource("54_177n8")
 bus = &"VOICE"
 
-[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/kotori"]
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/kotori" unique_id=1859977825]
 stream = ExtResource("55_beogc")
 bus = &"VOICE"
 
-[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/kotori"]
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/kotori" unique_id=695265517]
 stream = ExtResource("56_lkvfh")
 bus = &"VOICE"
 
-[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/kotori"]
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/kotori" unique_id=1875211288]
 stream = ExtResource("57_tfwvq")
 bus = &"VOICE"
 
-[node name="hibiki" type="Node" parent="VOICE"]
+[node name="hibiki" type="Node" parent="VOICE" unique_id=1641448969]
 
-[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/hibiki"]
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/hibiki" unique_id=460844499]
 stream = ExtResource("58_tibgp")
 bus = &"VOICE"
 
-[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/hibiki"]
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/hibiki" unique_id=1174860513]
 stream = ExtResource("59_6duye")
 bus = &"VOICE"
 
-[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/hibiki"]
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/hibiki" unique_id=1996499988]
 stream = ExtResource("60_4xclk")
 bus = &"VOICE"
 
-[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/hibiki"]
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/hibiki" unique_id=651771031]
 stream = ExtResource("61_df2m5")
 bus = &"VOICE"
 
-[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/hibiki"]
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/hibiki" unique_id=948008063]
 stream = ExtResource("62_wuuyi")
 bus = &"VOICE"
 
-[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/hibiki"]
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/hibiki" unique_id=1826558221]
 stream = ExtResource("63_c5ytb")
 bus = &"VOICE"
 
-[node name="kasumi" type="Node" parent="VOICE"]
+[node name="kasumi" type="Node" parent="VOICE" unique_id=737718069]
 
-[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/kasumi"]
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/kasumi" unique_id=1200997055]
 stream = ExtResource("68_hxalm")
 bus = &"VOICE"
 
-[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/kasumi"]
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/kasumi" unique_id=1929627919]
 stream = ExtResource("69_1ihwj")
 bus = &"VOICE"
 
-[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/kasumi"]
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/kasumi" unique_id=411292328]
 stream = ExtResource("70_lnhlt")
 bus = &"VOICE"
 
-[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/kasumi"]
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/kasumi" unique_id=1842410384]
 stream = ExtResource("71_32q4s")
 bus = &"VOICE"
 
-[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/kasumi"]
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/kasumi" unique_id=352152760]
 stream = ExtResource("72_slrmb")
 bus = &"VOICE"
 
-[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/kasumi"]
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/kasumi" unique_id=176197672]
 stream = ExtResource("73_bgmkd")
 bus = &"VOICE"
 
-[node name="megu" type="Node" parent="VOICE"]
+[node name="megu" type="Node" parent="VOICE" unique_id=1125746960]
 
-[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/megu"]
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/megu" unique_id=645477998]
 stream = ExtResource("74_y5lhu")
 bus = &"VOICE"
 
-[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/megu"]
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/megu" unique_id=1231648392]
 stream = ExtResource("75_4ma31")
 bus = &"VOICE"
 
-[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/megu"]
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/megu" unique_id=516326788]
 stream = ExtResource("76_agehw")
 bus = &"VOICE"
 
-[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/megu"]
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/megu" unique_id=1622602685]
 stream = ExtResource("77_pr2s6")
 bus = &"VOICE"
 
-[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/megu"]
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/megu" unique_id=106236485]
 stream = ExtResource("78_gvjm7")
 bus = &"VOICE"
 
-[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/megu"]
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/megu" unique_id=997828724]
 stream = ExtResource("79_5ol3k")
 bus = &"VOICE"
 
-[node name="hoshino" type="Node" parent="VOICE"]
+[node name="hoshino" type="Node" parent="VOICE" unique_id=1353272522]
 
-[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/hoshino"]
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/hoshino" unique_id=1326605337]
 stream = ExtResource("81_84opk")
 bus = &"VOICE"
 
-[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/hoshino"]
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/hoshino" unique_id=1632267668]
 stream = ExtResource("82_dsg13")
 bus = &"VOICE"
 
-[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/hoshino"]
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/hoshino" unique_id=1633795744]
 stream = ExtResource("83_6syd6")
 bus = &"VOICE"
 
-[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/hoshino"]
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/hoshino" unique_id=214668792]
 stream = ExtResource("84_qrpa0")
 bus = &"VOICE"
 
-[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/hoshino"]
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/hoshino" unique_id=252806611]
 stream = ExtResource("85_mawg7")
 bus = &"VOICE"
 
-[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/hoshino"]
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/hoshino" unique_id=387221885]
 stream = ExtResource("86_me4je")
 bus = &"VOICE"
 
-[node name="nonomi" type="Node" parent="VOICE"]
+[node name="nonomi" type="Node" parent="VOICE" unique_id=1204530799]
 
-[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/nonomi"]
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/nonomi" unique_id=531851276]
 stream = ExtResource("87_60un1")
 bus = &"VOICE"
 
-[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/nonomi"]
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/nonomi" unique_id=138053155]
 stream = ExtResource("88_vfo7b")
 bus = &"VOICE"
 
-[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/nonomi"]
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/nonomi" unique_id=594758437]
 stream = ExtResource("89_5l18u")
 bus = &"VOICE"
 
-[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/nonomi"]
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/nonomi" unique_id=1089463196]
 stream = ExtResource("90_vvr35")
 bus = &"VOICE"
 
-[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/nonomi"]
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/nonomi" unique_id=1928533668]
 stream = ExtResource("91_jhnjm")
 bus = &"VOICE"
 
-[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/nonomi"]
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/nonomi" unique_id=1555062381]
 stream = ExtResource("92_xtxas")
 bus = &"VOICE"
 
-[node name="serika" type="Node" parent="VOICE"]
+[node name="serika" type="Node" parent="VOICE" unique_id=1822854221]
 
-[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/serika"]
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/serika" unique_id=1192135135]
 stream = ExtResource("93_hbijb")
 bus = &"VOICE"
 
-[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/serika"]
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/serika" unique_id=1301896979]
 stream = ExtResource("94_vp3l0")
 bus = &"VOICE"
 
-[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/serika"]
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/serika" unique_id=2072626559]
 stream = ExtResource("95_nuw0u")
 bus = &"VOICE"
 
-[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/serika"]
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/serika" unique_id=322065520]
 stream = ExtResource("96_8wl1j")
 bus = &"VOICE"
 
-[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/serika"]
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/serika" unique_id=1237792160]
 stream = ExtResource("97_06p0h")
 bus = &"VOICE"
 
-[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/serika"]
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/serika" unique_id=314440145]
 stream = ExtResource("98_03bv7")
 bus = &"VOICE"
 
-[node name="shiroko" type="Node" parent="VOICE"]
+[node name="shiroko" type="Node" parent="VOICE" unique_id=820874606]
 
-[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/shiroko"]
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/shiroko" unique_id=1984030151]
 stream = ExtResource("102_47222")
 bus = &"VOICE"
 
-[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/shiroko"]
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/shiroko" unique_id=321661401]
 stream = ExtResource("103_egu8c")
 bus = &"VOICE"
 
-[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/shiroko"]
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/shiroko" unique_id=1453793472]
 stream = ExtResource("104_jymf0")
 bus = &"VOICE"
 
-[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/shiroko"]
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/shiroko" unique_id=1819475503]
 stream = ExtResource("105_yvg05")
 bus = &"VOICE"
 
-[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/shiroko"]
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/shiroko" unique_id=212110940]
 stream = ExtResource("106_68x8u")
 bus = &"VOICE"
 
-[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/shiroko"]
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/shiroko" unique_id=149956207]
 stream = ExtResource("107_idxto")
 bus = &"VOICE"
 
-[node name="ichika" type="Node" parent="VOICE"]
+[node name="ichika" type="Node" parent="VOICE" unique_id=2137588173]
 
-[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/ichika"]
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/ichika" unique_id=1627904173]
 stream = ExtResource("111_mg347")
 bus = &"VOICE"
 
-[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/ichika"]
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/ichika" unique_id=1166815985]
 stream = ExtResource("112_8yy03")
 bus = &"VOICE"
 
-[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/ichika"]
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/ichika" unique_id=954462377]
 stream = ExtResource("113_rug63")
 bus = &"VOICE"
 
-[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/ichika"]
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/ichika" unique_id=166550900]
 stream = ExtResource("114_wmy61")
 bus = &"VOICE"
 
-[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/ichika"]
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/ichika" unique_id=1690450315]
 stream = ExtResource("115_3wqoj")
 bus = &"VOICE"
 
-[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/ichika"]
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/ichika" unique_id=34058121]
 stream = ExtResource("116_k4ueo")
 bus = &"VOICE"
 
-[node name="tsurugi" type="Node" parent="VOICE"]
+[node name="tsurugi" type="Node" parent="VOICE" unique_id=470703231]
 
-[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/tsurugi"]
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/tsurugi" unique_id=2071607815]
 stream = ExtResource("117_q7phv")
 bus = &"VOICE"
 
-[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/tsurugi"]
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/tsurugi" unique_id=2035808562]
 stream = ExtResource("118_31j78")
 bus = &"VOICE"
 
-[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/tsurugi"]
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/tsurugi" unique_id=683839781]
 stream = ExtResource("119_dgf8p")
 bus = &"VOICE"
 
-[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/tsurugi"]
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/tsurugi" unique_id=1406415383]
 stream = ExtResource("120_a05tj")
 bus = &"VOICE"
 
-[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/tsurugi"]
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/tsurugi" unique_id=2131651224]
 stream = ExtResource("121_i1lid")
 bus = &"VOICE"
 
-[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/tsurugi"]
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/tsurugi" unique_id=1168165028]
 stream = ExtResource("122_vf42t")
 bus = &"VOICE"
 
-[node name="mashiro" type="Node" parent="VOICE"]
+[node name="mashiro" type="Node" parent="VOICE" unique_id=581003380]
 
-[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/mashiro"]
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/mashiro" unique_id=7647157]
 stream = ExtResource("123_6bh4a")
 bus = &"VOICE"
 
-[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/mashiro"]
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/mashiro" unique_id=1561727922]
 stream = ExtResource("124_ip8wc")
 bus = &"VOICE"
 
-[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/mashiro"]
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/mashiro" unique_id=1479797831]
 stream = ExtResource("125_7ctcx")
 bus = &"VOICE"
 
-[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/mashiro"]
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/mashiro" unique_id=886397521]
 stream = ExtResource("126_o8fxt")
 bus = &"VOICE"
 
-[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/mashiro"]
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/mashiro" unique_id=2067161907]
 stream = ExtResource("127_vjh26")
 bus = &"VOICE"
 
-[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/mashiro"]
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/mashiro" unique_id=1744936806]
 stream = ExtResource("128_l46tb")
 bus = &"VOICE"
 
-[node name="hasumi" type="Node" parent="VOICE"]
+[node name="hasumi" type="Node" parent="VOICE" unique_id=2002596585]
 
-[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/hasumi"]
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/hasumi" unique_id=2113064185]
 stream = ExtResource("130_fjfm6")
 bus = &"VOICE"
 
-[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/hasumi"]
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/hasumi" unique_id=1505369987]
 stream = ExtResource("131_fkw62")
 bus = &"VOICE"
 
-[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/hasumi"]
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/hasumi" unique_id=1611054820]
 stream = ExtResource("132_h1n3c")
 bus = &"VOICE"
 
-[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/hasumi"]
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/hasumi" unique_id=684244880]
 stream = ExtResource("133_ymo7w")
 bus = &"VOICE"
 
-[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/hasumi"]
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/hasumi" unique_id=429197748]
 stream = ExtResource("134_v6k8i")
 bus = &"VOICE"
 
-[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/hasumi"]
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/hasumi" unique_id=1246696402]
 stream = ExtResource("135_w8nse")
 bus = &"VOICE"
 
-[node name="hina" type="Node" parent="VOICE"]
+[node name="hina" type="Node" parent="VOICE" unique_id=1350498471]
 
-[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/hina"]
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/hina" unique_id=1531427403]
 stream = ExtResource("138_ybor0")
 bus = &"VOICE"
 
-[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/hina"]
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/hina" unique_id=985518709]
 stream = ExtResource("139_m85ti")
 bus = &"VOICE"
 
-[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/hina"]
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/hina" unique_id=1268925460]
 stream = ExtResource("140_lvah2")
 bus = &"VOICE"
 
-[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/hina"]
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/hina" unique_id=1582609270]
 stream = ExtResource("141_opclw")
 bus = &"VOICE"
 
-[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/hina"]
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/hina" unique_id=1472021603]
 stream = ExtResource("142_dmj4k")
 bus = &"VOICE"
 
-[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/hina"]
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/hina" unique_id=2143169693]
 stream = ExtResource("143_3npul")
 bus = &"VOICE"
 
-[node name="iori" type="Node" parent="VOICE"]
+[node name="iori" type="Node" parent="VOICE" unique_id=234588352]
 
-[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/iori"]
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/iori" unique_id=683756213]
 stream = ExtResource("144_7gvv5")
 bus = &"VOICE"
 
-[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/iori"]
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/iori" unique_id=286417261]
 stream = ExtResource("145_h0xyj")
 bus = &"VOICE"
 
-[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/iori"]
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/iori" unique_id=350601207]
 stream = ExtResource("146_atsso")
 bus = &"VOICE"
 
-[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/iori"]
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/iori" unique_id=1364920161]
 stream = ExtResource("147_vvotc")
 bus = &"VOICE"
 
-[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/iori"]
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/iori" unique_id=868899911]
 stream = ExtResource("148_e3dpu")
 bus = &"VOICE"
 
-[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/iori"]
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/iori" unique_id=978104192]
 stream = ExtResource("149_t7qf5")
 bus = &"VOICE"
 
-[node name="Talk" type="Node" parent="."]
+[node name="aris_armed" type="Node" parent="VOICE" unique_id=735023802]
 
-[node name="Arona" type="Node" parent="Talk"]
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/aris_armed" unique_id=57858575]
+stream = ExtResource("153_rd4wq")
+bus = &"VOICE"
 
-[node name="WorkIn1" type="AudioStreamPlayer" parent="Talk/Arona"]
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/aris_armed" unique_id=718423063]
+stream = ExtResource("154_ifp04")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/aris_armed" unique_id=1388788401]
+stream = ExtResource("155_7dj7h")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/aris_armed" unique_id=766911094]
+stream = ExtResource("156_gb02s")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/aris_armed" unique_id=2105806221]
+stream = ExtResource("157_f3gbs")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/aris_armed" unique_id=1019621131]
+stream = ExtResource("158_32qhv")
+bus = &"VOICE"
+
+[node name="ako" type="Node" parent="VOICE" unique_id=593242837]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/ako" unique_id=1986003853]
+stream = ExtResource("160_1kjcs")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/ako" unique_id=1045264128]
+stream = ExtResource("161_atuts")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/ako" unique_id=1466067700]
+stream = ExtResource("162_5awck")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/ako" unique_id=1314333]
+stream = ExtResource("163_3ed33")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/ako" unique_id=1312615935]
+stream = ExtResource("164_vgkly")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/ako" unique_id=769285338]
+stream = ExtResource("165_heam3")
+bus = &"VOICE"
+
+[node name="chinatsu" type="Node" parent="VOICE" unique_id=172299124]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/chinatsu" unique_id=326249293]
+stream = ExtResource("168_h3kud")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/chinatsu" unique_id=241835918]
+stream = ExtResource("169_xatox")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/chinatsu" unique_id=975842013]
+stream = ExtResource("170_j27j0")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/chinatsu" unique_id=837229689]
+stream = ExtResource("171_848ts")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/chinatsu" unique_id=667630300]
+stream = ExtResource("172_1lc1w")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/chinatsu" unique_id=1538713763]
+stream = ExtResource("173_sans8")
+bus = &"VOICE"
+
+[node name="Talk" type="Node" parent="." unique_id=313735976]
+
+[node name="Arona" type="Node" parent="Talk" unique_id=1621577898]
+
+[node name="WorkIn1" type="AudioStreamPlayer" parent="Talk/Arona" unique_id=973900590]
 stream = ExtResource("81_rjyjf")
 bus = &"VOICE"
 
-[node name="WorkIn2" type="AudioStreamPlayer" parent="Talk/Arona"]
+[node name="WorkIn2" type="AudioStreamPlayer" parent="Talk/Arona" unique_id=741159261]
 stream = ExtResource("82_xr4yv")
 bus = &"VOICE"
 
-[node name="WorkIn3" type="AudioStreamPlayer" parent="Talk/Arona"]
+[node name="WorkIn3" type="AudioStreamPlayer" parent="Talk/Arona" unique_id=1892017899]
 stream = ExtResource("83_1n5ls")
 bus = &"VOICE"
 
-[node name="WorkIn4" type="AudioStreamPlayer" parent="Talk/Arona"]
+[node name="WorkIn4" type="AudioStreamPlayer" parent="Talk/Arona" unique_id=2112222349]
 stream = ExtResource("84_g5c5c")
 bus = &"VOICE"
 
-[node name="WorkTalk1" type="AudioStreamPlayer" parent="Talk/Arona"]
+[node name="WorkTalk1" type="AudioStreamPlayer" parent="Talk/Arona" unique_id=22924555]
 stream = ExtResource("85_7k7dm")
 bus = &"VOICE"
 
-[node name="WorkTalk2" type="AudioStreamPlayer" parent="Talk/Arona"]
+[node name="WorkTalk2" type="AudioStreamPlayer" parent="Talk/Arona" unique_id=1494902922]
 stream = ExtResource("86_e7roj")
 bus = &"VOICE"
 
-[node name="WorkTalk3" type="AudioStreamPlayer" parent="Talk/Arona"]
+[node name="WorkTalk3" type="AudioStreamPlayer" parent="Talk/Arona" unique_id=747758300]
 stream = ExtResource("87_oveim")
 bus = &"VOICE"
 
-[node name="WorkTalk4" type="AudioStreamPlayer" parent="Talk/Arona"]
+[node name="WorkTalk4" type="AudioStreamPlayer" parent="Talk/Arona" unique_id=422033262]
 stream = ExtResource("88_d8dxs")
 bus = &"VOICE"
 
-[node name="WorkTalk5" type="AudioStreamPlayer" parent="Talk/Arona"]
+[node name="WorkTalk5" type="AudioStreamPlayer" parent="Talk/Arona" unique_id=1955336392]
 stream = ExtResource("89_ti5nw")
 bus = &"VOICE"
 
-[node name="WorkTalk6" type="AudioStreamPlayer" parent="Talk/Arona"]
+[node name="WorkTalk6" type="AudioStreamPlayer" parent="Talk/Arona" unique_id=396463451]
 stream = ExtResource("90_4e351")
 bus = &"VOICE"
 
-[node name="WorkTalk7" type="AudioStreamPlayer" parent="Talk/Arona"]
+[node name="WorkTalk7" type="AudioStreamPlayer" parent="Talk/Arona" unique_id=1246424235]
 stream = ExtResource("91_uothy")
 bus = &"VOICE"
 
-[node name="Surprise1" type="AudioStreamPlayer" parent="Talk/Arona"]
+[node name="Surprise1" type="AudioStreamPlayer" parent="Talk/Arona" unique_id=347560644]
 stream = ExtResource("92_yqr3i")
 bus = &"VOICE"
 
-[node name="Surprise2" type="AudioStreamPlayer" parent="Talk/Arona"]
+[node name="Surprise2" type="AudioStreamPlayer" parent="Talk/Arona" unique_id=974062508]
 stream = ExtResource("93_da5mo")
 bus = &"VOICE"
 
-[node name="Surprise3" type="AudioStreamPlayer" parent="Talk/Arona"]
+[node name="Surprise3" type="AudioStreamPlayer" parent="Talk/Arona" unique_id=1337562528]
 stream = ExtResource("94_0nk6k")
 bus = &"VOICE"
 
-[node name="Surprise4" type="AudioStreamPlayer" parent="Talk/Arona"]
+[node name="Surprise4" type="AudioStreamPlayer" parent="Talk/Arona" unique_id=183172884]
 stream = ExtResource("95_qxfc2")
 bus = &"VOICE"
 
-[node name="Head1" type="AudioStreamPlayer" parent="Talk/Arona"]
+[node name="Head1" type="AudioStreamPlayer" parent="Talk/Arona" unique_id=2062242783]
 stream = ExtResource("96_1ns8m")
 bus = &"VOICE"
 
-[node name="Head2" type="AudioStreamPlayer" parent="Talk/Arona"]
+[node name="Head2" type="AudioStreamPlayer" parent="Talk/Arona" unique_id=1120344390]
 stream = ExtResource("97_tq55n")
 bus = &"VOICE"
 
-[node name="Head3" type="AudioStreamPlayer" parent="Talk/Arona"]
+[node name="Head3" type="AudioStreamPlayer" parent="Talk/Arona" unique_id=1576896222]
 stream = ExtResource("98_vksf5")
 bus = &"VOICE"
 
-[node name="Head4" type="AudioStreamPlayer" parent="Talk/Arona"]
+[node name="Head4" type="AudioStreamPlayer" parent="Talk/Arona" unique_id=965303778]
 stream = ExtResource("99_poqbs")
 bus = &"VOICE"
 
-[node name="Lack1" type="AudioStreamPlayer" parent="Talk/Arona"]
+[node name="Lack1" type="AudioStreamPlayer" parent="Talk/Arona" unique_id=1670592810]
 stream = ExtResource("100_lj1ou")
 bus = &"VOICE"
 
-[node name="Lack2" type="AudioStreamPlayer" parent="Talk/Arona"]
+[node name="Lack2" type="AudioStreamPlayer" parent="Talk/Arona" unique_id=658103469]
 stream = ExtResource("101_whleu")
 bus = &"VOICE"
 
-[node name="Plana" type="Node" parent="Talk"]
+[node name="Plana" type="Node" parent="Talk" unique_id=1131100209]
 
-[node name="WorkIn1" type="AudioStreamPlayer" parent="Talk/Plana"]
+[node name="WorkIn1" type="AudioStreamPlayer" parent="Talk/Plana" unique_id=1882642449]
 stream = ExtResource("100_ynspt")
 bus = &"VOICE"
 
-[node name="WorkIn2" type="AudioStreamPlayer" parent="Talk/Plana"]
+[node name="WorkIn2" type="AudioStreamPlayer" parent="Talk/Plana" unique_id=502411215]
 stream = ExtResource("101_h3l5o")
 bus = &"VOICE"
 
-[node name="WorkIn3" type="AudioStreamPlayer" parent="Talk/Plana"]
+[node name="WorkIn3" type="AudioStreamPlayer" parent="Talk/Plana" unique_id=165576894]
 stream = ExtResource("102_kyev2")
 bus = &"VOICE"
 
-[node name="WorkIn4" type="AudioStreamPlayer" parent="Talk/Plana"]
+[node name="WorkIn4" type="AudioStreamPlayer" parent="Talk/Plana" unique_id=1744984054]
 stream = ExtResource("103_rb1kn")
 bus = &"VOICE"
 
-[node name="WorkIn5" type="AudioStreamPlayer" parent="Talk/Plana"]
+[node name="WorkIn5" type="AudioStreamPlayer" parent="Talk/Plana" unique_id=235142818]
 stream = ExtResource("104_a1gry")
 bus = &"VOICE"
 
-[node name="WorkTalk1" type="AudioStreamPlayer" parent="Talk/Plana"]
+[node name="WorkTalk1" type="AudioStreamPlayer" parent="Talk/Plana" unique_id=2042508153]
 stream = ExtResource("105_ekkvb")
 bus = &"VOICE"
 
-[node name="WorkTalk2" type="AudioStreamPlayer" parent="Talk/Plana"]
+[node name="WorkTalk2" type="AudioStreamPlayer" parent="Talk/Plana" unique_id=1055693894]
 stream = ExtResource("106_1oyvs")
 bus = &"VOICE"
 
-[node name="WorkTalk3" type="AudioStreamPlayer" parent="Talk/Plana"]
+[node name="WorkTalk3" type="AudioStreamPlayer" parent="Talk/Plana" unique_id=1372597235]
 stream = ExtResource("107_vd46e")
 bus = &"VOICE"
 
-[node name="WorkTalk4" type="AudioStreamPlayer" parent="Talk/Plana"]
+[node name="WorkTalk4" type="AudioStreamPlayer" parent="Talk/Plana" unique_id=1851451731]
 stream = ExtResource("108_m8j5y")
 bus = &"VOICE"
 
-[node name="WorkTalk5" type="AudioStreamPlayer" parent="Talk/Plana"]
+[node name="WorkTalk5" type="AudioStreamPlayer" parent="Talk/Plana" unique_id=895198973]
 stream = ExtResource("109_8f0nu")
 bus = &"VOICE"
 
-[node name="Surprise1" type="AudioStreamPlayer" parent="Talk/Plana"]
+[node name="Surprise1" type="AudioStreamPlayer" parent="Talk/Plana" unique_id=424579528]
 stream = ExtResource("110_6kowi")
 bus = &"VOICE"
 
-[node name="Surprise2" type="AudioStreamPlayer" parent="Talk/Plana"]
+[node name="Surprise2" type="AudioStreamPlayer" parent="Talk/Plana" unique_id=127836631]
 stream = ExtResource("111_igrdd")
 bus = &"VOICE"
 
-[node name="Surprise3" type="AudioStreamPlayer" parent="Talk/Plana"]
+[node name="Surprise3" type="AudioStreamPlayer" parent="Talk/Plana" unique_id=1959019003]
 stream = ExtResource("112_u45xa")
 bus = &"VOICE"
 
-[node name="Surprise4" type="AudioStreamPlayer" parent="Talk/Plana"]
+[node name="Surprise4" type="AudioStreamPlayer" parent="Talk/Plana" unique_id=1352185382]
 bus = &"VOICE"
 
-[node name="Head1" type="AudioStreamPlayer" parent="Talk/Plana"]
+[node name="Head1" type="AudioStreamPlayer" parent="Talk/Plana" unique_id=996909823]
 stream = ExtResource("113_jdufc")
 bus = &"VOICE"
 
-[node name="Head2" type="AudioStreamPlayer" parent="Talk/Plana"]
+[node name="Head2" type="AudioStreamPlayer" parent="Talk/Plana" unique_id=475529858]
 stream = ExtResource("114_6xciw")
 bus = &"VOICE"
 
-[node name="Head3" type="AudioStreamPlayer" parent="Talk/Plana"]
+[node name="Head3" type="AudioStreamPlayer" parent="Talk/Plana" unique_id=1719050517]
 stream = ExtResource("115_oslb8")
 bus = &"VOICE"
 
-[node name="Head4" type="AudioStreamPlayer" parent="Talk/Plana"]
+[node name="Head4" type="AudioStreamPlayer" parent="Talk/Plana" unique_id=1588810804]
 stream = ExtResource("111_igrdd")
 bus = &"VOICE"
 
-[node name="SupportVoice" type="Node" parent="."]
+[node name="SupportVoice" type="Node" parent="." unique_id=280461615]
 
-[node name="VoicePlayer" type="AudioStreamPlayer" parent="SupportVoice"]
+[node name="VoicePlayer" type="AudioStreamPlayer" parent="SupportVoice" unique_id=1896693298]
 bus = &"VOICE"

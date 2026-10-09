@@ -74,27 +74,27 @@ func time_count():
 
 func add_fire_dot():
 	for i in body_group:
-		if i == null or i.owner == null:
+		if i == null or not is_instance_valid(i):
+			continue
+		var body = i.owner
+		if body == null or not is_instance_valid(body):
 			continue
 		var buff: Buff = enemy_buff if source_faction == Faction.PLAYER_SIDE else player_buff
 		if buff != null:
-			BuffRouter.apply_buff(i.owner, buff, value)
+			BuffRouter.apply_buff(body, buff, value)
 
 func round_clear():
 	PoolManager.erase_pool(pool_id)
 	queue_free()
 
 func apply_damage_data():
-	if damage_data == null:
-		damage_data = DamageData.new()
-	else:
-		damage_data.reset_data()
-	
-	damage_data.base_damage = int(DamageRouter.scaled_damage(source_faction, field_damage * bullet_damage_mult, self))
-	damage_data.knockback_force = field_knockback
-	damage_data.damage_type.append(GameTags.BULLET_DAMAGE)
-	damage_data.source_node = self.get_path()
-	damage_data.source_type.append(DamageRouter.source_tag(source_faction))
+	damage_data = DamageData.fill(damage_data, {
+		"damage": int(DamageRouter.scaled_damage(source_faction, field_damage * bullet_damage_mult, self)),
+		"knockback": field_knockback,
+		"type": GameTags.BULLET_DAMAGE,
+		"source": DamageRouter.source_tag(source_faction),
+		"node": self,
+	})
 
 func add_damage():
 	if !body_group.is_empty():
@@ -105,6 +105,8 @@ func add_damage():
 		damage_cd = 1
 
 func _on_hit_box_area_entered(hurt_box: Area2D) -> void:
+	if hurt_box == null or not is_instance_valid(hurt_box):
+		return
 	if not (hurt_box is HurtBox) or body_group.has(hurt_box):
 		return
 	if not Faction.hostile_to([DamageRouter.source_tag(source_faction)], Faction.of_entity(hurt_box.owner)):
@@ -113,5 +115,7 @@ func _on_hit_box_area_entered(hurt_box: Area2D) -> void:
 	damage_cd = 1
 
 func _on_hit_box_area_exited(hurt_box: Area2D) -> void:
+	if hurt_box == null or not is_instance_valid(hurt_box):
+		return
 	if hurt_box is HurtBox and body_group.has(hurt_box):
 		body_group.remove_at(body_group.find(hurt_box))

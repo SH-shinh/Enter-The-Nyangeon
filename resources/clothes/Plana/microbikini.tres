@@ -1,9 +1,8 @@
-[gd_resource type="Resource" script_class="ClothesCard" load_steps=5 format=3 uid="uid://cta46gtt31sh3"]
+[gd_resource type="Resource" script_class="ClothesCard" load_steps=4 format=3 uid="uid://cta46gtt31sh3"]
 
 [ext_resource type="Texture2D" uid="uid://dqm564i1ow8j4" path="res://ui/ark_of_Shittim/microbikini_plana_icon.png" id="1_4qrqe"]
 [ext_resource type="Texture2D" uid="uid://doirtseyhcuen" path="res://ui/ark_of_Shittim/microbikini_plana_icon_2.png" id="2_fbdc6"]
 [ext_resource type="Script" path="res://resources/clothes/clothes_card.gd" id="3_o6fdv"]
-[ext_resource type="Texture2D" uid="uid://s2mrnwn0bl5c" path="res://ui/ark_of_Shittim/microbikini_plana_picture.png" id="4_nwtwm"]
 
 [resource]
 script = ExtResource("3_o6fdv")
@@ -15,4 +14,4 @@ user_name = "PLANA"
 icon_1 = ExtResource("1_4qrqe")
 icon_2 = ExtResource("2_fbdc6")
 cost = 999
-sprite = ExtResource("4_nwtwm")
+sprite_path = "res://ui/ark_of_Shittim/microbikini_plana_picture.png"

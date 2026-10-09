@@ -22,7 +22,6 @@ var add_end:bool = false
 func _ready():
 	PoolManager.add_pool("coins", self)
 	GameEvents.get_player.connect(get_player)
-	GameEvents.pyroxenes_pick_up.connect(auto_pick)
 	get_player()
 	is_ready()
 
@@ -43,6 +42,7 @@ func idle_state():
 	if pick_free == true:
 		free_self.emit()
 	set_physics_process(false)
+	CoinManager.unregister(self)
 
 func active_state():
 	if on_ready == false:
@@ -54,16 +54,44 @@ func active_state():
 	self.scale = Vector2(v,v)
 	collision_shape_2d.set_deferred("disabled", false)
 	set_physics_process(true)
+	CoinManager.register(self)
+	# 青辉石拾取后：本回合新生成的金币也自动飞向玩家
+	if CoinManager.auto_pick:
+		can_pick = true
+		pick_up = true
 	GameEvents.emit_enemy_coin_drops(self)
+	ExtensionHooks.notify(ExtensionHooks.on_coin_spawned, [self, coin])
 
 func auto_pick():
 	can_pick = true
 	pick_up = true
 
-func coin_scale(coins: int):
-	return 0.8 + coins * 0.03
+# 视觉缩放：边际递减（小值贴合旧线性 0.03/枚，渐近上限约 2.5，避免合并大金币过大）
+const SCALE_BASE: float = 0.8
+const SCALE_GAIN: float = 1.7
+const SCALE_TAU: float = 56.7
 
-func _physics_process(delta):
+func coin_scale(coins: int):
+	return SCALE_BASE + SCALE_GAIN * (1.0 - exp(-float(coins) / SCALE_TAU))
+
+# 满额合并：把新掉落值并入本金币（不新建节点）。
+# 仅在回池（is_idle==1）时拒绝；回合末抢币窗口内的活跃金币仍可被并入/拾取。
+func absorb(value: int, add_pick_up: bool) -> void:
+	if is_idle == 1:
+		return
+	coin += value
+	if add_pick_up or CoinManager.auto_pick:
+		pick_up = true
+	if CoinManager.auto_pick:
+		can_pick = true
+	var v = coin_scale(coin)
+	self.scale = Vector2(v, v)
+	GameEvents.emit_enemy_coin_drops(self)
+
+func _exit_tree() -> void:
+	CoinManager.unregister(self)
+
+func _physics_process(_delta):
 	if is_idle == 1:
 		return
 	
@@ -76,19 +104,13 @@ func _physics_process(delta):
 			add_coin()
 			idle_state()
 
-func coin_spawn(delta):
-	var length: float = randf_range(0,80)
-	var direction: Vector2 = Vector2(randf_range(-1,1), randf_range(-1,1))
-	var gravity_num: float = 980
-	var v_y
-	var v_x
-	var y_now = v_y - gravity_num * delta
-
 func add_coin():
 	if add_end == true:
 		return
 	add_end = true
 	var coin_value: int = ceil(coin * player.stats.coin_mult)
+	if ExtensionHooks.intercept(ExtensionHooks.coin_pickup_gate, [self, player, player.stats.coin_mult]):
+		return
 	player.coin_sounds.play()
 	player.stats.coin += coin_value
 	GameEvents.emit_player_pick_up_coin(self.global_position)

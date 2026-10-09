@@ -37,7 +37,6 @@ void fragment() {
     float line_activity = 0.0;
     if (line_progress >= active_threshold) {
         // 越靠近进度的线条，活跃度越高
-        line_activity = smoothstep(active_threshold - 0.2, active_threshold + 0.3, line_progress);
         line_activity = clamp((line_progress - active_threshold) / 0.3, 0.0, 1.0);
     }
 

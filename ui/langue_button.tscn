@@ -1,7 +1,7 @@
-[gd_scene load_steps=7 format=3 uid="uid://cydcjic8tt76q"]
+[gd_scene format=3 uid="uid://cydcjic8tt76q"]
 
 [ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="1_2qpss"]
-[ext_resource type="Script" path="res://ui/langue_button.gd" id="1_e0ngx"]
+[ext_resource type="Script" uid="uid://1trhj72npj7s" path="res://ui/langue_button.gd" id="1_e0ngx"]
 [ext_resource type="Texture2D" uid="uid://jcqmwo1t8vv0" path="res://ui/ui.png" id="3_xc24y"]
 
 [sub_resource type="Theme" id="Theme_j00sm"]
@@ -20,10 +20,10 @@ modulate_color = Color(0.211765, 0.211765, 0.211765, 1)
 [sub_resource type="Theme" id="Theme_4uq6q"]
 PanelContainer/styles/panel = SubResource("StyleBoxTexture_xc0oe")
 
-[node name="langue_button" type="Node2D"]
+[node name="langue_button" type="Node2D" unique_id=1239593722]
 script = ExtResource("1_e0ngx")
 
-[node name="OptionButton" type="OptionButton" parent="."]
+[node name="OptionButton" type="OptionButton" parent="." unique_id=776671772]
 offset_top = 13.0
 offset_right = 103.0
 offset_bottom = 33.0
@@ -31,14 +31,17 @@ theme = SubResource("Theme_j00sm")
 theme_override_fonts/font = ExtResource("1_2qpss")
 theme_override_font_sizes/font_size = 12
 selected = 0
-item_count = 3
+item_count = 4
 popup/item_0/text = "简体中文"
+popup/item_0/id = 0
 popup/item_1/text = "English"
 popup/item_1/id = 1
 popup/item_2/text = "Português"
 popup/item_2/id = 2
+popup/item_3/text = "Vietnamese"
+popup/item_3/id = 3
 
-[node name="Label" type="Label" parent="."]
+[node name="Label" type="Label" parent="." unique_id=914159470]
 offset_left = 5.0
 offset_right = 50.0
 offset_bottom = 18.0
@@ -53,60 +56,72 @@ theme_override_fonts/font = ExtResource("1_2qpss")
 theme_override_font_sizes/font_size = 9
 text = "LANGUAGE"
 
-[node name="touch_menu" type="Node2D" parent="."]
+[node name="touch_menu" type="Node2D" parent="." unique_id=2055157738]
 visible = false
 z_index = 1
 
-[node name="PanelContainer" type="PanelContainer" parent="touch_menu"]
+[node name="PanelContainer" type="PanelContainer" parent="touch_menu" unique_id=1450307359]
 clip_contents = true
 offset_top = 33.0
 offset_right = 103.0
 offset_bottom = 80.0
 theme = SubResource("Theme_4uq6q")
 
-[node name="ColorRect" type="ColorRect" parent="touch_menu/PanelContainer"]
+[node name="ColorRect" type="ColorRect" parent="touch_menu/PanelContainer" unique_id=2094864338]
 layout_mode = 2
 color = Color(0.162066, 0.162066, 0.162066, 1)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="touch_menu/PanelContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="touch_menu/PanelContainer" unique_id=1568136362]
 layout_mode = 2
 theme_override_constants/separation = 2
 alignment = 2
 
-[node name="zh_CN" type="PanelContainer" parent="touch_menu/PanelContainer/VBoxContainer"]
+[node name="zh_CN" type="PanelContainer" parent="touch_menu/PanelContainer/VBoxContainer" unique_id=1490094289]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 
-[node name="Label" type="Label" parent="touch_menu/PanelContainer/VBoxContainer/zh_CN"]
+[node name="Label" type="Label" parent="touch_menu/PanelContainer/VBoxContainer/zh_CN" unique_id=1391633418]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("1_2qpss")
 theme_override_font_sizes/font_size = 12
 text = "简体中文"
 horizontal_alignment = 1
 
-[node name="EN" type="PanelContainer" parent="touch_menu/PanelContainer/VBoxContainer"]
+[node name="EN" type="PanelContainer" parent="touch_menu/PanelContainer/VBoxContainer" unique_id=1737117757]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 
-[node name="Label" type="Label" parent="touch_menu/PanelContainer/VBoxContainer/EN"]
+[node name="Label" type="Label" parent="touch_menu/PanelContainer/VBoxContainer/EN" unique_id=1371495228]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("1_2qpss")
 theme_override_font_sizes/font_size = 12
 text = "ENGLISH"
 horizontal_alignment = 1
 
-[node name="PT" type="PanelContainer" parent="touch_menu/PanelContainer/VBoxContainer"]
+[node name="PT" type="PanelContainer" parent="touch_menu/PanelContainer/VBoxContainer" unique_id=1395745331]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 
-[node name="Label" type="Label" parent="touch_menu/PanelContainer/VBoxContainer/PT"]
+[node name="Label" type="Label" parent="touch_menu/PanelContainer/VBoxContainer/PT" unique_id=92255121]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("1_2qpss")
 theme_override_font_sizes/font_size = 12
 text = "Português"
+horizontal_alignment = 1
+
+[node name="vi_VN" type="PanelContainer" parent="touch_menu/PanelContainer/VBoxContainer" unique_id=2084307913]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="touch_menu/PanelContainer/VBoxContainer/vi_VN" unique_id=845094381]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_2qpss")
+theme_override_font_sizes/font_size = 12
+text = "Vietnamese"
 horizontal_alignment = 1
 
 [connection signal="item_selected" from="OptionButton" to="." method="_on_option_button_item_selected"]
@@ -114,3 +129,4 @@ horizontal_alignment = 1
 [connection signal="gui_input" from="touch_menu/PanelContainer/VBoxContainer/zh_CN" to="." method="_on_zh_cn_gui_input"]
 [connection signal="gui_input" from="touch_menu/PanelContainer/VBoxContainer/EN" to="." method="_on_en_gui_input"]
 [connection signal="gui_input" from="touch_menu/PanelContainer/VBoxContainer/PT" to="." method="_on_pt_gui_input"]
+[connection signal="gui_input" from="touch_menu/PanelContainer/VBoxContainer/vi_VN" to="." method="_on_vi_vn_gui_input"]

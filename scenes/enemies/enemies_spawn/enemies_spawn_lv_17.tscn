@@ -15,8 +15,6 @@
 script = ExtResource("1_snm0b")
 num_mult = 2.0
 round_mult = 1.0
-hp_mult = 20.0
-damage_mult = 4.0
 enemy = Array[ExtResource("2_px7jn")]([ExtResource("2_un1os"), ExtResource("3_41tdq"), ExtResource("4_vlh3j"), ExtResource("5_pum1c")])
 enemy_pool = Array[PackedScene]([ExtResource("3_s06cb"), ExtResource("4_quk8d"), ExtResource("6_0mapk"), ExtResource("5_bcnrh")])
 enemy_spawn_num = Array[int]([3, 3, 1, 2])

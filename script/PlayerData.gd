@@ -26,7 +26,6 @@ var now_clothes: Dictionary = { "Plana": "normal", "Arona": "normal" }
 var game_mode: Array = []
 var player_select: String
 var support_select
-var support_savedata: Dictionary
 var current_upgrades: Dictionary = {}
 
 var bullet_type: int = 0
@@ -36,6 +35,11 @@ var on_endless: bool = false
 var on_test_room: bool = false
 
 var ability_mult: float = 1.0
+
+# 重入合并：一次属性重算期间，嵌套调用只置脏，由外层循环统一收敛（防止递归爆炸）
+var _ability_depth: int = 0
+var _ability_pending: bool = false
+const _ABILITY_MAX_GENERATIONS: int = 8
 
 var level_id: String
 var level_num: float = 1
@@ -89,6 +93,7 @@ var base_fire_dot_layer: int = 0 #火dot最大层数
 var base_global_damage: float = 0 #全局伤害乘区
 var base_kick_damage: int = 0 #踢击伤害
 var base_pick_up_range: int = 0 #拾取半径
+var base_pick_up_speed: float = 1 #长按拾取速度
 var base_equip_damage: float = 0 #装备伤害加成
 var base_shake_mult: float = 0 #屏幕震动乘算
 var base_shake_length: int = 0 #屏幕震动次数
@@ -99,6 +104,10 @@ var base_life_num: int = 1 #生命数
 var base_summoned_damage: float = 0 #召唤物伤害
 var base_heal_mult: float = 1 #治疗系数
 var base_buff_layer_mult: float = 1 #buff上限
+var base_buff_duration: float = 1 #有益buff持续时间
+var base_convert_power: float = 0 #策反伤害
+var base_convert_time: float = 0 #策反持续时间
+var base_converted_cap: int = 0
 
 #属性计算
 
@@ -148,6 +157,7 @@ var global_damage_mult: float = 1 #全局伤害乘算
 var kick_damage_add: int = 0 #近战伤害加算
 var kick_damage_mult: float = 1 #近战伤害乘算
 var pick_up_range_mult: float = 1 #拾取范围加算
+var pick_up_speed_mult: float = 1 #长按拾取速度乘算
 var shake_length_add: int = 0 #屏幕震动次数加算
 var hurt_resis_add: int = 0 #护甲值加算
 var hurt_resis_mult: float = 1 #护甲值乘算
@@ -156,12 +166,16 @@ var hurt_invalid_add: int = 0 #伤害无效化次数加算
 var life_num_add: int = 0 #生命数加算
 
 var buff_layer_mult_add: float  = 0 #buff上限加算
+var buff_duration_mult: float = 1 #有益buff持续时间乘算
 
 var summoned_damage_add: float #召唤物伤害加算
 
 var coin_return_add: float #硬币回收加算
 
 var heal_mult_add: float = 0 #治疗系数加算
+
+var convert_power_mult: float = 1 #策反伤害乘算
+var converted_cap_add: int = 0 #策反上限加算
 
 func get_player():
 	player = get_tree().get_first_node_in_group("Player")
@@ -234,6 +248,7 @@ func reset_date():
 	kick_damage_add = 0 #近战伤害加算
 	kick_damage_mult = 1 #近战伤害乘算
 	pick_up_range_mult = 1 #拾取范围加算
+	pick_up_speed_mult = 1 #长按拾取速度乘算
 	shake_length_add = 0 #屏幕震动次数加算
 	hurt_resis_add = 0 #护甲值加算
 	hurt_resis_mult = 1 #护甲值乘算
@@ -241,6 +256,10 @@ func reset_date():
 	hurt_invalid_add = 0 #伤害无效化次数加算
 	life_num_add = 0 #生命数加算
 	buff_layer_mult_add = 0 #buff上限加算
+	buff_duration_mult = 1 #有益buff持续时间乘算
+	
+	convert_power_mult = 1.0
+	converted_cap_add = 0
 	
 	summoned_damage_add = 0
 	coin_return_add = 0
@@ -278,7 +297,6 @@ func get_player_base_ability():
 	base_bullet_arc = player.stats.bullet_arc
 	base_reload_timer = player.stats.reload_timer
 	base_collision_num = player.stats.collision_num
-	base_append_damage = player.stats.append_damage
 	base_explosion_damage = player.stats.explosion_damage
 	base_explosion_range = player.stats.explosion_range
 	base_critical_damage = player.stats.critical_damage
@@ -288,6 +306,7 @@ func get_player_base_ability():
 	base_global_damage = player.stats.global_damage
 	base_kick_damage = player.stats.kick_damage
 	base_pick_up_range = player.stats.pick_up_range
+	base_pick_up_speed = player.stats.pick_up_speed
 	base_equip_damage = player.stats.equip_damage
 	base_shake_mult = player.stats.shake_mult
 	base_shake_length = player.stats.shake_length
@@ -298,14 +317,40 @@ func get_player_base_ability():
 	base_summoned_damage = player.stats.summoned_damage
 	base_heal_mult = player.stats.heal_mult
 	base_buff_layer_mult = player.stats.buff_layer_mult
+	base_buff_duration = player.stats.buff_duration
+	base_convert_power = player.stats.convert_power
+	base_convert_time = player.stats.convert_time
+	base_converted_cap = player.stats.converted_cap
 
 func update_player_ability():
+	# 已有重算在进行（说明是信号回调里的嵌套调用）→ 只标记，交给外层循环收敛
+	if _ability_depth > 0:
+		_ability_pending = true
+		return
+	_ability_depth += 1
+	var generations: int = 0
+	while true:
+		_ability_pending = false
+		_recompute_player_ability()
+		player_ability_changed_end.emit()
+		emit_player_ability_changed()
+		generations += 1
+		if not _ability_pending or generations >= _ABILITY_MAX_GENERATIONS:
+			break
+	_ability_depth -= 1
+
+func _recompute_player_ability():
+	var _prev_hp: int = player.stats.hp
+	var _prev_max_hp: int = player.stats.max_hp
+	var _prev_max_ammo: int = player.stats.max_ammo
+	var _prev_pick_up_range: int = player.stats.pick_up_range
 	coin_return = base_coin_return + coin_return_add
 	player.stats.luck = max(0, base_luck + luck_add ) * luck_mult * ability_mult
 	player.stats.critical_luck = clamp(0, max(0, base_critical_luck + critical_luck_add ) * critical_luck_mult * ability_mult, 101)
 	#base_initial_coin = player.stats.initial_coin
 	player.stats.coin_mult = max(0, base_coin_mult + coin_mult_add)
-	player.stats.knockback_resis = max(0, (base_knockback_resis + knockback_resis_add) * knockback_resis_mult)
+	var raw_knockback_resis: float = (base_knockback_resis + knockback_resis_add) * knockback_resis_mult
+	player.stats.knockback_resis = DamageRouter.apply_knockback_resist(raw_knockback_resis)
 	player.stats.MAX_SPEED = clamp(50, base_MAX_SPEED * MAX_SPEED_mult , MAX_SPEED_value)
 	player.stats.SPEED_TIME = max(0.2, (base_SPEED_TIME + SPEED_TIME_add) * SPEED_TIME_mult)
 	
@@ -346,6 +391,7 @@ func update_player_ability():
 	player.stats.global_damage = max(0.01, base_global_damage * global_damage_mult * ability_mult)
 	player.stats.kick_damage = max(1, (base_kick_damage + kick_damage_add) * kick_damage_mult * ability_mult)
 	player.stats.pick_up_range = max(0.01, base_pick_up_range * pick_up_range_mult)
+	player.stats.pick_up_speed = max(0.01, base_pick_up_speed * pick_up_speed_mult)
 	player.stats.equip_damage = max(0.01, base_equip_damage * equip_damage_mult * ability_mult)
 	player.stats.shake_mult = clamp(0.5, (float(player.stats.bullet_recoil) / float(base_bullet_recoil)) * base_shake_mult, 5)
 	player.stats.shake_length = base_shake_length + shake_length_add
@@ -356,19 +402,30 @@ func update_player_ability():
 	
 	player.stats.summoned_damage = max(0.1, (base_summoned_damage + summoned_damage_add) * ability_mult)
 	player.stats.buff_layer_mult = max(0, base_buff_layer_mult + buff_layer_mult_add)
+	player.stats.buff_duration = max(0.01, base_buff_duration * buff_duration_mult)
 	
 	player.stats.heal_mult = max(0.01, base_heal_mult + heal_mult_add)
 	
-	player.stats.hp_changed.emit()
-	player.stats.max_ammo_changed.emit()
-	player.stats.pick_up_range_changed.emit()
+	# 策反视作异常状态：策反积蓄吃异常伤害加成，策反持续时间吃异常持续时间加成
+	player.stats.convert_power = max(0, base_convert_power * convert_power_mult * player.stats.dot_damage)
+	player.stats.convert_time = max(0.01, base_convert_time * player.stats.dot_time)
+	player.stats.converted_cap = max(0, base_converted_cap + converted_cap_add)
 	
-	player_ability_changed_end.emit()
-	emit_player_ability_changed()
+	# 仅在相关数值真正变化时发信号，避免空扇出
+	if player.stats.hp != _prev_hp or player.stats.max_hp != _prev_max_hp:
+		player.stats.hp_changed.emit()
+	if player.stats.max_ammo != _prev_max_ammo:
+		player.stats.max_ammo_changed.emit()
+	if player.stats.pick_up_range != _prev_pick_up_range:
+		player.stats.pick_up_range_changed.emit()
 	
 func emit_player_ability_changed():
 	player_ability_changed.emit()
 
 func add_player_revive(health_mult: float):
-	player.health_hp = player.stats.max_hp * health_mult
-	player.is_health.emit()
+	HealData.fill(player.health_component.heal_data, {
+		"amount": player.stats.max_hp * health_mult,
+		"source": GameTags.PLAYER,
+		"node": player,
+	})
+	player.health_component.take_damage(player.health_component.heal_data)

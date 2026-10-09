@@ -1,9 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://8ycqggrgg1x5"]
+[gd_scene load_steps=4 format=3 uid="uid://8ycqggrgg1x5"]
 
 [ext_resource type="Theme" uid="uid://igkipbye612g" path="res://empty_theme.tres" id="1_ho0wa"]
 [ext_resource type="Script" path="res://ui/menu_box_button.gd" id="2_uxd2f"]
 [ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="2_wmkai"]
-[ext_resource type="Texture2D" uid="uid://bqdyikqbnp6h" path="res://sprites/player/hina/hina_picture.png" id="3_737m3"]
 
 [node name="menu_box_button" type="PanelContainer"]
 custom_minimum_size = Vector2(60, 10)
@@ -21,7 +20,6 @@ color = Color(0.0941176, 0.0941176, 0.0941176, 1)
 texture_filter = 2
 position = Vector2(43, 69)
 scale = Vector2(0.2, 0.2)
-texture = ExtResource("3_737m3")
 hframes = 4
 
 [node name="ColorRect" type="ColorRect" parent="ColorRect"]

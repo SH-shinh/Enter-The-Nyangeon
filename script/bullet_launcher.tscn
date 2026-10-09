@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://bm6dimclh7dhb"]
+[gd_scene format=3 uid="uid://bm6dimclh7dhb"]
 
-[ext_resource type="Script" path="res://script/bullet_launcher.gd" id="1_0p8lb"]
+[ext_resource type="Script" uid="uid://c1e8tcnqpbl4w" path="res://script/bullet_launcher.gd" id="1_0p8lb"]
 
-[node name="BulletLauncher" type="Node2D"]
+[node name="BulletLauncher" type="Node2D" unique_id=1773141544]
 script = ExtResource("1_0p8lb")
 
-[node name="ShootPosition" type="Marker2D" parent="."]
+[node name="ShootPosition" type="Marker2D" parent="." unique_id=1760324328]

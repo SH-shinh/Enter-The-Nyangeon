@@ -1,6 +1,6 @@
 extends CanvasLayer
 
-## 网络诊断 HUD（mod，代码构建）。F9 开关；仅在联机会话下有意义。
+## 网络诊断 HUD（mod，代码构建）。F4 开关；仅在联机会话下有意义。
 ## 数据来自 CoopNet.get_network_debug_text()，开关时联动 CoopNet.set_network_diag_enabled()。
 
 const CoopNetScript := preload("res://mods/etn_coop/net/coop_net.gd")
@@ -66,4 +66,4 @@ func _refresh() -> void:
 		return
 	var text: String = str(coop.call("get_network_debug_text"))
 	var quality: String = str(coop.call("get_network_quality_debug_text"))
-	_label.text = "[network: %s]  (F9/菜单关闭)\n%s" % [quality, text]
+	_label.text = "[network: %s]  (F4/菜单关闭)\n%s" % [quality, text]

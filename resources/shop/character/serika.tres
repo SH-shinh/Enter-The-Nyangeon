@@ -1,6 +1,5 @@
-[gd_resource type="Resource" script_class="CharacterCard" load_steps=5 format=3 uid="uid://cfxfo581r7f1w"]
+[gd_resource type="Resource" script_class="CharacterCard" load_steps=4 format=3 uid="uid://cfxfo581r7f1w"]
 
-[ext_resource type="Texture2D" uid="uid://6dg13rlth5sk" path="res://sprites/player/serika/serika_picture.png" id="1_dodpl"]
 [ext_resource type="Texture2D" uid="uid://fso5eoabq0er" path="res://ui/school/ABYDOS_icon.png" id="2_ojpxa"]
 [ext_resource type="Script" path="res://resources/shop/character/character_card.gd" id="3_qf8se"]
 [ext_resource type="Texture2D" uid="uid://csb12yhlnb4sr" path="res://ui/weapon/AR_icon.png" id="4_iiqo1"]
@@ -10,7 +9,7 @@ script = ExtResource("3_qf8se")
 cost = 6
 name_1 = "KUROMI"
 name_2 = "SERIKA"
-character_sprite = ExtResource("1_dodpl")
+character_sprite_path = "res://sprites/player/serika/serika_picture.png"
 weapon_name = "SINCERITY"
 weapon_type_name = "AR"
 weapon_icon = ExtResource("4_iiqo1")

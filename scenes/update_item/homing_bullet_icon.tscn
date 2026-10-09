@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Texture2D" uid="uid://87xu3jctgysq" path="res://sprites/update_item/homing_bullet_icon.png" id="1_hbicon"]
+[ext_resource type="PackedScene" uid="uid://5xnka7kne7w" path="res://script/picatinny_rail.tscn" id="2_rail"]
+
+[node name="HomingBulletIcon" type="Sprite2D"]
+position = Vector2(0, -4)
+texture = ExtResource("1_hbicon")
+
+[node name="PicatinnyRail" parent="." instance=ExtResource("2_rail")]
+position = Vector2(0, -2)

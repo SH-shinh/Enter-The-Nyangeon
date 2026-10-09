@@ -1,0 +1,172 @@
+[gd_scene format=3 uid="uid://cxms5fnwqou40"]
+
+[ext_resource type="Script" uid="uid://p2wimy4v2p8g" path="res://scenes/bullet/chill_ring.gd" id="1_chill"]
+[ext_resource type="Shader" uid="uid://b4sj74b5s611n" path="res://shaders/range_effects.gdshader" id="2_shader"]
+[ext_resource type="Resource" uid="uid://lmang0jl8vw2" path="res://resources/buff/enemy_buff/chill_dot.tres" id="3_buff"]
+[ext_resource type="Texture2D" uid="uid://clot4gphxyrke" path="res://sprites/particle/chill.png" id="4_chill"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_chill"]
+radius = 120.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_chill"]
+shader = ExtResource("2_shader")
+shader_parameter/ring_radius = 0.1
+shader_parameter/thickness_scalar = 0.0
+shader_parameter/oscillation_scalar = 0.0
+shader_parameter/speed = 0.0
+shader_parameter/main_color = Color(0.3529412, 0.6392157, 0.98039216, 0.7137255)
+shader_parameter/lerp_color = Color(0.416533, 0.7636774, 1, 1)
+shader_parameter/transparency = 1.0
+
+[sub_resource type="Curve" id="Curve_chill"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -5.8022, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_chill"]
+curve = SubResource("Curve_chill")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_chill"]
+lifetime_randomness = 0.71
+particle_flag_disable_z = true
+emission_shape = 6
+emission_ring_axis = Vector3(0, 0, 1)
+emission_ring_height = 1.0
+emission_ring_radius = 80.0
+emission_ring_inner_radius = 40.0
+emission_ring_cone_angle = 90.0
+gravity = Vector3(0, -10, 0)
+scale_min = 0.29999998
+scale_max = 0.79999995
+scale_curve = SubResource("CurveTexture_chill")
+color = Color(0.5, 1.2, 2, 1)
+
+[sub_resource type="Animation" id="Animation_chill_reset"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ColorRect:material:shader_parameter/ring_radius")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0.1, -0.2, 0, 0.2, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ColorRect:material:shader_parameter/thickness_scalar")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.2, 0, 0.2, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("HitBox/CollisionShape2D:disabled")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+
+[sub_resource type="Animation" id="Animation_chill_new"]
+resource_name = "new_animation"
+length = 0.5
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ColorRect:material:shader_parameter/ring_radius")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0.1, -0.2, 0, 0.2, 0, 0.5, -0.2, 0, 0, 0),
+"times": PackedFloat32Array(0, 0.5)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ColorRect:material:shader_parameter/thickness_scalar")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0.5, -0.2, 0, 0.2, 0, 0, -0.2, 0, 0, 0),
+"times": PackedFloat32Array(0, 0.5)
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("HitBox/CollisionShape2D:disabled")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.1, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+tracks/3/type = "method"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0.1, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"values": [{
+"args": [],
+"method": &"gpu_emitting"
+}, {
+"args": [],
+"method": &"idle_state"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_chill"]
+_data = {
+&"RESET": SubResource("Animation_chill_reset"),
+&"new_animation": SubResource("Animation_chill_new")
+}
+
+[node name="chill_ring" type="Node2D" unique_id=1704077490]
+script = ExtResource("1_chill")
+enemy_buff = ExtResource("3_buff")
+
+[node name="HitBox" type="Area2D" parent="." unique_id=135656634]
+collision_layer = 0
+collision_mask = 8
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox" unique_id=1999938578]
+shape = SubResource("CircleShape2D_chill")
+disabled = true
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=2113867277]
+material = SubResource("ShaderMaterial_chill")
+offset_left = -122.0
+offset_top = -122.0
+offset_right = 122.0
+offset_bottom = 122.0
+mouse_filter = 2
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=1975356906]
+emitting = false
+amount = 16
+texture = ExtResource("4_chill")
+lifetime = 0.4
+one_shot = true
+explosiveness = 1.0
+process_material = SubResource("ParticleProcessMaterial_chill")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1389383152]
+libraries/ = SubResource("AnimationLibrary_chill")

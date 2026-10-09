@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://coxjummjcs6e4"]
+[gd_scene format=3 uid="uid://coxjummjcs6e4"]
 
-[ext_resource type="Script" path="res://scenes/update_item/sakura_daifuku.gd" id="1_l2ejg"]
+[ext_resource type="Script" uid="uid://b68m2wxghdnxn" path="res://scenes/update_item/sakura_daifuku.gd" id="1_l2ejg"]
 
 [node name="sakura_daifuku" type="Node2D"]
 script = ExtResource("1_l2ejg")

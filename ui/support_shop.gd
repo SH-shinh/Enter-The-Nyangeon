@@ -4,6 +4,7 @@ extends Node2D
 @export var shop_menu: Node
 
 @onready var card_box: HBoxContainer = %card_box
+@onready var sc: ScrollContainer = $Node2D/MarginContainer/ScrollContainer
 
 @onready var support_halo: Sprite2D = %support_halo
 @onready var support_sprite: Sprite2D = %support_sprite
@@ -34,6 +35,9 @@ extends Node2D
 var now_support_card: SupportCard
 var main_on_select: bool = false
 var on_lock: bool = false
+var _lazy_active: bool = false
+var _lazy_last_h: float = -1.0
+var _lazy_force: int = 0
 
 func _ready() -> void:
 	support_main.mouse_entered.connect(main_card_mouse_in)
@@ -44,8 +48,50 @@ func _ready() -> void:
 	SupportData.support_lv_up.connect(level_up_anim)
 	SoundManager.voice_player.finished.connect(face_reset)
 	add_shop_box()
+	shop_menu.shop_open.connect(_on_shop_open)
+	shop_menu.shop_close.connect(_on_shop_closed)
+
+
+# 只在商店打开时按可见范围加载支援立绘，滚出即释放（+余量）。
+# 仅在滚动位置变化（或刚打开的前几帧）时重算。
+func _process(_delta: float) -> void:
+	if not _lazy_active:
+		return
+	if sc == null:
+		return
+	var h := sc.get_h_scroll()
+	if h == _lazy_last_h and _lazy_force <= 0:
+		return
+	_lazy_last_h = h
+	if _lazy_force > 0:
+		_lazy_force -= 1
+	var view := sc.get_global_rect()
+	for card in card_box.get_children():
+		if not card.has_method("reveal"):
+			continue
+		var ctrl := card as Control
+		if ctrl == null:
+			continue
+		if view.intersects(ctrl.get_global_rect().grow(150.0)):
+			card.reveal()
+		else:
+			card.conceal()
+
+
+func _on_shop_open() -> void:
+	_lazy_active = true
+	_lazy_force = 5
+	_lazy_last_h = -1.0
 	default_set()
-	shop_menu.shop_open.connect(default_set)
+
+
+func _on_shop_closed() -> void:
+	_lazy_active = false
+	_lazy_last_h = -1.0
+	_lazy_force = 0
+	for card in card_box.get_children():
+		if card.has_method("conceal"):
+			card.conceal()
 
 func level_up_anim(_lv: int):
 	SoundManager.play_sfx("PowerUp1")
@@ -78,6 +124,8 @@ func get_support_card(support_card: SupportCard):
 		change_card()
 
 func update_exp():
+	if now_support_card == null:
+		return
 	if SupportData.now_lv > 0:
 		if SupportData.now_lv < now_support_card.max_lv:
 			var percentage = float(SupportData.now_count_exp) / float(SupportData.next_exp)
@@ -96,7 +144,7 @@ func update_exp():
 func update_card():
 	SupportData.load_data()
 	support_halo.texture = now_support_card.character_halo
-	support_sprite.texture = now_support_card.character_sprite
+	support_sprite.texture = LazyTexture.load_uncached(now_support_card.character_sprite_path)
 	main_name.text = now_support_card.support_name
 	support_name.text = now_support_card.support_name
 	weapon_name.text = now_support_card.weapon_name
@@ -154,6 +202,7 @@ func unlock_support():
 		PlayerData.player_pyroxenes -= now_support_card.unlock_cost
 		on_lock = false
 		SupportData.add_new_data(now_support_card)
+		Game.save_playerdata()
 		SoundManager.play_sfx("CoinCostSounds")
 		change_card()
 	else:

@@ -1,6 +1,6 @@
-[gd_scene load_steps=9 format=3 uid="uid://bucvkdtwopaku"]
+[gd_scene format=3 uid="uid://bucvkdtwopaku"]
 
-[ext_resource type="Script" path="res://ui/test_item_card.gd" id="1_evlbu"]
+[ext_resource type="Script" uid="uid://dkh4yw0prb4nm" path="res://ui/test_item_card.gd" id="1_evlbu"]
 [ext_resource type="Texture2D" uid="uid://l1v05hcgbue8" path="res://sprites/update_item/capybara_bath_bomb.png" id="1_giywv"]
 [ext_resource type="Texture2D" uid="uid://jcqmwo1t8vv0" path="res://ui/ui.png" id="3_hmkrh"]
 [ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="4_qhdmc"]
@@ -9,6 +9,8 @@
 
 [sub_resource type="Theme" id="Theme_jyrc3"]
 PanelContainer/styles/panel = SubResource("StyleBoxEmpty_f3ha2")
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_17db0"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_av1xv"]
 texture = ExtResource("3_hmkrh")
@@ -25,28 +27,29 @@ region_rect = Rect2(44, 12, 8, 8)
 [sub_resource type="Theme" id="Theme_3pjxh"]
 PanelContainer/styles/panel = SubResource("StyleBoxTexture_av1xv")
 
-[node name="test_item_card" type="PanelContainer"]
+[node name="test_item_card" type="PanelContainer" unique_id=688486932]
 mouse_filter = 1
 theme = SubResource("Theme_jyrc3")
 script = ExtResource("1_evlbu")
 
-[node name="Button" type="Button" parent="."]
+[node name="Button" type="Button" parent="." unique_id=82399134]
 layout_mode = 2
 mouse_filter = 1
 theme_override_colors/icon_pressed_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_17db0")
 
-[node name="TextureRect" type="TextureRect" parent="."]
+[node name="TextureRect" type="TextureRect" parent="." unique_id=646159856]
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("1_giywv")
 
-[node name="Text" type="Node2D" parent="."]
+[node name="Text" type="Node2D" parent="." unique_id=1627565336]
 visible = false
 top_level = true
 z_index = 1
 scale = Vector2(0.6, 0.6)
 
-[node name="PanelContainer" type="PanelContainer" parent="Text"]
+[node name="PanelContainer" type="PanelContainer" parent="Text" unique_id=389026076]
 custom_minimum_size = Vector2(154, 0)
 offset_left = 18.0
 offset_top = -147.0
@@ -55,11 +58,11 @@ offset_bottom = -74.0
 mouse_filter = 2
 theme = SubResource("Theme_3pjxh")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Text/PanelContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Text/PanelContainer" unique_id=1911071803]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="ItemText4" type="Label" parent="Text/PanelContainer/VBoxContainer"]
+[node name="ItemText4" type="Label" parent="Text/PanelContainer/VBoxContainer" unique_id=1365645162]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -72,7 +75,7 @@ theme_override_font_sizes/font_size = 14
 text = "名字"
 autowrap_mode = 1
 
-[node name="ItemText" type="Label" parent="Text/PanelContainer/VBoxContainer"]
+[node name="ItemText" type="Label" parent="Text/PanelContainer/VBoxContainer" unique_id=1685419866]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -85,7 +88,7 @@ theme_override_font_sizes/font_size = 12
 text = "描述"
 autowrap_mode = 1
 
-[node name="ItemText2" type="Label" parent="Text/PanelContainer/VBoxContainer"]
+[node name="ItemText2" type="Label" parent="Text/PanelContainer/VBoxContainer" unique_id=1194269716]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.690196, 0.929412, 0.278431, 1)
@@ -99,7 +102,7 @@ theme_override_font_sizes/font_size = 12
 text = "+100"
 autowrap_mode = 1
 
-[node name="ItemText3" type="Label" parent="Text/PanelContainer/VBoxContainer"]
+[node name="ItemText3" type="Label" parent="Text/PanelContainer/VBoxContainer" unique_id=772052483]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.894118, 0.219608, 0.298039, 1)
@@ -114,4 +117,3 @@ text = "-100"
 autowrap_mode = 1
 
 [connection signal="gui_input" from="Button" to="." method="_on_button_gui_input"]
-[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]

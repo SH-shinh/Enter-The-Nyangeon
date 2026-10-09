@@ -1,8 +1,8 @@
-[gd_scene load_steps=42 format=3 uid="uid://bueg34jr6gc27"]
+[gd_scene format=3 uid="uid://bueg34jr6gc27"]
 
-[ext_resource type="Script" path="res://scenes/main/test_room.gd" id="1_qswi3"]
+[ext_resource type="Script" uid="uid://cvh4hs5bf4b5q" path="res://scenes/main/test_room.gd" id="1_qswi3"]
 [ext_resource type="Texture2D" uid="uid://bp6wc6526800u" path="res://sprites/tile_map/map_test_3.png" id="2_0uum3"]
-[ext_resource type="Shader" path="res://shaders/scrolling_bkgd.gdshader" id="2_cdbm2"]
+[ext_resource type="Shader" uid="uid://d3frxix26ovel" path="res://shaders/scrolling_bkgd.gdshader" id="2_cdbm2"]
 [ext_resource type="Texture2D" uid="uid://dmb60u2tgucew" path="res://sprites/tile_map/wall.png" id="2_d3ctq"]
 [ext_resource type="AudioStream" uid="uid://7lwudyq1ak02" path="res://sounds/BGM/Neo City Dive first cut.wav" id="2_kl4h4"]
 [ext_resource type="Texture2D" uid="uid://c5rygkqgnwi6j" path="res://sprites/tile_map/tile_map.png" id="2_or80p"]
@@ -15,11 +15,17 @@
 [ext_resource type="PackedScene" uid="uid://bimaxk5fxnlcm" path="res://scenes/manager/summoned_manager.tscn" id="8_4bpqt"]
 [ext_resource type="PackedScene" uid="uid://b65xoyeg56dux" path="res://scenes/ball.tscn" id="8_bd56b"]
 [ext_resource type="PackedScene" uid="uid://dxw6soydl8vhc" path="res://scenes/red_ball.tscn" id="9_nm1my"]
-[ext_resource type="Texture2D" uid="uid://jcqmwo1t8vv0" path="res://ui/ui.png" id="10_hngvu"]
-[ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="11_2pqdg"]
-[ext_resource type="Texture2D" uid="uid://b3jpq0uep13uy" path="res://ui/button_e_icon.png" id="12_ycfwh"]
 [ext_resource type="PackedScene" uid="uid://rurnw6uf2ndk" path="res://ui/character_test_menu.tscn" id="16_56o14"]
 [ext_resource type="PackedScene" uid="uid://c4x12s4ce50t2" path="res://ui/game_over_page.tscn" id="19_jp2ui"]
+[ext_resource type="PackedScene" uid="uid://br7p1dvdixt7u" path="res://scenes/yellow_ball.tscn" id="30_yball"]
+[ext_resource type="PackedScene" path="res://ui/enemy_test_menu.tscn" id="31_emenu"]
+[ext_resource type="PackedScene" path="res://scenes/manager/interaction_manager.tscn" id="32_interact"]
+[ext_resource type="PackedScene" uid="uid://bqp8n3vxk2xar" path="res://scenes/manager/pickup_spawner.tscn" id="33_spawner"]
+
+[sub_resource type="Environment" id="Environment_glv5s"]
+background_mode = 3
+glow_enabled = true
+glow_strength = 0.3
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_oulr1"]
 shader = ExtResource("2_cdbm2")
@@ -68,10 +74,6 @@ texture_region_size = Vector2i(64, 64)
 0:0/0 = 0
 0:0/0/texture_origin = Vector2i(0, -16)
 0:0/0/y_sort_origin = -1000
-0:1/0 = 0
-1:0/0 = 0
-1:0/0/texture_origin = Vector2i(0, 16)
-1:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(0, -16, -32, 0, 0, 16, 32, 0)
 
 [sub_resource type="TileSet" id="TileSet_50x70"]
 tile_shape = 1
@@ -94,145 +96,6 @@ physics_layer_0/collision_layer = 2
 physics_layer_0/collision_mask = 0
 sources/0 = SubResource("TileSetAtlasSource_uyp1s")
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_teot2"]
-texture = ExtResource("10_hngvu")
-texture_margin_left = 6.0
-texture_margin_top = 6.0
-texture_margin_right = 6.0
-texture_margin_bottom = 6.0
-expand_margin_bottom = 14.0
-region_rect = Rect2(36, 34, 25, 27)
-
-[sub_resource type="Theme" id="Theme_c2yvi"]
-PanelContainer/styles/panel = SubResource("StyleBoxTexture_teot2")
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_fltlx"]
-atlas = ExtResource("12_ycfwh")
-region = Rect2(0, 0, 32, 32)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_vnvmx"]
-atlas = ExtResource("12_ycfwh")
-region = Rect2(32, 0, 32, 32)
-
-[sub_resource type="SpriteFrames" id="SpriteFrames_1byw0"]
-animations = [{
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_fltlx")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_vnvmx")
-}],
-"loop": true,
-"name": &"default",
-"speed": 5.0
-}]
-
-[sub_resource type="Animation" id="Animation_t5g2d"]
-length = 0.001
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath(".:visible")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [false]
-}
-tracks/1/type = "bezier"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("Panel:position:x")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"handle_modes": PackedInt32Array(0),
-"points": PackedFloat32Array(-34, -0.05, 0, 0.05, 0),
-"times": PackedFloat32Array(0)
-}
-tracks/2/type = "bezier"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("Panel:position:y")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"handle_modes": PackedInt32Array(0),
-"points": PackedFloat32Array(-88, -0.05, 0, 0.05, 0),
-"times": PackedFloat32Array(0)
-}
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath("Panel:modulate")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Color(1, 1, 1, 1)]
-}
-
-[sub_resource type="Animation" id="Animation_ug2of"]
-resource_name = "show_text"
-length = 0.1
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath(".:visible")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.0333333),
-"transitions": PackedFloat32Array(1, 1),
-"update": 1,
-"values": [false, true]
-}
-tracks/1/type = "bezier"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("Panel:position:x")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"handle_modes": PackedInt32Array(0),
-"points": PackedFloat32Array(-34, -0.05, 0, 0.05, 0),
-"times": PackedFloat32Array(0)
-}
-tracks/2/type = "bezier"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("Panel:position:y")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"handle_modes": PackedInt32Array(0, 0),
-"points": PackedFloat32Array(0, -0.05, 0, 0.05, 0, -88, -0.05, 0, 0.05, 0),
-"times": PackedFloat32Array(0, 0.1)
-}
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath("Panel:modulate")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/keys = {
-"times": PackedFloat32Array(0.0333333, 0.1),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
-}
-
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_700nf"]
-_data = {
-"RESET": SubResource("Animation_t5g2d"),
-"show_text": SubResource("Animation_ug2of")
-}
-
 [sub_resource type="Gradient" id="Gradient_g6ce1"]
 offsets = PackedFloat32Array(0.304878, 1)
 colors = PackedColorArray(0, 0, 0, 0, 0, 0, 0, 0.407843)
@@ -246,16 +109,19 @@ fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(0.5, 1)
 metadata/_snap_enabled = true
 
-[node name="TestRoom" type="Node2D"]
+[node name="TestRoom" type="Node2D" unique_id=1927573858]
 script = ExtResource("1_qswi3")
 bgm_first_cut = Array[AudioStream]([ExtResource("2_kl4h4")])
 bgm_loop = Array[AudioStream]([ExtResource("3_gmjmm")])
 
-[node name="BuffBox" type="Node2D" parent="." groups=["BuffBox"]]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1842186300]
+environment = SubResource("Environment_glv5s")
 
-[node name="BackLayer" type="Node2D" parent="." groups=["BackLayer"]]
+[node name="BuffBox" type="Node2D" parent="." unique_id=306520084 groups=["BuffBox"]]
 
-[node name="ColorRect2" type="ColorRect" parent="BackLayer"]
+[node name="BackLayer" type="Node2D" parent="." unique_id=1123887418 groups=["BackLayer"]]
+
+[node name="ColorRect2" type="ColorRect" parent="BackLayer" unique_id=1974812373]
 z_index = -10
 offset_left = -866.0
 offset_top = -382.0
@@ -264,7 +130,7 @@ offset_bottom = 1367.0
 mouse_filter = 1
 color = Color(0.926245, 0.415147, 0.843694, 1)
 
-[node name="TextureRect2" type="TextureRect" parent="BackLayer"]
+[node name="TextureRect2" type="TextureRect" parent="BackLayer" unique_id=617005124]
 z_index = -9
 material = SubResource("ShaderMaterial_oulr1")
 anchors_preset = 15
@@ -279,7 +145,7 @@ grow_vertical = 2
 texture = ExtResource("3_ieibm")
 stretch_mode = 6
 
-[node name="TextureRect" type="TextureRect" parent="BackLayer"]
+[node name="TextureRect" type="TextureRect" parent="BackLayer" unique_id=1750959722]
 z_index = -2
 offset_left = 703.0
 offset_top = 450.0
@@ -287,7 +153,7 @@ offset_right = 1595.0
 offset_bottom = 1259.0
 texture = SubResource("GradientTexture2D_dh5cj")
 
-[node name="ColorRect" type="TextureRect" parent="BackLayer"]
+[node name="ColorRect" type="TextureRect" parent="BackLayer" unique_id=1249402162]
 z_index = -2
 offset_left = -187.0
 offset_top = 450.0
@@ -295,7 +161,7 @@ offset_right = 704.0
 offset_bottom = 1259.0
 texture = SubResource("GradientTexture2D_i3twn")
 
-[node name="MapTest2" type="Sprite2D" parent="BackLayer"]
+[node name="MapTest2" type="Sprite2D" parent="BackLayer" unique_id=400370451]
 modulate = Color(0.308766, 0.659523, 0.905591, 1)
 z_index = -2
 position = Vector2(704, 450)
@@ -304,13 +170,13 @@ scale = Vector2(2.48, 2.48)
 skew = -0.663225
 texture = ExtResource("2_0uum3")
 
-[node name="FloorLayer" type="Node2D" parent="." groups=["FloorLayer"]]
+[node name="FloorLayer" type="Node2D" parent="." unique_id=2146537578 groups=["FloorLayer"]]
 y_sort_enabled = true
 
-[node name="YSort" type="Node2D" parent="."]
+[node name="YSort" type="Node2D" parent="." unique_id=1298779907]
 y_sort_enabled = true
 
-[node name="FloorWall" type="TileMap" parent="YSort"]
+[node name="FloorWall" type="TileMap" parent="YSort" unique_id=1681138780]
 visible = false
 y_sort_enabled = true
 tile_set = SubResource("TileSet_lje7e")
@@ -318,7 +184,7 @@ format = 2
 layer_0/y_sort_enabled = true
 layer_0/tile_data = PackedInt32Array(7929903, 0, 0, 7864367, 0, 0, 7798830, 0, 0, 7733294, 0, 0, 7667757, 0, 0, 7602221, 0, 0, 7536684, 0, 0, 7471148, 0, 0, 7405611, 0, 0, 7340075, 0, 0, 7274538, 0, 0, 7209002, 0, 0, 7143465, 0, 0, 7077930, 0, 0, 7012394, 0, 0, 6946859, 0, 0, 6881323, 0, 0, 6815788, 0, 0, 6750252, 0, 0, 6684717, 0, 0, 6619181, 0, 0, 6553646, 0, 0, 6488110, 0, 0, 6422575, 0, 0, 6357039, 0, 0, 6422576, 0, 0, 6488112, 0, 0, 6553649, 0, 0, 6619185, 0, 0, 6684722, 0, 0, 6750258, 0, 0, 6815795, 0, 0, 6881331, 0, 0, 6946868, 0, 0, 7012404, 0, 0, 7077941, 0, 0, 7143477, 0, 0, 7209013, 0, 0, 7274548, 0, 0, 7340084, 0, 0, 7405619, 0, 0, 7471155, 0, 0, 7536690, 0, 0, 7602226, 0, 0, 7667761, 0, 0, 7733297, 0, 0, 7798832, 0, 0, 7864368, 0, 0, 3604490, 1, 0, 3538954, 1, 0, 3473417, 1, 0, 3407881, 1, 0, 3342344, 1, 0, 3276808, 1, 0, 3211271, 1, 0, 3145735, 1, 0, 3080198, 1, 0, 3014662, 1, 0, 2949125, 1, 0, 2883589, 1, 0, 2818052, 1, 0, 2752516, 1, 0, 2686979, 1, 0, 2621443, 1, 0, 2555906, 1, 0, 2490370, 1, 0, 2424833, 1, 0, 2359297, 1, 0, 2293760, 1, 0, 2228224, 1, 0, 2228223, 1, 0, 2162687, 1, 0, 2097150, 1, 0, 2031614, 1, 0, 1966077, 1, 0, 1900541, 1, 0, 1835004, 1, 0, 1769469, 1, 0, 1703933, 1, 0, 1638398, 1, 0, 1572862, 1, 0, 1507327, 1, 0, 1441791, 1, 0, 1310720, 1, 0, 1245184, 1, 0, 1179649, 1, 0, 1114113, 1, 0, 1048578, 1, 0, 983042, 1, 0, 917507, 1, 0, 851971, 1, 0, 786436, 1, 0, 720900, 1, 0, 655365, 1, 0, 589829, 1, 0, 524294, 1, 0, 458758, 1, 0, 393223, 1, 0, 327687, 1, 0, 262152, 1, 0, 196616, 1, 0, 131081, 1, 0, 65545, 1, 0, 10, 1, 0, -65526, 1, 0, 11, 1, 0, 65547, 1, 0, 131084, 1, 0, 196620, 1, 0, 262157, 1, 0, 327693, 1, 0, 393230, 1, 0, 458766, 1, 0, 524303, 1, 0, 589839, 1, 0, 655376, 1, 0, 720912, 1, 0, 786449, 1, 0, 851985, 1, 0, 917522, 1, 0, 983058, 1, 0, 1048595, 1, 0, 1114131, 1, 0, 1769496, 1, 0, 1703960, 1, 0, 1638423, 1, 0, 1572887, 1, 0, 1507350, 1, 0, 1441814, 1, 0, 1376277, 1, 0, 1310741, 1, 0, 1245204, 1, 0, 1179668, 1, 0, 3538955, 1, 0, 3473419, 1, 0, 3407884, 1, 0, 3342348, 1, 0, 3276813, 1, 0, 3211277, 1, 0, 3145742, 1, 0, 3080206, 1, 0, 3014671, 1, 0, 2949135, 1, 0, 2883600, 1, 0, 2818064, 1, 0, 2752529, 1, 0, 2686993, 1, 0, 2621458, 1, 0, 2555922, 1, 0, 2490387, 1, 0, 2424851, 1, 0, 2359316, 1, 0, 2293780, 1, 0, 2228245, 1, 0, 2162709, 1, 0, 2097174, 1, 0, 2031638, 1, 0, 1966103, 1, 0, 1900567, 1, 0, 1835032, 1, 0)
 
-[node name="SpawnMap" type="TileMap" parent="YSort" groups=["Map"]]
+[node name="SpawnMap" type="TileMap" parent="YSort" unique_id=1214966449 groups=["Map"]]
 visible = false
 modulate = Color(1, 1, 1, 0.423529)
 y_sort_enabled = true
@@ -327,7 +193,7 @@ format = 2
 layer_0/y_sort_enabled = true
 layer_0/tile_data = PackedInt32Array(1966098, 1, 0, 1900561, 1, 0, 1835025, 1, 0, 1769488, 1, 0, 1703952, 1, 0, 1638415, 1, 0, 1572879, 1, 0, 1507342, 1, 0, 1441806, 1, 0, 1376269, 1, 0, 1310733, 1, 0, 1245196, 1, 0, 1179660, 1, 0, 1114123, 1, 0, 1048587, 1, 0, 983050, 1, 0, 1048586, 1, 0, 1114122, 1, 0, 1179659, 1, 0, 1245195, 1, 0, 1310732, 1, 0, 1376268, 1, 0, 1441805, 1, 0, 1507341, 1, 0, 1572878, 1, 0, 1638414, 1, 0, 1703951, 1, 0, 1769487, 1, 0, 1835024, 1, 0, 1900560, 1, 0, 1966097, 1, 0, 2031633, 1, 0, 2949130, 1, 0, 2883595, 1, 0, 2818059, 1, 0, 2752524, 1, 0, 2686988, 1, 0, 2621453, 1, 0, 2555917, 1, 0, 2490382, 1, 0, 2424846, 1, 0, 2359311, 1, 0, 2293775, 1, 0, 2228240, 1, 0, 2162704, 1, 0, 2097169, 1, 0, 2031632, 1, 0, 2097168, 1, 0, 2162703, 1, 0, 2228239, 1, 0, 2293774, 1, 0, 2359310, 1, 0, 2424845, 1, 0, 2490381, 1, 0, 2555916, 1, 0, 2621452, 1, 0, 2686987, 1, 0, 2752523, 1, 0, 2818058, 1, 0, 2883594, 1, 0, 2818057, 1, 0, 2752522, 1, 0, 2686986, 1, 0, 2621451, 1, 0, 2555915, 1, 0, 2490380, 1, 0, 2424844, 1, 0, 2359309, 1, 0, 2293773, 1, 0, 2228238, 1, 0, 2162702, 1, 0, 2097167, 1, 0, 2031631, 1, 0, 1966096, 1, 0, 1900559, 1, 0, 1966095, 1, 0, 2031630, 1, 0, 2097166, 1, 0, 2162701, 1, 0, 2228237, 1, 0, 2293772, 1, 0, 2359308, 1, 0, 2424843, 1, 0, 2490379, 1, 0, 2555914, 1, 0, 2621450, 1, 0, 2686985, 1, 0, 2752521, 1, 0, 1114121, 1, 0, 1179657, 1, 0, 1245192, 1, 0, 1310728, 1, 0, 1376263, 1, 0, 1441799, 1, 0, 1507334, 1, 0, 1572870, 1, 0, 1638405, 1, 0, 1703941, 1, 0, 1769476, 1, 0, 1835012, 1, 0, 1900547, 1, 0, 1966083, 1, 0, 2031619, 1, 0, 2097156, 1, 0, 2162692, 1, 0, 2228229, 1, 0, 2293765, 1, 0, 2359302, 1, 0, 2424838, 1, 0, 2490375, 1, 0, 2555911, 1, 0, 2621448, 1, 0, 2686984, 1, 0, 2621449, 1, 0, 2555912, 1, 0, 2490376, 1, 0, 2424839, 1, 0, 2359303, 1, 0, 2293766, 1, 0, 2228230, 1, 0, 2162693, 1, 0, 2097157, 1, 0, 2031620, 1, 0, 1966084, 1, 0, 1900548, 1, 0, 1966085, 1, 0, 2031621, 1, 0, 2097158, 1, 0, 2162694, 1, 0, 2228231, 1, 0, 2293767, 1, 0, 2359304, 1, 0, 2424840, 1, 0, 2490377, 1, 0, 2555913, 1, 0, 2490378, 1, 0, 2424841, 1, 0, 2359305, 1, 0, 2293768, 1, 0, 2228232, 1, 0, 2162695, 1, 0, 2097159, 1, 0, 2031622, 1, 0, 1966086, 1, 0, 1900549, 1, 0, 1835013, 1, 0, 1769477, 1, 0, 1703942, 1, 0, 1638406, 1, 0, 1572871, 1, 0, 1507335, 1, 0, 1441800, 1, 0, 1376264, 1, 0, 1310729, 1, 0, 1245193, 1, 0, 1179658, 1, 0, 1245194, 1, 0, 1310730, 1, 0, 1376265, 1, 0, 1441801, 1, 0, 1507336, 1, 0, 1572872, 1, 0, 1638407, 1, 0, 1703943, 1, 0, 1769478, 1, 0, 1835014, 1, 0, 1900550, 1, 0, 1835015, 1, 0, 1310731, 1, 0, 1835022, 1, 0, 1900558, 1, 0, 1835023, 1, 0, 1769486, 1, 0, 1703950, 1, 0, 1638413, 1, 0, 1572877, 1, 0, 1507340, 1, 0, 1441804, 1, 0, 1376267, 1, 0, 1966087, 1, 0, 2031623, 1, 0, 2097160, 1, 0, 2162696, 1, 0, 2228233, 1, 0, 2293769, 1, 0, 2359306, 1, 0, 2424842, 1, 0, 2359307, 1, 0, 2293771, 1, 0, 2228236, 1, 0, 2162700, 1, 0, 2097165, 1, 0, 2031629, 1, 0, 1966094, 1, 0, 1900557, 1, 0, 1900551, 1, 0, 1966088, 1, 0, 2031624, 1, 0, 2097161, 1, 0, 2162697, 1, 0, 2228234, 1, 0, 2293770, 1, 0, 2228235, 1, 0, 2162699, 1, 0, 2097164, 1, 0, 2031628, 1, 0, 1966093, 1, 0, 1900546, 1, 0, 1835011, 1, 0, 1769475, 1, 0, 1703940, 1, 0, 1638404, 1, 0, 1572869, 1, 0, 1507333, 1, 0, 1441798, 1, 0, 1376262, 1, 0, 1310727, 1, 0, 1245191, 1, 0, 1179656, 1, 0, 1114120, 1, 0, 1048585, 1, 0, 983049, 1, 0, 917514, 1, 0, 851978, 1, 0, 786443, 1, 0, 720907, 1, 0, 655372, 1, 0, 589836, 1, 0, 524301, 1, 0, 458764, 1, 0, 524300, 1, 0, 589835, 1, 0, 655371, 1, 0, 720906, 1, 0, 786442, 1, 0, 851977, 1, 0, 917513, 1, 0, 983048, 1, 0, 1048584, 1, 0, 1114119, 1, 0, 1179655, 1, 0, 1245190, 1, 0, 1310726, 1, 0, 1376261, 1, 0, 1441797, 1, 0, 1507332, 1, 0, 1572868, 1, 0, 1638403, 1, 0, 1703939, 1, 0, 1769474, 1, 0, 1835010, 1, 0, 1769473, 1, 0, 1703938, 1, 0, 1638402, 1, 0, 1572867, 1, 0, 1507331, 1, 0, 1441796, 1, 0, 1376260, 1, 0, 1310725, 1, 0, 1245189, 1, 0, 1179654, 1, 0, 1114118, 1, 0, 1048583, 1, 0, 983047, 1, 0, 917512, 1, 0, 851976, 1, 0, 786441, 1, 0, 720905, 1, 0, 589834, 1, 0, 524299, 1, 0, 458763, 1, 0, 393228, 1, 0, 327691, 1, 0, 393227, 1, 0, 458762, 1, 0, 524298, 1, 0, 589833, 1, 0, 655369, 1, 0, 720904, 1, 0, 786440, 1, 0, 851975, 1, 0, 917511, 1, 0, 983046, 1, 0, 1048582, 1, 0, 1114117, 1, 0, 1179653, 1, 0, 1245188, 1, 0, 1310724, 1, 0, 1376259, 1, 0, 1441795, 1, 0, 1507330, 1, 0, 1572866, 1, 0, 1638401, 1, 0, 1703937, 1, 0, 1638400, 1, 0, 1572865, 1, 0, 1507329, 1, 0, 1441794, 1, 0, 1376258, 1, 0, 1310723, 1, 0, 1245187, 1, 0, 1179652, 1, 0, 1114116, 1, 0, 1048581, 1, 0, 983045, 1, 0, 917510, 1, 0, 851974, 1, 0, 786439, 1, 0, 720903, 1, 0, 655368, 1, 0, 589832, 1, 0, 524297, 1, 0, 458761, 1, 0, 393226, 1, 0, 327690, 1, 0, 262155, 1, 0, 655370, 1, 0, 196618, 1, 0, 262154, 1, 0, 327689, 1, 0, 393225, 1, 0, 458760, 1, 0, 524296, 1, 0, 589831, 1, 0, 655367, 1, 0, 720902, 1, 0, 786438, 1, 0, 851973, 1, 0, 917509, 1, 0, 983044, 1, 0, 1048580, 1, 0, 1114115, 1, 0, 1179651, 1, 0, 1245186, 1, 0, 1310722, 1, 0, 1376257, 1, 0, 1441793, 1, 0, 1507328, 1, 0, 1572864, 1, 0, 1703935, 1, 0, 1769471, 1, 0, 1835006, 1, 0, 1900543, 1, 0, 1966079, 1, 0, 1966080, 1, 0, 2031616, 1, 0, 2097153, 1, 0, 2162689, 1, 0, 2228226, 1, 0, 2293762, 1, 0, 2359299, 1, 0, 2424835, 1, 0, 2490372, 1, 0, 2555908, 1, 0, 2621445, 1, 0, 2686981, 1, 0, 2752518, 1, 0, 2818054, 1, 0, 2883591, 1, 0, 2949127, 1, 0, 3014664, 1, 0, 3080200, 1, 0, 3145737, 1, 0, 3211273, 1, 0, 3276810, 1, 0, 3342346, 1, 0, 3276811, 1, 0, 3211275, 1, 0, 3145740, 1, 0, 3080204, 1, 0, 3014669, 1, 0, 2949133, 1, 0, 2883598, 1, 0, 2818062, 1, 0, 2752527, 1, 0, 2686991, 1, 0, 2621456, 1, 0, 2555920, 1, 0, 2490385, 1, 0, 2424849, 1, 0, 2359314, 1, 0, 2293778, 1, 0, 2228243, 1, 0, 2162707, 1, 0, 2097172, 1, 0, 2031636, 1, 0, 1966101, 1, 0, 1900565, 1, 0, 1835030, 1, 0, 1769494, 1, 0, 1703958, 1, 0, 1638421, 1, 0, 1572885, 1, 0, 1507348, 1, 0, 1441812, 1, 0, 1376275, 1, 0, 1310739, 1, 0, 1245202, 1, 0, 1179666, 1, 0, 1114129, 1, 0, 1048593, 1, 0, 983056, 1, 0, 917520, 1, 0, 851983, 1, 0, 786447, 1, 0, 720910, 1, 0, 655374, 1, 0, 589837, 1, 0, 2555918, 1, 0, 2490383, 1, 0, 2424847, 1, 0, 2359312, 1, 0, 2293776, 1, 0, 2228241, 1, 0, 2162705, 1, 0, 2097170, 1, 0, 2031634, 1, 0, 1966099, 1, 0, 1900563, 1, 0, 1835028, 1, 0, 1769492, 1, 0, 1703957, 1, 0, 1638420, 1, 0, 1572884, 1, 0, 1507347, 1, 0, 1441811, 1, 0, 1376274, 1, 0, 1310738, 1, 0, 1245201, 1, 0, 1179665, 1, 0, 1114128, 1, 0, 1048592, 1, 0, 983055, 1, 0, 917519, 1, 0, 851982, 1, 0, 786446, 1, 0, 720909, 1, 0, 655373, 1, 0, 720908, 1, 0, 786444, 1, 0, 851979, 1, 0, 917515, 1, 0, 983051, 1, 0, 917516, 1, 0, 851980, 1, 0, 786445, 1, 0, 851981, 1, 0, 917517, 1, 0, 983052, 1, 0, 1048588, 1, 0, 1114124, 1, 0, 1048589, 1, 0, 983053, 1, 0, 917518, 1, 0, 983054, 1, 0, 1048590, 1, 0, 1114125, 1, 0, 1179661, 1, 0, 1245197, 1, 0, 1179662, 1, 0, 1114126, 1, 0, 1048591, 1, 0, 1114127, 1, 0, 1179663, 1, 0, 1245198, 1, 0, 1310734, 1, 0, 1376270, 1, 0, 1310735, 1, 0, 1245199, 1, 0, 1179664, 1, 0, 1245200, 1, 0, 1310736, 1, 0, 1376271, 1, 0, 1441807, 1, 0, 1507343, 1, 0, 1441808, 1, 0, 1376272, 1, 0, 1310737, 1, 0, 1376273, 1, 0, 1441809, 1, 0, 1507344, 1, 0, 1572880, 1, 0, 1638416, 1, 0, 1572881, 1, 0, 1507345, 1, 0, 1441810, 1, 0, 1507346, 1, 0, 1572882, 1, 0, 1638417, 1, 0, 1703953, 1, 0, 1769489, 1, 0, 1703954, 1, 0, 1638418, 1, 0, 1572883, 1, 0, 1638419, 1, 0, 1703955, 1, 0, 1769490, 1, 0, 1835026, 1, 0, 1900562, 1, 0, 1835027, 1, 0, 1769491, 1, 0, 1703956, 1, 0, 1769493, 1, 0, 1835029, 1, 0, 1900564, 1, 0, 1966100, 1, 0, 2031635, 1, 0, 2097171, 1, 0, 2162706, 1, 0, 2228242, 1, 0, 2293777, 1, 0, 2359313, 1, 0, 2424848, 1, 0, 2490384, 1, 0, 2555919, 1, 0, 2621455, 1, 0, 2686990, 1, 0, 2621454, 1, 0, 2686989, 1, 0, 2752525, 1, 0, 2818060, 1, 0, 2883596, 1, 0, 2949131, 1, 0, 3014667, 1, 0, 3080202, 1, 0, 3014666, 1, 0, 2949129, 1, 0, 2883593, 1, 0, 2818056, 1, 0, 2752520, 1, 0, 2686983, 1, 0, 2621447, 1, 0, 2555910, 1, 0, 2490374, 1, 0, 2424837, 1, 0, 2359301, 1, 0, 2293764, 1, 0, 2228228, 1, 0, 2162691, 1, 0, 2097155, 1, 0, 2031618, 1, 0, 1966082, 1, 0, 1900545, 1, 0, 1835009, 1, 0, 1769472, 1, 0, 1703936, 1, 0, 1835007, 1, 0, 1835008, 1, 0, 1900544, 1, 0, 1966081, 1, 0, 2031617, 1, 0, 2097154, 1, 0, 2162690, 1, 0, 2228227, 1, 0, 2293763, 1, 0, 2359300, 1, 0, 2424836, 1, 0, 2490373, 1, 0, 2555909, 1, 0, 2621446, 1, 0, 2686982, 1, 0, 2752519, 1, 0, 2818055, 1, 0, 2883592, 1, 0, 2949128, 1, 0, 3014665, 1, 0, 3080201, 1, 0, 3145738, 1, 0, 3211274, 1, 0, 3145739, 1, 0, 3080203, 1, 0, 3014668, 1, 0, 2949132, 1, 0, 2883597, 1, 0, 2818061, 1, 0, 2752526, 1, 0, 1769479, 1, 0, 1703944, 1, 0, 1638408, 1, 0, 1572873, 1, 0, 1507337, 1, 0, 1441802, 1, 0, 1376266, 1, 0, 1769485, 1, 0, 1703949, 1, 0, 1638412, 1, 0, 1572876, 1, 0, 1507339, 1, 0, 1441803, 1, 0, 1835021, 1, 0, 1769484, 1, 0, 1703948, 1, 0, 1638411, 1, 0, 1572875, 1, 0, 1507338, 1, 0, 1835016, 1, 0, 1900552, 1, 0, 1966089, 1, 0, 2031625, 1, 0, 2097162, 1, 0, 2162698, 1, 0, 2097163, 1, 0, 2031627, 1, 0, 1966092, 1, 0, 1900556, 1, 0, 1835020, 1, 0, 1900555, 1, 0, 1966091, 1, 0, 1769483, 1, 0, 1835019, 1, 0, 1900554, 1, 0, 1966090, 1, 0, 2031626, 1, 0, 1900553, 1, 0, 1835018, 1, 0, 1769482, 1, 0, 1703947, 1, 0, 1638410, 1, 0, 1572874, 1, 0, 1638409, 1, 0, 1703945, 1, 0, 1769480, 1, 0, 1703946, 1, 0, 1769481, 1, 0, 1835017, 1, 0)
 
-[node name="Wall" type="TileMap" parent="YSort"]
+[node name="Wall" type="TileMap" parent="YSort" unique_id=1746831196 groups=["BulletWall"]]
 visible = false
 y_sort_enabled = true
 tile_set = SubResource("TileSet_ghvka")
@@ -335,126 +201,92 @@ format = 2
 layer_0/y_sort_enabled = true
 layer_0/tile_data = PackedInt32Array(7929903, 0, 0, 7864367, 0, 0, 7798830, 0, 0, 7733294, 0, 0, 7667757, 0, 0, 7602221, 0, 0, 7536684, 0, 0, 7471148, 0, 0, 7405611, 0, 0, 7340075, 0, 0, 7274538, 0, 0, 7209002, 0, 0, 7143465, 0, 0, 7077930, 0, 0, 7012394, 0, 0, 6946859, 0, 0, 6881323, 0, 0, 6815788, 0, 0, 6750252, 0, 0, 6684717, 0, 0, 6619181, 0, 0, 6553646, 0, 0, 6488110, 0, 0, 6422575, 0, 0, 6357039, 0, 0, 6422576, 0, 0, 6488112, 0, 0, 6553649, 0, 0, 6619185, 0, 0, 6684722, 0, 0, 6750258, 0, 0, 6815795, 0, 0, 6881331, 0, 0, 6946868, 0, 0, 7012404, 0, 0, 7077941, 0, 0, 7143477, 0, 0, 7209013, 0, 0, 7274548, 0, 0, 7340084, 0, 0, 7405619, 0, 0, 7471155, 0, 0, 7536690, 0, 0, 7602226, 0, 0, 7667761, 0, 0, 7733297, 0, 0, 7798832, 0, 0, 7864368, 0, 0, 1769468, 0, 0, 1703932, 0, 0, 1638397, 0, 0, 1572861, 0, 0, 1507326, 0, 0, 1441790, 0, 0, 1376255, 0, 0, 1310719, 0, 0, 1179648, 0, 0, 1114112, 0, 0, 1048577, 0, 0, 983041, 0, 0, 917506, 0, 0, 851970, 0, 0, 786435, 0, 0, 720899, 0, 0, 655364, 0, 0, 589828, 0, 0, 524293, 0, 0, 458757, 0, 0, 393222, 0, 0, 327686, 0, 0, 262151, 0, 0, 196615, 0, 0, 131080, 0, 0, 65544, 0, 0, 9, 0, 0, -65527, 0, 0, -131062, 0, 0, -196598, 0, 0, -131061, 0, 0, -65525, 0, 0, 12, 0, 0, 65548, 0, 0, 131085, 0, 0, 196621, 0, 0, 262158, 0, 0, 327694, 0, 0, 393231, 0, 0, 458767, 0, 0, 524304, 0, 0, 589840, 0, 0, 655377, 0, 0, 720913, 0, 0, 786450, 0, 0, 851986, 0, 0, 917523, 0, 0, 983059, 0, 0, 1048596, 0, 0, 1114132, 0, 0, 1179669, 0, 0, 1245205, 0, 0, 1310742, 0, 0, 1376278, 0, 0, 1441815, 0, 0, 1507351, 0, 0, 1572888, 0, 0, 1638424, 0, 0, 1703961, 0, 0, 1769497, 0, 0, 1835033, 0, 0, 1900568, 0, 0, 1966104, 0, 0, 2031639, 0, 0, 2097175, 0, 0, 2162710, 0, 0, 2228246, 0, 0, 2293781, 0, 0, 2359317, 0, 0, 2424852, 0, 0, 2490388, 0, 0, 2555923, 0, 0, 2621459, 0, 0, 2686994, 0, 0, 2752530, 0, 0, 2818065, 0, 0, 2883601, 0, 0, 2949136, 0, 0, 3014672, 0, 0, 3080207, 0, 0, 3145743, 0, 0, 3211278, 0, 0, 3276814, 0, 0, 3342349, 0, 0, 3407885, 0, 0, 3473420, 0, 0, 3538956, 0, 0, 3604491, 0, 0, 3670027, 0, 0, 3735562, 0, 0, 3670026, 0, 0, 3604489, 0, 0, 3538953, 0, 0, 3473416, 0, 0, 3407880, 0, 0, 3342343, 0, 0, 3276807, 0, 0, 3211270, 0, 0, 3145734, 0, 0, 3080197, 0, 0, 3014661, 0, 0, 2949124, 0, 0, 2883588, 0, 0, 2818051, 0, 0, 2752515, 0, 0, 2686978, 0, 0, 2621442, 0, 0, 2555905, 0, 0, 2490369, 0, 0, 2424832, 0, 0, 2359296, 0, 0, 2359295, 0, 0, 2293759, 0, 0, 2228222, 0, 0, 2162686, 0, 0, 2097149, 0, 0, 2031613, 0, 0, 1966076, 0, 0, 1900540, 0, 0, 1835003, 0, 0)
 
-[node name="PlayerRoot" type="Node2D" parent="YSort" groups=["PlayerRoot"]]
+[node name="PlayerRoot" type="Node2D" parent="YSort" unique_id=675196768 groups=["PlayerRoot"]]
 y_sort_enabled = true
 
-[node name="EnemiesRoot" type="Node2D" parent="YSort" groups=["EnemiesRoot"]]
+[node name="EnemiesRoot" type="Node2D" parent="YSort" unique_id=401870095 groups=["EnemiesRoot"]]
 y_sort_enabled = true
 
-[node name="blue_ball" parent="YSort/EnemiesRoot" node_paths=PackedStringArray("test_menu") instance=ExtResource("8_bd56b")]
+[node name="blue_ball" parent="YSort/EnemiesRoot" unique_id=24592652 node_paths=PackedStringArray("test_menu") instance=ExtResource("8_bd56b")]
 unique_name_in_owner = true
 position = Vector2(586, 399)
 test_menu = NodePath("../../../TestMenu")
 menu_name = "testmenu_item"
 
-[node name="red_ball" parent="YSort/EnemiesRoot" node_paths=PackedStringArray("test_menu") instance=ExtResource("9_nm1my")]
+[node name="red_ball" parent="YSort/EnemiesRoot" unique_id=231739097 node_paths=PackedStringArray("test_menu") instance=ExtResource("9_nm1my")]
 unique_name_in_owner = true
 position = Vector2(641, 372)
 test_menu = NodePath("../../../CharacterTestMenu")
 menu_name = "testmenu_player"
 
-[node name="sandbag" parent="YSort/EnemiesRoot" instance=ExtResource("6_hqssc")]
+[node name="yellow_ball" parent="YSort/EnemiesRoot" unique_id=1270571885 node_paths=PackedStringArray("test_menu") instance=ExtResource("30_yball")]
+unique_name_in_owner = true
+position = Vector2(584, 336)
+test_menu = NodePath("../../../EnemyTestMenu")
+menu_name = "testmenu_enemy"
+
+[node name="sandbag" parent="YSort/EnemiesRoot" unique_id=1896390020 instance=ExtResource("6_hqssc")]
 position = Vector2(808, 392)
 
-[node name="sandbag2" parent="YSort/EnemiesRoot" instance=ExtResource("6_hqssc")]
+[node name="sandbag2" parent="YSort/EnemiesRoot" unique_id=1722419771 instance=ExtResource("6_hqssc")]
 position = Vector2(808, 336)
 
-[node name="sandbag3" parent="YSort/EnemiesRoot" instance=ExtResource("6_hqssc")]
+[node name="sandbag3" parent="YSort/EnemiesRoot" unique_id=360828208 instance=ExtResource("6_hqssc")]
 position = Vector2(872, 368)
 
-[node name="sandbag4" parent="YSort/EnemiesRoot" instance=ExtResource("6_hqssc")]
+[node name="sandbag4" parent="YSort/EnemiesRoot" unique_id=289590944 instance=ExtResource("6_hqssc")]
 position = Vector2(800, 520)
 
-[node name="sandbag5" parent="YSort/EnemiesRoot" instance=ExtResource("6_hqssc")]
+[node name="sandbag5" parent="YSort/EnemiesRoot" unique_id=1120520971 instance=ExtResource("6_hqssc")]
 position = Vector2(576, 512)
-can_knockback = true
 
-[node name="sandbag6" parent="YSort/EnemiesRoot" instance=ExtResource("6_hqssc")]
+[node name="sandbag6" parent="YSort/EnemiesRoot" unique_id=1021468976 instance=ExtResource("6_hqssc")]
 position = Vector2(624, 536)
-can_knockback = true
 
-[node name="sandbag7" parent="YSort/EnemiesRoot" instance=ExtResource("6_hqssc")]
+[node name="sandbag7" parent="YSort/EnemiesRoot" unique_id=753484134 instance=ExtResource("6_hqssc")]
 position = Vector2(528, 488)
-can_knockback = true
 
-[node name="sandbag8" parent="YSort/EnemiesRoot" instance=ExtResource("6_hqssc")]
+[node name="sandbag8" parent="YSort/EnemiesRoot" unique_id=1331401926 instance=ExtResource("6_hqssc")]
 position = Vector2(520, 544)
-can_knockback = true
 
-[node name="sandbag9" parent="YSort/EnemiesRoot" instance=ExtResource("6_hqssc")]
+[node name="sandbag9" parent="YSort/EnemiesRoot" unique_id=1162247172 instance=ExtResource("6_hqssc")]
 position = Vector2(568, 568)
-can_knockback = true
 
-[node name="sandbag10" parent="YSort/EnemiesRoot" instance=ExtResource("6_hqssc")]
+[node name="sandbag10" parent="YSort/EnemiesRoot" unique_id=821036558 instance=ExtResource("6_hqssc")]
 position = Vector2(472, 520)
-can_knockback = true
 
-[node name="CoinRoot" type="Node2D" parent="YSort" groups=["CoinRoot"]]
+[node name="CoinRoot" type="Node2D" parent="YSort" unique_id=987553254 groups=["CoinRoot"]]
 y_sort_enabled = true
 
-[node name="BulletRoot" type="Node2D" parent="YSort" groups=["BulletRoot"]]
+[node name="MedicalKitSpawner" parent="YSort/CoinRoot" unique_id=198915426 instance=ExtResource("33_spawner")]
+position = Vector2(704, 576)
+
+[node name="BulletRoot" type="Node2D" parent="YSort" unique_id=277462943 groups=["BulletRoot"]]
 y_sort_enabled = true
 
-[node name="EquipLayer" type="Node2D" parent="." groups=["EquipLayer"]]
+[node name="EquipLayer" type="Node2D" parent="." unique_id=522873021 groups=["EquipLayer"]]
 y_sort_enabled = true
 
-[node name="SELayer" type="Node2D" parent="." groups=["SELayer"]]
+[node name="SELayer" type="Node2D" parent="." unique_id=725529159 groups=["SELayer"]]
 y_sort_enabled = true
 
-[node name="ForegroundLayer" type="Node2D" parent="." groups=["ForegroundLayer"]]
+[node name="ForegroundLayer" type="Node2D" parent="." unique_id=429956861 groups=["ForegroundLayer"]]
 
-[node name="TestRoomLayer" type="Node2D" parent="."]
-
-[node name="ItemText" type="Node2D" parent="TestRoomLayer"]
-visible = false
-position = Vector2(615, 401)
-
-[node name="Panel" type="PanelContainer" parent="TestRoomLayer/ItemText"]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -34.0
-offset_top = -88.0
-offset_right = 34.0
-offset_bottom = -61.0
-grow_horizontal = 2
-grow_vertical = 2
-theme = SubResource("Theme_c2yvi")
-
-[node name="use_name" type="Label" parent="TestRoomLayer/ItemText/Panel"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.188235, 0.188235, 0.188235, 1)
-theme_override_colors/font_shadow_color = Color(0.824175, 0.927159, 0.267976, 1)
-theme_override_constants/shadow_offset_x = 0
-theme_override_fonts/font = ExtResource("11_2pqdg")
-theme_override_font_sizes/font_size = 14
-text = "道具选择"
-horizontal_alignment = 1
-
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="TestRoomLayer/ItemText/Panel"]
-position = Vector2(34, 31)
-sprite_frames = SubResource("SpriteFrames_1byw0")
-autoplay = "default"
-frame_progress = 0.887861
-
-[node name="AnimationPlayer" type="AnimationPlayer" parent="TestRoomLayer/ItemText"]
-libraries = {
-"": SubResource("AnimationLibrary_700nf")
-}
-
-[node name="TestMenu" parent="." node_paths=PackedStringArray("upgrade_manager", "spawn_position") instance=ExtResource("5_7gx3d")]
+[node name="TestMenu" parent="." unique_id=830360042 node_paths=PackedStringArray("upgrade_manager", "spawn_position") instance=ExtResource("5_7gx3d")]
 visible = false
 upgrade_manager = NodePath("../UpgradeManager")
 spawn_position = NodePath("../BattleRoom")
 
-[node name="CharacterTestMenu" parent="." instance=ExtResource("16_56o14")]
+[node name="CharacterTestMenu" parent="." unique_id=1587685736 instance=ExtResource("16_56o14")]
 visible = false
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="EnemyTestMenu" parent="." unique_id=620035347 node_paths=PackedStringArray("spawn_position") instance=ExtResource("31_emenu")]
+visible = false
+spawn_position = NodePath("../BattleRoom")
 
-[node name="ColorRect" type="TextureRect" parent="CanvasLayer"]
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=641600576]
+
+[node name="ColorRect" type="TextureRect" parent="CanvasLayer" unique_id=70794300]
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
@@ -466,30 +298,21 @@ grow_horizontal = 2
 mouse_filter = 2
 texture = SubResource("GradientTexture2D_efhin")
 
-[node name="Crosshair" parent="CanvasLayer" instance=ExtResource("5_nicam")]
+[node name="Crosshair" parent="CanvasLayer" unique_id=163246845 instance=ExtResource("5_nicam")]
 
-[node name="GameOverPage" parent="." instance=ExtResource("19_jp2ui")]
+[node name="GameOverPage" parent="." unique_id=363413729 instance=ExtResource("19_jp2ui")]
 
-[node name="UpgradeManager" parent="." instance=ExtResource("7_ngled")]
+[node name="UpgradeManager" parent="." unique_id=1054941514 instance=ExtResource("7_ngled")]
 
-[node name="SummonedManager" parent="." instance=ExtResource("8_4bpqt")]
+[node name="SummonedManager" parent="." unique_id=781030130 instance=ExtResource("8_4bpqt")]
 
-[node name="Timer" type="Timer" parent="."]
+[node name="InteractionManager" parent="." unique_id=1405546280 instance=ExtResource("32_interact")]
+
+[node name="Timer" type="Timer" parent="." unique_id=1025696948]
 wait_time = 0.1
 autostart = true
 
-[node name="BattleRoom" type="Marker2D" parent="."]
+[node name="BattleRoom" type="Marker2D" parent="." unique_id=1751482423]
 position = Vector2(704, 448)
-
-[node name="CheckBox" type="Area2D" parent="."]
-visible = false
-position = Vector2(704, 448)
-collision_layer = 0
-collision_mask = 1032
-
-[node name="CollisionShape2D" type="CollisionPolygon2D" parent="CheckBox"]
-polygon = PackedVector2Array(-1, -436, 891, -2, 2, 437, -889, 0)
 
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
-[connection signal="body_entered" from="CheckBox" to="." method="_on_check_box_body_entered"]
-[connection signal="body_exited" from="CheckBox" to="." method="_on_check_box_body_exited"]

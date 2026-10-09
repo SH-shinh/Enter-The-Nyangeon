@@ -1,20 +1,11 @@
-[gd_scene load_steps=3 format=3 uid="uid://cbpbf4l8gvrde"]
+[gd_scene format=3 uid="uid://cbpbf4l8gvrde"]
 
-[ext_resource type="Script" path="res://scenes/enemies/enemies_spawn/enemy_path.gd" id="1_gkiof"]
+[ext_resource type="Script" uid="uid://deact876fy3wn" path="res://scenes/enemies/enemies_spawn/enemy_path.gd" id="1_gkiof"]
 
-[sub_resource type="Curve2D" id="Curve2D_j3un6"]
-_data = {
-"points": PackedVector2Array(0, 0, 0, 0, 0, -368, 0, 0, 0, 0, 744, 0, 0, 0, 0, 0, 0, 368, 0, 0, 0, 0, -744, 0, 0, 0, 0, 0, 0, -368)
-}
-point_count = 5
-
-[node name="Path2D" type="Path2D"]
+[node name="enemy_path" type="Node2D" unique_id=1646126500]
 top_level = true
-position = Vector2(704, 448)
-curve = SubResource("Curve2D_j3un6")
 script = ExtResource("1_gkiof")
-points = Array[Vector2]([Vector2(0, -368), Vector2(744, 0), Vector2(0, 368), Vector2(-744, 0)])
-
-[node name="PathFollow2D" type="PathFollow2D" parent="."]
-position = Vector2(0, -368)
-rotates = false
+path_speed = 0.16
+min_scale = 0.2
+follow_range = 120.0
+rings = 1

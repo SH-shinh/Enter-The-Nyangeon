@@ -8,3 +8,4 @@ script = ExtResource("2_4hqjo")
 id = "goliath"
 body = ExtResource("1_37m20")
 description = ""
+icon = null

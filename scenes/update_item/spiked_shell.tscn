@@ -1,8 +1,9 @@
-[gd_scene load_steps=12 format=3 uid="uid://bnoialfrnubpi"]
+[gd_scene format=3 uid="uid://bnoialfrnubpi"]
 
-[ext_resource type="Script" path="res://scenes/update_item/spiked_shell.gd" id="1_oks34"]
+[ext_resource type="Script" uid="uid://ce34a6jg2wl1b" path="res://scenes/update_item/spiked_shell.gd" id="1_oks34"]
 [ext_resource type="Texture2D" uid="uid://brx7nss0a3qbv" path="res://sprites/update_item/spiked_shell_icon.png" id="2_3d2i6"]
 [ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="3_fe71g"]
+[ext_resource type="Script" uid="uid://dgqq5631n3u32" path="res://script/hit_box.gd" id="3_m5pij"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_m3krb"]
 atlas = ExtResource("2_3d2i6")
@@ -49,7 +50,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_im6oe")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 8.0
 }]
@@ -57,24 +58,26 @@ animations = [{
 [sub_resource type="CircleShape2D" id="CircleShape2D_4prlb"]
 radius = 37.054
 
-[node name="spiked_shell" type="Node2D"]
+[node name="spiked_shell" type="Node2D" unique_id=2113112778]
 script = ExtResource("1_oks34")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=867758044]
 modulate = Color(1, 1, 1, 0.7)
 sprite_frames = SubResource("SpriteFrames_pceto")
 animation = &"idle"
 autoplay = "idle"
 frame_progress = 0.968934
 
-[node name="Area2D" type="Area2D" parent="AnimatedSprite2D"]
-collision_layer = 0
-collision_mask = 8
+[node name="HitBox" type="Area2D" parent="AnimatedSprite2D" unique_id=575167679]
+collision_layer = 32768
+collision_mask = 16384
+monitorable = false
+script = ExtResource("3_m5pij")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="AnimatedSprite2D/Area2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AnimatedSprite2D/HitBox" unique_id=689766133]
 shape = SubResource("CircleShape2D_4prlb")
 
-[node name="Label" type="Label" parent="AnimatedSprite2D"]
+[node name="Label" type="Label" parent="AnimatedSprite2D" unique_id=881542602]
 offset_left = 24.0
 offset_top = -33.0
 offset_right = 42.0
@@ -82,6 +85,3 @@ offset_bottom = -21.0
 theme_override_fonts/font = ExtResource("3_fe71g")
 theme_override_font_sizes/font_size = 12
 text = "123"
-
-[connection signal="body_entered" from="AnimatedSprite2D/Area2D" to="." method="_on_area_2d_body_entered"]
-[connection signal="body_exited" from="AnimatedSprite2D/Area2D" to="." method="_on_area_2d_body_exited"]

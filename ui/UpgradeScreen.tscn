@@ -1,6 +1,6 @@
-[gd_scene load_steps=21 format=3 uid="uid://cukkukglw6jcu"]
+[gd_scene format=3 uid="uid://cukkukglw6jcu"]
 
-[ext_resource type="Script" path="res://ui/UpgradeScreen.gd" id="1_3wpjx"]
+[ext_resource type="Script" uid="uid://7wdcqka60r5m" path="res://ui/UpgradeScreen.gd" id="1_3wpjx"]
 [ext_resource type="PackedScene" uid="uid://blq6mggtcjlua" path="res://ui/ability_upgrade_card.tscn" id="2_xb1k4"]
 [ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="4_nbnxg"]
 [ext_resource type="Texture2D" uid="uid://owtvqmd3tfd2" path="res://sprites/update_item/refresh.png" id="5_hkt6i"]
@@ -185,9 +185,9 @@ tracks/3/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_6hjmf"]
 _data = {
-"RESET": SubResource("Animation_q1ssr"),
-"exit_selected": SubResource("Animation_xg3bi"),
-"selected": SubResource("Animation_xsdrv")
+&"RESET": SubResource("Animation_q1ssr"),
+&"exit_selected": SubResource("Animation_xg3bi"),
+&"selected": SubResource("Animation_xsdrv")
 }
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_wp6vb"]
@@ -431,21 +431,21 @@ tracks/4/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_ne47c"]
 _data = {
-"RESET": SubResource("Animation_1smja"),
-"coin_lack": SubResource("Animation_06cb5"),
-"exit_selected": SubResource("Animation_5hg1i"),
-"select": SubResource("Animation_rmd3j")
+&"RESET": SubResource("Animation_1smja"),
+&"coin_lack": SubResource("Animation_06cb5"),
+&"exit_selected": SubResource("Animation_5hg1i"),
+&"select": SubResource("Animation_rmd3j")
 }
 
-[node name="UpgradeScreen" type="CanvasLayer"]
+[node name="UpgradeScreen" type="CanvasLayer" unique_id=1283869893]
 process_mode = 3
 layer = 2
 script = ExtResource("1_3wpjx")
 upgrade_card_scene = ExtResource("2_xb1k4")
 
-[node name="Node2D" type="Node2D" parent="."]
+[node name="Node2D" type="Node2D" parent="." unique_id=741686717]
 
-[node name="ColorRect" type="ColorRect" parent="Node2D"]
+[node name="ColorRect" type="ColorRect" parent="Node2D" unique_id=1427573357]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -455,7 +455,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.205117, 0.205117, 0.205117, 1)
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=168100472]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -467,14 +467,14 @@ grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.9, 0.9)
 
-[node name="CardContainer" type="HBoxContainer" parent="MarginContainer"]
+[node name="CardContainer" type="HBoxContainer" parent="MarginContainer" unique_id=633855821]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 theme_override_constants/separation = 6
 
-[node name="ColorRect" type="TextureRect" parent="."]
+[node name="ColorRect" type="TextureRect" parent="." unique_id=1189757521]
 material = SubResource("CanvasItemMaterial_5gotq")
 anchors_preset = 5
 anchor_left = 0.5
@@ -487,19 +487,19 @@ grow_horizontal = 2
 mouse_filter = 2
 texture = SubResource("GradientTexture2D_s437q")
 
-[node name="Node2D3" type="Node2D" parent="."]
+[node name="Node2D3" type="Node2D" parent="." unique_id=875983671]
 z_index = 4
 position = Vector2(243, 145)
 scale = Vector2(0.6, 0.6)
 
-[node name="ColorRect2" type="ColorRect" parent="Node2D3"]
+[node name="ColorRect2" type="ColorRect" parent="Node2D3" unique_id=2055009267]
 offset_left = -410.0
 offset_top = 323.0
 offset_right = 665.0
 offset_bottom = 365.0
 color = Color(0.0728427, 0.0728426, 0.0728426, 1)
 
-[node name="Next" type="PanelContainer" parent="Node2D3"]
+[node name="Next" type="PanelContainer" parent="Node2D3" unique_id=1265851965]
 unique_name_in_owner = true
 offset_left = 415.0
 offset_top = 304.0
@@ -507,16 +507,16 @@ offset_right = 510.0
 offset_bottom = 354.0
 theme = SubResource("Theme_fshh0")
 
-[node name="Line2D2" type="Line2D" parent="Node2D3/Next"]
+[node name="Line2D2" type="Line2D" parent="Node2D3/Next" unique_id=1014473116]
 position = Vector2(-251, -4)
 points = PackedVector2Array(348.059, 29, 275.392, 29)
 width = 50.0
 joint_mode = 2
 end_cap_mode = 1
 
-[node name="Node2D" type="Node2D" parent="Node2D3/Next"]
+[node name="Node2D" type="Node2D" parent="Node2D3/Next" unique_id=1768948701]
 
-[node name="Label" type="Label" parent="Node2D3/Next/Node2D"]
+[node name="Label" type="Label" parent="Node2D3/Next/Node2D" unique_id=589255468]
 offset_left = 24.1207
 offset_top = 11.0
 offset_right = 76.1207
@@ -530,12 +530,10 @@ theme_override_constants/shadow_outline_size = 4
 theme_override_font_sizes/font_size = 24
 text = "继续"
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="Node2D3/Next"]
-libraries = {
-"": SubResource("AnimationLibrary_6hjmf")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Node2D3/Next" unique_id=310228060]
+libraries/ = SubResource("AnimationLibrary_6hjmf")
 
-[node name="Refresh" type="PanelContainer" parent="Node2D3"]
+[node name="Refresh" type="PanelContainer" parent="Node2D3" unique_id=91638828]
 unique_name_in_owner = true
 offset_left = 510.0
 offset_top = 304.0
@@ -543,7 +541,7 @@ offset_right = 669.0
 offset_bottom = 354.0
 theme = SubResource("Theme_jl5kj")
 
-[node name="Line2D2" type="Line2D" parent="Node2D3/Refresh"]
+[node name="Line2D2" type="Line2D" parent="Node2D3/Refresh" unique_id=1483332487]
 position = Vector2(-251, -4)
 points = PackedVector2Array(409.58, 29, 275.059, 29)
 width = 50.0
@@ -551,20 +549,20 @@ default_color = Color(0.14902, 0.14902, 0.14902, 1)
 joint_mode = 2
 end_cap_mode = 1
 
-[node name="Node2D" type="Node2D" parent="Node2D3/Refresh"]
+[node name="Node2D" type="Node2D" parent="Node2D3/Refresh" unique_id=1301351149]
 position = Vector2(13, 12)
 scale = Vector2(0.4, 0.4)
 
-[node name="TextureRect" type="TextureRect" parent="Node2D3/Refresh/Node2D"]
+[node name="TextureRect" type="TextureRect" parent="Node2D3/Refresh/Node2D" unique_id=518528925]
 offset_left = -12.5
 offset_right = 51.5
 offset_bottom = 64.0
 pivot_offset = Vector2(32, 32)
 texture = ExtResource("5_hkt6i")
 
-[node name="Node2D2" type="Node2D" parent="Node2D3/Refresh"]
+[node name="Node2D2" type="Node2D" parent="Node2D3/Refresh" unique_id=1047705679]
 
-[node name="Label" type="Label" parent="Node2D3/Refresh/Node2D2"]
+[node name="Label" type="Label" parent="Node2D3/Refresh/Node2D2" unique_id=44070827]
 offset_left = 44.0
 offset_top = 13.0
 offset_right = 114.0
@@ -579,7 +577,5 @@ theme_override_fonts/font = ExtResource("4_nbnxg")
 theme_override_font_sizes/font_size = 25
 text = "-9999"
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="Node2D3/Refresh"]
-libraries = {
-"": SubResource("AnimationLibrary_ne47c")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Node2D3/Refresh" unique_id=935448610]
+libraries/ = SubResource("AnimationLibrary_ne47c")

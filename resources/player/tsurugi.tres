@@ -1,16 +1,16 @@
-[gd_resource type="Resource" script_class="PlayerCard" load_steps=4 format=3 uid="uid://hycr226xmjc3"]
+[gd_resource type="Resource" script_class="PlayerCard" load_steps=3 format=3 uid="uid://hycr226xmjc3"]
 
 [ext_resource type="Texture2D" uid="uid://c2ao28f73pwex" path="res://sprites/player/tsurugi/tsurugi_picture_halo.png" id="1_ij6kh"]
 [ext_resource type="Script" path="res://resources/player/player.gd" id="2_3jno7"]
-[ext_resource type="Texture2D" uid="uid://ffgspwmrk0fq" path="res://sprites/player/tsurugi/tsurugi_picture.png" id="3_yfyqb"]
 
 [resource]
 script = ExtResource("2_3jno7")
 name = "KENZAKI TSURUGI"
 weapon = "BLOOD & GUNPOWDER"
-sprite = ExtResource("3_yfyqb")
+sprite_path = "res://sprites/player/tsurugi/tsurugi_picture.png"
 halo = ExtResource("1_ij6kh")
 color = Color(0.936522, 0.393196, 0.377471, 1)
 description = ""
 voice_name = "tsurugi"
 id = "tsurugi"
+scene_path = "res://scenes/player/tsurugi/tsurugi.tscn"

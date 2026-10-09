@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://k5s71xm4vdt5"]
+[gd_scene format=3 uid="uid://k5s71xm4vdt5"]
 
-[ext_resource type="Script" path="res://scenes/update_item/jellies_cushion.gd" id="1_vu3fs"]
+[ext_resource type="Script" uid="uid://drphx748rga0k" path="res://scenes/update_item/jellies_cushion.gd" id="1_vu3fs"]
 
 [node name="jellies_cushion" type="Node2D"]
 script = ExtResource("1_vu3fs")

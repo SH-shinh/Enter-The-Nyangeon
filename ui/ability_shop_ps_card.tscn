@@ -1,6 +1,6 @@
-[gd_scene load_steps=23 format=3 uid="uid://ves85hngw07v"]
+[gd_scene format=3 uid="uid://ves85hngw07v"]
 
-[ext_resource type="Script" path="res://ui/ability_shop_ps_card.gd" id="1_o12ev"]
+[ext_resource type="Script" uid="uid://rs1ucdjejat1" path="res://ui/ability_shop_ps_card.gd" id="1_o12ev"]
 [ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="2_ajfpy"]
 [ext_resource type="Texture2D" uid="uid://btitvjexf1qpv" path="res://ui/hammer_icon.png" id="2_e767y"]
 [ext_resource type="Texture2D" uid="uid://d4hukwsckh3ys" path="res://sprites/weapon/Unique_Idea.png" id="2_l440t"]
@@ -62,8 +62,8 @@ tracks/0/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_3se0n"]
 _data = {
-"RESET": SubResource("Animation_rxwxx"),
-"hammer_anim": SubResource("Animation_lmk06")
+&"RESET": SubResource("Animation_rxwxx"),
+&"hammer_anim": SubResource("Animation_lmk06")
 }
 
 [sub_resource type="Animation" id="Animation_5n8kg"]
@@ -132,10 +132,10 @@ tracks/0/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_l87cy"]
 _data = {
-"RESET": SubResource("Animation_5n8kg"),
-"coin_lack": SubResource("Animation_khq01"),
-"mouse_in": SubResource("Animation_l3oys"),
-"mouse_out": SubResource("Animation_q5v3f")
+&"RESET": SubResource("Animation_5n8kg"),
+&"coin_lack": SubResource("Animation_khq01"),
+&"mouse_in": SubResource("Animation_l3oys"),
+&"mouse_out": SubResource("Animation_q5v3f")
 }
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_uyb8s"]
@@ -153,40 +153,40 @@ region_rect = Rect2(44, 12, 8, 8)
 [sub_resource type="Theme" id="Theme_uw0i6"]
 PanelContainer/styles/panel = SubResource("StyleBoxTexture_uyb8s")
 
-[node name="AbilityShopPSCard" type="PanelContainer"]
+[node name="AbilityShopPSCard" type="PanelContainer" unique_id=1625574319]
 custom_minimum_size = Vector2(38, 0)
 theme = SubResource("Theme_7snbp")
 script = ExtResource("1_o12ev")
 
-[node name="Node2D" type="Node2D" parent="."]
+[node name="Node2D" type="Node2D" parent="." unique_id=1329519745]
 
-[node name="TextureRect" type="TextureRect" parent="Node2D"]
+[node name="TextureRect" type="TextureRect" parent="Node2D" unique_id=525370318]
 offset_right = 70.0
 offset_bottom = 49.0
 texture = SubResource("GradientTexture2D_5ylsv")
 
-[node name="ColorRect3" type="ColorRect" parent="Node2D"]
+[node name="ColorRect3" type="ColorRect" parent="Node2D" unique_id=612005855]
 offset_left = 1.0
 offset_top = 1.0
 offset_right = 69.0
 offset_bottom = 48.0
 
-[node name="upgrade" type="PanelContainer" parent="Node2D"]
+[node name="upgrade" type="PanelContainer" parent="Node2D" unique_id=963848319]
 offset_left = 3.0
 offset_top = 2.0
 offset_right = 67.0
 offset_bottom = 46.0
 theme = SubResource("Theme_hogqi")
 
-[node name="Node2D" type="Node2D" parent="Node2D/upgrade"]
+[node name="Node2D" type="Node2D" parent="Node2D/upgrade" unique_id=395590319]
 
-[node name="ColorRect" type="ColorRect" parent="Node2D/upgrade/Node2D"]
+[node name="ColorRect" type="ColorRect" parent="Node2D/upgrade/Node2D" unique_id=1915413275]
 offset_right = 64.0
 offset_bottom = 10.0
 mouse_filter = 2
 color = Color(0.236145, 0.41285, 0.621341, 1)
 
-[node name="TextureRect" type="TextureRect" parent="Node2D/upgrade/Node2D/ColorRect"]
+[node name="TextureRect" type="TextureRect" parent="Node2D/upgrade/Node2D/ColorRect" unique_id=757911863]
 layout_mode = 0
 offset_left = 14.0
 offset_right = 24.0
@@ -196,7 +196,7 @@ mouse_filter = 2
 texture = ExtResource("2_e767y")
 expand_mode = 1
 
-[node name="Coin" type="Label" parent="Node2D/upgrade/Node2D/ColorRect"]
+[node name="Coin" type="Label" parent="Node2D/upgrade/Node2D/ColorRect" unique_id=1057192093]
 layout_mode = 0
 offset_left = 11.0
 offset_top = 1.0
@@ -215,17 +215,13 @@ text = "9999"
 horizontal_alignment = 1
 clip_text = true
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="Node2D/upgrade/Node2D/ColorRect"]
-libraries = {
-"": SubResource("AnimationLibrary_3se0n")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Node2D/upgrade/Node2D/ColorRect" unique_id=726692812]
+libraries/ = SubResource("AnimationLibrary_3se0n")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="Node2D/upgrade"]
-libraries = {
-"": SubResource("AnimationLibrary_l87cy")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Node2D/upgrade" unique_id=1632718307]
+libraries/ = SubResource("AnimationLibrary_l87cy")
 
-[node name="RareColor" type="ColorRect" parent="Node2D"]
+[node name="RareColor" type="ColorRect" parent="Node2D" unique_id=2045274933]
 clip_children = 2
 offset_left = 3.0
 offset_top = 14.0
@@ -234,7 +230,7 @@ offset_bottom = 46.0
 mouse_filter = 2
 color = Color(0.464192, 0.672605, 0.832283, 1)
 
-[node name="Weapon_icon" type="TextureRect" parent="Node2D/RareColor"]
+[node name="Weapon_icon" type="TextureRect" parent="Node2D/RareColor" unique_id=509141656]
 layout_mode = 0
 offset_top = -18.0
 offset_right = 64.0
@@ -242,7 +238,7 @@ offset_bottom = 46.0
 mouse_filter = 2
 texture = ExtResource("2_l440t")
 
-[node name="TNumL" type="Label" parent="Node2D/RareColor"]
+[node name="TNumL" type="Label" parent="Node2D/RareColor" unique_id=846109722]
 layout_mode = 0
 offset_left = 41.0
 offset_top = 22.0
@@ -258,25 +254,32 @@ theme_override_font_sizes/font_size = 10
 horizontal_alignment = 2
 clip_text = true
 
-[node name="Node2D2" type="Node2D" parent="."]
+[node name="Node2D2" type="Node2D" parent="." unique_id=1511347257]
 visible = false
 z_index = 1
 scale = Vector2(0.7, 0.7)
 
-[node name="PanelContainer" type="PanelContainer" parent="Node2D2"]
+[node name="PanelContainer" type="PanelContainer" parent="Node2D2" unique_id=575010826]
 custom_minimum_size = Vector2(305, 0)
-offset_left = 6.0
-offset_top = -140.0
-offset_right = 311.0
-offset_bottom = -70.0
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -152.5
+offset_top = -95.71429
+offset_right = 152.5
+offset_bottom = -25.714287
+grow_horizontal = 2
+grow_vertical = 0
 mouse_filter = 2
 theme = SubResource("Theme_uw0i6")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Node2D2/PanelContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Node2D2/PanelContainer" unique_id=1493201693]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="t0" type="Label" parent="Node2D2/PanelContainer/VBoxContainer"]
+[node name="t0" type="Label" parent="Node2D2/PanelContainer/VBoxContainer" unique_id=1487946722]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -289,7 +292,7 @@ theme_override_font_sizes/font_size = 12
 text = "1"
 autowrap_mode = 1
 
-[node name="t1" type="Label" parent="Node2D2/PanelContainer/VBoxContainer"]
+[node name="t1" type="Label" parent="Node2D2/PanelContainer/VBoxContainer" unique_id=1490730515]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.568973, 0.568973, 0.568973, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -302,7 +305,7 @@ theme_override_font_sizes/font_size = 12
 text = "2"
 autowrap_mode = 1
 
-[node name="t2" type="Label" parent="Node2D2/PanelContainer/VBoxContainer"]
+[node name="t2" type="Label" parent="Node2D2/PanelContainer/VBoxContainer" unique_id=1328387249]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.568973, 0.568973, 0.568973, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -315,7 +318,7 @@ theme_override_font_sizes/font_size = 12
 text = "3"
 autowrap_mode = 1
 
-[node name="t3" type="Label" parent="Node2D2/PanelContainer/VBoxContainer"]
+[node name="t3" type="Label" parent="Node2D2/PanelContainer/VBoxContainer" unique_id=2079643140]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.568973, 0.568973, 0.568973, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -328,5 +331,5 @@ theme_override_font_sizes/font_size = 12
 text = "4"
 autowrap_mode = 1
 
-[node name="Marker2D" type="Marker2D" parent="."]
+[node name="Marker2D" type="Marker2D" parent="." unique_id=1284763671]
 position = Vector2(36, 30)

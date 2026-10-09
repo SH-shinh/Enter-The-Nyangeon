@@ -1,8 +1,8 @@
-[gd_scene load_steps=26 format=3 uid="uid://cwmdqbedsmp44"]
+[gd_scene format=3 uid="uid://cwmdqbedsmp44"]
 
-[ext_resource type="Script" path="res://ui/scoreboard.gd" id="1_00hoq"]
-[ext_resource type="Script" path="res://script/ScrollBox.gd" id="1_faxak"]
-[ext_resource type="Shader" path="res://shaders/scrolling_bkgd.gdshader" id="2_1lqw2"]
+[ext_resource type="Script" uid="uid://cqkvsanyjmj8p" path="res://ui/scoreboard.gd" id="1_00hoq"]
+[ext_resource type="Script" uid="uid://cxexg1p6wvaks" path="res://script/ScrollBox.gd" id="1_faxak"]
+[ext_resource type="Shader" uid="uid://d3frxix26ovel" path="res://shaders/scrolling_bkgd.gdshader" id="2_1lqw2"]
 [ext_resource type="Texture2D" uid="uid://dieipwoadjxoa" path="res://ui/title_picture_2.png" id="3_scy5a"]
 [ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="4_jd8nd"]
 [ext_resource type="Texture2D" uid="uid://cj71jmy7oc1e5" path="res://ui/scoreboard_title.png" id="4_skv1x"]
@@ -11,7 +11,10 @@
 [ext_resource type="Texture2D" uid="uid://bhm8gyj1xcfnv" path="res://sprites/particle/arrow.png" id="7_pv4kn"]
 [ext_resource type="PackedScene" uid="uid://c0abd03p7kvxx" path="res://ui/menu_box.tscn" id="9_wq33p"]
 [ext_resource type="PackedScene" uid="uid://cxbdsr3k1ibig" path="res://ui/menu_box_character.tscn" id="10_84b8l"]
+[ext_resource type="Texture2D" uid="uid://dn6kry5tgqmkr" path="res://ui/delete_icon.png" id="11_delicon"]
 [ext_resource type="PackedScene" uid="uid://cxsghyrt6cech" path="res://ui/menu_box_gamemode.tscn" id="12_k4rcd"]
+[ext_resource type="Theme" uid="uid://igkipbye612g" path="res://empty_theme.tres" id="13_empty"]
+[ext_resource type="Script" uid="uid://dkwqr377cp5yf" path="res://script/auto_text.gd" id="99_autotx"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_lkbrc"]
 shader = ExtResource("2_1lqw2")
@@ -69,6 +72,12 @@ shader_parameter/tint = Color(1, 0.529383, 0.341543, 1)
 
 [sub_resource type="Theme" id="Theme_noed0"]
 Button/styles/focus = SubResource("StyleBoxEmpty_43tth")
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_xhn8v"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_34g6u"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_te76v"]
 
 [sub_resource type="Animation" id="Animation_sb3rh"]
 length = 0.001
@@ -151,11 +160,63 @@ tracks/2/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_tfnnh"]
 _data = {
-"RESET": SubResource("Animation_sb3rh"),
-"enter_anim": SubResource("Animation_htesl")
+&"RESET": SubResource("Animation_sb3rh"),
+&"enter_anim": SubResource("Animation_htesl")
 }
 
-[node name="scoreboard" type="Control"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_blocker"]
+bg_color = Color(0, 0, 0, 0.5)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_clr1"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_iftjx"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_6g4yd"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_sydsm"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_clr3"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_fp17p"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_xwjtr"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_gxste"]
+
+[sub_resource type="Animation" id="Animation_clear_pop"]
+resource_name = "pop_anim"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("blocker:modulate")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("panel:modulate")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_clear"]
+_data = {
+&"pop_anim": SubResource("Animation_clear_pop")
+}
+
+[node name="scoreboard" type="Control" unique_id=1800845392]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -166,15 +227,15 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_00hoq")
 
-[node name="Node2D" type="Node2D" parent="."]
+[node name="Node2D" type="Node2D" parent="." unique_id=365366609]
 
-[node name="ColorRect3" type="ColorRect" parent="Node2D"]
+[node name="ColorRect3" type="ColorRect" parent="Node2D" unique_id=1261679236]
 offset_left = -8.0
 offset_right = 640.0
 offset_bottom = 360.0
 color = Color(0.819608, 0.819608, 0.819608, 1)
 
-[node name="TextureRect3" type="TextureRect" parent="Node2D"]
+[node name="TextureRect3" type="TextureRect" parent="Node2D" unique_id=1784205802]
 material = SubResource("ShaderMaterial_lkbrc")
 offset_left = -34.0
 offset_top = -47.0
@@ -185,7 +246,7 @@ texture = ExtResource("3_scy5a")
 stretch_mode = 1
 flip_h = true
 
-[node name="TextureRect2" type="TextureRect" parent="Node2D"]
+[node name="TextureRect2" type="TextureRect" parent="Node2D" unique_id=393636968]
 material = SubResource("ShaderMaterial_ps8qc")
 offset_left = -26.0
 offset_right = 188.0
@@ -195,7 +256,7 @@ texture = ExtResource("3_scy5a")
 stretch_mode = 1
 flip_h = true
 
-[node name="ColorRect" type="ColorRect" parent="Node2D"]
+[node name="ColorRect" type="ColorRect" parent="Node2D" unique_id=2086946371]
 custom_minimum_size = Vector2(640, 360)
 anchors_preset = 15
 anchor_right = 1.0
@@ -206,13 +267,13 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.141176, 0.141176, 0.141176, 1)
 
-[node name="TextureRect5" type="TextureRect" parent="Node2D"]
+[node name="TextureRect5" type="TextureRect" parent="Node2D" unique_id=275522493]
 clip_children = 1
 offset_right = 632.0
 offset_bottom = 359.0
 texture = SubResource("GradientTexture2D_caubg")
 
-[node name="TextureRect4" type="TextureRect" parent="Node2D/TextureRect5"]
+[node name="TextureRect4" type="TextureRect" parent="Node2D/TextureRect5" unique_id=1330386551]
 material = SubResource("ShaderMaterial_fj8yy")
 layout_mode = 0
 offset_right = 640.0
@@ -220,7 +281,7 @@ offset_bottom = 360.0
 texture = ExtResource("4_t051q")
 stretch_mode = 1
 
-[node name="ColorRect2" type="TextureRect" parent="Node2D"]
+[node name="ColorRect2" type="TextureRect" parent="Node2D" unique_id=47894527]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -231,14 +292,14 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = SubResource("GradientTexture2D_x8h4i")
 
-[node name="ColorRect4" type="ColorRect" parent="Node2D"]
+[node name="ColorRect4" type="ColorRect" parent="Node2D" unique_id=1909464288]
 offset_left = -14.0
 offset_top = -25.0
 offset_right = 699.0
 offset_bottom = -5.0
 mouse_filter = 2
 
-[node name="TextureRect" type="TextureRect" parent="Node2D"]
+[node name="TextureRect" type="TextureRect" parent="Node2D" unique_id=2069903069]
 material = SubResource("ShaderMaterial_o4q06")
 offset_left = -14.0
 offset_top = -33.0
@@ -248,7 +309,7 @@ scale = Vector2(0.25, 0.25)
 texture = ExtResource("4_skv1x")
 stretch_mode = 1
 
-[node name="Label" type="Label" parent="Node2D"]
+[node name="Label" type="Label" parent="Node2D" unique_id=452828063]
 offset_left = 8.0
 offset_top = 20.0
 offset_right = 122.0
@@ -265,14 +326,19 @@ theme_override_font_sizes/font_size = 16
 text = "scoreboard_name"
 horizontal_alignment = 1
 clip_text = true
+script = ExtResource("99_autotx")
+base_font_size = 16
+base_size_y = 22.0
+base_size_x = 114.0
+min_font_size = 9
 
-[node name="return" parent="Node2D" instance=ExtResource("5_6wr5y")]
+[node name="return" parent="Node2D" unique_id=1892949307 instance=ExtResource("5_6wr5y")]
 offset_left = 612.0
 offset_top = 22.0
 offset_right = 638.0
 offset_bottom = 48.0
 
-[node name="ScrollContainer" type="ScrollContainer" parent="."]
+[node name="ScrollContainer" type="ScrollContainer" parent="." unique_id=1166649216]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -285,24 +351,24 @@ horizontal_scroll_mode = 0
 vertical_scroll_mode = 3
 script = ExtResource("1_faxak")
 
-[node name="score_box" type="VBoxContainer" parent="ScrollContainer"]
+[node name="score_box" type="VBoxContainer" parent="ScrollContainer" unique_id=2034520755]
 layout_mode = 2
 theme_override_constants/separation = 2
 
-[node name="Node2D2" type="Node2D" parent="."]
+[node name="Node2D2" type="Node2D" parent="." unique_id=1213260664]
 
-[node name="HBoxContainer" type="HBoxContainer" parent="Node2D2"]
+[node name="HBoxContainer" type="HBoxContainer" parent="Node2D2" unique_id=576038026]
 offset_left = 133.0
 offset_top = 27.0
 offset_right = 257.0
 offset_bottom = 39.0
 
-[node name="reverse_order" type="Button" parent="Node2D2/HBoxContainer"]
+[node name="reverse_order" type="Button" parent="Node2D2/HBoxContainer" unique_id=1504296023]
 custom_minimum_size = Vector2(12, 12)
 layout_mode = 2
 theme = SubResource("Theme_noed0")
 
-[node name="order_icon" type="TextureRect" parent="Node2D2/HBoxContainer/reverse_order"]
+[node name="order_icon" type="TextureRect" parent="Node2D2/HBoxContainer/reverse_order" unique_id=828260730]
 modulate = Color(0.959813, 0.767727, 0, 1)
 layout_mode = 0
 offset_right = 12.0
@@ -311,7 +377,7 @@ texture = ExtResource("7_pv4kn")
 expand_mode = 1
 flip_v = true
 
-[node name="sort" type="Label" parent="Node2D2/HBoxContainer"]
+[node name="sort" type="Label" parent="Node2D2/HBoxContainer" unique_id=1641399185]
 custom_minimum_size = Vector2(40, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0.163952, 5.11389e-08, 0.0734891, 1)
@@ -325,11 +391,16 @@ theme_override_font_sizes/font_size = 10
 text = "normal_sort"
 horizontal_alignment = 1
 clip_text = true
+script = ExtResource("99_autotx")
+base_font_size = 10
+base_size_y = 12.0
+base_size_x = 40.0
+min_font_size = 7
 
-[node name="normal_sort" parent="Node2D2/HBoxContainer" instance=ExtResource("9_wq33p")]
+[node name="normal_sort" parent="Node2D2/HBoxContainer" unique_id=854073067 instance=ExtResource("9_wq33p")]
 layout_mode = 2
 
-[node name="sort2" type="Label" parent="Node2D2/HBoxContainer"]
+[node name="sort2" type="Label" parent="Node2D2/HBoxContainer" unique_id=1983292000]
 custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0.163952, 5.11389e-08, 0.0734891, 1)
@@ -343,11 +414,16 @@ theme_override_font_sizes/font_size = 10
 text = "character_sort"
 horizontal_alignment = 1
 clip_text = true
+script = ExtResource("99_autotx")
+base_font_size = 10
+base_size_y = 12.0
+base_size_x = 80.0
+min_font_size = 7
 
-[node name="character_sort" parent="Node2D2/HBoxContainer" instance=ExtResource("10_84b8l")]
+[node name="character_sort" parent="Node2D2/HBoxContainer" unique_id=533144830 instance=ExtResource("10_84b8l")]
 layout_mode = 2
 
-[node name="sort3" type="Label" parent="Node2D2/HBoxContainer"]
+[node name="sort3" type="Label" parent="Node2D2/HBoxContainer" unique_id=993215315]
 custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0.163952, 5.11389e-08, 0.0734891, 1)
@@ -361,14 +437,122 @@ theme_override_font_sizes/font_size = 10
 text = "gamemode_sort"
 horizontal_alignment = 1
 clip_text = true
+script = ExtResource("99_autotx")
+base_font_size = 10
+base_size_y = 12.0
+base_size_x = 80.0
+min_font_size = 7
 
-[node name="menu_box_gamemode" parent="Node2D2/HBoxContainer" instance=ExtResource("12_k4rcd")]
+[node name="menu_box_gamemode" parent="Node2D2/HBoxContainer" unique_id=356183714 instance=ExtResource("12_k4rcd")]
 layout_mode = 2
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_tfnnh")
-}
+[node name="clear_button" type="Button" parent="Node2D2/HBoxContainer" unique_id=1993177585]
+custom_minimum_size = Vector2(12, 12)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_xhn8v")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_34g6u")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_te76v")
+icon = ExtResource("11_delicon")
+icon_alignment = 1
+expand_icon = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=2065151003]
+libraries/ = SubResource("AnimationLibrary_tfnnh")
+
+[node name="clear_confirm" type="Control" parent="." unique_id=2056368410]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="blocker" type="Button" parent="clear_confirm" unique_id=284535169]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_blocker")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_blocker")
+theme_override_styles/hover = SubResource("StyleBoxFlat_blocker")
+theme_override_styles/focus = SubResource("StyleBoxFlat_blocker")
+
+[node name="panel" type="PanelContainer" parent="clear_confirm" unique_id=1946195153]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -260.0
+offset_top = -17.0
+offset_right = 260.0
+offset_bottom = 17.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("13_empty")
+
+[node name="ColorRect" type="ColorRect" parent="clear_confirm/panel" unique_id=1254780708]
+layout_mode = 2
+color = Color(0.08235294, 0.08235294, 0.08235294, 0.98039216)
+
+[node name="HBoxContainer" type="HBoxContainer" parent="clear_confirm/panel" unique_id=1079495066]
+layout_mode = 2
+theme_override_constants/separation = 5
+alignment = 1
+
+[node name="sure_label" type="Label" parent="clear_confirm/panel/HBoxContainer" unique_id=59255891]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0.163952, 5.11389e-08, 0.0734891, 1)
+theme_override_colors/font_outline_color = Color(0.164706, 0, 0.0745098, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 5
+theme_override_fonts/font = ExtResource("4_jd8nd")
+theme_override_font_sizes/font_size = 16
+text = "clear_confirm"
+script = ExtResource("99_autotx")
+base_font_size = 16
+base_size_y = 24.0
+base_size_x = 430.0
+min_font_size = 8
+
+[node name="yes" type="Button" parent="clear_confirm/panel/HBoxContainer" unique_id=1997237362]
+custom_minimum_size = Vector2(25, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxEmpty_clr1")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_iftjx")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_6g4yd")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_sydsm")
+text = "O"
+icon_alignment = 1
+expand_icon = true
+
+[node name="sure_label2" type="Label" parent="clear_confirm/panel/HBoxContainer" unique_id=1705951448]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_jd8nd")
+theme_override_font_sizes/font_size = 25
+text = "/"
+
+[node name="no" type="Button" parent="clear_confirm/panel/HBoxContainer" unique_id=193826738]
+custom_minimum_size = Vector2(25, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxEmpty_clr3")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_fp17p")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_xwjtr")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_gxste")
+text = "X"
+icon_alignment = 1
+expand_icon = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="clear_confirm" unique_id=120272602]
+libraries/ = SubResource("AnimationLibrary_clear")
 
 [connection signal="gui_input" from="Node2D2/HBoxContainer/reverse_order" to="." method="_on_reverse_order_gui_input"]
-[connection signal="pressed" from="Node2D2/HBoxContainer/reverse_order" to="." method="_on_reverse_order_pressed"]

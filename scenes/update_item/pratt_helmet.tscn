@@ -1,6 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://cssyepu17kyaa"]
+[gd_scene format=3 uid="uid://cssyepu17kyaa"]
 
-[ext_resource type="Script" path="res://scenes/update_item/pratt_helmet.gd" id="1_ogv8d"]
+[ext_resource type="Script" uid="uid://d38jrwqffojg6" path="res://scenes/update_item/pratt_helmet.gd" id="1_ogv8d"]
 [ext_resource type="PackedScene" uid="uid://bi0b5ycx6td33" path="res://scenes/update_item/player_bullet_launcher.tscn" id="2_whg65"]
 
 [node name="PrattHelmet" type="Node2D"]

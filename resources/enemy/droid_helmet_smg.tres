@@ -1,10 +1,12 @@
-[gd_resource type="Resource" script_class="EnemyCard" load_steps=3 format=3 uid="uid://dtv88mgk8m0i"]
+[gd_resource type="Resource" script_class="EnemyCard" format=3 uid="uid://dtv88mgk8m0i"]
 
-[ext_resource type="Script" path="res://resources/enemy/enemy.gd" id="1_cbo0i"]
+[ext_resource type="Script" uid="uid://c2yv0iuw6g8oh" path="res://resources/enemy/enemy.gd" id="1_cbo0i"]
 [ext_resource type="PackedScene" uid="uid://b5qdmjfk1e306" path="res://scenes/enemies/droid_helmet_smg.tscn" id="1_ei5kc"]
+[ext_resource type="Texture2D" uid="uid://djfku6frsko7k" path="res://sprites/enemies/droid_helmet_icon.png" id="2_t2joe"]
 
 [resource]
 script = ExtResource("1_cbo0i")
 id = "droid_helmet_smg"
 body = ExtResource("1_ei5kc")
-description = ""
+icon = ExtResource("2_t2joe")
+position_y = 62.0

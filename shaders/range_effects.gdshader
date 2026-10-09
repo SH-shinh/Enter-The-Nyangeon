@@ -20,7 +20,6 @@ void fragment() {
 	float o = cos(TIME * speed);
 	float ring_size = ring_radius + oscillation_scalar;
 
-	float inner_hardness = 0.0;
 	// Solve for ring alpha channel
 	float alpha = step(dist, ring_size) * smoothstep(ring_size * (1.0 - thickness_scalar), ring_size, dist);
 

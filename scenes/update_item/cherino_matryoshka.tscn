@@ -1,6 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://c8bieaqekmbix"]
+[gd_scene format=3 uid="uid://c8bieaqekmbix"]
 
-[ext_resource type="Script" path="res://scenes/update_item/cherino_matryoshka.gd" id="1_fb5wj"]
+[ext_resource type="Script" uid="uid://dwe02phbhdmfj" path="res://scenes/update_item/cherino_matryoshka.gd" id="1_fb5wj"]
 [ext_resource type="PackedScene" uid="uid://vu4kwhexhsp8" path="res://script/range_explosion.tscn" id="2_fnyse"]
 
 [node name="cherino_matryoshka" type="Node2D"]

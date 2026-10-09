@@ -17,6 +17,7 @@ var _select = null
 var _ready_ui = null
 var _difficulty = null
 var _round_wait = null
+var _round_wait_for_upgrade: bool = false
 
 
 func _ready() -> void:
@@ -29,6 +30,10 @@ func _ready() -> void:
 		coop.select_aborted.connect(_on_select_aborted)
 		coop.round_wait_show.connect(open_round_wait)
 		coop.round_wait_hide.connect(close_round_wait)
+		if coop.has_signal("wait_reconnect_show"):
+			coop.wait_reconnect_show.connect(_on_wait_reconnect_show)
+		if coop.has_signal("wait_reconnect_hide"):
+			coop.wait_reconnect_hide.connect(_on_wait_reconnect_hide)
 	GameEvents.first_round_add.connect(_on_first_round_add)
 
 
@@ -218,6 +223,7 @@ func _close_difficulty() -> void:
 
 # 升级页点「继续」后（转场停在黑屏）显示；全员就绪时由 coop_net 关闭。
 func open_round_wait() -> void:
+	_round_wait_for_upgrade = true
 	if _round_wait != null and is_instance_valid(_round_wait):
 		return
 	var scene := get_tree().current_scene
@@ -229,10 +235,35 @@ func open_round_wait() -> void:
 
 
 func close_round_wait() -> void:
+	_round_wait_for_upgrade = false
 	if _round_wait != null and is_instance_valid(_round_wait):
 		_round_wait.visible = false
 		_round_wait.queue_free()
 	_round_wait = null
+
+
+# 断线重连等待：轻量遮罩显示「等待 XX 重新连接」（所有端）
+func _on_wait_reconnect_show(player_name: String) -> void:
+	var msg: String = tr("coop_wait_reconnect") % player_name
+	if _round_wait != null and is_instance_valid(_round_wait):
+		_round_wait.call("show_message", msg, true)
+		return
+	var scene := get_tree().current_scene
+	if scene == null or not is_instance_valid(scene):
+		return
+	_round_wait = RoundWaitScene.instantiate()
+	_round_wait.name = "CoopRoundWait"
+	scene.add_child(_round_wait)
+	_round_wait.call("show_message", msg, true)
+
+
+func _on_wait_reconnect_hide() -> void:
+	if _round_wait == null or not is_instance_valid(_round_wait):
+		return
+	if _round_wait_for_upgrade:
+		_round_wait.call("show_message", tr("coop_wait_all_ready"), false)
+	else:
+		close_round_wait()
 
 
 # ---------------- 工具 ----------------

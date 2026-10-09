@@ -58,4 +58,3 @@ text = "←"
 script = ExtResource("1_bttnq")
 
 [connection signal="gui_input" from="." to="." method="_on_gui_input"]
-[connection signal="pressed" from="." to="." method="_on_pressed"]

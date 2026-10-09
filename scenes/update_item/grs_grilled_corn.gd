@@ -1,34 +1,39 @@
-extends Node2D
+extends EquipItem
 
-@onready var cd_timer = $CDTimer
+const HEAL_CD: float = 0.03
 
-var num: int
 var equip_luck: int = 10
 var player: Node
+var _cd: float = 0.0
 
-func _ready():
+func _on_equip():
 	player = get_tree().get_first_node_in_group("Player")
-	first_activation()
-	GameEvents.ability_upgrade_added.connect(on_upgrade_added)
-	GameEvents.enemy_fire_hurt.connect(fire_damage_heal_hp)
-
-func first_activation():
 	equip_luck = 30
-	PlayerData.update_player_ability()
-	
+	set_physics_process(false)
 
-func on_upgrade_added(upgrade: AbilityUpgrade, current_upgrade: Dictionary):
-	if upgrade.id != "grs_grilled_corn":
+func _setup():
+	GameEvents.enemy_damage_taken.connect(fire_damage_heal_hp)
+
+func _physics_process(delta: float) -> void:
+	_cd -= delta
+	if _cd <= 0.0:
+		_cd = 0.0
+		set_physics_process(false)
+
+func _apply_effect(quantity: int):
+	if quantity == 1:
 		return
-	if current_upgrade["grs_grilled_corn"]["quantity"] == 1:
-		return
-	num = current_upgrade["grs_grilled_corn"]["quantity"]
 	equip_luck += 15
-	PlayerData.update_player_ability()
 
-func fire_damage_heal_hp(_enemy_body: Node):
-	var luck = randf_range(0,200)
-	if luck < equip_luck + player.stats.luck and cd_timer.time_left <= 0:
-		player.health_hp = 1
-		player.emit_signal("is_health")
-		cd_timer.start()
+func fire_damage_heal_hp(_final_damage: int, damage_data: DamageData, _body_path: NodePath):
+	if damage_data.damage_type.has(GameTags.FIRE_DAMAGE):
+		var luck = randf_range(0,200)
+		if luck < equip_luck + player.stats.luck and _cd <= 0.0:
+			HealData.fill(player.health_component.heal_data, {
+				"amount": 1,
+				"source": GameTags.EQUIP,
+				"node": self,
+			})
+			player.health_component.take_damage(player.health_component.heal_data)
+			_cd = HEAL_CD
+			set_physics_process(true)

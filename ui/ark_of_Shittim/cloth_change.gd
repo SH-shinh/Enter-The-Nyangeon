@@ -51,8 +51,13 @@ func close_menu():
 func add_card():
 	if PlayerData.clothes_group.has(id_name):
 		for i in PlayerData.clothes_group[id_name].size():
+			var cid: String = str(PlayerData.clothes_group[id_name][i])
+			var card_load = ModManager.get_resource("clothes", cid)
+			if card_load == null:
+				card_load = load("res://resources/clothes/" + id_name + "/" + cid + ".tres")
+			if card_load == null:
+				continue
 			var ins = button_card.instantiate()
-			var card_load = load("res://resources/clothes/" + id_name + "/" + PlayerData.clothes_group[id_name][i] + ".tres")
 			card_box.add_child(ins)
 			ins.get_card(card_load)
 			ins.change_clothes.connect(change_sprite_clothes)

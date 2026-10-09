@@ -1,0 +1,104 @@
+[gd_scene format=3 uid="uid://bkh8sddoct1vt"]
+
+[ext_resource type="Script" uid="uid://cmrqh2t8sm4i2" path="res://ui/test_enemy_card.gd" id="1_evlbu"]
+[ext_resource type="Texture2D" uid="uid://jcqmwo1t8vv0" path="res://ui/ui.png" id="3_hmkrh"]
+[ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="4_qhdmc"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_f3ha2"]
+
+[sub_resource type="Theme" id="Theme_jyrc3"]
+PanelContainer/styles/panel = SubResource("StyleBoxEmpty_f3ha2")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_av1xv"]
+texture = ExtResource("3_hmkrh")
+texture_margin_left = 1.0
+texture_margin_top = 1.0
+texture_margin_right = 1.0
+texture_margin_bottom = 1.0
+expand_margin_left = 5.0
+expand_margin_top = 5.0
+expand_margin_right = 5.0
+expand_margin_bottom = 5.0
+region_rect = Rect2(44, 12, 8, 8)
+
+[sub_resource type="Theme" id="Theme_3pjxh"]
+PanelContainer/styles/panel = SubResource("StyleBoxTexture_av1xv")
+
+[node name="test_enemy_card" type="PanelContainer" unique_id=1363351411]
+custom_minimum_size = Vector2(56, 56)
+mouse_filter = 1
+theme = SubResource("Theme_jyrc3")
+script = ExtResource("1_evlbu")
+
+[node name="Button" type="Button" parent="." unique_id=1427167786]
+layout_mode = 2
+mouse_filter = 1
+theme_override_colors/icon_pressed_color = Color(0, 0, 0, 1)
+
+[node name="TextureRect" type="TextureRect" parent="." unique_id=1307304106]
+clip_children = 1
+custom_minimum_size = Vector2(56, 56)
+clip_contents = true
+layout_mode = 2
+offset_transform_position = Vector2(0, 25)
+offset_transform_scale = Vector2(2, 2)
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="TextureRect" unique_id=847199130]
+position = Vector2(29, 52)
+scale = Vector2(2, 2)
+
+[node name="Text" type="Node2D" parent="." unique_id=1484880996]
+visible = false
+top_level = true
+z_index = 1
+scale = Vector2(0.6, 0.6)
+
+[node name="PanelContainer" type="PanelContainer" parent="Text" unique_id=601088658]
+custom_minimum_size = Vector2(80, 0)
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -71.83333
+offset_top = -73.33333
+offset_right = 71.83333
+offset_bottom = -36.33333
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme = SubResource("Theme_3pjxh")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Text/PanelContainer" unique_id=625333056]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ItemText4" type="Label" parent="Text/PanelContainer/VBoxContainer" unique_id=506040261]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 4
+theme_override_constants/shadow_outline_size = 0
+theme_override_fonts/font = ExtResource("4_qhdmc")
+theme_override_font_sizes/font_size = 14
+text = "名字"
+
+[node name="ItemText" type="Label" parent="Text/PanelContainer/VBoxContainer" unique_id=1811984397]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 4
+theme_override_constants/shadow_outline_size = 0
+theme_override_fonts/font = ExtResource("4_qhdmc")
+theme_override_font_sizes/font_size = 12
+text = "描述"
+autowrap_mode = 1
+
+[connection signal="gui_input" from="Button" to="." method="_on_button_gui_input"]

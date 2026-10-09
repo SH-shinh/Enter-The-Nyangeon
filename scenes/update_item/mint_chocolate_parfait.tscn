@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://qo3m4ib4jv04"]
+[gd_scene format=3 uid="uid://qo3m4ib4jv04"]
 
-[ext_resource type="Script" path="res://scenes/update_item/mint_chocolate_parfait.gd" id="1_svhtj"]
+[ext_resource type="Script" uid="uid://d2x5ffppslk34" path="res://scenes/update_item/mint_chocolate_parfait.gd" id="1_svhtj"]
 
-[node name="mint_chocolate_parfait" type="Node2D"]
+[node name="mint_chocolate_parfait" type="Node2D" unique_id=872989163]
 script = ExtResource("1_svhtj")

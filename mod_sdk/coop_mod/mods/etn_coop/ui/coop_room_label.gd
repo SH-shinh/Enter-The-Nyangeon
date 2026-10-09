@@ -12,6 +12,7 @@ const MARGIN_RIGHT: float = 8.0
 
 var _label: Label
 var _panel: PanelContainer
+var _last_touch_frame: int = -1
 
 
 func _ready() -> void:
@@ -22,7 +23,9 @@ func _ready() -> void:
 
 func _build() -> void:
 	_panel = PanelContainer.new()
-	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_panel.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_panel.gui_input.connect(_on_panel_input)
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0, 0, 0, 0.55)
 	style.content_margin_left = 10
@@ -68,3 +71,22 @@ func _fit_to_text() -> void:
 		return
 	var vw: float = vp.get_visible_rect().size.x
 	_panel.position = Vector2(vw - _panel.size.x - MARGIN_RIGHT, MARGIN_TOP)
+
+
+# 点击/触摸房间标识 → 复制地址（走 CoopNet 统一复制 + toast）
+func _on_panel_input(event: InputEvent) -> void:
+	if event is InputEventScreenTouch and event.pressed:
+		_last_touch_frame = Engine.get_process_frames()
+		_copy()
+		_panel.accept_event()
+	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if _last_touch_frame == Engine.get_process_frames():
+			return
+		_copy()
+		_panel.accept_event()
+
+
+func _copy() -> void:
+	var coop = CoopNetScript.instance
+	if coop != null and is_instance_valid(coop):
+		coop.call("copy_room_address_to_clipboard")

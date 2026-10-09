@@ -6,12 +6,14 @@ uid="uid://cbma7a3j1u30n"
 
 [deps]
 
-files=["res://ETN_item_localization.zh_CN.translation", "res://ETN_item_localization.en.translation", "res://ETN_item_localization.pt.translation"]
+files=["res://ETN_item_localization.zh_CN.translation", "res://ETN_item_localization.en.translation", "res://ETN_item_localization.pt.translation", "res://ETN_item_localization.vi_VN.translation"]
 
 source_file="res://ETN_item_localization.csv"
-dest_files=["res://ETN_item_localization.zh_CN.translation", "res://ETN_item_localization.en.translation", "res://ETN_item_localization.pt.translation"]
+dest_files=["res://ETN_item_localization.zh_CN.translation", "res://ETN_item_localization.en.translation", "res://ETN_item_localization.pt.translation", "res://ETN_item_localization.vi_VN.translation"]
 
 [params]
 
 compress=true
 delimiter=0
+unescape_keys=false
+unescape_translations=true

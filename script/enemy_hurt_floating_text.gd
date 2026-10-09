@@ -9,6 +9,8 @@ var floating_text_scene: PackedScene = preload("res://ui/floating_text.tscn")
 var body: Node
 
 var _pending: Dictionary = {}
+# 距上次 flush 累计的全局 tick 数；达到 PoolManager 自适应 skip 才由 tick 弹出
+var _tick_accum: int = 0
 var _window_active: bool = false
 
 func _ready():
@@ -47,6 +49,10 @@ func _on_screen() -> bool:
 func _on_enemy_damage_taken(actual_damage: int, damage_data: DamageData):
 	if actual_damage <= 0:
 		return
+	var skip: int = PoolManager.get_text_tick_skip()
+	if skip <= 0:
+		_pending.clear()
+		return
 	if not _on_screen():
 		return
 	
@@ -57,12 +63,21 @@ func _on_enemy_damage_taken(actual_damage: int, damage_data: DamageData):
 	else:
 		_pending[key] = {"amount": actual_damage, "color": st["color"], "size": st["size"], "prefix": st["prefix"]}
 	
-	if not _window_active:
+	# 正常帧率(skip<=1)保留首击即时反馈；低帧(skip>1)不立即弹，交给 tick 节流合并
+	if skip <= 1 and not _window_active:
 		_window_active = true
 		_flush()
 
 func _on_tick():
-	if _window_active:
+	var skip: int = PoolManager.get_text_tick_skip()
+	if skip <= 0:
+		_pending.clear()
+		_tick_accum = 0
+		_window_active = false
+		return
+	_tick_accum = mini(_tick_accum + 1, skip)
+	if _tick_accum >= skip:
+		_tick_accum = 0
 		_window_active = false
 		_flush()
 
@@ -70,9 +85,7 @@ func _acquire_floating_text():
 	var ft = PoolManager.get_pool_idle("floating_text")
 	if ft != null:
 		return ft
-	var entry = PoolManager.pool.get("floating_text")
-	var size: int = 0 if entry == null else entry["body"].size()
-	if size >= MAX_CONCURRENT:
+	if PoolManager.pool_total("floating_text") >= MAX_CONCURRENT:
 		return null
 	var layer = get_tree().get_first_node_in_group("ForegroundLayer")
 	if layer == null:

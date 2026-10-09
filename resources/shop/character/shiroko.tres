@@ -1,6 +1,5 @@
-[gd_resource type="Resource" script_class="CharacterCard" load_steps=5 format=3 uid="uid://wdjl06vsbs5c"]
+[gd_resource type="Resource" script_class="CharacterCard" load_steps=4 format=3 uid="uid://wdjl06vsbs5c"]
 
-[ext_resource type="Texture2D" uid="uid://i5c47f4x4k7v" path="res://sprites/player/shiroko/shiroko_picture.png" id="1_n6xv5"]
 [ext_resource type="Texture2D" uid="uid://fso5eoabq0er" path="res://ui/school/ABYDOS_icon.png" id="2_8b3st"]
 [ext_resource type="Script" path="res://resources/shop/character/character_card.gd" id="3_fipn3"]
 [ext_resource type="Texture2D" uid="uid://csb12yhlnb4sr" path="res://ui/weapon/AR_icon.png" id="4_q7821"]
@@ -10,7 +9,7 @@ script = ExtResource("3_fipn3")
 cost = 6
 name_1 = "SUNAOOKAMI"
 name_2 = "SHIROKO"
-character_sprite = ExtResource("1_n6xv5")
+character_sprite_path = "res://sprites/player/shiroko/shiroko_picture.png"
 weapon_name = "WHITE FANG 465"
 weapon_type_name = "AR"
 weapon_icon = ExtResource("4_q7821")

@@ -1,104 +1,11 @@
-[gd_scene load_steps=14 format=3 uid="uid://ctwk5mjht6otl"]
+[gd_scene format=3 uid="uid://ctwk5mjht6otl"]
 
-[ext_resource type="Script" path="res://scenes/player/mashiro/cross_bullet.gd" id="1_j7sc8"]
+[ext_resource type="Script" uid="uid://ewt6hrilwdt0" path="res://scenes/player/mashiro/cross_bullet.gd" id="1_j7sc8"]
 [ext_resource type="Texture2D" uid="uid://dhn03ktw4tjrd" path="res://sprites/particle/smoke_sprite_1.png" id="1_k4w7u"]
-[ext_resource type="Shader" path="res://shaders/sprite_outline.gdshader" id="2_hcp28"]
+[ext_resource type="Shader" uid="uid://bqypa5578tm8a" path="res://shaders/sprite_outline.gdshader" id="2_hcp28"]
 [ext_resource type="Texture2D" uid="uid://70wrlwp7gugf" path="res://sprites/player/mashiro/cross_atk.png" id="3_i2rhk"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_6v1vg"]
-
-[sub_resource type="Animation" id="Animation_el5da"]
-resource_name = "atk_anim"
-length = 0.5
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite2D:position")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.0333333, 0.4, 0.5),
-"transitions": PackedFloat32Array(1, 1, 1, 1),
-"update": 0,
-"values": [Vector2(0, -120), Vector2(0, -28), Vector2(0, -28), Vector2(0, 0)]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("Sprite2D:scale")
-tracks/1/interp = 2
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.0333333, 0.166667, 0.333333, 0.4, 0.5),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
-"update": 0,
-"values": [Vector2(0.3, 1), Vector2(0.5, 1.2), Vector2(1, 1), Vector2(1, 1), Vector2(0.9, 1.1), Vector2(0.1, 0.1)]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("Sprite2D:modulate")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"times": PackedFloat32Array(0, 0.1, 0.4, 0.5),
-"transitions": PackedFloat32Array(1, 1, 1, 1),
-"update": 0,
-"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1), Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
-}
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath("GPUParticles2D:emitting")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/keys = {
-"times": PackedFloat32Array(0.0333333),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [true]
-}
-tracks/4/type = "value"
-tracks/4/imported = false
-tracks/4/enabled = true
-tracks/4/path = NodePath("Sprite2D:material:shader_parameter/outline_color")
-tracks/4/interp = 1
-tracks/4/loop_wrap = true
-tracks/4/keys = {
-"times": PackedFloat32Array(0, 0.1, 0.3, 0.433333),
-"transitions": PackedFloat32Array(1, 1, 1, 1),
-"update": 0,
-"values": [Color(1, 1, 1, 1), Color(5, 0.396, 0.424, 1), Color(5, 0.396, 0.424, 1), Color(1, 1, 1, 1)]
-}
-tracks/5/type = "value"
-tracks/5/imported = false
-tracks/5/enabled = true
-tracks/5/path = NodePath("CollisionShape2D:disabled")
-tracks/5/interp = 1
-tracks/5/loop_wrap = true
-tracks/5/keys = {
-"times": PackedFloat32Array(0, 0.3),
-"transitions": PackedFloat32Array(1, 1),
-"update": 1,
-"values": [false, true]
-}
-tracks/6/type = "method"
-tracks/6/imported = false
-tracks/6/enabled = true
-tracks/6/path = NodePath(".")
-tracks/6/interp = 1
-tracks/6/loop_wrap = true
-tracks/6/keys = {
-"times": PackedFloat32Array(0.0333333, 0.5),
-"transitions": PackedFloat32Array(1, 1),
-"values": [{
-"args": [],
-"method": &"play_sfx"
-}, {
-"args": [],
-"method": &"idle_state"
-}]
-}
 
 [sub_resource type="Animation" id="Animation_4s13e"]
 length = 0.001
@@ -175,10 +82,103 @@ tracks/5/keys = {
 "values": [false]
 }
 
+[sub_resource type="Animation" id="Animation_el5da"]
+resource_name = "atk_anim"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.0333333, 0.4, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(0, -120), Vector2(0, -28), Vector2(0, -28), Vector2(0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:scale")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.0333333, 0.166667, 0.333333, 0.4, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(0.3, 1), Vector2(0.5, 1.2), Vector2(1, 1), Vector2(1, 1), Vector2(0.9, 1.1), Vector2(0.1, 0.1)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Sprite2D:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.4, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1), Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("GPUParticles2D:emitting")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0.0333333),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Sprite2D:material:shader_parameter/outline_color")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.3, 0.433333),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(1.5, 0.396, 0.424, 1), Color(1.5, 0.396, 0.424, 1), Color(1, 1, 1, 1)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("CollisionShape2D:disabled")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+tracks/6/type = "method"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath(".")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0.0333333, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"values": [{
+"args": [],
+"method": &"play_sfx"
+}, {
+"args": [],
+"method": &"idle_state"
+}]
+}
+
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_blptw"]
 _data = {
-"RESET": SubResource("Animation_4s13e"),
-"atk_anim": SubResource("Animation_el5da")
+&"RESET": SubResource("Animation_4s13e"),
+&"atk_anim": SubResource("Animation_el5da")
 }
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_foqsq"]
@@ -218,31 +218,27 @@ color_initial_ramp = SubResource("GradientTexture1D_ectw6")
 anim_speed_min = 0.8
 anim_speed_max = 1.2
 
-[node name="cross_bullet" type="Area2D"]
-collision_layer = 0
-collision_mask = 8
+[node name="cross_bullet" type="Area2D" unique_id=1957828866]
+collision_layer = 32768
+collision_mask = 32768
 script = ExtResource("1_j7sc8")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=376840204]
 shape = SubResource("CircleShape2D_6v1vg")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_blptw")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=687108044]
+libraries/ = SubResource("AnimationLibrary_blptw")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=622618480]
 material = SubResource("ShaderMaterial_foqsq")
 position = Vector2(0, -65)
 texture = ExtResource("3_i2rhk")
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=962089891]
 material = SubResource("CanvasItemMaterial_g0abu")
 emitting = false
-process_material = SubResource("ParticleProcessMaterial_wdw2c")
 texture = ExtResource("1_k4w7u")
 lifetime = 0.6
 one_shot = true
 explosiveness = 1.0
-
-[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+process_material = SubResource("ParticleProcessMaterial_wdw2c")

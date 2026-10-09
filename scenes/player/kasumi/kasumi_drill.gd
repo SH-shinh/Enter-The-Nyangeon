@@ -119,45 +119,42 @@ func lv_count():
 	
 
 func add_explosion_ins():
-	var ins = PoolManager.get_pool("player_explosion")
-	var add_ins: bool = false
-	if ins == null or ins.is_idle == 0:
-		ins = explosion_pak.instantiate()
-		add_ins = true
-	
-	ins.global_position = self.global_position
-	
-	if ins.damage_data == null:
-		ins.damage_data = DamageData.new()
-	else:
-		ins.damage_data.reset_data()
-	var luck = randf_range(0, 100)
-	if luck < player.stats.critical_luck:
-		ins.damage_data.is_crit = true
-		ins.damage_data.base_damage = max(1, round(explosion_damage * player.stats.critical_damage))
-	else:
-		ins.damage_data.is_crit = false
-		ins.damage_data.base_damage = max(1, round(explosion_damage))
-	
-	ins.damage_data.knockback_force = player.stats.bullet_knockback
-	ins.damage_data.damage_type.append(GameTags.EXPLOSION_DAMAGE)
-	ins.damage_data.source_type.append(GameTags.EQUIP)
-	
-	ins.explosion_range = player.stats.explosion_range * base_explosion_range * range_mult
-	
-	if add_ins == true:
-		get_tree().get_first_node_in_group("BulletRoot").add_child(ins)
-	ins.damage_data.source_node = ins.get_path()
-	ins.active_state()
-	ins.is_small_explosion()
+	ProjectileSpawner.spawn_core(
+		explosion_pak, "player_explosion", "BulletRoot", self, Faction.PLAYER_SIDE,
+		self.global_position, 0.0, Vector2.ZERO,
+		true, false, true,
+		Callable(self, "_configure_explosion"),
+		Callable(),
+		Callable(self, "_post_explosion")
+	)
 	
 	gpu_particles_2d.emitting = true
 	gpu_particles_2d.restart()
 
+func _configure_explosion(node: Node) -> void:
+	node.damage_data = DamageData.fill(node.damage_data, {
+		"knockback": player.stats.bullet_knockback,
+		"type": GameTags.EXPLOSION_DAMAGE,
+		"source": GameTags.EQUIP,
+	})
+	var luck = randf_range(0, 100)
+	if luck < player.stats.critical_luck:
+		node.damage_data.is_crit = true
+		node.damage_data.base_damage = max(1, round(explosion_damage * player.stats.critical_damage))
+	else:
+		node.damage_data.is_crit = false
+		node.damage_data.base_damage = max(1, round(explosion_damage))
+
+	node.explosion_range = player.stats.explosion_range * base_explosion_range * range_mult
+
+func _post_explosion(node: Node) -> void:
+	node.damage_data.source_node = node.get_path()
+	node.is_small_explosion()
+
 func add_full_explosion():
 	damage_mult = 1 + (max_layer * 0.4)
 	range_mult = 1 + (max_layer * 0.05)
-	explosion_damage = player_explosion_damage * damage_mult * player.stats.explosion_damage * player.stats.global_damage  * player.stats.equip_damage
+	explosion_damage = player_explosion_damage * damage_mult * player.stats.global_damage  * player.stats.equip_damage
 	
 	add_explosion_ins()
 
@@ -165,7 +162,7 @@ func add_explosion():
 	if player.player_buff_manager.current_buff.has(player_buff.id):
 		damage_mult = 1 + (player.player_buff_manager.current_buff[player_buff.id]["layer"] * 0.4)
 		range_mult = 1 + (player.player_buff_manager.current_buff[player_buff.id]["layer"] * 0.05)
-		explosion_damage = player_explosion_damage * damage_mult * player.stats.explosion_damage * player.stats.global_damage  * player.stats.equip_damage
+		explosion_damage = player_explosion_damage * damage_mult * player.stats.global_damage  * player.stats.equip_damage
 		
 		add_explosion_ins()
 		
@@ -185,10 +182,14 @@ func freeze_frame_reset():
 	animation_player_2.speed_scale = 1
 
 func apply_melee_damage_data():
-	if hit_box.damage_data == null:
-		hit_box.damage_data = DamageData.new()
-	else:
-		hit_box.damage_data.reset_data()
+	hit_box.damage_data = DamageData.fill(hit_box.damage_data, {
+		"knockback": max(player.stats.bullet_knockback + 100, 1),
+		"type": [GameTags.MELEE_DAMAGE, GameTags.EQUIP_DAMAGE],
+		"center": hit_box.global_position,
+		"source": GameTags.EQUIP,
+		"flags": [GameTags.KNOCKBACK_ATTRACT],
+		"node": self,
+	})
 	
 	var luck = randf_range(0, 100)
 	if luck < player.stats.critical_luck:
@@ -197,14 +198,6 @@ func apply_melee_damage_data():
 	else:
 		hit_box.damage_data.base_damage = max(1, round(player.stats.kick_damage * player.stats.global_damage * player.stats.equip_damage))
 		hit_box.damage_data.is_crit = false
-	
-	hit_box.damage_data.knockback_force = min( player.stats.bullet_knockback + 200, 100)
-	hit_box.damage_data.damage_type.append(GameTags.MELEE_DAMAGE)
-	hit_box.damage_data.damage_type.append(GameTags.EQUIP_DAMAGE)
-	hit_box.damage_data.hit_box_center = hit_box.global_position
-	hit_box.damage_data.source_node = self.get_path()
-	hit_box.damage_data.source_type.append(GameTags.EQUIP)
-	hit_box.damage_data.flags.append(GameTags.KNOCKBACK_ATTRACT)
 
 func add_damage_data():
 	if !body_group.is_empty():
@@ -215,6 +208,7 @@ func add_damage_data():
 				continue
 			if now_cd <= 0:
 				SoundManager.play_sfx("HurtSounds2")
+				ExtensionHooks.notify(ExtensionHooks.on_hit_sfx, ["HurtSounds2", global_position])
 				freeze_frame()
 				apply_melee_damage_data()
 				if hit_box.damage_data.is_crit == true:
@@ -229,9 +223,17 @@ func add_damage_data():
 			now_cd = melee_cd
 
 func _on_hit_box_entered(hurtbox: Area2D):
+	if hurtbox == null or not is_instance_valid(hurtbox):
+		return
 	if hurtbox is HurtBox and !body_group.has(hurtbox):
 		body_group.push_back(hurtbox)
 
 func _on_hit_box_exited(hurtbox: Area2D):
-	if hurtbox is HurtBox and body_group.has(hurtbox) and !hurtbox.owner.is_in_group("Summoned"):
-		body_group.remove_at(body_group.find(hurtbox))
+	if hurtbox == null or not is_instance_valid(hurtbox):
+		return
+	if not (hurtbox is HurtBox) or not body_group.has(hurtbox):
+		return
+	var body = hurtbox.owner
+	if body != null and is_instance_valid(body) and body.is_in_group("Summoned"):
+		return
+	body_group.remove_at(body_group.find(hurtbox))

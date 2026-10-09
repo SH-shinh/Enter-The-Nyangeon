@@ -78,10 +78,39 @@ var charge_cd_time: int = 0
 var charge_dir_time: int = 0
 var charge_time: int = 0
 
+var weapon_halted: bool = false
+
 func _ready():
 	super._ready()
 	hit_wall.connect(charge_shoot)
 	GameEvents.fever_time_start.connect(enemy_fever_time)
+	random_shoot_end.connect(func(): GameEvents.emit_boss_event("goliath_random_end", {}))
+	strafe_shoot_end.connect(func(): GameEvents.emit_boss_event("goliath_strafe_end", {}))
+	big_gun_shoot_end.connect(func(): GameEvents.emit_boss_event("goliath_big_gun_end", {}))
+	hit_wall.connect(func(): GameEvents.emit_boss_event("goliath_hit_wall", {}))
+	GameEvents.boss_event.connect(_on_network_boss_event)
+
+
+# 联机：把可视动画态广播给其它端；远程镜像回放（host 本机已直接播放）
+var _net_visual_replaying: bool = false
+
+func _net_boss_visual(fn_name: String) -> void:
+	if _net_visual_replaying:
+		return
+	GameEvents.emit_boss_event("goliath_visual", {"fn": fn_name})
+
+
+func _on_network_boss_event(event_name: String, data: Dictionary) -> void:
+	if not has_meta("network_remote_enemy"):
+		return
+	if event_name != "goliath_visual":
+		return
+	var fn: String = str(data.get("fn", ""))
+	if fn == "" or not has_method(fn):
+		return
+	_net_visual_replaying = true
+	call(fn)
+	_net_visual_replaying = false
 
 func idle_state():
 	super.idle_state()
@@ -90,30 +119,42 @@ func idle_state():
 
 func active_state():
 	super.active_state()
+	weapon_halted = false
 	boss_enter_anim()
-	decision_timer.start()
+	# 镜像不本地跑决策（AI 由 host 快照驱动）
+	if not has_meta("network_remote_enemy"):
+		decision_timer.start()
 
 func boss_enter_anim():
 	enter_anim.play("enter_anim")
+	# 镜像只播动画，不做相机/暂停演出（否则会本地 pause 整棵树）
+	if has_meta("network_remote_enemy"):
+		return
 	GameEvents.emit_camera_move(camera_marker, true)
 	GameEvents.emit_ui_visible(false)
+	GameEvents.emit_pause_lock(true)
 	get_tree().paused = true
 	await enter_anim.animation_finished
 	GameEvents.emit_camera_reset()
 	GameEvents.emit_ui_visible(true)
 	get_tree().paused = false
+	GameEvents.emit_pause_lock(false)
 
 func boss_death_anim():
 	death_anim.play("death_anim")
+	# 镜像只播动画，不做相机/暂停演出
+	if has_meta("network_remote_enemy"):
+		return
 	GameEvents.emit_camera_move(camera_marker, true)
 	GameEvents.emit_ui_visible(false)
+	GameEvents.emit_pause_lock(true)
 	get_tree().paused = true
 	await death_anim.animation_finished
 	GameEvents.emit_camera_reset()
 	GameEvents.emit_ui_visible(true)
 	get_tree().paused = false
+	GameEvents.emit_pause_lock(false)
 	GameEvents.emit_enemy_dead_position(self.global_position)
-	idle_state.call_deferred()
 
 func time_count():
 	super.time_count()
@@ -131,11 +172,9 @@ func time_count():
 			can_charge = true
 
 func tick_physics(state: State, delta: float) -> void:
-	ACCELERATION = stats.MAX_SPEED / stats.SPEED_TIME
+	ACCELERATION = stats.move_acceleration()
 	#graphics.speed_scale = (velocity.x * velocity.x + velocity.y * velocity.y) / 6400
-	if enemy_body.size() != 0:
-		for i in enemy_body:
-			i.velocity += i.stats.weigth_mult * (i.global_position - self.global_position).normalized() * stats.MAX_SPEED / max(0.5, i.global_position.distance_to(self.global_position))
+	apply_soft_collision()
 	
 	match state:
 		
@@ -154,7 +193,7 @@ func tick_physics(state: State, delta: float) -> void:
 		State.TURRETSHOOT:
 			move(delta, ACCELERATION, 0)
 
-func move(delta: float, ACCELERATION: float ,MAX_SPEED: float ) -> void:
+func move(delta: float, acceleration_local: float ,MAX_SPEED: float ) -> void:
 	
 	
 	if stats.hp != 0:
@@ -162,12 +201,12 @@ func move(delta: float, ACCELERATION: float ,MAX_SPEED: float ) -> void:
 		if move_mode == 1:
 			var collisionResult = get_last_slide_collision()
 			if collisionResult :
-				direction = velocity.bounce(collisionResult.get_normal()).normalized() + (player.global_position - global_position).normalized()
+				direction = velocity.bounce(collisionResult.get_normal()).normalized() + (get_target_position() - global_position).normalized()
 				velocity = Vector2.ZERO
 				hit_wall.emit()
 		
-		velocity.x = move_toward(velocity.x, direction.x * MAX_SPEED, ACCELERATION * delta)
-		velocity.y = move_toward(velocity.y, direction.y * MAX_SPEED, ACCELERATION * delta)
+		velocity.x = move_toward(velocity.x, direction.x * MAX_SPEED, acceleration_local * delta)
+		velocity.y = move_toward(velocity.y, direction.y * MAX_SPEED, acceleration_local * delta)
 		
 		if direction.x > 0:
 			graphics.scale.x = 1.2
@@ -232,7 +271,7 @@ func get_next_state(state: State) -> State:
 		
 	return state
 
-func transition_state(from:State, to: State) -> void:
+func transition_state(_from:State, to: State) -> void:
 	
 	match to:
 		State.IDLE:
@@ -286,28 +325,34 @@ func transition_state(from:State, to: State) -> void:
 
 
 func idle_state_anim():
+	_net_boss_visual("idle_state_anim")
 	body_play_idle()
 	body_anim.play("idle")
 	leg_anim.play("idle")
 
 func running_state_anim():
+	_net_boss_visual("running_state_anim")
 	body_play_idle()
 	leg_anim.play("run")
 
 func shoot_ready_state_anim():
+	_net_boss_visual("shoot_ready_state_anim")
 	body_play_idle()
 	body_anim.play("shoot_ready")
 
 func shoot_state_anim():
+	_net_boss_visual("shoot_state_anim")
 	body_play_shoot()
 	body_anim.play("shoot")
 
 func charge_state_anim():
+	_net_boss_visual("charge_state_anim")
 	body_play_idle()
 	body_anim.play("charge")
 	leg_anim.play("charge")
 
 func turret_ready_state_anim():
+	_net_boss_visual("turret_ready_state_anim")
 	body_play_idle()
 	body_anim.play("turret_shoot_ready")
 	leg_anim.play("turret_shoot")
@@ -322,38 +367,38 @@ func L_shoot():
 	if is_idle == 1:
 		return
 	SoundManager.play_sfx("GunSounds3")
-	L_launcher.bullet_damage_mult = stats.bullet_damage_mult
 	L_launcher.bullet_damage = stats.Enemy_bullet_damage
 	L_launcher.shoot_bullet.call_deferred()
 	
-	var now_shoot_flash_L = PoolManager.get_pool("enemy_flash_1")
-	if now_shoot_flash_L == null or now_shoot_flash_L.is_idle == 0:
-		now_shoot_flash_L = shoot_flash.instantiate()
-		get_tree().get_first_node_in_group("SELayer").add_child(now_shoot_flash_L)
-	now_shoot_flash_L.position = shoot_position_L.global_position
-	now_shoot_flash_L.rotation = shoot_position_L.global_rotation
-	now_shoot_flash_L.active_state()
+	if PoolManager.fx_allowed(&"muzzle_flash"):
+		var now_shoot_flash_L = PoolManager.get_pool("enemy_flash_1")
+		if now_shoot_flash_L == null or now_shoot_flash_L.is_idle == 0:
+			now_shoot_flash_L = shoot_flash.instantiate()
+			get_tree().get_first_node_in_group("SELayer").add_child(now_shoot_flash_L)
+		now_shoot_flash_L.position = shoot_position_L.global_position
+		now_shoot_flash_L.rotation = shoot_position_L.global_rotation
+		now_shoot_flash_L.active_state()
 
 func R_shoot():
 	if is_idle == 1:
 		return
 	SoundManager.play_sfx("GunSounds3")
-	R_launcher.bullet_damage_mult = stats.bullet_damage_mult
 	R_launcher.bullet_damage = stats.Enemy_bullet_damage
 	R_launcher.shoot_bullet.call_deferred()
 	
-	var now_shoot_flash_R = PoolManager.get_pool("enemy_flash_1")
-	if now_shoot_flash_R == null or now_shoot_flash_R.is_idle == 0:
-		now_shoot_flash_R = shoot_flash.instantiate()
-		get_tree().get_first_node_in_group("SELayer").add_child(now_shoot_flash_R)
-	now_shoot_flash_R.position = shoot_position_R.global_position
-	now_shoot_flash_R.rotation = shoot_position_R.global_rotation
-	now_shoot_flash_R.active_state()
+	if PoolManager.fx_allowed(&"muzzle_flash"):
+		var now_shoot_flash_R = PoolManager.get_pool("enemy_flash_1")
+		if now_shoot_flash_R == null or now_shoot_flash_R.is_idle == 0:
+			now_shoot_flash_R = shoot_flash.instantiate()
+			get_tree().get_first_node_in_group("SELayer").add_child(now_shoot_flash_R)
+		now_shoot_flash_R.position = shoot_position_R.global_position
+		now_shoot_flash_R.rotation = shoot_position_R.global_rotation
+		now_shoot_flash_R.active_state()
 
 func random_bullet():
 	if player != null:
 		for i in random_shoot_num:
-			var player_rotation = (player.global_position - global_position).angle()
+			var player_rotation = (get_target_position() - global_position).angle()
 			var L_shoot_rotation = player_rotation + randf_range(-0.5,0.5)
 			var R_shoot_rotation = player_rotation + randf_range(-0.5,0.5)
 			L_launcher.global_rotation = L_shoot_rotation
@@ -362,6 +407,8 @@ func random_bullet():
 			R_shoot()
 			random_shoot_timer.start()
 			await random_shoot_timer.timeout
+			if weapon_halted:
+				return
 		random_shoot_end.emit()
 		body_anim.play_backwards("shoot_ready")
 		gatling_out.play()
@@ -377,7 +424,7 @@ func strafe_bullet():
 				var increment = arc_rad / (strafe_shoot_num * 0.5 - 1)
 				
 				var shoot_rotation = (
-					(player.global_position - global_position).angle() +
+					(get_target_position() - global_position).angle() +
 					increment * i -
 					arc_rad / 2
 				)
@@ -388,13 +435,15 @@ func strafe_bullet():
 				
 				strafe_shoot_timer.start()
 				await strafe_shoot_timer.timeout
+				if weapon_halted:
+					return
 			for i in strafe_shoot_num * 0.5:
 				
 				var arc_rad = deg_to_rad(180)
 				var increment = arc_rad / (strafe_shoot_num * 0.5 - 1)
 				
 				var shoot_rotation = (
-					(player.global_position - global_position).angle() -
+					(get_target_position() - global_position).angle() -
 					increment * i +
 					arc_rad / 2
 				)
@@ -405,6 +454,8 @@ func strafe_bullet():
 				
 				strafe_shoot_timer.start()
 				await strafe_shoot_timer.timeout
+				if weapon_halted:
+					return
 		strafe_shoot_end.emit()
 		body_anim.play_backwards("shoot_ready")
 		gatling_out.play()
@@ -417,22 +468,22 @@ func big_gun_shoot():
 		body_anim.play("turret_shoot")
 		SoundManager.play_sfx("CannonSounds1")
 		await body_anim.animation_finished
+		if weapon_halted:
+			return
 		var cannon_bullet_ins = PoolManager.get_pool("cannon_bullet_1")
 		if cannon_bullet_ins == null or cannon_bullet_ins.is_idle == 0:
 			cannon_bullet_ins = cannon_bullet.instantiate()
 			get_tree().get_first_node_in_group("SELayer").add_child(cannon_bullet_ins)
 		
 		if player != null:
-			var shoot_p = player.global_position + Vector2(randf_range(-150,150),randf_range(-150,150))
-			cannon_bullet_ins.global_position = shoot_p
-			cannon_bullet_ins.explosion_range = 9
-			cannon_bullet_ins.knockback = stats.Enemy_Knockback
-			cannon_bullet_ins.bullet_damage = 1.2 * stats.Enemy_bullet_damage * stats.bullet_damage_mult
+			var shoot_p = get_target_position() + Vector2(randf_range(-150,150),randf_range(-150,150))
+			cannon_bullet_ins.setup(shoot_p, 1.2 * stats.Enemy_bullet_damage * stats.bullet_damage_mult, stats.Enemy_Knockback, 9)
 			cannon_bullet_ins.shoot_bullet_num = 12
-			cannon_bullet_ins.bullet_damage_mult = stats.bullet_damage_mult
 			cannon_bullet_ins.active_state()
 			big_gun_shoot_timer.start()
 			await big_gun_shoot_timer.timeout
+			if weapon_halted:
+				return
 			
 	big_gun_shoot_end.emit()
 	body_anim.play_backwards("turret_shoot_ready")
@@ -462,32 +513,43 @@ func charge_shoot():
 		move_mode = 0
 
 func add_cannon_flash():
-	var now_cannon_flash = PoolManager.get_pool("cannon_flash_1")
-	if now_cannon_flash == null or now_cannon_flash.is_idle == 0:
-		now_cannon_flash = cannon_flash.instantiate()
-		get_tree().get_first_node_in_group("SELayer").add_child(now_cannon_flash)
-	now_cannon_flash.position = big_gun_position.global_position
-	now_cannon_flash.rotation = big_gun_position.global_rotation
-	now_cannon_flash.active_state()
+	if PoolManager.fx_allowed(&"muzzle_flash"):
+		var now_cannon_flash = PoolManager.get_pool("cannon_flash_1")
+		if now_cannon_flash == null or now_cannon_flash.is_idle == 0:
+			now_cannon_flash = cannon_flash.instantiate()
+			get_tree().get_first_node_in_group("SELayer").add_child(now_cannon_flash)
+		now_cannon_flash.position = big_gun_position.global_position
+		now_cannon_flash.rotation = big_gun_position.global_rotation
+		now_cannon_flash.active_state()
 
 func add_shoot_flash():
-	var now_shoot_flash_R = PoolManager.get_pool("enemy_flash_1")
-	if now_shoot_flash_R == null or now_shoot_flash_R.is_idle == 0:
-		now_shoot_flash_R = shoot_flash.instantiate()
-		get_tree().get_first_node_in_group("SELayer").add_child(now_shoot_flash_R)
-	now_shoot_flash_R.position = shoot_position_R.global_position
-	now_shoot_flash_R.rotation = shoot_position_R.global_rotation
-	now_shoot_flash_R.active_state()
-	
-	var now_shoot_flash_L = PoolManager.get_pool("enemy_flash_1")
-	if now_shoot_flash_L == null or now_shoot_flash_L.is_idle == 0:
-		now_shoot_flash_L = shoot_flash.instantiate()
-		get_tree().get_first_node_in_group("SELayer").add_child(now_shoot_flash_L)
-	now_shoot_flash_L.position = shoot_position_L.global_position
-	now_shoot_flash_L.rotation = shoot_position_L.global_rotation
-	now_shoot_flash_L.active_state()
+	if PoolManager.fx_allowed(&"muzzle_flash"):
+		var now_shoot_flash_R = PoolManager.get_pool("enemy_flash_1")
+		if now_shoot_flash_R == null or now_shoot_flash_R.is_idle == 0:
+			now_shoot_flash_R = shoot_flash.instantiate()
+			get_tree().get_first_node_in_group("SELayer").add_child(now_shoot_flash_R)
+		now_shoot_flash_R.position = shoot_position_R.global_position
+		now_shoot_flash_R.rotation = shoot_position_R.global_rotation
+		now_shoot_flash_R.active_state()
+		
+		var now_shoot_flash_L = PoolManager.get_pool("enemy_flash_1")
+		if now_shoot_flash_L == null or now_shoot_flash_L.is_idle == 0:
+			now_shoot_flash_L = shoot_flash.instantiate()
+			get_tree().get_first_node_in_group("SELayer").add_child(now_shoot_flash_L)
+		now_shoot_flash_L.position = shoot_position_L.global_position
+		now_shoot_flash_L.rotation = shoot_position_L.global_rotation
+		now_shoot_flash_L.active_state()
 
 func on_dead():
+	if is_idle == 1:
+		return
+	weapon_halted = true
+	hurt_box_shape_2d.set_deferred("disabled", true)
+	random_shoot_timer.stop()
+	strafe_shoot_timer.stop()
+	big_gun_shoot_timer.stop()
+	decision_timer.stop()
+	_interrupt_weapons()
 	GameEvents.emit_boss_round_end()
 	boss_death_anim()
 

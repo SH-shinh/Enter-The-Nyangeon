@@ -37,29 +37,29 @@ func time_count():
 
 func get_player_ability():
 	if player != null:
-		max_hp.text = str(player.stats.max_hp)
-		luck.text = str(player.stats.luck)
-		bullet_knockback.text = str(player.stats.bullet_knockback)
+		max_hp.text = str(int(player.stats.max_hp))
+		luck.text = str(int(player.stats.luck))
+		bullet_knockback.text = str(int(player.stats.bullet_knockback))
 		if player.stats.critical_luck <= 0:
 			critical_luck.text = "0%"
 		else:
-			critical_luck.text = str(min(round(player.stats.critical_luck), 100), "%")
-		critical_damage.text = str(round(player.stats.critical_damage * 100), "%")
-		global_damage.text = str(round(player.stats.global_damage * 100), "%")
-		bullet_damage.text = str(max(1, round(player.stats.bullet_damage * player.stats.global_damage)))
+			critical_luck.text = str(min(int(round(player.stats.critical_luck)), 100), "%")
+		critical_damage.text = str(int(round(player.stats.critical_damage * 100)), "%")
+		global_damage.text = str(int(round(player.stats.global_damage * 100)), "%")
+		bullet_damage.text = str(max(1, int(round(player.stats.bullet_damage * player.stats.global_damage))))
 		bullet_penetrate.text = str(player.stats.bullet_penetrate)
 		armor.text = str(player.stats.hurt_resis)
 		reload_timer.text = String.num(player.stats.reload_timer, 2) + "s"
-		bullet_shoot_time.text = str(round(player.stats.bullet_shoot_time), " RPM")
-		equip_damage.text = str(round(player.stats.equip_damage * 100), "%")
-		explosion_damage.text = str(round(player.stats.explosion_damage * 100), "%")
-		explosion_range.text = str(round(player.stats.explosion_range * 100), "%")
-		dot_damage.text = str(round(player.stats.dot_damage * 100), "%")
-		summon_damage.text = str(round(player.stats.summoned_damage * 100), "%")
+		bullet_shoot_time.text = str(int(round(player.stats.bullet_shoot_time)), " RPM")
+		equip_damage.text = str(int(round(player.stats.equip_damage * 100)), "%")
+		explosion_damage.text = str(int(round(player.stats.explosion_damage * 100)), "%")
+		explosion_range.text = str(int(round(player.stats.explosion_range * 100)), "%")
+		dot_damage.text = str(int(round(player.stats.dot_damage * 100)), "%")
+		summon_damage.text = str(int(round(player.stats.summoned_damage * 100)), "%")
 		if player.stats.bullet_cost > 0:
 			max_ammo.text = str(player.stats.max_ammo)
 		else:
 			max_ammo.text = "∞"
 		speed.text = str(player.stats.MAX_SPEED)
 		melee.text = str(player.stats.kick_damage)
-		damage_taken.text = str(round(player.stats.hurt_mult * 100), "%")
+		damage_taken.text = str(int(round(player.stats.hurt_mult * 100)), "%")

@@ -1,7 +1,7 @@
 extends Resource
 class_name SupportCard
 
-@export var character_sprite: Texture
+@export_file("*.png") var character_sprite_path: String
 @export var character_halo: Texture
 @export var weapon_icon: Texture
 @export var support_id: String

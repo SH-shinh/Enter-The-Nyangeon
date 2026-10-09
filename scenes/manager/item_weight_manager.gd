@@ -2,6 +2,7 @@ extends Node
 class_name ItemWeightManager
 
 signal weights_updated
+@warning_ignore("unused_signal")
 signal item_selected(item: AbilityUpgrade)
 
 @export var upgrade_manager: Node
@@ -93,7 +94,7 @@ func calculate_item_weight(item: AbilityUpgrade, context: Dictionary = {}) -> fl
 	return max(weight, 0.0)  # 最小权重
 
 # 计算玩家状态乘数
-func calculate_player_state_multiplier(context: Dictionary) -> float:
+func calculate_player_state_multiplier(_context: Dictionary) -> float:
 	var multiplier = 1.0
 	
 	return multiplier
@@ -129,7 +130,7 @@ func calculate_history_multiplier(item: AbilityUpgrade) -> float:
 	return multiplier
 
 # 计算特殊规则
-func calculate_special_rules(item: AbilityUpgrade, context: Dictionary) -> float:
+func calculate_special_rules(item: AbilityUpgrade, _context: Dictionary) -> float:
 	var multiplier = 1.0
 	
 	if PlayerData.bullet_type == 0:
@@ -179,7 +180,7 @@ func calculate_special_rules(item: AbilityUpgrade, context: Dictionary) -> float
 	
 	return multiplier
 
-func check_combo_prerequisites(item: AbilityUpgrade) -> bool:
+func check_combo_prerequisites(_item: AbilityUpgrade) -> bool:
 	# 检查玩家是否拥有组合所需的前置道具
 	# 这里可以根据具体道具配置实现
 	return true
@@ -208,17 +209,17 @@ func record_selection(item: AbilityUpgrade):
 		selection_history.remove_at(0)
 
 # 添加权重修饰器
-func add_weight_modifier(name: String, modifier: WeightModifier):
-	current_modifiers[name] = modifier
+func add_weight_modifier(modifier_name: String, modifier: WeightModifier):
+	current_modifiers[modifier_name] = modifier
 	weights_updated.emit()
 
-func remove_weight_modifier(name: String):
-	current_modifiers.erase(name)
+func remove_weight_modifier(modifier_name: String):
+	current_modifiers.erase(modifier_name)
 	weights_updated.emit()
 
 # 权重修饰器基类
 class WeightModifier extends RefCounted:
-	func apply(item: AbilityUpgrade, current_weight: float) -> float:
+	func apply(_item: AbilityUpgrade, current_weight: float) -> float:
 		return current_weight
 
 # 示例：提高特定标签权重的修饰器

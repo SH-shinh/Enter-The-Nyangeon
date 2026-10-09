@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://bkbys4m00kh5l"]
+[gd_scene format=3 uid="uid://bkbys4m00kh5l"]
 
-[ext_resource type="Script" path="res://scenes/update_item/peroro_wheel.gd" id="1_n4s51"]
+[ext_resource type="Script" uid="uid://sithdnoi2gsw" path="res://scenes/update_item/peroro_wheel.gd" id="1_n4s51"]
 
 [node name="peroro_wheel" type="Node2D"]
 script = ExtResource("1_n4s51")

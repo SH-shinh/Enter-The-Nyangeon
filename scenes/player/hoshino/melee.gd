@@ -84,10 +84,10 @@ func melee_anim_play(anim_time: float, charge_speed: int, anim_name: String, nex
 	melee_index = next_index
 
 func charge_invincibility_frames():
-	player.hurtbox_shape.disabled = true
+	player.hurt_box.set_dodge(true)
 
 func charge_invincibility_frames_out():
-	player.hurtbox_shape.disabled = false
+	player.hurt_box.set_dodge(false)
 
 func kick_start():
 	if can_comboo == false or player.sprite_2d.position.y != -17:
@@ -115,10 +115,13 @@ func kick_start():
 	apply_melee_damage_data()
 
 func apply_melee_damage_data():
-	if hit_box.damage_data == null:
-		hit_box.damage_data = DamageData.new()
-	else:
-		hit_box.damage_data.reset_data()
+	hit_box.damage_data = DamageData.fill(hit_box.damage_data, {
+		"knockback": max(player.stats.bullet_knockback + 100, 1),
+		"direction": Vector2.RIGHT.rotated(global_rotation),
+		"type": GameTags.MELEE_DAMAGE,
+		"source": GameTags.PLAYER,
+		"node": self,
+	})
 	
 	var luck = randf_range(0, 100)
 	if luck < player.stats.critical_luck:
@@ -127,16 +130,11 @@ func apply_melee_damage_data():
 	else:
 		hit_box.damage_data.base_damage = max(1, round(melee_damage * player.stats.global_damage))
 		hit_box.damage_data.is_crit = false
-	
-	hit_box.damage_data.knockback_force = max( player.stats.bullet_knockback + 200, 1)
-	hit_box.damage_data.knockback_direction = Vector2.RIGHT.rotated(global_rotation)
-	hit_box.damage_data.damage_type.append(GameTags.MELEE_DAMAGE)
-	hit_box.damage_data.source_node = self.get_path()
-	hit_box.damage_data.source_type.append(GameTags.PLAYER)
 
 func add_damage_data():
 	if !body_group.is_empty():
 		SoundManager.play_sfx("HurtSounds2")
+		ExtensionHooks.notify(ExtensionHooks.on_hit_sfx, ["HurtSounds2", global_position])
 		for i in body_group:
 			if i == null or not is_instance_valid(i):
 				continue
@@ -144,6 +142,8 @@ func add_damage_data():
 		body_group.clear()
 
 func _on_hit_box_entered(hurtbox: Area2D):
+	if hurtbox == null or not is_instance_valid(hurtbox):
+		return
 	if hurtbox is HurtBox and !body_group.has(hurtbox):
 		body_group.push_back(hurtbox)
 
@@ -165,6 +165,7 @@ func _on_area_2d_body_entered(body):
 		GameEvents.emit_player_melee_hit_enemy(body)
 		body.emit_signal("is_hurt")
 		SoundManager.play_sfx("HurtSounds2")
+		ExtensionHooks.notify(ExtensionHooks.on_hit_sfx, ["HurtSounds2", global_position])
 	
 	if body.is_in_group("Summoned"):
 		
@@ -174,3 +175,4 @@ func _on_area_2d_body_entered(body):
 		
 		body.stats.emit_signal("is_hurt")
 		SoundManager.play_sfx("HurtSounds2")
+		ExtensionHooks.notify(ExtensionHooks.on_hit_sfx, ["HurtSounds2", global_position])

@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://dgpnh6s6wlp22"]
+[gd_scene format=3 uid="uid://dgpnh6s6wlp22"]
 
-[ext_resource type="Script" path="res://scenes/update_item/motivation_boost_candy.gd" id="1_2gbo0"]
+[ext_resource type="Script" uid="uid://daujngtta3l6n" path="res://scenes/update_item/motivation_boost_candy.gd" id="1_2gbo0"]
 
 [node name="motivation_boost_candy" type="Node2D"]
 script = ExtResource("1_2gbo0")

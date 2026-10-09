@@ -8,4 +8,7 @@ script = ExtResource("2_tjptm")
 id = "bullet_damage_mult_1_buff"
 icon = ExtResource("1_0vlcx")
 name = "攻击力"
+remove_by_layer = true
 description = ""
+modifiers = Array[Dictionary]([{"key": "damage_mult", "mode": "add", "source": "value"}])
+consume_event = "player_gun_shoot"

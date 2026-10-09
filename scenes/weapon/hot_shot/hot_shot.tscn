@@ -1,0 +1,143 @@
+[gd_scene format=3 uid="uid://61sf83rco8hq"]
+
+[ext_resource type="Script" uid="uid://ll1l3uf862v7" path="res://script/player_gun.gd" id="1_ybkoq"]
+[ext_resource type="Texture2D" uid="uid://cey46ooht424" path="res://sprites/weapon/hot_shot.png" id="2_6kbj0"]
+[ext_resource type="PackedScene" uid="uid://cvey7fp3nex36" path="res://scenes/bullet/shiroko_bullet.tscn" id="2_vytmi"]
+[ext_resource type="PackedScene" uid="uid://5xnka7kne7w" path="res://script/picatinny_rail.tscn" id="3_vytmi"]
+[ext_resource type="PackedScene" uid="uid://bjvr1nuwo7ish" path="res://script/muzzle.tscn" id="4_vavo7"]
+[ext_resource type="AudioStream" uid="uid://dnajymkl244p7" path="res://sounds/GUNAuto_Assault Rifle D Fire_06.wav" id="5_axu6p"]
+[ext_resource type="AudioStream" uid="uid://07582kyim4vq" path="res://sounds/GUNMech_Insert Clip_01.wav" id="6_blhu8"]
+
+[sub_resource type="Animation" id="Animation_yiltc"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+
+[sub_resource type="Animation" id="Animation_sw87n"]
+resource_name = "shoot"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.0, -1.0472, 3.14159, 6.63225, 6.28319]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.9),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"reload_ammo"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_w0ptx"]
+_data = {
+&"RESET": SubResource("Animation_yiltc"),
+&"reload": SubResource("Animation_sw87n")
+}
+
+[sub_resource type="Animation" id="Animation_tqh52"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0.5, 0.5)]
+}
+
+[sub_resource type="Animation" id="Animation_bqj5q"]
+resource_name = "fire"
+length = 0.3
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0.35, 0.9), Vector2(0.5, 0.5)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_j8n5m"]
+_data = {
+&"RESET": SubResource("Animation_tqh52"),
+&"fire": SubResource("Animation_bqj5q")
+}
+
+[node name="hot_shot" type="Node2D" unique_id=1981837391]
+script = ExtResource("1_ybkoq")
+bullet = ExtResource("2_vytmi")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=552063466]
+position = Vector2(5, -2)
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("2_6kbj0")
+
+[node name="PicatinnyRail" parent="Sprite2D" unique_id=1894904075 instance=ExtResource("3_vytmi")]
+position = Vector2(5, -9.999999)
+scale = Vector2(1.66667, 1.66667)
+
+[node name="Muzzle" parent="Sprite2D" unique_id=1313996300 instance=ExtResource("4_vavo7")]
+position = Vector2(24.999998, -6.666666)
+scale = Vector2(1.66667, 1.66667)
+
+[node name="ShootPosition" type="Marker2D" parent="." unique_id=1434043818]
+position = Vector2(17.505, -5.335)
+
+[node name="ShootTimer" type="Timer" parent="." unique_id=1878044676]
+wait_time = 0.2
+one_shot = true
+
+[node name="FireSounds" type="AudioStreamPlayer2D" parent="." unique_id=2022001344]
+process_mode = 3
+stream = ExtResource("5_axu6p")
+volume_db = 8.0
+pitch_scale = 0.85
+bus = &"SFX"
+
+[node name="ReloadAnim" type="AnimationPlayer" parent="." unique_id=1588582673]
+libraries/ = SubResource("AnimationLibrary_w0ptx")
+
+[node name="AmmoReloadTimer" type="Timer" parent="." unique_id=1295914106]
+wait_time = 0.5
+one_shot = true
+
+[node name="ReloadSounds" type="AudioStreamPlayer2D" parent="." unique_id=418034516]
+process_mode = 3
+stream = ExtResource("6_blhu8")
+volume_db = 8.0
+bus = &"SFX"
+
+[node name="FireAnim" type="AnimationPlayer" parent="." unique_id=1589557231]
+libraries/ = SubResource("AnimationLibrary_j8n5m")

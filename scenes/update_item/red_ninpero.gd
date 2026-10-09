@@ -1,11 +1,10 @@
-extends Node2D
+extends EquipItem
 
 @export var enemy_buff: Buff
 @onready var red_ninpero_icon = preload("res://scenes/update_item/red_ninpero_icon.tscn")
 
 var value: Array = []
 var group: Array = []
-var num: int
 
 @export var buff_layer: int
 @export var buff_value: float
@@ -13,17 +12,11 @@ var num: int
 
 var player: Node
 
-func _ready():
+func _on_equip():
 	player = get_tree().get_first_node_in_group("Player")
-	first_activation()
-	GameEvents.ability_upgrade_added.connect(on_upgrade_added)
-	GameEvents.enemy_fire_hurt.connect(add_buff)
 
-func first_activation():
-	
 	value = [buff_layer, buff_value, buff_erase_timer]
-	PlayerData.bullet_speed_mult *= 1.05
-	PlayerData.update_player_ability()
+	PlayerData.bullet_speed_mult += 0.05
 	var sprite_2d = red_ninpero_icon.instantiate()
 	group = get_tree().get_nodes_in_group("Follow")
 	for i in group:
@@ -31,19 +24,21 @@ func first_activation():
 			get_tree().get_first_node_in_group("PlayerRoot").add_child(sprite_2d)
 			sprite_2d.get_follow(i)
 			i.follow_use = true
-	
 
-func on_upgrade_added(upgrade: AbilityUpgrade, current_upgrade: Dictionary):
-	if upgrade.id != "red_ninpero":
+func _setup():
+	GameEvents.enemy_damage_taken.connect(add_buff)
+
+func _apply_effect(quantity: int):
+	if quantity == 1:
 		return
-	if current_upgrade["red_ninpero"]["quantity"] == 1:
-		return
-	num = current_upgrade["red_ninpero"]["quantity"]
 	buff_layer += 5
-	buff_value *= 1
-	buff_erase_timer *= 1
+	buff_value = 1
+	buff_erase_timer = 1
 	value = [buff_layer, buff_value, buff_erase_timer]
-	PlayerData.update_player_ability()
 
-func add_buff(enemy_body: Node):
-	enemy_body.enemy_buff_manager.apply_buff(enemy_buff, value)
+func add_buff(_final_damage: int, damage_data: DamageData, body_path: NodePath):
+	if damage_data.damage_type.has(GameTags.FIRE_DAMAGE):
+		var enemy_body: Node = get_node_or_null(body_path)
+		if enemy_body == null:
+			return
+		enemy_body.enemy_buff_manager.apply_buff(enemy_buff, value)

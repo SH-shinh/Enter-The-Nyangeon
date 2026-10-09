@@ -41,6 +41,9 @@ func _ready():
 	GameEvents.round_end.connect(round_bouns_upgrade)
 	GameEvents.get_player.connect(reset_data)
 	GameEvents.add_player_upgrade.connect(apply_upgrade)
+	for u in ModManager.get_content("upgrades"):
+		if u != null and not upgrade_pool.has(u):
+			upgrade_pool.append(u)
 
 func reset_data():
 	current_upgrades.clear()
@@ -52,16 +55,20 @@ func round_bouns_upgrade():
 	round_weight_upgrade()
 	round_bouns += 3
 	if test_mode == false:
-		Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
+		# 移动端外接鼠标时 HIDDEN 会让指针不可见且无法用鼠标选择；改为可见。
+		if OS.has_feature("mobile"):
+			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		else:
+			Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
 
 func round_weight_upgrade():
-	var round = float(min(now_round, 20)) / float(min(20, round_max))
+	var round_local = float(min(now_round, 20)) / float(min(20, round_max))
 	weight_manager.rarity_weights = {
-		0: round_weight_curve_1.sample(round),
-		1: round_weight_curve_2.sample(round),
-		2: round_weight_curve_3.sample(round)
+		0: round_weight_curve_1.sample(round_local),
+		1: round_weight_curve_2.sample(round_local),
+		2: round_weight_curve_3.sample(round_local)
 	}
-	pool_size = round(round_pool_curve.sample(round))
+	pool_size = round(round_pool_curve.sample(round_local))
 
 func pick_upgrades():
 	var chosen_upgrades: Array[AbilityUpgrade] = []
@@ -124,11 +131,11 @@ func refresh_weight_upgrade():
 	refresh_mult *= 1.1
 	pool_mult = max(0.2, pool_mult - 0.05)
 	pool_size = max(10, pool_size * pool_mult)
-	var round = now_round / round_max
+	var round_local = now_round / round_max
 	weight_manager.rarity_weights = {
-		0: round_weight_curve_1.sample(round),
-		1: round_weight_curve_2.sample(round),
-		2: round_weight_curve_3.sample(round) * refresh_mult
+		0: round_weight_curve_1.sample(round_local),
+		1: round_weight_curve_2.sample(round_local),
+		2: round_weight_curve_3.sample(round_local) * refresh_mult
 	}
 
 func add_upgrade_card():
@@ -160,9 +167,15 @@ func apply_upgrade(upgrade:AbilityUpgrade):
 		player = get_tree().get_first_node_in_group("Player")
 		if player != null:
 			var scene_path = "res://scenes/update_item/" + str(upgrade.id) + ".tscn"
+			var mod_scene := ModManager.get_scene("upgrades", str(upgrade.id))
+			if mod_scene != "":
+				scene_path = mod_scene
 			var scene = load(scene_path)
-			var up_item = scene.instantiate()
-			player.add_child(up_item)
+			if scene != null:
+				var up_item = scene.instantiate()
+				player.add_child(up_item)
+			else:
+				push_warning("[upgrade_manager] 缺少道具场景：%s" % scene_path)
 		
 		if current_upgrades[upgrade.id]["order"] > 0:
 			current_upgrades[upgrade.id]["order"] -= 1

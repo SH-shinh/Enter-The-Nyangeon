@@ -81,7 +81,7 @@ func _build_societies() -> void:
 		var scene = s.get("scene")
 		if scene != null:
 			_society_box.add_child(scene.instantiate())
-	if not ModManager.get_unclaimed_characters().is_empty():
+	if not ModManager.get_unclaimed_unlocked_characters().is_empty():
 		_society_box.add_child(MOD_SOCIETY_SCENE.instantiate())
 
 

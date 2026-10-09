@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://da8ksp58g6tjh"]
+[gd_scene format=3 uid="uid://da8ksp58g6tjh"]
 
-[ext_resource type="Script" path="res://scenes/update_item/yokai_max.gd" id="1_nhnn4"]
+[ext_resource type="Script" uid="uid://c0eshtntttxli" path="res://scenes/update_item/yokai_max.gd" id="1_nhnn4"]
 
 [node name="YokaiMAX" type="Node2D"]
 script = ExtResource("1_nhnn4")

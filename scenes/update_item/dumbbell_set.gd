@@ -1,24 +1,11 @@
-extends Node2D
+extends EquipItem
 
-var num: int
-
-
-func _ready():
-	first_activation()
-	GameEvents.ability_upgrade_added.connect(on_upgrade_added)
-
-func first_activation():
+func _on_equip():
 	PlayerData.bullet_knockback_mult += 0.23
 	PlayerData.bullet_damage_mult += 0.12
-	PlayerData.update_player_ability()
-	
 
-func on_upgrade_added(upgrade: AbilityUpgrade, current_upgrade: Dictionary):
-	if upgrade.id != "dumbbell_set":
+func _apply_effect(quantity: int):
+	if quantity == 1:
 		return
-	if current_upgrade["dumbbell_set"]["quantity"] == 1:
-		return
-	num = current_upgrade["dumbbell_set"]["quantity"]
 	PlayerData.bullet_knockback_mult += 0.23
 	PlayerData.bullet_damage_mult += 0.12
-	PlayerData.update_player_ability()

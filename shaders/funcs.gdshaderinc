@@ -1,4 +1,3 @@
-//#define TAU 6.283185307179586
 float circle(vec2 uv, float radius, float feather)
 {
 	return smoothstep(radius, radius + feather, length(uv - vec2(0.5)));

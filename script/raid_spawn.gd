@@ -85,6 +85,9 @@ func enemy_spawn():
 				var cells: Array = map_group[x].get_used_cells(0)
 				var cell_count: int = cells.size()
 				for n in floor(raid_f.enemy_num[i] * spawn_round.round_mult):
+					# 并发上限：达上限则本方向本轮不再生成（预占 pending，落地后转 active）
+					if not PoolManager.try_claim_spawn(raid_f.enemy_id[i]):
+						break
 					var rand_position_num = ran.randi_range(0, cell_count) - 1
 					var rand_position = map_group[x].map_to_local(cells[rand_position_num])
 					var spawn_anim = PoolManager.get_pool("spawn_anim")

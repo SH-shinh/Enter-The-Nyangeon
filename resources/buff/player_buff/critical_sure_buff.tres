@@ -1,7 +1,8 @@
-[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3 uid="uid://bwxyvlrn2eu1a"]
+[gd_resource type="Resource" script_class="Buff" format=3 uid="uid://bwxyvlrn2eu1a"]
 
 [ext_resource type="Texture2D" uid="uid://bos40bllysbrf" path="res://sprites/buff_icon/luck_buff_icon.png" id="1_xtks8"]
-[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_mnit8"]
+[ext_resource type="Script" uid="uid://dhb70b327wxvy" path="res://resources/buff/buff.gd" id="2_mnit8"]
+[ext_resource type="PackedScene" path="res://resources/buff/components/critical_sure_component.tscn" id="3_comp"]
 
 [resource]
 script = ExtResource("2_mnit8")
@@ -9,3 +10,9 @@ id = "critical_sure_buff"
 icon = ExtResource("1_xtks8")
 name = "必暴buff"
 description = "必暴buff"
+modifiers = Array[Dictionary]([{
+"key": "crit_luck_add",
+"mode": "add",
+"source": "value"
+}])
+component_scene = ExtResource("3_comp")

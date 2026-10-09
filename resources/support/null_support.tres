@@ -1,11 +1,10 @@
-[gd_resource type="Resource" script_class="SupportCard" load_steps=3 format=3 uid="uid://c6x6fhqakh5v2"]
+[gd_resource type="Resource" script_class="SupportCard" load_steps=2 format=3 uid="uid://c6x6fhqakh5v2"]
 
-[ext_resource type="Texture2D" uid="uid://dsxq2scs6kcep" path="res://sprites/player_support/null_picture.png" id="1_y4e3e"]
 [ext_resource type="Script" path="res://resources/support/support_card.gd" id="2_6not6"]
 
 [resource]
 script = ExtResource("2_6not6")
-character_sprite = ExtResource("1_y4e3e")
+character_sprite_path = "res://sprites/player_support/null_picture.png"
 support_id = "null"
 support_name = "NULL"
 support_name2 = "NULL"

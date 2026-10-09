@@ -22,6 +22,10 @@ var mode_mult: float = 1
 var endless_hp: float = 1
 var endless_boss_hp: float = 1
 var endless_damage: float = 1
+var round_damage_curve: Curve
+var round_hp_curve: Curve
+var round_boss_hp_curve: Curve
+var hp_growth_curve: Curve
 var max_round: float = 20
 
 func _ready():
@@ -42,11 +46,18 @@ func update_cd():
 
 func get_level():
 	round_mult *= round_count(PlayerData.level_num, min(3.5, PlayerData.now_round/(max_round * 0.5)) )
-	if PlayerData.game_mode.has("hujiu") and boss_round == true:
-		hp_mult *= round_count(min(PlayerData.level_hp, 3), (PlayerData.now_round/(max_round * 0.5)) )
-	else:
-		hp_mult *= round_count(PlayerData.level_hp, (PlayerData.now_round/(max_round * 0.5)) )
-	damage_mult *= PlayerData.level_damage
+	# 联机人数缩放：mod 经 ExtensionHooks 注入附加数量乘数（未注入时保持 1.0，单机零回归）。
+	if ExtensionHooks.enemy_spawn_count_scale.is_valid():
+		round_mult *= maxf(0.0, float(ExtensionHooks.enemy_spawn_count_scale.call(PlayerData.now_round, max_round)))
+	var hp_round_x: float = 0.0 if max_round <= 1.0 else clamp((PlayerData.now_round - 1.0) / (max_round - 1.0), 0.0, 1.0)
+	var hp_curve: Curve = round_boss_hp_curve if boss_round else round_hp_curve
+	var hp_base: float = hp_curve.sample(hp_round_x) if hp_curve != null else hp_mult
+	var hp_growth: float = hp_growth_curve.sample(PlayerData.now_round / max_round) if hp_growth_curve != null else PlayerData.now_round / (max_round * 0.5)
+	var hp_lv: float = min(PlayerData.level_hp, 3.0) if (PlayerData.game_mode.has("hujiu") and boss_round) else PlayerData.level_hp
+	hp_mult = hp_base * pow(hp_lv, hp_growth) if !PlayerData.on_endless else hp_base * pow(max(1, hp_lv), hp_growth)
+	var damage_round_x: float = 0.0 if max_round <= 1.0 else clamp((PlayerData.now_round - 1.0) / (max_round - 1.0), 0.0, 1.0)
+	var round_damage_mult: float = round_damage_curve.sample(damage_round_x) if round_damage_curve != null else 1.0
+	damage_mult = PlayerData.level_damage * round_damage_mult
 
 func round_count(x: float, y:float):
 	return pow(x, y)
@@ -95,13 +106,17 @@ func enemy_spawn():
 	for i in enemy.size():
 		if enemy_spawn_time_copy[i] <= 0:
 			for n in floor(enemy_spawn_num[i] + (time_mult * time_mult * num_mult)) * round_mult:
-				var rand_position_num = ran.randi_range(0, cell_count) - 1
-				var rand_position = tilemap.map_to_local(cells[rand_position_num])
-				
 				var enemy_temp = enemy[i]
 				
 				if can_spawn == false:
 					return
+				
+				# 并发上限：达上限则本类型本轮不再生成（预占 pending，落地后转 active）
+				if not PoolManager.try_claim_spawn(enemy_temp.id):
+					break
+				
+				var rand_position_num = ran.randi_range(0, cell_count) - 1
+				var rand_position = tilemap.map_to_local(cells[rand_position_num])
 				
 				while rand_position.distance_to(player.position) < 170:
 					rand_position_num = ran.randi_range(0, cell_count) - 1

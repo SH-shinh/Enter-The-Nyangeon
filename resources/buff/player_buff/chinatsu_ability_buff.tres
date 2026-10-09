@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Buff" format=3 uid="uid://cq1ntsab1lty0"]
+
+[ext_resource type="Texture2D" uid="uid://civl56t06fjnh" path="res://sprites/buff_icon/utaha_buff_icon.png" id="1_yc0xg"]
+[ext_resource type="Script" uid="uid://dhb70b327wxvy" path="res://resources/buff/buff.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = "chinatsu_ability_buff"
+icon = ExtResource("1_yc0xg")
+name = "强化针·全属性"
+ability = "ability_mult"

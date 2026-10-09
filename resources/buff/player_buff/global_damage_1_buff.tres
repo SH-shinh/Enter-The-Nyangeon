@@ -9,3 +9,5 @@ id = "global_damage_1_buff"
 icon = ExtResource("1_uk7qh")
 name = "全局伤害"
 description = ""
+modifiers = Array[Dictionary]([{"key": "global_damage_mult", "mode": "add", "source": "value"}])
+consume_event = "player_gun_shoot"

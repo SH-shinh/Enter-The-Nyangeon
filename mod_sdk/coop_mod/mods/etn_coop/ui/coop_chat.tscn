@@ -4,6 +4,7 @@
 [ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="2_font"]
 [ext_resource type="Texture2D" path="res://ui/scoreboard_icon.png" id="3_icon"]
 [ext_resource type="FontFile" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="4_pingfont"]
+[ext_resource type="Script" uid="uid://cxexg1p6wvaks" path="res://script/ScrollBox.gd" id="5_drag"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 content_margin_left = 4.0
@@ -48,6 +49,7 @@ layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 vertical_scroll_mode = 3
+script = ExtResource("5_drag")
 
 [node name="LogBox" type="VBoxContainer" parent="Panel/VBox/Scroll" unique_id=1257753769]
 unique_name_in_owner = true

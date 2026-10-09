@@ -1,0 +1,118 @@
+[gd_scene format=3 uid="uid://b0chilldo7tx2"]
+
+[ext_resource type="Script" uid="uid://n4ux7hqyrm3m" path="res://scenes/debuff/chill_dot.gd" id="1_chill"]
+[ext_resource type="Texture2D" uid="uid://clot4gphxyrke" path="res://sprites/particle/chill.png" id="2_3qhj1"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_chill"]
+blend_mode = 1
+
+[sub_resource type="Gradient" id="Gradient_3qhj1"]
+colors = PackedColorArray(0.31985512, 0.5933108, 0.9250927, 1, 0.13812634, 0.66211104, 0.9511393, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_3qhj1"]
+gradient = SubResource("Gradient_3qhj1")
+
+[sub_resource type="Gradient" id="Gradient_chill2"]
+offsets = PackedFloat32Array(0.4369748, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_chill2"]
+gradient = SubResource("Gradient_chill2")
+
+[sub_resource type="Curve" id="Curve_chill"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.13793103, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -6.0725255, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_chill"]
+curve = SubResource("Curve_chill")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_chill"]
+particle_flag_disable_z = true
+emission_shape_scale = Vector3(3, 4, 1)
+emission_shape = 3
+emission_box_extents = Vector3(6, 6, 1)
+angle_min = -180.0
+angle_max = 180.0
+direction = Vector3(0, -1, 0)
+initial_velocity_min = 15.0
+initial_velocity_max = 30.0
+angular_velocity_min = -120.000015
+angular_velocity_max = 119.999985
+gravity = Vector3(0, -5, 0)
+damping_min = 35.546
+damping_max = 40.546
+scale_min = 0.29999998
+scale_max = 0.79999995
+scale_curve = SubResource("CurveTexture_chill")
+color = Color(0.30429757, 0.60081995, 1, 1)
+color_ramp = SubResource("GradientTexture1D_chill2")
+color_initial_ramp = SubResource("GradientTexture1D_3qhj1")
+hue_variation_min = -0.08000002
+hue_variation_max = -2.2351742e-08
+
+[sub_resource type="Animation" id="Animation_chill1"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("GPUParticles2D:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_chill2"]
+resource_name = "new_animation"
+length = 0.6
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("GPUParticles2D:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.4),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.6),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"idle_state"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_chill"]
+_data = {
+&"RESET": SubResource("Animation_chill1"),
+&"new_animation": SubResource("Animation_chill2")
+}
+
+[node name="ChillDot" type="Node2D" unique_id=98333414]
+script = ExtResource("1_chill")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=715397502]
+material = SubResource("CanvasItemMaterial_chill")
+position = Vector2(0, -13)
+emitting = false
+amount = 3
+texture = ExtResource("2_3qhj1")
+lifetime = 0.4
+explosiveness = 0.6
+process_material = SubResource("ParticleProcessMaterial_chill")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=744395017]
+libraries/ = SubResource("AnimationLibrary_chill")

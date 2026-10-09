@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://c7jdcwnbadj62"]
+[gd_scene format=3 uid="uid://c7jdcwnbadj62"]
 
-[ext_resource type="Script" path="res://scenes/update_item/fish_cakes.gd" id="1_qba4t"]
+[ext_resource type="Script" uid="uid://cd73g6rrdoyiw" path="res://scenes/update_item/fish_cakes.gd" id="1_qba4t"]
 
 [node name="fish_cakes" type="Node2D"]
 script = ExtResource("1_qba4t")

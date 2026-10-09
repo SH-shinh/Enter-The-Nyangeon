@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://4060i0mcgtcg"]
+[gd_scene format=3 uid="uid://4060i0mcgtcg"]
 
-[ext_resource type="Script" path="res://scenes/update_item/macaron.gd" id="1_ncon7"]
+[ext_resource type="Script" uid="uid://cm5w6jacf7w6u" path="res://scenes/update_item/macaron.gd" id="1_ncon7"]
 
 [node name="macaron" type="Node2D"]
 script = ExtResource("1_ncon7")
