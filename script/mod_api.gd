@@ -58,6 +58,36 @@ static func get_languages() -> Array:
 	return ModManager.get_languages()
 
 
+# 角色自带选人卡场景（`PlayerCard.card_scene`；无则 null）
+static func get_card_scene(id: String) -> PackedScene:
+	return ModManager.get_card_scene(id)
+
+
+# 某 id 是否为已注册的 mod 角色
+static func has_mod_character(id: String) -> bool:
+	return ModManager.has_mod_character(id)
+
+
+# 角色当前是否被锁（unlock_mode=shop 且未购买；auto 角色永不锁）
+static func is_character_locked(id: String) -> bool:
+	return ModManager.is_character_locked(id)
+
+
+# 本体社团：[{scene: PackedScene, group_id: String}]
+static func get_base_societies() -> Array:
+	return ModManager.get_base_societies()
+
+
+# 用户自定义 mod 顺序（user://mods/mods_order.json）
+static func get_order() -> Array:
+	return ModManager.get_order()
+
+
+# 合法 content kind 列表（characters/societies/upgrades/...）
+static func get_content_kinds() -> Array:
+	return ModManager.get_content_kinds()
+
+
 # ---------------- 写入（替代直接访问 _registry/_order） ----------------
 
 # 运行期注册一条内容。mod_id 用于前缀/冲突治理；scene_path/card_scene_path 可选。
@@ -69,6 +99,21 @@ static func register_content(kind: String, id: String, res, mod_id: String, scen
 # 运行期注入一条翻译。locale 形如 "zh_CN"/"en"；供 mod 自带本地化（PS 文案等）。
 static func add_translation(locale: String, key: String, value: String) -> void:
 	ModManager.add_translation(locale, key, value)
+
+
+# 批量翻译：注册一个已构建的 Translation（additive）。返回是否成功。
+static func register_translation(t: Translation) -> bool:
+	return ModManager.register_translation(t)
+
+
+# 批量翻译：加载 .translation/.tres/.res 并注册。返回是否成功。
+static func register_translation_resource(path: String) -> bool:
+	return ModManager.register_translation_resource(path)
+
+
+# 批量翻译：扫描目录下所有 Translation 资源并注册，返回成功计数。
+static func register_translations_from_dir(dir_path: String) -> int:
+	return ModManager.register_translations_from_dir(dir_path)
 
 
 # 注册/覆盖一个语言（含显示名与可选字体）。locale 相同则覆盖。返回是否成功。

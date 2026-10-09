@@ -1,5 +1,6 @@
 ﻿param(
-    [Parameter(Mandatory = $true)][string]$Project
+    [Parameter(Mandatory = $true)][string]$Project,
+    [switch]$Replace
 )
 $ErrorActionPreference = "Stop"
 
@@ -29,25 +30,19 @@ if ($gp -match "(?m)^export/convert_text_resources_to_binary=") {
 [System.IO.File]::WriteAllText($projGodot, $gp, $utf8)
 Write-Host "已确保 project.godot: $keyLine"
 
-# ---------- export_presets.cfg: 注入 ModPack 预设 ----------
-$presetsPath = Join-Path $proj "export_presets.cfg"
-$templatePath = Join-Path $PSScriptRoot "ModPack.preset.cfg"
+# ---------- export_presets.cfg: 注入预设（ModPack；-Replace 时另加 ModPackReplace） ----------
+function Add-Preset([string]$TemplateName, [string]$PresetName, [string]$PresetsIn) {
+    if ($PresetsIn -match ('(?m)^name="' + [regex]::Escape($PresetName) + '"\s*$')) {
+        Write-Host "已存在 $PresetName 预设，跳过注入。"
+        return $PresetsIn
+    }
+    $templatePath = Join-Path $PSScriptRoot $TemplateName
+    if (-not (Test-Path -LiteralPath $templatePath)) {
+        throw "缺少模板：$templatePath"
+    }
+    $template = Normalize ([System.IO.File]::ReadAllText($templatePath))
 
-if (-not (Test-Path -LiteralPath $templatePath)) {
-    throw "缺少模板：$templatePath"
-}
-$template = Normalize ([System.IO.File]::ReadAllText($templatePath))
-
-if (Test-Path -LiteralPath $presetsPath) {
-    $presets = Normalize ([System.IO.File]::ReadAllText($presetsPath))
-} else {
-    $presets = "[runnable_presets]`n`n"
-}
-
-if ($presets -match '(?m)^name="ModPack"\s*$') {
-    Write-Host "已存在 ModPack 预设，跳过注入。"
-} else {
-    $matches = [regex]::Matches($presets, "(?m)^\[preset\.(\d+)\]\s*$")
+    $matches = [regex]::Matches($PresetsIn, "(?m)^\[preset\.(\d+)\]\s*$")
     $maxIndex = -1
     foreach ($m in $matches) {
         $idx = [int]$m.Groups[1].Value
@@ -56,22 +51,42 @@ if ($presets -match '(?m)^name="ModPack"\s*$') {
     $newIndex = $maxIndex + 1
     $block = $template.Replace("__PRESET_INDEX__", [string]$newIndex)
 
-    if (-not $presets.EndsWith("`n")) { $presets += "`n" }
-    $presets += "`n" + $block + "`n"
+    if (-not $PresetsIn.EndsWith("`n")) { $PresetsIn += "`n" }
+    $PresetsIn += "`n" + $block + "`n"
 
-    if ($presets -match "(?m)^\[runnable_presets\]\s*$") {
-        if ($presets -notmatch '(?m)^"ModPack"="ModPack"\s*$') {
-            $presets = [regex]::Replace($presets, "(?m)^(\[runnable_presets\]\s*)$", "`$1`n`n`"ModPack`"=`"ModPack`"", 1)
+    if ($PresetsIn -match "(?m)^\[runnable_presets\]\s*$") {
+        $entryRe = '(?m)^"' + [regex]::Escape($PresetName) + '"="' + [regex]::Escape($PresetName) + '"\s*$'
+        if ($PresetsIn -notmatch $entryRe) {
+            $PresetsIn = [regex]::Replace($PresetsIn, "(?m)^(\[runnable_presets\]\s*)$", "`$1`n`n`"$PresetName`"=`"$PresetName`"", 1)
         }
     } else {
-        $presets = "[runnable_presets]`n`n`"ModPack`"=`"ModPack`"`n`n" + $presets
+        $PresetsIn = "[runnable_presets]`n`n`"$PresetName`"=`"$PresetName`"`n`n" + $PresetsIn
     }
-    [System.IO.File]::WriteAllText($presetsPath, $presets, $utf8)
-    Write-Host "已注入 [preset.$newIndex] name=`"ModPack`" 到 export_presets.cfg"
+    Write-Host "已注入 [preset.$newIndex] name=`"$PresetName`" 到 export_presets.cfg"
+    return $PresetsIn
 }
+
+$presetsPath = Join-Path $proj "export_presets.cfg"
+if (Test-Path -LiteralPath $presetsPath) {
+    $presets = Normalize ([System.IO.File]::ReadAllText($presetsPath))
+} else {
+    $presets = "[runnable_presets]`n`n"
+}
+
+$presets = Add-Preset "ModPack.preset.cfg" "ModPack" $presets
+if ($Replace) {
+    $presets = Add-Preset "ModPackReplace.preset.cfg" "ModPackReplace" $presets
+}
+[System.IO.File]::WriteAllText($presetsPath, $presets, $utf8)
 
 Write-Host ""
 Write-Host "下一步："
 Write-Host "  1) 把 mod 内容放到  $proj\mods\<mod_id>\  （含 mod.json 与 defs/ 等）"
-Write-Host "  2) 运行  .\build_mod.ps1 -Godot <godot> -Project `"$proj`" -ModId <mod_id>"
+Write-Host "  2) 普通构建： .\build_mod.ps1 -Godot <godot> -Project `"$proj`" -ModId <mod_id>"
+if ($Replace) {
+    Write-Host "     覆盖构建： .\build_mod.ps1 -Godot <godot> -Project `"$proj`" -ModId <mod_id> -Preset ModPackReplace"
+    Write-Host "     并在 mod.json 写 replace_files=true 与可选 replace_paths（要覆盖的本体 res:// 文件）"
+} else {
+    Write-Host "     需要覆盖本体文件时，重新运行本脚本并加 -Replace 注入 ModPackReplace 预设。"
+}
 Write-Host "注意：export_presets.cfg 的改动需在编辑器关闭时进行；若编辑器已打开请重启后再导出。"

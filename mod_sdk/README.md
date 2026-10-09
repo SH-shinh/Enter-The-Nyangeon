@@ -32,7 +32,8 @@ res://mods/example/defs/characters/example_hero.tscn
 | `load_order` | 加载顺序，越小越先；相同则按 id 字母序 |
 | `dependencies` / `conflicts` | 依赖/互斥（P0.5） |
 | `overrides` | 明确允许覆盖的 id 列表（如 `["momoi"]`） |
-| `replace_files` | 是否允许覆盖本体 `res://` 路径 |
+| `replace_files` | 允许覆盖本体 `res://` 路径（需 `ModPackReplace` 预设，见 §13） |
+| `replace_paths` | 覆盖构建用：要覆盖的本体 `res://` 文件列表（须真实存在；构建期自动并入 `export_files`，见 §13） |
 | `entry` | 可选，启动时实例化的入口脚本（Node） |
 | `enemy_group` | 自动波次加入的组，默认 `lv1`（可选 `lv1..lv20`/`lv_endless`/`lv_endless_boss`） |
 | `enemy_waves` | 显式波次：`[{ "scene": "res://.../wave.tscn", "group": "lv5" }]`（省略则用 `enemy_group`） |
@@ -170,7 +171,7 @@ func _on_first_round() -> void:
     pass
 ```
 
-- `ModAPI`（`res://script/mod_api.gd`）是稳定静态门面。**只读**：`get_content(kind)` / `get_resource(kind,id)` / `get_scene(kind,id)` / `get_characters()` / `has_upgrade(id)` / `get_content_mod(kind,id)` / `get_societies()` / `get_unclaimed_characters()` / `get_unclaimed_unlocked_characters()` / `list_mods()` / `get_languages()`。**写入**：`register_content(kind,id,res,mod_id,scene_path?,card_scene_path?)`（运行期注册，走 id 前缀/冲突治理，替代直接访问 `_registry`）、`add_translation(locale,key,value)`（运行期注入翻译，`locale` 如 `zh_CN`/`en`）、`register_language(locale,display_name,opts?)`（注册/覆盖一个语言，见 §15）。
+- `ModAPI`（`res://script/mod_api.gd`）是稳定静态门面。**只读**：`get_content(kind)` / `get_resource(kind,id)` / `get_scene(kind,id)` / `get_characters()` / `has_upgrade(id)` / `get_content_mod(kind,id)` / `get_societies()` / `get_unclaimed_characters()` / `get_unclaimed_unlocked_characters()` / `list_mods()` / `get_languages()` / `get_card_scene(id)` / `has_mod_character(id)` / `is_character_locked(id)` / `get_base_societies()` / `get_order()` / `get_content_kinds()`。**写入**：`register_content(kind,id,res,mod_id,scene_path?,card_scene_path?)`（运行期注册，走 id 前缀/冲突治理，替代直接访问 `_registry`）、`add_translation(locale,key,value)`（运行期注入翻译，`locale` 如 `zh_CN`/`en`）、`register_language(locale,display_name,opts?)`（注册/覆盖一个语言，见 §15）、`register_translation(t)` / `register_translation_resource(path)` / `register_translations_from_dir(dir)`（批量翻译，additive，见 §15.1）。
 - 翻译注入示例（补 mod 自带 PS 文案）：
   ```gdscript
   func _ready() -> void:
@@ -180,9 +181,14 @@ func _on_first_round() -> void:
   未提供翻译的角色，PS 文案会自动回退到 `PlayerCard.description`（不再显示原始键）。
 - manifest 的 `api_version` 高于本体 `ModAPI.VERSION` 时，entry 会被跳过（保护不兼容 mod）。
 
-## 13. 深度修改（玩法重构）
+## 13. 深度修改（玩法重构 / 覆盖本体文件）
 
-- `replace_files: true`：允许用 pck 内资源覆盖本体 `res://` 路径（仅对**挂载后加载**的场景有效，如 `main.tscn`、菜单、敌人场景；autoload 脚本除外）。
+- `replace_files: true`：用 pck 内资源覆盖本体 `res://` 路径。**仅对「挂载后加载」的场景/资源有效**；已加载的 autoload 脚本与被 `preload` 缓存的资源**覆盖不了**（要覆盖 autoload 需把 `ModManager` 提到 `[autoload]` 最前，本工具不做）。
+- 构建步骤：
+  1. `setup_mod_project.ps1 -Project <工程副本> -Replace` → 注入覆盖型预设 `ModPackReplace`（`export_filter="resources"`，不排除本体目录）。
+  2. `mod.json` 写 `replace_files=true`；可选 `replace_paths: ["res://scenes/main/main.tscn", ...]` 列出要覆盖的本体文件（须真实存在；场景会连带依赖一起导出）。
+  3. `build_mod.ps1 -Project <工程副本> -ModId <id> -Preset ModPackReplace` → 脚本自动把 `mods/<id>/**` + `replace_paths` 写进 `export_files` 再导出 pck（也可在编辑器导出对话框 Resources 页手动勾选）。
+- 边界：无法做运行时白名单；运行期 `replace_files=true` 会 `push_warning`（可审计）。
 - 结合 entry 脚本 + `GameEvents`（`first_round_add` / `round_start` / `change_scene` 等）可接管流程。
 - 游戏模式：`defs/game_modes/*.tres` 自动进入模式选择 UI；行为在 entry 脚本里读 `PlayerData.game_mode` 自行应用。
 - 关卡：`defs/levels/*.tres` 自动进入选关 UI（点击进入 `main.tscn`）。
@@ -241,3 +247,16 @@ members = Array[String](["my_mod_hero", "my_mod_leader"])
       ModAPI.add_translation("ja", "mychar_hero_ps_0", "私のスキル")
   ```
 - 边界：桌面原生下拉（PopupMenu）不支持逐项字体，仅当前选中语言按其 `display_font` 呈现；触屏自定义列表逐项正确。
+
+### 15.1 批量翻译（CSV → `.translation`，推荐）
+
+- 把翻译 CSV 放 `mods/<id>/i18n/*.csv`，表头与本体一致（`,zh_CN,en,pt,vi_VN`，首列为 key）。在本体工程里导入后，同目录会生成 `<name>.<locale>.translation`（导入产物）。
+- `entry` 里**先显式注册语言**，再批量注册该目录：
+  ```gdscript
+  ModAPI.register_language("ja", "日本語", {font_map = {"res://fonts/BoutiqueBitmap9x9_Bold_1.9.ttf": "res://mods/my_tr/fonts/X-Bold.ttf"}, glyph_ranges = [[0x3040, 0x30FF]]})
+  ModAPI.register_translations_from_dir("res://mods/my_tr/i18n")
+  ```
+- 也可单文件：`ModAPI.register_translation_resource("res://mods/my_tr/i18n/ui.ja.translation")`；或先构建 `Translation` 再 `ModAPI.register_translation(t)`。
+- 打包：`build_mod.ps1`（ModPack 导出）会把 `res://mods/**` 的导入产物（含 `.translation`）打进 pck；若用 `mod_sdk/pack_mod.gd` 原样打包，须把 `.translation` 一并放进源目录（**不做运行时 CSV 解析**）。
+- ⚠ **只保证新增键**：mod 与本体若有**同 locale 同 key**，Godot `TranslationDomain` 将 `Translation` 存于 `HashSet`，同名时按迭代序取（`score >= best_score`），**谁胜不确定**——不要依赖 mod 覆盖本体既有文案。
+- `add_translation` / `register_translation*` **不会**触发 `NOTIFICATION_TRANSLATION_CHANGED`：必须在 `entry`（早于菜单构建）注册；游戏中途注册不会刷新已建 UI。

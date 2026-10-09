@@ -1,7 +1,7 @@
 extends Node
 
 # ModManager：mod 包挂载 / 内容发现 / 注册表 / id 治理 / zip 导入。
-# 必须置于 autoload 首位（早于 PlayerData/Game），以便在任何资源加载前挂载 mod pck。
+# 当前置于 autoload 末尾（仍早于主场景加载），以便在任何场景/资源加载前挂载 mod pck。
 # 约定：mod 包内资源放在 res://mods/<mod_id>/ 下；mod.json 与 pck 位于 user://mods/<mod_id>/。
 
 signal mods_changed
@@ -503,6 +503,8 @@ func _mount_one(rec: Dictionary) -> String:
 	var replace_files := bool(manifest.get("replace_files", false))
 	if not ProjectSettings.load_resource_pack(pck_path, replace_files):
 		return "load_resource_pack 失败（引擎版本/文件损坏）"
+	if replace_files:
+		push_warning("[ModManager] %s 使用 replace_files 覆盖本体文件" % rec.id)
 	rec["mounted"] = true
 	return ""
 
@@ -739,6 +741,45 @@ func add_translation(locale: String, key: String, value: String) -> void:
 	_mod_translations[locale].add_message(key, value)
 
 
+# ---------------- 翻译批量导入 ----------------
+
+# 注册一个已构建的 Translation（additive；供 ModAPI.register_translation）。
+func register_translation(t: Translation) -> bool:
+	if t == null or t.locale == "":
+		push_warning("[ModManager] register_translation 无效 Translation 或缺 locale")
+		return false
+	TranslationServer.add_translation(t)
+	return true
+
+
+# 加载路径（.translation/.tres/.res）并注册。
+func register_translation_resource(path: String) -> bool:
+	if path == "" or not ResourceLoader.exists(path):
+		push_warning("[ModManager] register_translation_resource 路径缺失：%s" % path)
+		return false
+	var r = load(path)
+	if not (r is Translation):
+		push_warning("[ModManager] register_translation_resource 非 Translation：%s" % path)
+		return false
+	return register_translation(r)
+
+
+# 扫描目录下所有可加载为 Translation 的文件并注册，返回成功计数。
+# 跳过 .csv/.import 等（依赖导入产物 .translation，不做运行时 CSV 解析）。
+func register_translations_from_dir(dir_path: String) -> int:
+	if dir_path == "":
+		return 0
+	var count := 0
+	for f in ResourceLoader.list_directory(dir_path):
+		var ext := f.get_extension().to_lower()
+		if ext == "import" or ext == "csv" or ext == "remap" or ext == "uid":
+			continue
+		var r = load(dir_path.path_join(f))
+		if r is Translation and register_translation(r):
+			count += 1
+	return count
+
+
 # ---------------- 语言注册表 ----------------
 
 func _base_languages_copy() -> Array:
@@ -963,6 +1004,11 @@ func get_content(kind: String) -> Array:
 		if _registry.get(kind, {}).has(id):
 			out.append(_registry[kind][id].res)
 	return out
+
+
+# 合法 content kind 列表（characters/societies/upgrades/...）。
+func get_content_kinds() -> Array:
+	return KIND_CLASS.keys()
 
 
 func get_resource(kind: String, id: String):

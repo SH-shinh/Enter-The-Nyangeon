@@ -68,7 +68,8 @@ mods/<mod_id>/
 | `load_order` | | 越小越先；相同按 id 字母序 |
 | `dependencies` / `conflicts` | | 依赖/互斥（缺失/成环/冲突 → 停用） |
 | `overrides` | | 显式允许覆盖同名 id |
-| `replace_files` | | 覆盖本体 `res://`（需覆盖型预设，默认不支持，见 §9） |
+| `replace_files` | | 覆盖本体 `res://`（需 `ModPackReplace` 预设，见 §9 / `README.md` §13） |
+| `replace_paths` | | 覆盖构建用：要覆盖的本体 `res://` 文件列表（见 §9） |
 | `entry` | | 启动时实例化的 Node 脚本（深度修改，可用 `ModAPI`） |
 | `characters` | | 显式角色声明（见 §4.8，可带 `card_scene`） |
 | `societies` | | 显式社团卡场景列表 |
@@ -228,7 +229,7 @@ members = Array[String](["mychar_hero"])
 - **autoload**：`GameEvents` / `PlayerData` / `PoolManager` / `SupportData` / `ModManager` / `ModAPI`。
 - **资源/场景/贴图/音效**：`ext_resource path="res://..."` 或 `preload("res://...")`。
 
-原理：本体是 pack 0（`res://` 全量）；mod pck 以 `replace_files=false` 叠加 → 本体资源由本体提供，mod pck 里不含本体文件（`ModPack` 的 `exclude_filter` 排除了本体目录）。
+原理：本体是 pack 0（`res://` 全量）；mod pck 以 `replace_files=false` 叠加 → 本体资源由本体提供，mod pck 里不含本体文件（`ModPack` 的 `exclude_filter` 排除了本体目录）。要**覆盖本体文件**见 `README.md` §13（`ModPackReplace` 预设 + `replace_files=true`/`replace_paths`）。
 
 **注意**：
 
@@ -255,6 +256,7 @@ func _on_first_round() -> void:
 - PS 描述键为 `<char_id>_ps_0..3`（见 `ETN_player_localization.csv` 的模式，如 `momoi_ps_0..3`）。
 - mod 自带翻译：在 `mod.json.entry` 脚本里用 `ModAPI.add_translation(locale, key, value)` 注入（每个 locale 各调一次）。未翻译的键会**回退到 `PlayerCard.description`**（不再显示原始键）。
 - 新增/覆盖语言（选择器中的语言项与字体）：`ModAPI.register_language(locale, display_name, opts)`，详见 `README.md` §15。
+- 批量翻译（CSV→`.translation`，推荐）：`ModAPI.register_translations_from_dir("res://mods/<id>/i18n")`，详见 `README.md` §15.1。
 
 ### 3.12 语音（可选）
 
@@ -321,10 +323,10 @@ example/
 
 ## 8. 限制与注意事项（当前版本）
 
-- **覆盖本体文件**（改写 `res://script/...`、`res://scenes/main/main.tscn`）默认 `ModPack` 做不到（排除了本体目录）；需覆盖型预设（未提供）。
+- **覆盖本体文件**（改写 `res://script/...`、`res://scenes/main/main.tscn`）：用 `ModPackReplace` 预设 + `mod.json` 的 `replace_files=true`（可选 `replace_paths` 列本体文件），见 `README.md` §13；默认 `ModPack` 预设排除本体目录，做不到。
 - **autoload 脚本不可覆盖**（启动即加载）。
 - **mod 脚本的 `class_name` 不全局注册**（导出后引擎不扫描挂载 pck）→ mod 间用路径或 `ModAPI` 引用，且避免与本体 `class_name` 撞名。
-- **mod 自带翻译未接入**。
+- **翻译/语言已接入**：`ModAPI.add_translation` 逐条注入、`ModAPI.register_language` 注册新语言（见 §3.11 与 `README.md` §15）；仍无 CSV/`.translation` 自动扫描（需自行 `load` 后注册）。
 - **引用本体 = 绑定本体版本**；`game_version` 声明最低支持版本，本体低于它才告警。
 - 启用/禁用需**重启**（pck 挂载后不可卸载）。
 

@@ -38,7 +38,7 @@
 - [ ] 重启后：选人界面出现 **MOD 社团** → 选中 mod 角色 → 选关 → 进战斗，**立绘/纹理正常**。
 - [ ] **便携目录**：把 `<id>.pck` + `mod.json` 放到 **exe 同目录 `mods/<id>/`**，启动后同样加载。
 - [ ] **优先级**：同 id 同时存在于 `user://mods/` 与 exe 同目录时，`user://` 胜（看日志告警）。
-- [ ] **覆盖场景**：`replace_files=true` 的 mod 覆盖 `res://scenes/main/main.tscn` 后，进入战斗用的是 mod 版本。
+- [ ] **覆盖场景**：用 `ModPackReplace` 预设构建（`setup_mod_project.ps1 -Replace` + `build_mod.ps1 -Preset ModPackReplace`，`mod.json` 置 `replace_files=true`）覆盖 `res://scenes/main/main.tscn` 后，进入战斗用的是 mod 版本。
 
 ## 3. Android 真机
 
@@ -81,7 +81,7 @@
 
 ## 7. 深度修改（可选）
 
-- [ ] `replace_files=true` 覆盖入口场景（`main.tscn`）。
+- [ ] `replace_files=true` + `ModPackReplace` 预设覆盖一个**后加载**场景（如入口 `main.tscn`）；autoload 脚本与已 `preload` 缓存的资源**预期覆盖不生效**（本工具不支持 autoload 覆盖）。
 - [ ] entry 脚本订阅 `first_round_add`/`round_start`/`change_scene` 接管流程。
 - [ ] 记录「可覆盖 / 不可覆盖」边界（autoload 脚本覆盖需 `ModManager` 置顶 + 重启编辑器）。
 
