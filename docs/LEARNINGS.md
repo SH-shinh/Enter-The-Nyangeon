@@ -1931,3 +1931,9 @@
 - Notes / 说明: **现象**（user）：联机救倒地队友时，救援进度气泡（`interact_prompt.tscn` 实例，显示 `RESCUE xx%`）被队友头顶 `CoopNameTag/HelpTag` 的 `HELP!` 遮挡。**根因**：`_ensure_rescue_prompt_for` 新建 `interact_prompt` 实例时**未设 `z_index`（默认 0）**，而远端名牌子树 `z_index=10`（镜像本体 `z_index` 最高 3 → 有效 ≤13）；且几何上气泡完整包住 `HELP!`。**修法**（user 选定「气泡覆盖 help」）：对齐本体 `InteractionManager._build_bubble`（`scenes/manager/interaction_manager.gd:148`）的 `z_index=100`，在挂到父节点后设 `prompt.z_index = 100`；救援结束气泡隐藏后 `HELP!` 自然重现，无需跨端同步抑制状态。**通用教训**：凡从 `interact_prompt.tscn` 自行新建的实例都要显式设 `z_index`，不能指望交互管理器那一路（它只对自己创建的 `_bubble` 设值）。
 - Source / 来源: user + code
 - Date / 日期: 2026-10-10
+
+### [Editor] 干净克隆仍依赖被忽略的 `godot_ai`，需检查插件、autoload 与测试脚本
+- Evidence / 证据: `.gitignore:13`、`project.godot:38,64`、`docs/ARCHITECTURE.md:22`、`tests/test_damage_data.gd:1-2`、`README.md`「缺少 `godot_ai` 时」。
+- Notes / 说明: `addons/godot_ai/` 不入库，但项目配置仍启用其插件并注册 `_mcp_game_helper`；`tests/` 的 `@tool` 测试脚本还继承插件提供的 `McpTestSuite`。本地缺少插件时，不能宣称克隆后即可无报错启动；需在关闭编辑器时同时移除缺失 helper 的 autoload 配置与插件启用路径，并在本地 `tests/` 下添加空 `.gdignore` 避免扫描依赖插件基类的脚本（配置插件运行测试前删除）。辅助插件不属于游戏逻辑，MCP 测试套件仍依赖它。本次仅核对静态配置，未验证清理后的完整游戏启动；README 已提供本地处理步骤，未修改仓库运行配置。
+- Source / 来源: code
+- Date / 日期: 2026-10-10

@@ -4,7 +4,7 @@
 > 双语项目知识库。英文标题、中文说明、代码符号原样保留。
 > Entry point / 入口: `AGENTS.md` → `docs/`.
 > 用户纠正优先于本文推断；来源标记（code/user/test）见 `docs/LEARNINGS.md`。
-> Last updated / 最后更新: 2026-10-04
+> Last updated / 最后更新: 2026-10-10
 
 ## 1. What this is / 项目是什么
 
@@ -14,7 +14,8 @@
 - **Scale**: ~444 `.gd`, ~502 `.tscn` (excluding `addons/`).
 - **Physics**: Rapier2D (`project.godot:234`).
 - **Resolution**: design 640×360, window override 1280×720, stretch `canvas_items` (`project.godot:46-50`).
-- **Version**: `Game.version_number = "v0.4.1.4-test"` (`script/Game.gd:9`)。
+- **Version**: 以 `script/Game.gd:10` 的 `Game.version_number` 为准（2026-10-10 核对为 `v0.5.1.2`；旧记录 `v0.4.1.4-test` 已过时）。
+- **README**: 根目录 `README.md` 面向玩家、Mod 开发者与项目维护者，提供下载、源码启动、SDK 和知识库入口；顶部横幅复用 `ui/ark_of_Shittim/ETN_key_visual.png`。
 
 ## 2. Directory layout / 目录职责
 

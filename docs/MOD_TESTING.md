@@ -4,7 +4,7 @@
 > 编辑器内已验证的功能不重复（见 `docs/LEARNINGS.md` 的 `[Mod]` 条目）；本文聚焦**导出后才能暴露**的问题。
 > 结果填入 §8 表格；失败项回填 `docs/LEARNINGS.md`。
 > 造 mod 角色的完整步骤见 `mod_sdk/CHARACTER_GUIDE.md`。
-> Last updated / 最后更新: 2026-10-04
+> Last updated / 最后更新: 2026-10-10
 
 ## 0. 前置准备
 
@@ -16,7 +16,7 @@
   - [ ] `encrypt_pck=false`（保持关闭，否则 mod 无密钥无法挂载）。
   - [ ] `exclude_filter` 含 `addons/godot_ai/*, addons/.godot_ai_update/*`（勿排除 `godot-rapier2d`）。
   - [ ] **改完 export_presets.cfg 后必须重启编辑器**（否则内存旧预设回写覆盖）。
-- [ ] 记录本次验证用的**本体版本**（`Game.version_number`，当前 `v0.4.1.4`）与 Godot 版本（`4.7`）。
+- [ ] 记录本次验证用的**本体版本**（读取 `script/Game.gd` 的 `Game.version_number`；旧示例 `v0.4.1.4` 已过时）与实际使用的 Godot 版本（项目配置为 `4.7`）。
 
 ## 1. 构建测试 Mod（SDK）
 
