@@ -7551,6 +7551,8 @@ func _ensure_rescue_prompt_for(target_peer_id: int) -> Node:
 	if parent == null:
 		return null
 	parent.add_child(prompt)
+	# 盖过远端名牌 HELP!（名牌 z_index=10；对齐 InteractionManager 气泡约定）
+	prompt.z_index = 100
 	# 自动救援非交互：隐藏 use 键图标，仅保留文本进度
 	var holder = prompt.get_node_or_null("Root/Bubble/VBox/IconHolder")
 	if holder != null:
