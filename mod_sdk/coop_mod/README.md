@@ -26,7 +26,7 @@ mod_sdk/coop_mod/mods/etn_coop/
   net/coop_summoned_proxy.gd      # 召唤物：拥有者上报 / 镜像插值
   net/coop_visual_sync.gd         # 视觉弹池 + 特效生成 + 伤害禁用/敌方弹伤害洞
   net/coop_network_transport.gd   # LAN(ENet) / Relay(WebSocket) 工厂
-  net/coop_relay_peer.gd          # MultiplayerPeerExtension（需外部中继服务端）
+  net/coop_relay_peer.gd          # MultiplayerPeerExtension（中继服务端见 server/relay_server.py）
 ```
 
 > **编辑器镜像**：完整源另复制一份到本体工程 `res://mods/etn_coop/`（`H:\Enter The Nyangeon\mods\etn_coop\`），供 Godot 编辑器打开编辑（`mod_sdk/.gdignore` 使编辑器看不到 `mod_sdk`）。**构建始终从 `mod_sdk/coop_mod/mods/etn_coop/` 打包**；镜像仅用于编辑器/本地调试。因 `ModManager` 默认 `replace_files=false`（本体优先），运行期 `res://mods/etn_coop/` 会遮蔽 pck 同名文件——开发时改镜像立即生效。两处需保持一致（改完一方由负责方同步另一方）。导出时已用 `exclude_filter` 排除 `mods/etn_coop/*`，正式包不含镜像源码。
@@ -63,12 +63,12 @@ mod_sdk/coop_mod/mods/etn_coop/
 
 ### WebSocket 中继（跨网/在线）
 
-中继**服务端不自带**（仓库外，另有实现；协议见 `coop_relay_peer.gd`）。默认地址 `127.0.0.1:7716`。
+中继服务端随 SDK 附带：`server/relay_server.py`（纯 Python 3.10+ asyncio 实现 WebSocket 握手/分帧，无第三方依赖；`PORT` 环境变量改端口，默认 `0.0.0.0:7716`；`RELAY_DEBUG=1` 输出协议日志）。启动：`python mod_sdk/coop_mod/server/relay_server.py`。协议对接点见 `coop_relay_peer.gd`。默认地址 `127.0.0.1:7716`。
 
 - 游戏内：`COOP` 面板 → “Relay” 区填服务器地址与房间号 → `Relay Host` / `Relay Join`；状态栏显示连接与房间号（host 创建后打印 `RELAY_ROOM_CODE=<4位码>`）。
 - 无头自测：
   ```powershell
-  # 主机（先启服务端；日志里提取 RELAY_ROOM_CODE）
+  # 主机（先运行 python mod_sdk/coop_mod/server/relay_server.py；日志里提取 RELAY_ROOM_CODE）
   godot --headless --path <本体工程> -- --coop-relay-host=127.0.0.1:7716 --coop-devbattle --coop-devenemy
   # 客户端（用上面拿到的房间码）
   godot --headless --path <本体工程> -- --coop-relay-join=127.0.0.1:7716|<CODE> --coop-devbattle
@@ -77,7 +77,7 @@ mod_sdk/coop_mod/mods/etn_coop/
 
 ## 已实现
 
-- 传输：LAN(ENet) 主机/加入；中继(WebSocket) 客户端（需自建服务端）。
+- 传输：LAN(ENet) 主机/加入；中继(WebSocket) 客户端（服务端见 `server/relay_server.py`）。
 - 玩家同步：各端在 `first_round_add` 时交换 roster，互相生成对方角色（移出 `Player` 组、加入 `RemotePlayer`），挂 `CoopPlayerProxy`（禁用输入/相机/UI/碰撞/信号、按快照插值位置/朝向/动画/血量）；本机以 ~20Hz 上报状态，经服务端转发。
 - 敌人同步（服务端权威）：host 在 `on_enemy_spawned` 登记 net_id 并广播；client 生成镜像（挂 `CoopEnemyProxy`，禁物理、按快照插值位置/速度/血量）；host 以 ~8Hz 发快照；死亡经 `is_dead` → despawn 广播；client 镜像不本地判死。
 - 敌人伤害权威：client 的子弹命中经 `enemy_damage_interceptor` 转交 host（序列化 DamageData 字段），host 结算并快照回传；client 不本地结算（镜像血量只来自快照）。
@@ -140,7 +140,7 @@ mod_sdk/coop_mod/mods/etn_coop/
 
 ## 连接体验与信息面板（LAN 发现 / 版本握手 / 队友 HUD / 战绩）
 - **LAN 房间发现**（`net/coop_lan_discovery.gd`，常驻于 `CoopNet`）：独立 UDP，`DISCOVERY_PORT=24592`；host 开服后每 1s 广播 JSON（`{magic:ETN_COOP, pv, name, port, players, max, mode, game_version}`），**只发不收、绑临时端口**；client 在 LAN 页自动 `browse_start()` 收包、按 `ip:port` 去重、`2.5s` 超时剔除。`ui/coop_menu.gd` 在 `JoinRow` 下动态构建房间列表（点击即填 IP 并加入）。同机自测兜底：额外单播一份到 `127.0.0.1:24592`。
-- **版本/协议握手**（`coop_net.gd`）：`PROTOCOL_VERSION` + `MOD_VERSION` + `Game.version_number`；client 连接后 `rpc_id(1,"_client_hello",...)`，host 校验，不一致 `_hello_reject(reason)` 并**延迟 0.5s 再踢**（立即 disconnect 会丢可靠包）；`_on_peer_connected` 不再立即发 lobby/roster，改由握手通过后 `_accept_peer` 执行；未握手连接 5s 超时踢除。i18n `coop_version_mismatch`。版本比较（`_versions_equal`）按**数字段**进行、**忽略 `-test` 等后缀**，故 `v0.5.1.2-test` 与 `v0.5.1.2` 视为同版本、可互通。**2026-10-08 加固**：`PROTOCOL_VERSION` 1→2（RPC 契约变更即递增）；host 现在**真正校验 `MOD_VERSION`**（此前 README 声称但代码漏项）；客机发 `_client_hello` 后 `HELLO_ACCEPT_TIMEOUT_MSEC=6000` 内收不到 `_hello_accept`/有效 `_hello_reject` → 关闭并提示 `coop_status_handshake_timeout`；`_hello_reject(reason: String = "")` 默认参兼容旧房主 0 参 reject。**中继重复加入**：客户端 `create_relay_room`/`join_relay_room` 有 in-flight 防抖（`is_connect_in_flight()`）+ 菜单按钮锁定，`coop_relay_peer._close` 先发 `leave_room`；服务端 `E:\QQfw\js\服务端5.0.py` 维护 `Room.pending`、同 token 覆盖去重、`alloc_peer_id` 复用空出的 id、容量含 pending、只对已准入 peer 广播 `peer_disconnected`。
+- **版本/协议握手**（`coop_net.gd`）：`PROTOCOL_VERSION` + `MOD_VERSION` + `Game.version_number`；client 连接后 `rpc_id(1,"_client_hello",...)`，host 校验，不一致 `_hello_reject(reason)` 并**延迟 0.5s 再踢**（立即 disconnect 会丢可靠包）；`_on_peer_connected` 不再立即发 lobby/roster，改由握手通过后 `_accept_peer` 执行；未握手连接 5s 超时踢除。i18n `coop_version_mismatch`。版本比较（`_versions_equal`）按**数字段**进行、**忽略 `-test` 等后缀**，故 `v0.5.1.2-test` 与 `v0.5.1.2` 视为同版本、可互通。**2026-10-08 加固**：`PROTOCOL_VERSION` 1→2（RPC 契约变更即递增）；host 现在**真正校验 `MOD_VERSION`**（此前 README 声称但代码漏项）；客机发 `_client_hello` 后 `HELLO_ACCEPT_TIMEOUT_MSEC=6000` 内收不到 `_hello_accept`/有效 `_hello_reject` → 关闭并提示 `coop_status_handshake_timeout`；`_hello_reject(reason: String = "")` 默认参兼容旧房主 0 参 reject。**中继重复加入**：客户端 `create_relay_room`/`join_relay_room` 有 in-flight 防抖（`is_connect_in_flight()`）+ 菜单按钮锁定，`coop_relay_peer._close` 先发 `leave_room`；服务端 `server/relay_server.py` 维护 `Room.pending`、同 token 覆盖去重、`alloc_peer_id` 复用空出的 id、容量含 pending、只对已准入 peer 广播 `peer_disconnected`。
 - **实时战绩面板（可编辑场景）**：`ui/coop_scoreboard.tscn`（+ 行模板 `ui/coop_scoreboard_row.tscn`，脚本 `ui/coop_scoreboard.gd`）。按住 `coop_scoreboard`（运行时注册，默认 `Tab`/手柄 Back）显示，居中、无压暗底，行按伤害降序。**静态布局（面板/标题/表头/列宽/字体/颜色/位置）全在 `.tscn` 里，可直接在编辑器手动调整**；脚本只负责输入、按 `CoopNet.team_stats` 实例化行并填 `%Name/%Kills/%Damage/%Coins`（大数缩写规则：**伤害 ≥1000 起**；**击杀 ≥10万、金币 ≥100万** 才用 **K/M/B/T**——低于阈值显示完整数字；1 位小数去尾零 + 进位保护，如 `999950→1M`。阈值按列宽估算：击杀列 60px、金币列 70px，`BoutiqueBitmap9x9 @ font_size 8` 数字约 4.8px/位）。**移动端联动 + 左移避让（2026-10-08）**：移动端无 `coop_scoreboard` 按键，改为**点开聊天（输入态 `is_composing()`）时一起显示战绩**（对方消息触发的 peek 不触发，避免干扰）；当聊天窗显示时（`is_window_visible()`），战绩栏整层经 `CanvasLayer.offset` 按两者实际尺寸**左移**——用 `_center.size` + `_panel.size` 推未偏移右缘，右缘不越过聊天窗左缘（留 `CHAT_GAP=6px`，重叠 ≤0 不移动），**双端均生效**。聊天接口 `is_composing()`/`is_window_visible()`/`get_window_rect()` 由 `coop_chat.gd` 提供。
 - **战绩数据（host 权威）**：按 peer 累计 `team_stats={kills,damage,coins}`——伤害在 `_on_server_enemy_damage_taken`（本地命中）与 `_server_enemy_hit`（客机转发命中，`suppress_feedback=true` 不发 `damage_taken` 故需单列）两处累加；击杀在 `_on_server_enemy_dead` 按 `last_attacker_by_net_id` 归属；每 1s `_remote_team_stats` 广播。i18n `coop_sb_*`。**行生命周期（2026-10-08）**：① **加入即建行**——`_accept_peer`（握手通过）与 `_on_first_round_add`（host）调 `_ensure_team_stat(pid)` + `_broadcast_team_stats()`，准备房有玩家进来即出现 0 行（周期广播 `battle_active` 在准备房已为 true，数值实时更新）；② **房主正式开始清零**——`_broadcast_roster()`（房主选关/开战唯一出口）调 `_reset_team_stats()`：清空 `team_stats` 后按当前 `multiplayer.get_peers()` 重建**全员 0 行**并广播，准备房/测试房累计不带入正式关卡；③ 掉线仍**保留行**（`:882` 注释，配合重连；不重连的幽灵行会在下次正式开始清零时按当前 peers 重建而消失）。
   - **金币 = 各玩家「各自获取」**（不再显示全员相同的共享总额）：`_broadcast_team_stats` 不再把 `coins` 覆盖为共享总额。归属来源两类——① **共享金币拾取**归**拾取者**：host 在 `_do_shared_coin_pickup` 记 `get_unique_id()`，client 拾取经 `_server_pickup_coin` 记 `get_remote_sender_id()`（经 `_add_team_coins`）；② **个人金币加成**（满血医疗箱转金币 / coin_return / chocolate_coin / atlantis medal / 策反清场结算）都经既有 `GameEvents.player_coins_get` 发出 → `_on_local_coins_get` 上报 host 归属本人。二者靠 `_applying_shared_coin` 抑制标记区分：`_apply_shared_coin_local` 发 `player_coins_get` 前打标记、发后清除，故共享拾取不会被个人通道重复计入（**零本体改动**）。
@@ -151,7 +151,7 @@ mod_sdk/coop_mod/mods/etn_coop/
 ## 后续（未实现 / 已知限制）
 
 1. 子弹**提前终止已同步**（撞墙/命中广播 `_despawn_visual_bullet`，`ended` 集合防迟到复活）；特效属性按白名单收集（缺失则跳过）——更特殊的自定义视觉参数仍可能不还原。
-2. 中继(WebSocket)**服务端需自备**（仓库不含；协议见 `coop_relay_peer.gd`）；默认 `127.0.0.1:7716`。LAN 开箱可用。
+2. 中继(WebSocket)服务端随 SDK 附带（`server/relay_server.py`，Python 3.10+、无依赖；协议见 `coop_relay_peer.gd`）；默认 `127.0.0.1:7716`。LAN 开箱可用。
 3. 倒地/救援：冷色 tint + `DOWN!/REVIVED!` 飘字 + **共享救援进度气泡**（靠近自动读条、人越多越快、所有存活队友可见）均已实现。
 4. 角色专属同步：本体 `player.gd` 汇总子节点 PS 状态，已接 `aris_armed`/`mashiro`/`aris`(热条)/`chinatsu`(充能)/`hoshino`(rank 条)；`kasumi`(钻头)走 M5 角色事件通道；跟随 sprite 的持续视觉（如 `aris_armed` 喷气粒子位置）走逐帧钩子 `apply_network_character_visual(sprite_y, delta)`；**其余角色/PS 需自行覆写** `get/apply_network_character_state`（或 `apply_network_character_event` / `apply_network_character_visual`）才生效。
 5. Boss：生成/移动/血量 + `boss_round_start/end` + `GameEvents.boss_event` 总线已同步；**goliath / erosion_tower 动画态已在 client 回放**（仅表现）。其它 Boss 的专属演出可按同一模式（监听 `boss_event`，仅做表现）自行接上。
