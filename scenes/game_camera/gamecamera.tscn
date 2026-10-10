@@ -15,6 +15,7 @@ fill_to = Vector2(0.5, 0)
 metadata/_snap_enabled = true
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_411mv"]
+resource_local_to_scene = true
 shader = ExtResource("2_xibj8")
 shader_parameter/cutoff = 1.0
 shader_parameter/smooth_size = null

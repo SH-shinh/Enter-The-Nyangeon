@@ -28,7 +28,7 @@ const DEFAULT_BATTLE_SCENE: String = "res://scenes/main/main.tscn"
 const MENU_SCENE: String = "res://scenes/main/menu_screen.tscn"
 # 协议/版本握手：不一致直接拒绝。RPC 契约变更时必须递增 PROTOCOL_VERSION。
 const PROTOCOL_VERSION: int = 2
-const MOD_VERSION: String = "0.1.5"
+const MOD_VERSION: String = "0.1.6"
 const HELLO_TIMEOUT_MSEC: int = 5000
 # 客机：发出 _client_hello 后等待 _hello_accept 的上限；超时视为握手失败（旧房主/版本不匹配）
 const HELLO_ACCEPT_TIMEOUT_MSEC: int = 6000
@@ -1221,6 +1221,15 @@ func _net_connected() -> bool:
 # 是否有 multiplayer peer（不要求 CONNECTED）：供「离线也应可用的本地工具」避免 get_unique_id 报错
 func _has_peer() -> bool:
 	return multiplayer != null and multiplayer.multiplayer_peer != null
+
+
+# 中继目标是否有效：get_peers() 不含房主自身（peer=1），中继到房主须显式放行
+func _is_valid_relay_peer(peer: int) -> bool:
+	if not _has_peer():
+		return false
+	if peer == multiplayer.get_unique_id():
+		return true
+	return multiplayer.get_peers().has(peer)
 
 
 # 房主存活心跳：房主定期广播，客户端超时判定房主离开（不依赖 ENet 超时）。
@@ -5432,6 +5441,10 @@ func _on_server_enemy_dead(enemy: Node) -> void:
 		icon = str(enemy.icon)
 	pos = enemy.global_position
 	rpc("_play_enemy_death_remote", net_id, icon, pos)
+	# 测试目标（沙袋等）假死后本体 on_dead 会 spawn_hp 复活：永不 despawn，仅重连 is_dead
+	if _enemy_is_test_target(enemy):
+		_connect_enemy_dead(enemy)
+		return
 	# 本体部分敌人（测试房沙包）on_dead 为 call_deferred 且会 spawn_hp 回满血；
 	# 延迟一帧判定：hp>0 = 复活（保留 net_id + 重连 is_dead）；否则真死（despawn）。
 	await get_tree().process_frame
@@ -5818,7 +5831,7 @@ func _record_enemy_pos(net_id: int, t: int, p: Vector2) -> void:
 
 # 轻量命中校验：目标存活 + 攻击者距离 + 客户端所见位置与 host 历史轨迹相符（favor-the-shooter）
 func _validate_enemy_hit(enemy: Node, attacker: int, victim_pos: Vector2) -> bool:
-	if enemy.get("stats") != null and enemy.stats != null and int(enemy.stats.hp) <= 0:
+	if enemy.get("stats") != null and enemy.stats != null and int(enemy.stats.hp) <= 0 and not bool(enemy.stats.get("is_test_target")):
 		return false
 	var ap = _local_or_remote_player(attacker)
 	if ap is Node2D and enemy is Node2D:
@@ -8049,9 +8062,14 @@ func _server_relay_player_buff(peer: int, apply: bool, buff_path: String, value:
 		return
 	if not _is_safe_remote_path(buff_path, SAFE_BUFF_PREFIXES, [".tres"]):
 		return
-	if not multiplayer.get_peers().has(peer):
+	if not _is_valid_relay_peer(peer):
 		return
-	rpc_id(peer, "_remote_player_buff", apply, buff_path, _sanitize_buff_value(value), source_id)
+	var clean_value: Array = _sanitize_buff_value(value)
+	if peer == multiplayer.get_unique_id():
+		# 目标为房主自身：get_peers() 不含自身，且 rpc("call_remote") 不回本地 → 直接本地调用
+		_remote_player_buff(apply, buff_path, clean_value, source_id)
+	else:
+		rpc_id(peer, "_remote_player_buff", apply, buff_path, clean_value, source_id)
 
 
 # 目标端：对真实玩家按来源上/去 buff（source_refcount 类，如 kei_buff）
@@ -8107,12 +8125,25 @@ func _server_support_ex(owner: int, support_id: String, active: bool) -> void:
 		return
 	if support_id.length() > 32:
 		return
-	rpc("_remote_support_ex", multiplayer.get_remote_sender_id(), support_id, active)
+	var sender: int = multiplayer.get_remote_sender_id()
+	# 房主本机也要渲染：rpc 为 call_remote，不会在本地执行
+	_apply_support_aura_visual(sender, support_id, active)
+	rpc("_remote_support_ex", sender, support_id, active)
 
 
 @rpc("authority", "call_remote", "reliable")
 func _remote_support_ex(owner: int, support_id: String, active: bool) -> void:
 	_apply_support_aura_visual(owner, support_id, active)
+
+
+# 把子树里所有 CanvasItem 的材质就地复制为实例私有，避免共享 ShaderMaterial 被动画跨实例串扰
+func _localize_material_subtree(node: Node) -> void:
+	if node is CanvasItem:
+		var ci := node as CanvasItem
+		if ci.material != null:
+			ci.material = ci.material.duplicate()
+	for child in node.get_children():
+		_localize_material_subtree(child)
 
 
 func _apply_support_aura_visual(owner: int, support_id: String, active: bool) -> void:
@@ -8141,8 +8172,13 @@ func _apply_support_aura_visual(owner: int, support_id: String, active: bool) ->
 			return
 		var inst = ps.instantiate()
 		inst.set_script(null)
+		# 本体场景的 ShaderMaterial 是共享子资源（除非 resource_local_to_scene）；代理须就地复制材质，
+		# 否则代理播动画会串改本机真实支援实例的材质（kei 环会亮到所有 kei 上）
+		_localize_material_subtree(inst)
 		var area = inst.get_node_or_null("Area2D")
 		if area != null:
+			# 本体光环迁移到 BuffAura 后 Area2D 自带脚本；视觉代理须一并清脚本，否则 _ready 会入 CoopSummonAura 组
+			area.set_script(null)
 			area.monitoring = false
 			area.monitorable = false
 		if support_id == "serina":
@@ -8254,11 +8290,16 @@ func _server_relay_summoned_buff(owner_peer: int, net_id: int, apply: bool, buff
 		return
 	if not _is_safe_remote_path(buff_path, SAFE_BUFF_PREFIXES, [".tres"]):
 		return
-	if not multiplayer.get_peers().has(owner_peer):
+	if not _is_valid_relay_peer(owner_peer):
 		return
 	if int(summoned_owner_by_net_id.get(net_id, -1)) != owner_peer:
 		return
-	rpc_id(owner_peer, "_remote_summoned_buff", net_id, apply, buff_path, _sanitize_buff_value(value), source_id)
+	var clean_value: Array = _sanitize_buff_value(value)
+	if owner_peer == multiplayer.get_unique_id():
+		# 目标为房主自身（含房主拥有的召唤物）：直接本地调用，理由同 _server_relay_player_buff
+		_remote_summoned_buff(net_id, apply, buff_path, clean_value, source_id)
+	else:
+		rpc_id(owner_peer, "_remote_summoned_buff", net_id, apply, buff_path, clean_value, source_id)
 
 
 @rpc("authority", "call_remote", "reliable")
@@ -8356,12 +8397,18 @@ func _get_predicted_enemy_damage(enemy: Node, damage: int) -> int:
 	return maxi(1, int(scaled))
 
 
+# 测试目标（沙袋等）：stats.is_test_target 为真 → 不预测致死、不权威 despawn
+func _enemy_is_test_target(enemy: Node) -> bool:
+	return enemy != null and is_instance_valid(enemy) and enemy.get("stats") != null \
+			and enemy.stats != null and bool(enemy.stats.get("is_test_target"))
+
+
 func will_enemy_hit_kill(enemy: Node, damage: int) -> bool:
 	if not is_lan_game or multiplayer.is_server() or enemy == null or damage <= 0:
 		return false
 	if not is_instance_valid(enemy):
 		return false
-	if bool(enemy.get_meta("network_test_target", false)):
+	if _enemy_is_test_target(enemy):
 		return false
 	var stats = enemy.get("stats")
 	if stats == null:
@@ -8389,7 +8436,7 @@ func _predict_enemy_death(enemy: Node, damage: int, net_id: int) -> void:
 		predicted_hp = maxi(1, int(enemy.get_meta("predicted_hp", int(stats.hp))) - predicted_damage)
 		enemy.set_meta("predicted_hp", predicted_hp)
 		stats.set("hp", predicted_hp)
-	if bool(enemy.get_meta("network_test_target", false)):
+	if bool(enemy.get_meta("network_test_target", false)) or _enemy_is_test_target(enemy):
 		return
 	if predicted_hp > 0:
 		return

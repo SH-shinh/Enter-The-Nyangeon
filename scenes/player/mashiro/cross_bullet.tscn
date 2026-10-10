@@ -182,6 +182,7 @@ _data = {
 }
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_foqsq"]
+resource_local_to_scene = true
 shader = ExtResource("2_hcp28")
 shader_parameter/outline_width = 2.0
 shader_parameter/outline_color = Color(5, 0.396, 0.424, 1)

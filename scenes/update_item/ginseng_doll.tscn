@@ -17,12 +17,14 @@ scale_max = 0.2
 color = Color(0.690196, 0.929412, 0.278431, 1)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ugcdw"]
+resource_local_to_scene = true
 shader = ExtResource("2_sytam")
 shader_parameter/center = Vector2(0.5, 0.5)
 shader_parameter/size = 0.0
 shader_parameter/thickness = 0.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_mimu8"]
+resource_local_to_scene = true
 shader = ExtResource("2_sytam")
 shader_parameter/center = Vector2(0.5, 0.5)
 shader_parameter/size = 0.0

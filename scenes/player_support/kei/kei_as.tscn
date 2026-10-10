@@ -1,12 +1,14 @@
-[gd_scene load_steps=13 format=3 uid="uid://yxqjlr1cx45m"]
+[gd_scene load_steps=14 format=3 uid="uid://yxqjlr1cx45m"]
 
 [ext_resource type="Script" path="res://scenes/player_support/kei/kei_as.gd" id="1_de60s"]
+[ext_resource type="Script" path="res://scenes/player_support/kei/kei_aura.gd" id="1_keiaura"]
 [ext_resource type="Shader" path="res://shaders/shock_wave_2.gdshader" id="1_jtmx0"]
 [ext_resource type="Resource" uid="uid://dc4dj2kyyk4rx" path="res://resources/buff/player_buff/kei_buff.tres" id="2_65jap"]
 [ext_resource type="Texture2D" uid="uid://bhm8gyj1xcfnv" path="res://sprites/particle/arrow.png" id="2_oryml"]
 [ext_resource type="AudioStream" uid="uid://c1mrruq075ll8" path="res://sounds/laser2.wav" id="5_kpr5h"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_g7pc1"]
+resource_local_to_scene = true
 shader = ExtResource("1_jtmx0")
 shader_parameter/center = Vector2(0.5, 0.5)
 shader_parameter/size = 0.0
@@ -148,13 +150,6 @@ radius = 100.0
 
 [node name="kei_as" type="Node2D"]
 script = ExtResource("1_de60s")
-support_buff = ExtResource("2_65jap")
-buff_layer = 1
-buff_value = 1.2
-buff_erase_timer = 999.0
-buff_layer_2 = 1
-buff_value_2 = 0.25
-buff_erase_timer_2 = 999.0
 
 [node name="ColorRect" type="ColorRect" parent="."]
 z_index = -1
@@ -179,8 +174,18 @@ process_material = SubResource("ParticleProcessMaterial_ds5nc")
 texture = ExtResource("2_oryml")
 
 [node name="Area2D" type="Area2D" parent="."]
+script = ExtResource("1_keiaura")
 collision_layer = 0
 collision_mask = 513
+buff = ExtResource("2_65jap")
+targets = 2
+coop_summon_aura = true
+buff_layer = 1
+buff_value = 1.2
+buff_erase_timer = 999.0
+buff_layer_2 = 1
+buff_value_2 = 0.25
+buff_erase_timer_2 = 999.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
 position = Vector2(0, -11)
@@ -197,5 +202,3 @@ volume_db = 4.0
 pitch_scale = 1.5
 bus = &"SFX"
 
-[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
-[connection signal="body_exited" from="Area2D" to="." method="_on_area_2d_body_exited"]

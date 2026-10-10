@@ -35,17 +35,20 @@
 [ext_resource type="Shader" uid="uid://dvycg6oyg2c0t" path="res://shaders/shock_wave_2.gdshader" id="29_taqp0"]
 [ext_resource type="Texture2D" uid="uid://bhm8gyj1xcfnv" path="res://sprites/particle/arrow.png" id="31_jebpu"]
 [ext_resource type="Script" uid="uid://crtabh2xwunne" path="res://script/player_health_component.gd" id="34_f2pab"]
+[ext_resource type="Script" path="res://script/buff_aura.gd" id="35_baura"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_l238d"]
 radius = 7.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_yohyw"]
+resource_local_to_scene = true
 shader = ExtResource("7_4m3dv")
 shader_parameter/outline_width = 2.0
 shader_parameter/outline_color = Color(40, 0.867, 60, 1)
 shader_parameter/flash_opacity = 0.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_y8jd2"]
+resource_local_to_scene = true
 shader = ExtResource("7_4m3dv")
 shader_parameter/outline_width = 1.0
 shader_parameter/outline_color = Color(40, 1, 30, 1)
@@ -264,6 +267,7 @@ _data = {
 }
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_hd2w7"]
+resource_local_to_scene = true
 shader = ExtResource("7_4m3dv")
 shader_parameter/outline_width = 1.0
 shader_parameter/outline_color = Color(40, 1, 30, 1)
@@ -656,6 +660,7 @@ _data = {
 radius = 50.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_f0uhr"]
+resource_local_to_scene = true
 shader = ExtResource("29_taqp0")
 shader_parameter/center = Vector2(0.5, 0.5)
 shader_parameter/size = 0.0
@@ -957,10 +962,6 @@ process_material = SubResource("ParticleProcessMaterial_1llki")
 [node name="UtahaPS" type="Node2D" parent="." unique_id=1865271995 node_paths=PackedStringArray("stats")]
 script = ExtResource("27_v2prc")
 stats = NodePath("../Stats")
-summoned_buff = ExtResource("28_fop1g")
-buff_layer = 1
-buff_value = 1.0
-buff_erase_timer = 999.0
 enemy_buff = ExtResource("29_r7yng")
 buff_layer_2 = 3
 buff_erase_timer_2 = 5.0
@@ -1016,9 +1017,16 @@ one_shot = true
 [node name="Node2D" type="Node2D" parent="UtahaPS" unique_id=2040917155]
 
 [node name="Area2D" type="Area2D" parent="UtahaPS/Node2D" unique_id=1449682380]
+script = ExtResource("35_baura")
 position = Vector2(0, -11)
 collision_layer = 0
 collision_mask = 512
+buff = ExtResource("28_fop1g")
+targets = 1
+coop_summon_aura = true
+buff_layer = 1
+buff_value = 1.0
+buff_erase_timer = 999.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="UtahaPS/Node2D/Area2D" unique_id=981206871]
 shape = SubResource("CircleShape2D_f250b")
@@ -1053,5 +1061,3 @@ hurt_box = NodePath("../HurtBox")
 [connection signal="timeout" from="JumpCDTimer" to="." method="_on_jump_cd_timer_timeout"]
 [connection signal="pick_up_range_changed" from="Stats" to="." method="_on_stats_pick_up_range_changed"]
 [connection signal="timeout" from="UtahaPS/Timer" to="UtahaPS" method="_on_timer_timeout"]
-[connection signal="body_entered" from="UtahaPS/Node2D/Area2D" to="UtahaPS" method="_on_area_2d_body_entered"]
-[connection signal="body_exited" from="UtahaPS/Node2D/Area2D" to="UtahaPS" method="_on_area_2d_body_exited"]

@@ -132,3 +132,18 @@ layer N = bit `1<<(N-1)`：
 - **角色 player_card 一致性**：角色有两处 `PlayerCard` —— 选人 UI 卡（`mod_society_card` 注入注册表 card）与**战斗场景根**（`script/player.gd:12`，被 `PlayerData.get_player_base_ability()`/HUD/结算/PS 商店读取）。以 `defs/characters/<id>.tres` 注册表为真源，战斗场景根应指向**同一份** `.tres`。注册校验用 `PackedScene.get_state()` peek 根节点导出属性（**不实例化**）：缺 `scene_path` → **跳过**；根 `player_card` 空/`id` 不一致、`ps_card` 空 → **告警**；进战斗后 `ModManager` 按所选 `scene_path` **对齐** `"Player"` 组全部玩家的 `player.player_card`（索引含 branches）。`ps_card` 无法对齐，mod 必须自备。可选字段 `PlayerCard.card_scene` 指定自带选人卡。
 - **社团卡**：可选，`defs/societies/*.tscn`（或 manifest `societies`）；场景根**必须继承 `ui/mod_society_base.gd`**，设 `group_id`（带 `<modid>_` 前缀、唯一）+ `members`（`Array[String]` 角色 id），场景需含 `AnimationPlayer`。**按 mod 认领**：有自带社团 → 其角色进自带卡；无 → 进内置通用「MOD」社团卡（`ui/mod_society_card`，只收未认领且未锁定的角色）。**通用卡自动续卡**：未认领已解锁角色 >4 时，`menu_screen._setup_societies()` / `coop_select._build_societies()` 按 `MOD_PAGE_SIZE = 4` 各建一张、注入 `members` 切片（标签 `MOD`/`MOD 2`/…）；`ui/mod_society_card.gd` 现继承 `mod_society_base.gd`，可见性/填充全继承（仅加 `set_page()`）。社团显隐改由 `is_character_locked`（任一成员可显示即显示），不再靠 `PlayerData.group`。角色选择卡同样「自带 `card_scene` 优先，否则通用 `ui/mod_player_card.tscn`」。
 - **导出/真机验证**：清单见 `docs/MOD_TESTING.md`。
+
+## 11. 范围 buff / 光环（`BuffAura`）
+
+> 新增「给范围内友方/召唤物持续上 buff」的光环，统一继承或直接使用 `script/buff_aura.gd`（`class_name BuffAura extends Area2D`）。
+> 基类内聚：目标探测（含远端玩家镜像）、`BuffRouter` 上/去 buff、召唤物光环联机契约、失活兜底清理。未装 coop mod 时行为与单机一致。
+
+- **用法**：新光环挂 `BuffAura`；需「按目标类型给不同 buff/数值」时写子类重写 `aura_buff_for(body)` / `aura_value_for(body)`（范例 `scenes/player_support/kei/kei_aura.gd`）。
+- **export**：`buff`（`Buff`）、`buff_layer` / `buff_value` / `buff_erase_timer`、`targets`（`PLAYERS` / `SUMMONS` / `PLAYERS_AND_SUMMONS`）、`coop_summon_aura`（入组 `"CoopSummonAura"` 供 mod 扫描远端召唤物镜像）、`active_on_ready`。
+- **碰撞层**：由场景 `Area2D.collision_mask` 配置——玩家 `1`、召唤物 `512`（kei 用 `513`，utaha 用 `512`）。远端玩家镜像保留 `CharacterBody2D` 碰撞层（可被玩家层探测），但其所有 `Area2D` 被代理禁用。
+- **激活/失活**：用 `set_active(bool)`（切 `CollisionShape2D.disabled`；失活自动 `_clear_buffed()` 兜底移除）。EX 类在 `_on_skill_active` / `_on_skill_end` 调用。
+- **buff 资源位置**：必须位于 `res://resources/buff/` 或 `res://mods/`（联机 `SAFE_BUFF_PREFIXES`），否则不会跨端。
+- **入口统一走 `BuffRouter`**：基类已统一；勿直接调 `*_buff_manager.apply_buff`，否则绕过联机拦截槽。
+- **`value` 约定**：`[max_layer, magnitude, seconds]`；联机消毒最多保留 3 项。
+- **召唤物光环**：`coop_summon_aura=true` 即入组并由基类实现 `network_summon_aura_info()`；远端召唤物由 mod 10Hz（`_tick_summon_auras`）扫描转发。
+- **已知限制**：支援 EX 结束时按 `_support_buffed_peers` 每个 peer 只记**最后一条** buff 路径；同一光环给同一 peer 叠多个不同 buff 时该兜底可能漏（正常 `body_exited` 路径不受影响）。

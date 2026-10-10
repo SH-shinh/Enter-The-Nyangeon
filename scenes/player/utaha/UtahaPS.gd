@@ -1,10 +1,6 @@
 extends Node2D
 
 @export var stats: Stats
-@export var summoned_buff: Buff
-@export var buff_layer: int
-@export var buff_value: float
-@export var buff_erase_timer: float
 
 @export var enemy_buff: Buff
 @export var buff_layer_2: int
@@ -16,7 +12,7 @@ extends Node2D
 @onready var animation_player = $AnimationPlayer
 @onready var lv_num = $LVNum
 @onready var timer = $Timer
-@onready var collision_shape_2d = $Node2D/Area2D/CollisionShape2D
+@onready var aura: BuffAura = $Node2D/Area2D
 
 @onready var ring_anim = $Node2D/AnimationPlayer
 @onready var gpu_particles_2d = $Node2D/GPUParticles2D
@@ -24,7 +20,6 @@ extends Node2D
 
 var spawn_point: Vector2 = Vector2(704, 448)
 
-var value: Array
 var value_2: Array
 var now_t:int
 
@@ -33,22 +28,6 @@ var up_v: int = 6
 func _ready():
 	PlayerData.set_player.connect(add_turret_mk_3)
 	GameEvents.player_ps_upgrade.connect(ps_upgrade)
-	# 联机：登记为"召唤物范围光环"（utaha_buff），供 mod 扫描队友召唤物镜像并转发
-	add_to_group("CoopSummonAura")
-
-
-# 联机契约：光环位置/半径/buff/来源（mod 据此对远端召唤物转发）
-func network_summon_aura_info() -> Dictionary:
-	var shape = collision_shape_2d.shape if collision_shape_2d != null else null
-	var r: float = (shape as CircleShape2D).radius if shape is CircleShape2D else 0.0
-	return {
-		"active": collision_shape_2d != null and not collision_shape_2d.disabled,
-		"pos": collision_shape_2d.global_position if collision_shape_2d != null else global_position,
-		"radius": r,
-		"buff": summoned_buff,
-		"value": value,
-		"source_id": str(multiplayer.get_unique_id()),
-	}
 
 func ps_upgrade(t_num: int):
 	now_t = t_num
@@ -57,9 +36,9 @@ func ps_upgrade(t_num: int):
 		add_turret()
 		up_v = 12
 	elif now_t == 2:
-		value = [buff_layer, buff_value, buff_erase_timer]
 		gpu_particles_2d.emitting = true
-		collision_shape_2d.set_deferred("disabled", false)
+		# 激活召唤物范围光环（buff/数值配置在其 BuffAura 子节点上）
+		aura.set_active(true)
 		ring_anim.play("new_animation")
 		add_turret()
 	elif now_t == 3:
@@ -112,16 +91,3 @@ func add_damage(_final_damage: int, damage_data: DamageData, body_path: NodePath
 func _on_timer_timeout():
 	progress_bar.visible = false
 	lv_num.visible = false
-
-
-func _on_area_2d_body_entered(body):
-	if body == null or not is_instance_valid(body):
-		return
-	if body.is_in_group("Summoned"):
-		body.summoned_buff_manager.apply_buff(summoned_buff, value)
-
-func _on_area_2d_body_exited(body):
-	if body == null or not is_instance_valid(body):
-		return
-	if body.is_in_group("Summoned"):
-		body.summoned_buff_manager.remove_buff(summoned_buff)

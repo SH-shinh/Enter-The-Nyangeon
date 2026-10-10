@@ -206,6 +206,9 @@ func _disable_remote_simulation() -> void:
 	_disable_damage_nodes(summoned)
 	_enable_melee_detect(summoned)
 	_disable_support_scripts(summoned)
+	# 镜像材质就地私有化：本体场景的 ShaderMaterial 共享，镜像与本机真实实例会互相串改动画
+	# （如 kei 的光环 shader_parameter/size），复制后互不影响
+	_localize_material_subtree(summoned)
 	var state_machine: Node = summoned.get_node_or_null("StateMachine")
 	if state_machine != null:
 		state_machine.set_physics_process(false)
@@ -248,6 +251,16 @@ func _disable_support_scripts(node: Node) -> void:
 		node.call("network_disable")
 	for child in node.get_children():
 		_disable_support_scripts(child)
+
+
+# 把子树里所有 CanvasItem 的材质就地复制为实例私有（防共享 ShaderMaterial 跨实例串扰）
+func _localize_material_subtree(node: Node) -> void:
+	if node is CanvasItem:
+		var ci := node as CanvasItem
+		if ci.material != null:
+			ci.material = ci.material.duplicate()
+	for child in node.get_children():
+		_localize_material_subtree(child)
 
 
 func _disable_damage_nodes(node: Node) -> void:

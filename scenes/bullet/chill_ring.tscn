@@ -9,6 +9,7 @@
 radius = 120.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_chill"]
+resource_local_to_scene = true
 shader = ExtResource("2_shader")
 shader_parameter/ring_radius = 0.1
 shader_parameter/thickness_scalar = 0.0

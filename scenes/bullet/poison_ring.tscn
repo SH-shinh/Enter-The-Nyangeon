@@ -10,6 +10,7 @@
 radius = 100.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_i8l8s"]
+resource_local_to_scene = true
 shader = ExtResource("1_smawo")
 shader_parameter/ring_radius = 0.1
 shader_parameter/thickness_scalar = 0.0
