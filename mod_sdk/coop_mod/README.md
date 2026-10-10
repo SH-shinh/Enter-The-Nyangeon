@@ -252,9 +252,10 @@ mod_sdk/coop_mod/mods/etn_coop/
 
 ### 敌人 buff 权威同步（buff_card + DOT）
 - **根因**：敌人 buff 由道具/子弹本地直接 `enemy_buff_manager.apply_buff`（多在 `on_damage_dealt` 闭包内），客机被拦截跳过 `_take_damage_internal` → 客机镜像与 host 真敌人都拿不到 buff（无 card、DOT 不可靠）；DOT 结算又用 host 的 `player.stats`。
-- **本体**：`script/extension_hooks.gd` 加 `enemy_buff_apply_gate`、`on_enemy_buff_removed`；`scenes/manager/buff_manager_base.gd`：`apply_buff(buff, value, source_id, applier_stats)` 增参并存 `entry["applier_stats"]`、入口 gate、`_remove_buff_entry` 发 `on_enemy_buff_removed`；`scenes/manager/enemy_buff_manager.gd`：DOT/配置改用 `_estat(entry, key)`（施加者属性优先，回退本地 `player.stats`），并加 `_is_remote_mirror()` 在 `add_damage_data`/`count_chill_damage` 跳过（镜像不结算 DOT）。
+- **本体**：`script/extension_hooks.gd` 加 `enemy_buff_apply_gate`、`on_enemy_buff_removed`；`scenes/manager/buff_manager_base.gd`：`apply_buff(buff, value, source_id, applier_stats, applier_peer)` 增参并存 `entry["applier_stats"]`/`entry["applier_peer"]`、入口 gate、`_remove_buff_entry` 发 `on_enemy_buff_removed`；`scenes/manager/enemy_buff_manager.gd`：DOT/配置改用 `_estat(entry, key)`（施加者属性优先，回退本地 `player.stats`），并加 `_is_remote_mirror()` 在 `add_damage_data`/`count_chill_damage` 跳过（镜像不结算 DOT）。
 - **mod**：客机对带 net_id 镜像加 buff → `_gate_enemy_buff_apply` → `rpc_id(1,"_server_apply_enemy_buff", ...)`（host 权威 `apply_buff`，出 card + DOT 在 host 结算 + 经 `_remote_hit_feedback` 播飘字）→ host `rpc("_remote_enemy_buff", ...)` 让客机镜像表现 card（`_applying_remote_buff` 放行 gate）；到期/移除 `_on_enemy_buff_removed` → `_remote_enemy_buff_remove`。
 - **验证**（`--coop-devbuff`：客机对预置敌人加 `poison_dot`）：host `keys=["poison_dot"]` 且 hp `35→5`（权威 DOT）；客机镜像 `keys=["poison_dot"]` 且 hp 同步（10）；无 `SCRIPT ERROR`。
+- **DOT 归属（2026-10-10 修）**：`_server_apply_enemy_buff` 用 `multiplayer.get_remote_sender_id()`（服务端可信，不采信包内自报）作 `applier_peer` 传给 `apply_buff`；`_on_enemy_buff_applied`（host）对 entry 做归属归一——本体调用点传 0 视为 host 本机并清空 `applier_stats`（数值回退本地 `player.stats`），非 0 沿用客机快照。规则为「最后施加者持有」：host 与客机互相覆盖，击杀分/EX 充能归最后施加者。修前客机转发丢 peer → entry 恒 0（host 归属），客机 DOT 击杀不充能、host 被误充能。
 
 ## 伤害/proc 按 peer id 归属（host 权威 → 归属端发射）
 - **问题**：host 结算全部伤害时 `GameEvents.emit_enemy_damage_taken(_dead)` 在 host 发射 → host 自己的道具/PS 被客机伤害误触发；而客机自己的道具/PS 对自身命中完全不触发。
@@ -262,7 +263,7 @@ mod_sdk/coop_mod/mods/etn_coop/
 - **本体 hook**：`script/extension_hooks.gd` 加 `enemy_proc_owner_suppress`；`script/health_component.gd:_take_damage_internal` 计算 `suppress_proc = suppress_feedback or intercept(enemy_proc_owner_suppress,[damage_data])`，据此跳过 `emit_enemy_damage_taken`/`_dead`/`emit_enemy_over_kill_damage`。
 - **host 分发**：`_server_enemy_hit` 设 `data.owner_peer = get_remote_sender_id()`、记 `last_attacker_by_net_id`、按 `killed`（`hp_before>0 and hp_after<=0`）`rpc_id(attacker, "_remote_enemy_proc", ...)`；自然路径 `_on_server_enemy_damage_taken`（含客机归属 DOT）按 `damage_data.owner_peer` 回传归属端。
 - **归属端**：`_remote_enemy_proc` → 本地 `GameEvents.emit_enemy_damage_taken(actual, data, mirror_path)`（`killed` 再 `_dead`）→ 只触发归属玩家的道具/PS。
-- **DOT**：`enemy_buff_manager.add_damage_data(..., owner_peer=entry.applier_peer)`，host 每跳按施加者回传。
+- **DOT**：`enemy_buff_manager.add_damage_data(..., owner_peer=entry.applier_peer)`，host 每跳按施加者回传。`applier_peer` 由 `_server_apply_enemy_buff`（客机转发，= sender）与 `_on_enemy_buff_applied` 归属归一（本体调用点 0→host）写入，规则「最后施加者持有」（见「敌人 buff 权威同步」）。
 - **β（活来源）**：`script/GameEvents.gd` 加 `player_projectile_hit(bullet, hit_body)`；`script/hit_box.gd:_emit_self_hit` 在 gate 前发射（命中瞬间、live bullet）；`scenes/player/iori/iori_ps.gd`（分裂）与 `scenes/update_item/mint_chocolate_parfait.gd` 改监听它（否则权威延迟回传时 `source_node` 子弹已回池）。
 - **验证**（`--coop-devowner`：客机对预置敌人造成伤害）：host `proc=0`、客机 `proc=1`（`op=<客机 id>`），即 host 不被误触发、客机自己触发。
 

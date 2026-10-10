@@ -2037,11 +2037,12 @@ func _server_apply_enemy_buff(net_id: int, buff_path: String, value: Array, sour
 	if not (buff is Buff):
 		return
 	# 应用即会触发 _on_enemy_buff_applied（host）→ 统一广播，无需在此再 rpc（避免双播）
-	manager.call("apply_buff", buff, _sanitize_buff_value(value), source_id.substr(0, MAX_NET_SOURCE_ID_LEN), _sanitize_applier_stats(stats))
+	# applier_peer 用服务端可信 sender（不采信包内自报）：供 DOT"最后施加者持有"归属
+	manager.call("apply_buff", buff, _sanitize_buff_value(value), source_id.substr(0, MAX_NET_SOURCE_ID_LEN), _sanitize_applier_stats(stats), multiplayer.get_remote_sender_id())
 
 
 # host 发起的敌人 buff（自然或客机转发）→ 广播客机镜像应用
-func _on_enemy_buff_applied(manager, buff, value, source_id, applier_stats, _applier_peer) -> void:
+func _on_enemy_buff_applied(manager, buff, value, source_id, applier_stats, applier_peer) -> void:
 	if _applying_remote_buff:
 		return
 	if not is_lan_game or not multiplayer.is_server():
@@ -2056,6 +2057,17 @@ func _on_enemy_buff_applied(manager, buff, value, source_id, applier_stats, _app
 	var body = manager.get("body")
 	if body == null or not is_instance_valid(body) or not body.has_meta("net_id"):
 		return
+	# 归属归一（"最后施加者持有"）：本体调用点不传 peer(0) 时视为 host 本机。
+	# 本体层叠分支仅在 applier_peer!=0 时覆盖，故 host 的 0 夺不回客机归属 → 这里直接改写 entry。
+	# 归属为本机时清空 stats 快照，使 DOT 数值回退本地 player.stats；客机归属沿用其快照（_server_apply_enemy_buff 已写）。
+	var resolved_peer: int = int(applier_peer) if int(applier_peer) != 0 else multiplayer.get_unique_id()
+	var cbs = manager.get("current_buff")
+	if cbs is Dictionary:
+		var entry = cbs.get(buff.id)
+		if entry is Dictionary:
+			entry["applier_peer"] = resolved_peer
+			if resolved_peer == multiplayer.get_unique_id():
+				entry["applier_stats"] = {}
 	rpc("_remote_enemy_buff", int(body.get_meta("net_id")), str(buff.resource_path), value, source_id, applier_stats)
 
 
