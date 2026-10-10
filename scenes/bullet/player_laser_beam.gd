@@ -47,12 +47,12 @@ var _just_activated: bool = false
 var grow: float = 0.0
 var player: Node
 
-# 场景预置 BeamHitBox 下的 CollisionShape2D，逐个贴合 Line2D 折线段；
-# 命中靠 area_entered/exited 维护 _contacts，结算时不再每 tick 轮询重叠。
+# 场景预置 BeamHitBox 下的 CollisionShape2D，逐个贴合 Line2D 折线段。
+# 结算以「即时形状查询」为准，不维护 area_entered/exited 集合：
+# 边沿事件在 monitorable 切换（敌人 set_dodge/跳跃）时不补发，集合会残留或漏更新（LEARNINGS 556）。
 # point_targets[i] 为第 i 段锁定的敌人（留作追踪接口）
 var _seg_shapes: Array[CollisionShape2D] = []
 var point_targets: Array[Node] = []
-var _contacts: Dictionary = {}
 
 # 联机远端驱动：位置插值到网络目标点；由 mod 调用 network_apply_beam_state 置位。
 var _net_remote_driven: bool = false
@@ -91,8 +91,6 @@ func _setup_segments() -> void:
 			_seg_shapes.append(s)
 	segment_count = _seg_shapes.size()
 	point_targets.resize(segment_count)
-	beam_hit_box.area_entered.connect(_on_beam_area_entered)
-	beam_hit_box.area_exited.connect(_on_beam_area_exited)
 	_set_segments_active(false)
 
 
@@ -136,11 +134,8 @@ func active_state() -> void:
 	impact_particles_2.emitting = true
 	grow = 0.0
 	animation_player.play("grow")
-	_contacts.clear()
 	_set_segments_active(true)
 	update_beam()
-	# 激活瞬间已重叠的目标不会补发 area_entered（LEARNINGS 296），做一次种子查询。
-	_seed_contacts()
 	self.scale.x = 1.0
 
 
@@ -153,7 +148,6 @@ func idle_state() -> void:
 	impact_particles.emitting = false
 	impact_particles_2.emitting = false
 	animation_player.play_backwards("grow")
-	_contacts.clear()
 	_set_segments_active(false)
 	in_idle.emit()
 
@@ -343,36 +337,43 @@ func _time_count() -> void:
 	_apply_damage()
 
 
-func _on_beam_area_entered(area: Area2D) -> void:
-	if is_idle == 1:
-		return
-	if area is HurtBox:
-		_contacts[area] = true
-
-
-func _on_beam_area_exited(area: Area2D) -> void:
-	_contacts.erase(area)
-
-
-# 激活瞬间已重叠的目标不会补发 area_entered，做一次种子查询（仅激活时一次）。
-func _seed_contacts() -> void:
-	for area in beam_hit_box.get_overlapping_areas():
-		if area is HurtBox:
-			_contacts[area] = true
-
-
 func _apply_damage() -> void:
 	if damage_data == null:
 		return
-	for hurtbox in _contacts.keys():
+	# 即时重叠为准：目标躲出后不会被残留接触继续命中；躲回光束内也能照常结算。
+	for hurtbox in _overlapping_areas():
 		if hurtbox == null or not is_instance_valid(hurtbox):
-			_contacts.erase(hurtbox)
 			continue
-		# 敌人 set_dodge/跳跃期间 monitorable=false → 跳过（残留重叠不会清，需自行过滤）
+		# 敌人 set_dodge/跳跃期间 monitorable=false；此期间不结算，落地且仍在光束内则恢复。
 		if not hurtbox.monitorable:
 			continue
 		hurtbox.hit_received.emit(damage_data)
 	damage_cd = damage_tick_interval
+
+
+# 即时重叠查询：直接问物理空间当前哪些启用的段形状覆盖了 HurtBox。
+# 不用 Area2D.get_overlapping_areas()（Rapier 下会残留，LEARNINGS 321/463）。
+func _overlapping_areas() -> Dictionary:
+	var set: Dictionary = {}
+	if beam_hit_box == null:
+		return set
+	var space: PhysicsDirectSpaceState2D = beam_hit_box.get_world_2d().direct_space_state
+	if space == null:
+		return set
+	var params := PhysicsShapeQueryParameters2D.new()
+	params.collision_mask = beam_hit_box.collision_mask
+	params.collide_with_areas = true
+	params.collide_with_bodies = false
+	for s in _seg_shapes:
+		if s == null or s.disabled or s.shape == null:
+			continue
+		params.shape = s.shape
+		params.transform = s.global_transform
+		for r in space.intersect_shape(params, 32):
+			var a = r["collider"]
+			if a is HurtBox:
+				set[a] = true
+	return set
 
 
 func _valid_target(i: int) -> Node:

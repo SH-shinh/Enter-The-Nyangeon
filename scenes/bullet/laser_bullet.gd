@@ -15,11 +15,8 @@ var bullet_damage_mult: float = 1
 var damage_cd: int = 0
 var is_shoot: bool = false
 
-# 命中靠边沿事件维护的集合，结算时不再逐 tick get_overlapping_areas()。
-# Rapier2D 下轮询重叠会残留、且 monitorable 变化不清既有重叠（LEARNINGS 321/463），
-# 所以改走 area_entered/exited + 结算时过滤 monitorable。
-var _contacts: Dictionary = {}
-
+# 结算以「即时形状查询」为准，不维护 area_entered/exited 集合：
+# 边沿事件在 monitorable 切换（跳跃/闪避）时不补发，集合会残留或漏更新（LEARNINGS 556）。
 var source_faction: int = Faction.ENEMY_SIDE
 
 func _ready() -> void:
@@ -29,8 +26,6 @@ func _ready() -> void:
 	# 是共享资源，多个实例每帧改写 size.x 会互相覆盖，命中框长度与可见光束不一致。
 	# 每个实例复制一份自己的形状，保证命中框始终等于本条光束的长度。
 	collision_shape_2d.shape = collision_shape_2d.shape.duplicate()
-	hit_box.area_entered.connect(_on_hit_box_area_entered)
-	hit_box.area_exited.connect(_on_hit_box_area_exited)
 
 func game_over_stop_sounds(_player_dead:bool):
 	stop_sounds()
@@ -72,14 +67,10 @@ func laser_shoot():
 	is_shoot = true
 	damage_cd = 1
 	apply_damage_data()
-	_contacts.clear()
 	animation_player.play("laser_anim")
-	# 激活瞬间已重叠的目标不会补发 area_entered，做一次种子查询（仅激活时一次）。
-	_seed_contacts()
 
 func laser_end():
 	is_shoot = false
-	_contacts.clear()
 	animation_player.play_backwards("laser_anim")
 
 func apply_damage_data():
@@ -95,28 +86,37 @@ func apply_damage_data():
 func add_damage():
 	if hit_box.damage_data == null:
 		return
-	for hurtbox in _contacts.keys():
+	if collision_shape_2d.disabled:
+		damage_cd = 1
+		return
+	# 即时重叠为准：跳跃/闪避躲出后不会被残留接触继续命中；跳回光束内也能照常结算。
+	for hurtbox in _overlapping_areas():
 		if hurtbox == null or not is_instance_valid(hurtbox):
-			_contacts.erase(hurtbox)
 			continue
-		# 跳跃/闪避期 monitorable=false；Rapier 不清既有重叠，需在此自行跳过。
+		# 跳跃/闪避期 monitorable=false（set_dodge）；此期间不结算，落地且仍在光束内则恢复。
 		if not hurtbox.monitorable:
 			continue
 		hurtbox.hit_received.emit(hit_box.damage_data)
 	damage_cd = 1
 
-func _on_hit_box_area_entered(area: Area2D) -> void:
-	if area is HurtBox:
-		_contacts[area] = true
-
-func _on_hit_box_area_exited(area: Area2D) -> void:
-	_contacts.erase(area)
-
-# 激活瞬间已重叠的目标不会补发 area_entered，做一次种子查询（仅激活时一次）。
-func _seed_contacts() -> void:
-	for area in hit_box.get_overlapping_areas():
-		if area is HurtBox:
-			_contacts[area] = true
+# 即时重叠查询：直接问物理空间当前形状覆盖了哪些 HurtBox。
+# 不用 Area2D.get_overlapping_areas()（Rapier 下会残留，LEARNINGS 321/463）。
+func _overlapping_areas() -> Dictionary:
+	var set: Dictionary = {}
+	var space: PhysicsDirectSpaceState2D = hit_box.get_world_2d().direct_space_state
+	if space == null:
+		return set
+	var params := PhysicsShapeQueryParameters2D.new()
+	params.shape = collision_shape_2d.shape
+	params.transform = collision_shape_2d.global_transform
+	params.collision_mask = hit_box.collision_mask
+	params.collide_with_areas = true
+	params.collide_with_bodies = false
+	for r in space.intersect_shape(params, 32):
+		var a = r["collider"]
+		if a is HurtBox:
+			set[a] = true
+	return set
 
 
 # 联机（仅表现端）：敌方激光对本地玩家开放伤害洞
@@ -134,4 +134,3 @@ func open_network_player_damage_hole() -> void:
 		if cs != null:
 			cs.disabled = false
 			cs.set_deferred("disabled", false)
-	_seed_contacts()
