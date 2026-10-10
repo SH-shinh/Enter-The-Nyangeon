@@ -116,10 +116,9 @@ process_material = SubResource("ParticleProcessMaterial_hfe2u")
 libraries/ = SubResource("AnimationLibrary_grow")
 
 [node name="BeamHitBox" type="Area2D" parent="." unique_id=1901000001]
-monitoring = true
-monitorable = false
 collision_layer = 0
 collision_mask = 16384
+monitorable = false
 
 [node name="Seg0" type="CollisionShape2D" parent="BeamHitBox" unique_id=1901000002]
 shape = SubResource("RectangleShape2D_beamseg")

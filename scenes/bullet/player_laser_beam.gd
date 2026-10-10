@@ -46,6 +46,10 @@ var _angles: PackedFloat32Array
 var _just_activated: bool = false
 var grow: float = 0.0
 var player: Node
+# 承粗系数（= 玩家 stats.bullet_scale，激活时定一次）：与狙击弹一致，整节点只缩 Y（X 不变），
+# 线宽 / Line2D 点位 / 命中粒子随 Y 放大。碰撞容器 BeamHitBox 反向缩放抵消，避免 Rapier2D
+# 收到含缩放的 transform 而陷入原生递归崩溃。
+var _thickness_scale: float = 1.0
 
 # 场景预置 BeamHitBox 下的 CollisionShape2D，逐个贴合 Line2D 折线段。
 # 结算以「即时形状查询」为准，不维护 area_entered/exited 集合：
@@ -134,9 +138,22 @@ func active_state() -> void:
 	impact_particles_2.emitting = true
 	grow = 0.0
 	animation_player.play("grow")
+	# 视觉与狙击弹一致：整节点只缩 Y（X 不变），线宽 / Line2D 点位 / 命中粒子随 Y 放大。
+	_thickness_scale = _read_thickness_scale()
+	self.scale = Vector2(1.0, _thickness_scale)
+	# 碰撞容器反向缩放抵消节点 Y 缩放，使 BeamHitBox 及段形状的全局 transform 恒为等距
+	# （只剩旋转+平移）。否则 Rapier2D 收到含缩放的 transform 会陷入原生递归栈溢出（0xC00000FD）。
+	beam_hit_box.scale = Vector2(1.0, 1.0 / _thickness_scale)
 	_set_segments_active(true)
 	update_beam()
-	self.scale.x = 1.0
+
+
+# 取玩家当前子弹大小作为厚度系数（激活时一次）。player 经 PlayerRef 刷新，换角色不失效。
+func _read_thickness_scale() -> float:
+	player = PlayerRef.ensure(self, player)
+	if player != null and player.get("stats") != null:
+		return clampf(float(player.stats.bullet_scale), 0.1, 32.0)
+	return 1.0
 
 
 func idle_state() -> void:
@@ -309,13 +326,17 @@ func _update_segments(pts: PackedVector2Array) -> void:
 					s.disabled = true
 				continue
 			var d := b - a
-			s.position = (a + b) * 0.5
-			s.rotation = d.angle()
-			rect.size = Vector2(max(d.length(), 1.0), hit_box_width)
+			# BeamHitBox 已按 (1, 1/t) 反缩放，段形状用"节点 Y 缩放后"的几何写入：两端缩放
+			# 相消后世界点/朝向/长度与可视光束精确一致（含追踪弯束），且全局 transform 保持等距。
+			var dscaled := Vector2(d.x, d.y * _thickness_scale)
+			var mid := (a + b) * 0.5
+			s.position = Vector2(mid.x, mid.y * _thickness_scale)
+			s.rotation = dscaled.angle()
+			rect.size = Vector2(max(dscaled.length(), 1.0), hit_box_width * _thickness_scale)
 			if s.disabled:
 				s.disabled = false
 		else:
-			s.position = end_point
+			s.position = Vector2(end_point.x, end_point.y * _thickness_scale)
 			s.rotation = 0.0
 			rect.size = Vector2(1.0, 1.0)
 			if not s.disabled:

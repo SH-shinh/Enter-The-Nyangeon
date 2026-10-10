@@ -7,7 +7,7 @@ const SAVE_PATH_TMP := "user://PlayerData_new.res"
 const SAVE_PATH_BAK := "user://PlayerData.res.bak"
 const CONFIG_PATH := "user://config.ini"
 
-var version_number: String = "v0.5.1.2"
+var version_number: String = "v0.5.1.3"
 
 var size_x: float = 0
 var size_y: float = 0
