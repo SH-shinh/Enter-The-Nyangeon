@@ -87,6 +87,12 @@ const MAP := {
 	"reload_timer_mult": {
 		PLAYER: "reload_timer_mult",
 	},
+	"invincible_frame_mult": {
+		PLAYER: "invincible_frame_mult",
+	},
+	"invincible_frame_add": {
+		PLAYER: "invincible_frame_add",
+	},
 }
 
 static func resolve(host_kind: int, key: String) -> String:

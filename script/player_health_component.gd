@@ -16,6 +16,18 @@ var heal_data: HealData
 var is_invincible : bool = false
 var invincibility_timer : float = 0.0
 
+## 受击无敌帧时长接口：final = base * mult + add（override > 0 时直接覆盖）。
+## 道具改 PlayerData.invincible_frame_mult/add；Buff 走 BuffStatMap 同名 key；
+## 脚本需要绝对时长时直设 override（不受 PlayerData 重算影响，设置方负责清回 -1）。
+@export var invincible_frame_mult: float = 1.0
+@export var invincible_frame_add: float = 0.0
+@export var invincible_frame_override: float = -1.0
+
+## Timer 无法表达 0 秒（wait_time setter 最小 0.001）：用该值表示"不进入无敌帧"。
+const MIN_IFRAME_SECONDS: float = 0.001
+## 场景原始 wait_time 缓存：Timer.start(t) 会把 t 写回 wait_time，不缓存会累积缩短。
+var _base_invincible_frame_time: float = -1.0
+
 ## 腐化积累：只有 TORMENT 难度生效；3 秒内再次实际扣血时，按本次扣血量的 20% 转腐化。
 const CORRUPTION_WINDOW_MSEC: int = 3000
 const CORRUPTION_GAIN_RATE: float = 0.2
@@ -30,6 +42,7 @@ func _ready():
 	hurt_box.hit_received.connect(take_damage)
 	heal_data = HealData.make()
 	GameEvents.round_start.connect(_on_round_start)
+	_cache_invincible_frame_time()
 
 func _on_round_start() -> void:
 	# 腐化跨回合保留，但“持续受伤”窗口不跨回合
@@ -58,6 +71,44 @@ func _is_iframe_blocked(damage_data: HealthChangeData) -> bool:
 	if dmg.flags.has(GameTags.IGNORE_IFRAME):
 		return false
 	return hurt_box.contact_invincible
+
+# 定位玩家的 InvincibleFrame：优先 @onready 引用，_ready 早于父节点赋值时回退按名字取。
+func _resolve_invincible_frame_timer() -> Timer:
+	if owner != null:
+		var t = owner.get("invincible_frame")
+		if t is Timer:
+			return t
+	var parent := get_parent()
+	if parent != null:
+		return parent.get_node_or_null("InvincibleFrame") as Timer
+	return null
+
+func _cache_invincible_frame_time() -> void:
+	if _base_invincible_frame_time > 0.0:
+		return
+	var timer := _resolve_invincible_frame_timer()
+	if timer != null:
+		_base_invincible_frame_time = timer.wait_time
+
+## 当前应使用的受击无敌帧时长（秒）。
+func invincible_frame_duration() -> float:
+	if invincible_frame_override > 0.0:
+		return invincible_frame_override
+	_cache_invincible_frame_time()
+	if _base_invincible_frame_time <= 0.0:
+		return MIN_IFRAME_SECONDS
+	return maxf(
+		MIN_IFRAME_SECONDS,
+		_base_invincible_frame_time * maxf(0.0, invincible_frame_mult) + invincible_frame_add
+	)
+
+# 受击无敌帧唯一启动入口：所有 start() 都走这里，时长由接口决定。
+func _start_invincible_frame() -> void:
+	var timer := _resolve_invincible_frame_timer()
+	if timer == null:
+		return
+	_cache_invincible_frame_time()
+	timer.start(invincible_frame_duration())
 
 func _armor_reduction() -> float:
 	return armor_cap * (1.0 - exp(-float(stats.hurt_resis) / max(0.001, armor_k)))
@@ -117,7 +168,7 @@ func take_damage(damage_data: HealthChangeData):
 		if stats.hurt_invalid > 0:
 			stats.hurt_invalid -= 1
 			stats.hurt_invalid_changed.emit()
-			owner.invincible_frame.start()
+			_start_invincible_frame()
 			SoundManager.play_sfx("EquipSounds2")
 			owner.add_text("IMMUNE!")
 			owner._on_invincible_frame(false)
@@ -154,7 +205,7 @@ func take_damage(damage_data: HealthChangeData):
 				stats.t_hp -= final_damage
 				GameEvents.emit_player_hurt_t_hp(final_damage)
 				owner.on_hit_sounds.play()
-				owner.invincible_frame.start()
+				_start_invincible_frame()
 				if !damage_data.damage_type.has(GameTags.DOT_DAMAGE):
 					owner._on_invincible_frame(true)
 			else:
@@ -163,7 +214,7 @@ func take_damage(damage_data: HealthChangeData):
 				actual_hp_loss = maxi(0, hp_before - stats.hp)
 				GameEvents.emit_player_hurt_hp(final_damage)
 				owner.on_hit_sounds.play()
-				owner.invincible_frame.start()
+				_start_invincible_frame()
 				if !damage_data.damage_type.has(GameTags.DOT_DAMAGE):
 					owner._on_invincible_frame(true)
 			# 召唤物替玩家承伤后的转伤不计腐化，也不参与连续受伤窗口

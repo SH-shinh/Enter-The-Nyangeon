@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="GameMode" load_steps=5 format=3]
+
+[ext_resource type="Texture2D" uid="uid://cq35inmgj3nes" path="res://sprites/buff_icon/easy_fall.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/game_mode/game_mode.gd" id="2_script"]
+[ext_resource type="Resource" path="res://resources/buff/player_buff/chip_easy_fall_buff.tres" id="3_buff"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="4_buffscript"]
+
+[resource]
+script = ExtResource("2_script")
+game_mode_name = "chip_easy_fall"
+game_mode_id = "chip_easy_fall"
+game_mode_icon = ExtResource("1_icon")
+chip_enabled = true
+chip_kind = 2
+chip_weight = 1.0
+chip_include_boss = false
+chip_player_buffs = Array[ExtResource("4_buffscript")]([ExtResource("3_buff")])

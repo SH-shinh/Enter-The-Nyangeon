@@ -166,6 +166,8 @@ var hurt_resis_mult: float = 1 #护甲值乘算
 var hurt_mult_mult: float = 1 #承伤率加算
 var hurt_invalid_add: int = 0 #伤害无效化次数加算
 var life_num_add: int = 0 #生命数加算
+var invincible_frame_mult: float = 1 #受击无敌帧时长乘算
+var invincible_frame_add: float = 0 #受击无敌帧时长加算（秒）
 
 var buff_layer_mult_add: float  = 0 #buff上限加算
 var buff_duration_mult: float = 1 #有益buff持续时间乘算
@@ -257,6 +259,8 @@ func reset_date():
 	hurt_mult_mult = 1 #承伤率加算
 	hurt_invalid_add = 0 #伤害无效化次数加算
 	life_num_add = 0 #生命数加算
+	invincible_frame_mult = 1 #受击无敌帧时长乘算
+	invincible_frame_add = 0 #受击无敌帧时长加算（秒）
 	buff_layer_mult_add = 0 #buff上限加算
 	buff_duration_mult = 1 #有益buff持续时间乘算
 	
@@ -410,6 +414,10 @@ func _recompute_player_ability():
 	player.stats.hurt_mult = max(0.1, base_hurt_mult * hurt_mult_mult)
 	player.stats.hurt_invalid = base_hurt_invalid + hurt_invalid_add
 	player.stats.life_num = base_life_num + life_num_add
+	# 受击无敌帧时长接口：乘/加下发到玩家 HealthComponent；override 不入此处，由直设方管理
+	if player.health_component != null:
+		player.health_component.invincible_frame_mult = max(0.0, invincible_frame_mult)
+		player.health_component.invincible_frame_add = invincible_frame_add
 	
 	player.stats.summoned_damage = max(0.1, (base_summoned_damage + summoned_damage_add) * ability_mult)
 	player.stats.buff_layer_mult = max(0, base_buff_layer_mult + buff_layer_mult_add)

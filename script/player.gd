@@ -42,6 +42,15 @@ var is_downed: bool = false
 
 var can_knockback: bool = true
 
+## 受击无敌帧闪烁：由代码逐帧切 visible，时长跟随 InvincibleFrame（0.5s / 0.1s / 道具延长）。
+## 旧方案是场景内 "Invincible frame" 动画（固定 0.5s 的 visible 关键帧），时长变化时会拖尾，
+## 因此改为代码控制；动画保留在场景里但不再播放（见 _start_invincible_flash 的 stop）。
+const INVINCIBLE_FLASH_INTERVAL: float = 0.075
+var _flash_nodes: Array[Node] = []
+var _flash_accum: float = 0.0
+var _flash_tick: int = 0
+var _flashing: bool = false
+
 var crosshair_pos: Vector2
 
 var on_hit: bool = false
@@ -98,6 +107,60 @@ func _ready():
 	invincible_frame.timeout.connect(_on_invincible_frame_end)
 	# halo 在 _process 里逐帧 lerp，属纯视觉渲染帧驱动；关闭物理插值避免二次插值
 	halo.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
+
+func _process(delta: float) -> void:
+	_update_invincible_flash(delta)
+
+# 闪烁节点按角色结构选择：长发角色由 CanvasGroup 包住身体（Graphics 在其下），
+# 光环与枪是根子节点；其余角色只有 Graphics。与旧 "Invincible frame" 动画轨道一致。
+func _resolve_flash_nodes() -> Array[Node]:
+	var out: Array[Node] = []
+	if has_node("CanvasGroup"):
+		for node_name in ["CanvasGroup", "GraphicsHalo", "GraphicsGun"]:
+			var node := get_node_or_null(node_name)
+			if node != null:
+				out.append(node)
+	else:
+		var graphics_node := get_node_or_null("Graphics")
+		if graphics_node != null:
+			out.append(graphics_node)
+	return out
+
+func _set_flash_visible(value: bool) -> void:
+	for node in _flash_nodes:
+		if is_instance_valid(node):
+			node.visible = value
+
+func _start_invincible_flash() -> void:
+	if _flash_nodes.is_empty():
+		_flash_nodes = _resolve_flash_nodes()
+	if _flash_nodes.is_empty():
+		return
+	# 旧的固定时长动画不再参与，避免与代码控制的 visible 互相覆盖
+	invincible_frame_anim.stop()
+	_flashing = true
+	_flash_accum = 0.0
+	_flash_tick = 0
+	_set_flash_visible(true)
+
+func _stop_invincible_flash() -> void:
+	if not _flashing:
+		return
+	_flashing = false
+	_set_flash_visible(true)
+
+func _update_invincible_flash(delta: float) -> void:
+	if not _flashing:
+		return
+	# 跳跃/飞行/倒地等状态不走 tick_physics 的收尾，这里按计时器兜底恢复可见
+	if invincible_frame.time_left <= 0.0:
+		_stop_invincible_flash()
+		return
+	_flash_accum += delta
+	while _flash_accum >= INVINCIBLE_FLASH_INTERVAL:
+		_flash_accum -= INVINCIBLE_FLASH_INTERVAL
+		_flash_tick += 1
+		_set_flash_visible((_flash_tick % 2) == 0)
 
 func reset_control_flags():
 	# 回合边界复位控制开关，防止 can_control/can_move/player_stop 被覆盖层或异常路径残留锁死。
@@ -427,7 +490,7 @@ func _on_invincible_frame(anim: bool):
 	
 	hurt_box.call_deferred("set_invulnerable", true)
 	if anim == true:
-		invincible_frame_anim.play("Invincible frame")
+		_start_invincible_flash()
 		if long_hair == false:
 			sprite_2d.material.set_shader_parameter("flash_opacity", 1)
 			halo.material.set_shader_parameter("flash_opacity", 0.5)
@@ -445,6 +508,7 @@ func _on_invincible_frame(anim: bool):
 func _on_invincible_frame_end():
 	var is_floor := sprite_2d.position.y == -17
 	if invincible_frame.time_left <= 0:
+		_stop_invincible_flash()
 		if is_floor:
 			hurt_box.set_invulnerable(false)
 			on_hit = false
