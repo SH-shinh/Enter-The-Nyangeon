@@ -10,6 +10,9 @@ var enabled: Callable
 var touch_content: Callable
 var preview_closed: Callable
 var hit_test: Callable
+## 触屏确认态的归属区（返回画布坐标 Rect2）；为空时回退到目标矩形。
+## 整卡交互的卡片可扩到整卡，避免按在同卡其它区域时被宿主当成「点别处」而清掉确认态。
+var press_bounds: Callable
 ## 可选的悬停根：指针落在其子树内也算命中本绑定（仍受 target 矩形裁剪）。
 var hover_root: Node
 var _host
@@ -72,6 +75,15 @@ func visible_rect() -> Rect2:
 			rect = rect.intersection(clip)
 		ancestor = ancestor.get_parent()
 	return rect.intersection(target.get_viewport().get_visible_rect())
+
+## 触屏按下点是否仍归本预览所有：整卡交互的卡片把归属区扩到整卡，
+## 避免按在同卡其它区域时被宿主当成「点别处」而清掉触屏确认态。
+func owns_press(point: Vector2) -> bool:
+	if press_bounds.is_valid():
+		var rect: Rect2 = press_bounds.call()
+		if rect.has_area() and rect.has_point(point):
+			return true
+	return visible_rect().has_point(point)
 
 func matches_mouse(pointer: Vector2, hovered: Control) -> bool:
 	if not available() or not visible_rect().has_point(pointer) or hovered == null:

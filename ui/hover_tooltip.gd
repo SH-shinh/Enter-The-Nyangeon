@@ -98,7 +98,7 @@ func _input(event: InputEvent) -> void:
 		if _active != null and _active._preview_mode == "focus":
 			_active.dismiss()
 		if _active != null and _active._preview and _active._preview_mode == "touch" and event.pressed:
-			if not _active.visible_rect().has_point(event.position):
+			if not _active.owns_press(event.position):
 				_active.dismiss()
 		elif _active != null and not _active._preview:
 			clear()

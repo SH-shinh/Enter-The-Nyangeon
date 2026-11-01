@@ -6,6 +6,8 @@ extends PanelContainer
 
 @onready var upgrade = $Node2D/upgrade
 @onready var marker_2d = $Marker2D
+## 整卡触屏归属区来源：卡面矩形（成本条与图标同属一张卡）。
+@onready var press_area: Control = get_node_or_null("Node2D/ColorRect3") as Control
 @onready var smoke = preload("res://scenes/bullet/spread_smoke.tscn")
 
 var t_num: int = 0
@@ -21,12 +23,18 @@ var rare_color: Array[Color] = [ Color(0.779, 0.795, 0.81), Color(0.464, 0.673, 
 
 func _ready() -> void:
 	_tooltip = HoverTooltipBinding.bind(upgrade, _tooltip_content, func(): return player != null, func(): on_touch = false)
+	_tooltip.press_bounds = _press_bounds
 	upgrade.mouse_entered.connect(mouse_in)
 	upgrade.mouse_exited.connect(mouse_out)
 	upgrade.gui_input.connect(mouse_selected.bind(upgrade))
 	GameEvents.get_player.connect(get_player)
 	GameEvents.player_card_touch.connect(touch_out)
 	_on_ready_extra()
+
+## 整卡触屏归属区：第二下点按图标也必须计入确认，不能被宿主当成「点别处」而清掉确认态。
+func _press_bounds() -> Rect2:
+	var area: Control = press_area if press_area != null else upgrade
+	return area.get_global_transform_with_canvas() * Rect2(Vector2.ZERO, area.size)
 
 func get_player():
 	player = get_tree().get_first_node_in_group("Player")
