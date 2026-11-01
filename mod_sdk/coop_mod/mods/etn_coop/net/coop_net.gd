@@ -33,8 +33,8 @@ const LOBBY_SCENE: String = "res://scenes/main/test_room.tscn"
 const DEFAULT_BATTLE_SCENE: String = "res://scenes/main/main.tscn"
 const MENU_SCENE: String = "res://scenes/main/menu_screen.tscn"
 # 协议/版本握手：不一致直接拒绝。RPC 契约变更时必须递增 PROTOCOL_VERSION。
-const PROTOCOL_VERSION: int = 6
-const MOD_VERSION: String = "0.1.15"
+const PROTOCOL_VERSION: int = 7
+const MOD_VERSION: String = "0.1.16"
 const HELLO_TIMEOUT_MSEC: int = 30000
 # 客机：发出 _client_hello 后等待 _hello_accept 的上限；超时视为握手失败（旧房主/版本不匹配）
 const HELLO_ACCEPT_TIMEOUT_MSEC: int = 30000
@@ -9178,39 +9178,53 @@ func _remote_return_to_menu(path: String) -> void:
 
 # ---------------- 受击反馈（非拥有端） ----------------
 
+# 拥有端当前受击无敌帧时长（含玩家词条/道具的 mult/add/override）；无接口时回退 0.5。
+func _local_iframe_duration(player: Node) -> float:
+	var hc = player.get("health_component")
+	if hc != null and hc.has_method("invincible_frame_duration"):
+		return float(hc.call("invincible_frame_duration"))
+	return 0.5
+
+
 func _on_local_player_hurt(player: Node) -> void:
 	if not is_lan_game:
 		return
 	if player != get_local_player():
 		return
 	var pid: int = multiplayer.get_unique_id()
+	var iframe_duration: float = _local_iframe_duration(player)
 	if multiplayer.is_server():
-		rpc("_remote_player_hurt", pid)
+		rpc("_remote_player_hurt", pid, iframe_duration)
 	else:
-		rpc_id(1, "_server_player_hurt")
+		rpc_id(1, "_server_player_hurt", iframe_duration)
 
 
 @rpc("authority", "call_remote", "unreliable")
-func _remote_player_hurt(peer_id: int) -> void:
+func _remote_player_hurt(peer_id: int, iframe_duration: float = 0.5) -> void:
 	if peer_id == multiplayer.get_unique_id():
 		return
 	var p = player_by_peer_id.get(peer_id)
 	if p == null or not is_instance_valid(p):
 		return
-	# 复刻本体受击路径：start() 计时器 + _on_invincible_frame(true)。
+	# 时长由拥有端上报（词条/道具会改），镜像的 Timer 与代码闪烁都跟随它；
+	# 非法包直接忽略，避免异常值让镜像长时间高亮或迟迟不恢复。
+	if not is_finite(iframe_duration) or iframe_duration <= 0.0:
+		return
+	var duration: float = clampf(iframe_duration, 0.001, 5.0)
+	# 复刻本体受击路径：start(时长) + _on_invincible_frame(true)。
 	# 只调 _on_invincible_frame(true) 会把 flash_opacity 停在 0.3，因归零在 _on_invincible_frame_end()
 	# （InvincibleFrame.timeout 触发），未启动计时器则远端镜像一直卡闪白。
 	var timer = p.get("invincible_frame")
 	if timer == null:
 		timer = p.get_node_or_null("InvincibleFrame")
 	if timer != null and timer.has_method("start"):
-		timer.call("start")
+		timer.call("start", duration)
 	if p.has_method("_on_invincible_frame"):
 		p.call("_on_invincible_frame", true)
 
 
 @rpc("any_peer", "call_remote", "unreliable")
-func _server_player_hurt() -> void:
+func _server_player_hurt(iframe_duration: float = 0.5) -> void:
 	if not multiplayer.is_server():
 		return
 	if not _server_sender_ok():
@@ -9218,8 +9232,8 @@ func _server_player_hurt() -> void:
 	var sender: int = multiplayer.get_remote_sender_id()
 	if not _rate_allow_tokens(sender, "hurt", 60.0, 20.0):
 		return
-	rpc("_remote_player_hurt", sender)
-	_remote_player_hurt(sender)
+	rpc("_remote_player_hurt", sender, iframe_duration)
+	_remote_player_hurt(sender, iframe_duration)
 
 
 # ---------------- 枪开火后坐（非拥有端复刻） ----------------

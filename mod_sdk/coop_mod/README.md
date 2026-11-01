@@ -1,6 +1,13 @@
 # ETN Coop Mod（骨架）
 
-> 当前发布版本 **0.1.14**（以 `mods/etn_coop/mod.json` 为准），协议 **v6**；最低本体版本声明为 **v0.5.2.0**。运行时仍要求本体具备 `enemy_damage_calculating` 前置伤害接口，本体与 Mod 需配套更新；当前不整文件覆盖本体脚本。
+> 当前发布版本 **0.1.16**（以 `mods/etn_coop/mod.json` 为准），协议 **v7**；最低本体版本声明为 **v0.5.2.0**。运行时仍要求本体具备 `enemy_damage_calculating` 前置伤害接口，本体与 Mod 需配套更新；当前不整文件覆盖本体脚本。
+
+## 2026-11-01 镜像受击无敌帧时长跟随拥有端（feat，协议 v6→v7 / 0.1.16）
+
+- **现象**：本体新增玩家词条「易跌倒」把受击无敌帧从 0.5s 缩到 0.1s（`PlayerHealthComponent` 另提供 mult/add/override 接口，供未来道具与技能改时长），但联机远端镜像受击时固定用镜像场景默认 0.5s（`_remote_player_hurt` 里 `timer.start()` 无参）——别人看你受击后还在闪「无敌」，与实际 0.1s 就能再被打不一致。
+- **修法（纯 mod，本体判定不变）**：玩家伤害本就是每端本地权威（`coop_visual_sync._open_player_damage_hole` 给敌方视觉弹开 `enemy_bullet`(128) 层伤害洞），词条数值两端天然生效；本次只对齐表现——`_on_local_player_hurt()` 用新增 `_local_iframe_duration(player)` 取拥有端 `health_component.invincible_frame_duration()`，经 `_remote_player_hurt(peer_id, iframe_duration)` / `_server_player_hurt(iframe_duration)` 传递；接收端 `timer.start(clampf(duration, 0.001, 5.0))`（非有限值或 `<=0` 直接忽略）。本体 `player.gd` 的代码驱动闪烁随后自动按该时长循环。
+- **协议/版本**：RPC 参数变化 → `PROTOCOL_VERSION` 6→7、`MOD_VERSION` 与 `mod.json` 0.1.15→0.1.16；旧 0.1.15 端会在握手阶段被拒绝（`protocol` / `mod_version`），联机双方需一起更新。
+- **回归**：`tests/coop_hurt_duration_checks.gd`（本地、不入库，静态契约检查）`failures=0`；`coop_net.gd` 源码经 `GDScript.reload()` 编译通过（0 错误）。
 
 ## 2026-10-25 侵蚀之塔链拖 / 远端激光脱节修复（fix，不升版）
 
