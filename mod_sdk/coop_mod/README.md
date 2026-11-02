@@ -2,6 +2,14 @@
 
 > 当前发布版本 **0.1.16**（以 `mods/etn_coop/mod.json` 为准），协议 **v7**；最低本体版本声明为 **v0.5.2.0**。运行时仍要求本体具备 `enemy_damage_calculating` 前置伤害接口，本体与 Mod 需配套更新；当前不整文件覆盖本体脚本。
 
+## 2026-11-02 修复：倒地玩家断线重连后仍可操作（fix，不升版）
+
+- **现象**（user）：联机中玩家被打倒（全屏黑白 + 0 血）后断线自动重连，回来仍是 0 血黑白，但可以正常移动/射击。
+- **根因**：① 客机重连收尾 `_finish_reconnect()` → `_freeze_local_player_for_reconnect(false)` 无条件 `player_stop=false`/`can_control=true`，把 `set_downed_state(true)` 设的倒地硬停一起解开；② 本机倒地态不经过 `_remote_player_down_changed()`（首行 `peer_id == 本机` 直接 return，只服务「他人镜像」），`_remote_peer_rejoined()` 只把 `restored["down"]` 写进 `down_peer_ids` 字典，从不落到本地玩家节点；③ 掉线期间 host 的 `_revive_all_downed_for_upgrade()` / 队友救起都走 `_remote_revived` 广播，断线者必然收不到 → 两端状态分叉（本地停在 0 血黑白，host 认为已存活）。
+- **修法（纯 mod，本体零改动）**：① `_freeze_local_player_for_reconnect` 改为「冻结前快照 → 解冻时按快照 + 当前倒地态还原」：冻结前已倒地则解冻后仍 `player_stop=true` 并 `_ensure_motion_down_visible()` 保证黑白遮罩在场，冻结前未倒地则恢复原值；② `_remote_peer_rejoined` 对 `new_id == 本机 id` 调新增 `_reconcile_local_downed_state(host_down)`：host 说 down → 补 `set_downed_state(true)` + 硬停 + 遮罩；host 说 up → `_apply_revive_local(本机, 1.0)` 满血复活并收遮罩（补发错过的复活）；③ 附带 `_refresh_local_peer_identity()`：重连成功后把本地玩家 `peer_id` meta / 本地 proxy 的 peer id 刷成新 id（否则 `_gate_player_buff_apply/remove` 会把打在本机身上的光环 buff 误转发到旧 id 而丢失）。
+- **协议/版本**：**本次不升版本**——无 RPC 契约变化（`restored["down"]` 在 0.1.16 已随 `_remote_peer_rejoined` 发送），`PROTOCOL_VERSION` 保持 v7，`MOD_VERSION` 与 `mod.json` 保持 `0.1.16`，新旧端可互通。
+- **回归**：`tests/coop_reconnect_downed_checks.gd`（本地、不入库，静态契约 `failures=0`）；`tests/run_coop_recovery_checks.py --cases downed_rejoin rejoin3 upgrade`（`downed_rejoin` 为本地新增用例，不入库）。
+
 ## 2026-11-01 镜像受击无敌帧时长跟随拥有端（feat，协议 v6→v7 / 0.1.16）
 
 - **现象**：本体新增玩家词条「易跌倒」把受击无敌帧从 0.5s 缩到 0.1s（`PlayerHealthComponent` 另提供 mult/add/override 接口，供未来道具与技能改时长），但联机远端镜像受击时固定用镜像场景默认 0.5s（`_remote_player_hurt` 里 `timer.start()` 无参）——别人看你受击后还在闪「无敌」，与实际 0.1s 就能再被打不一致。

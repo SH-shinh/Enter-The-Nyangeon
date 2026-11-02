@@ -562,6 +562,11 @@ var _reconnect_attempt: int = 0
 var _reconnect_timer: float = 0.0
 var _reconnect_overlay: Node = null
 var _reconnect_started_msec: int = 0
+# 重连本地冻结快照：解冻必须回到冻结前的控制态（倒地/暂停/结算都可能已置 player_stop）
+var _reconnect_freeze_active: bool = false
+var _reconnect_prev_stop: bool = false
+var _reconnect_prev_control: bool = true
+var _reconnect_prev_downed: bool = false
 # 回合切换冻结（重连宽限期间 host 暂缓跨回合推进）
 var _deferred_round_end: bool = false
 var _round_upgrade_active: bool = false
@@ -1289,6 +1294,10 @@ func _remote_peer_rejoined(old_id: int, new_id: int, roster: Dictionary, restore
 	item_ids_by_peer[new_id] = restored.get("items", []).duplicate()
 	_client_sync_roster(roster)
 	_remote_player_down_changed(new_id, bool(restored.get("down", false)))
+	# 本机不走 _remote_player_down_changed（它只改「他人镜像」，peer==自己直接 return）。
+	# 掉线期间 host 可能已统一复活（升级/救援）并错过 _remote_revived 广播，必须在这里按 host 权威校正本机。
+	if new_id == multiplayer.get_unique_id():
+		_reconcile_local_downed_state(bool(restored.get("down", false)))
 
 
 # 版本比较：忽略 `-test` 等后缀，仅比数字段（测试版/正式版同号视为同版本、可互通）。
@@ -1839,6 +1848,7 @@ func _finish_reconnect() -> void:
 	_reconnect_attempt = 0
 	_show_reconnect_overlay(false)
 	_freeze_local_player_for_reconnect(false)
+	_refresh_local_peer_identity()
 	_last_sent_coin_multiplier = -1.0
 	if _round_upgrade_hold and _round_upgrade_cover_ready:
 		_report_round_upgrade_ready()
@@ -1870,14 +1880,37 @@ func _show_reconnect_overlay(on: bool) -> void:
 		_reconnect_overlay = null
 
 
+# 重连冻结/解冻：解冻必须回到「冻结前」的控制态，不能无条件对写。
+# 硬停（player_stop）有多类来源：倒地（set_downed_state）、LAN 暂停页、结算。
+# 倒地玩家掉线重连时若被无条件放开，就会出现「0 血黑白画面仍能移动/射击」。
 func _freeze_local_player_for_reconnect(on: bool) -> void:
 	var p := get_local_player()
 	if p == null or not is_instance_valid(p):
 		return
-	if p.get("player_stop") != null:
-		p.player_stop = on
+	if on:
+		if not _reconnect_freeze_active:
+			_reconnect_freeze_active = true
+			_reconnect_prev_stop = bool(p.get("player_stop")) if p.get("player_stop") != null else false
+			_reconnect_prev_control = bool(p.get("can_control")) if p.get("can_control") != null else true
+			_reconnect_prev_downed = _local_player_is_down(p)
+		if p.get("player_stop") != null:
+			p.player_stop = true
+		if p.get("can_control") != null:
+			p.can_control = false
+		return
+	if not _reconnect_freeze_active:
+		return
+	_reconnect_freeze_active = false
+	var downed_now: bool = _local_player_is_down(p)
 	if p.get("can_control") != null:
-		p.can_control = not on
+		p.can_control = _reconnect_prev_control
+	if p.get("player_stop") != null:
+		# 冻结前已倒地：以「解冻时」的倒地态为准（期间被 host 复活则放开）；
+		# 冻结前未倒地：恢复原值，但解冻时已倒地则仍保持硬停。
+		p.player_stop = downed_now or (_reconnect_prev_stop and not _reconnect_prev_downed)
+	# 倒地者解冻后仍需保证黑白遮罩在场（重连可能丢了遮罩或被结算清掉）
+	if downed_now:
+		_ensure_motion_down_visible()
 
 
 # 在黄条位置弹底部 toast（复用本体 mobile_notice）。
@@ -4546,6 +4579,13 @@ func _hide_motion_down() -> void:
 		_motion.call("hide_down")
 
 
+# 只在遮罩当前不可见时再显示：重连收尾/校正倒地态时避免重复触发慢动作（request_slow）。
+func _ensure_motion_down_visible() -> void:
+	if _motion != null and is_instance_valid(_motion) and bool(_motion.get("visible")):
+		return
+	_show_motion_down()
+
+
 # 结算（game over，胜/负）时清除本地倒地黑白遮罩；game_over_page 自身按胜负的 grayscale 不受影响
 func _on_game_over_hide_motion(_player_dead: bool) -> void:
 	_hide_motion_down()
@@ -5550,6 +5590,25 @@ func _ensure_local_proxy(player: Node) -> void:
 	proxy.name = "CoopPlayerProxy"
 	player.add_child(proxy)
 	proxy.setup(multiplayer.get_unique_id(), true)
+
+
+# LAN 重连必换 peer id：本地玩家的 peer_id meta / 本地 proxy 必须跟着改，
+# 否则 get_local_player() 只能回落 "Player" 组，且 _gate_player_buff_apply/remove 会把
+# 打在本机身上的光环 buff 误判成「他人镜像」转发到旧 id 而丢失。
+func _refresh_local_peer_identity() -> void:
+	if not _has_peer():
+		return
+	var p := get_local_player()
+	if p == null or not is_instance_valid(p):
+		return
+	var pid: int = multiplayer.get_unique_id()
+	if p.has_meta("peer_id") and int(p.get_meta("peer_id")) == pid:
+		return
+	p.set_meta("peer_id", pid)
+	p.set_meta("is_local_player", true)
+	var proxy = p.get_node_or_null("CoopPlayerProxy")
+	if proxy != null and proxy.get("peer_id") != null:
+		proxy.set("peer_id", pid)
 
 
 func _spawn_position_for_peer(peer_id: int) -> Vector2:
@@ -8932,6 +8991,37 @@ func _remote_player_down_changed(peer_id: int, is_down: bool) -> void:
 	var p = player_by_peer_id.get(peer_id)
 	if p != null and is_instance_valid(p) and p.has_method("set_downed_state"):
 		p.set_downed_state(is_down)
+
+
+# 本地玩家是否处于「不能操作」的死亡/倒地态（倒地，或血量已归零尚未复活）。
+func _local_player_is_down(p: Node) -> bool:
+	if p == null or not is_instance_valid(p):
+		return false
+	if p.get("is_downed") == true:
+		return true
+	var st = p.get("stats")
+	return st != null and int(st.get("hp")) <= 0
+
+
+# 重连后按 host 权威 down 校正「本机」玩家（LAN 换 id 与 Relay 复用 id 两条路径都走这里）。
+# host=down → 保持/补回倒地：硬停 + 黑白遮罩（已倒地时 set_downed_state 会早退，故显式补写）。
+# host=up   → 掉线期间可能已被升级统一复活或队友救起（那些 _remote_revived 广播必然错过），
+#             补满血并解除，等价补发错过的复活。
+func _reconcile_local_downed_state(host_down: bool) -> void:
+	var p := get_local_player()
+	if p == null or not is_instance_valid(p):
+		return
+	if host_down:
+		if p.get("is_downed") != true and p.has_method("set_downed_state"):
+			p.set_downed_state(true) # 经 hook 上报 host + 黑白遮罩 + DOWN! 文字
+		if p.get("player_stop") != null:
+			p.player_stop = true
+		_ensure_motion_down_visible()
+		return
+	if _local_player_is_down(p):
+		# 无法区分「升级统一复活(1.0)」与「队友救起(REVIVE_HEALTH_MULT)」，本地 hp 由本端权威，
+		# 统一按满血复活，避免刚回来就带着 1 血被再次打倒。
+		_apply_revive_local(multiplayer.get_unique_id(), 1.0)
 
 
 @rpc("any_peer", "call_remote", "reliable")
