@@ -35,6 +35,8 @@ func invalidate() -> void:
 	_reserved_cells.clear()
 	_side_anchors = [Vector2.ZERO, Vector2.ZERO, Vector2.ZERO, Vector2.ZERO]
 	_side_anchor_valid = [false, false, false, false]
+	# 地图拓扑变化 → 敌人导航场必须重建（它缓存了格子图与距离场）。
+	EnemyNavField.invalidate()
 
 func ensure_ready() -> bool:
 	var tree := get_tree()

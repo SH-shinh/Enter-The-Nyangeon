@@ -71,6 +71,44 @@ var faction: int = Faction.ENEMY_SIDE
 
 var aggro_override: Node = null #嘲讽目标（人偶等），非空时优先攻击它
 
+# ---------------- AI：导航场 + 难度分层走位 ----------------
+# 角色（近战/远程）由各敌人脚本的 _init() 给出；难度参数由 spawn_anim 在生成时注入。
+# 导航场是全局能力：只有存在障碍注册或任一敌人带 profile 时才构建，
+# 否则 ai_steer() 在首行即返回原方向，与改造前的直冲行为逐值一致。
+
+enum AIRole { NONE, MELEE, RANGED }
+enum AIMode { ADVANCE, HOLD, RETREAT }
+# 必须与 EnemyAI 的 INTENT_* 常量顺序一致
+enum AIIntent { NONE, CHASE, RING, CUTOFF, RUSH, KITE, HOLD, REPOS, UNSTUCK }
+
+const AI_LOOKAHEAD := 28.0
+const AI_LOS_SKIP := 40.0
+const AI_LOS_STEP := 24.0
+
+var ai_role: int = AIRole.NONE
+var ai_profile: EnemyAIProfile = null
+var _ai_fan_side: float = 0.0
+var _ai_strafe_sign: float = 0.0
+var _ai_queue_push: Vector2 = Vector2.ZERO
+var _ai_queue_pressure: float = 0.0
+var _ai_density_push: Vector2 = Vector2.ZERO
+var _ai_density_level: float = 0.0
+var _ai_wall_push: Vector2 = Vector2.ZERO
+# 以下由 EnemyAI 每 5Hz 求解后写入（意图 + 目标点极坐标）
+var _ai_intent: int = AIIntent.NONE
+var _ai_anchor: Vector2 = Vector2.ZERO # 极坐标原点（压迫=玩家锚点，前插=预判落点）
+var _ai_slot_angle: float = 0.0
+var _ai_slot_valid: bool = false
+var _ai_target_radius: float = 0.0
+var _ai_dist_rank: int = 0
+var _ai_role_score: float = 0.0 # 最近一次角色适配分（调试用）
+var _ai_attack_slot: bool = false
+var _ai_has_los: bool = true
+var _ai_flow_direct: bool = false # 求解器下发：直线到锚点可走 → 不用场流
+var _ai_stuck_anchor: Vector2 = Vector2.ZERO
+var _ai_stuck_count: int = 0
+var _ai_unstuck_ticks: int = 0
+
 const CONVERTED_BUFF: Buff = preload("res://resources/buff/player_buff/converted_buff.tres")
 const CONVERT_DAMAGE: PackedScene = preload("res://scenes/debuff/convert_damage.tscn")
 const CONVERTED_BUFF_DURATION := 3.0 #策反buff持续时间（秒）
@@ -110,12 +148,37 @@ func _ready():
 func _exit_tree() -> void:
 	PoolManager.unregister_active_enemy(self)
 
+# 清空「求解器下发的运行时状态」。注意不碰 ai_role / ai_profile / faction / player（配置与引用）。
+# 清空后首帧是安全且正确的：_ai_intent==NONE → _steer_intent 直接返回 flow；
+# _ai_anchor==ZERO → ai_steer 内部回退到 predict_anchor(target, lead)。
+func _reset_ai_runtime() -> void:
+	_ai_intent = AIIntent.NONE
+	_ai_anchor = Vector2.ZERO
+	_ai_slot_valid = false
+	_ai_slot_angle = 0.0
+	_ai_target_radius = 0.0
+	_ai_dist_rank = 0
+	_ai_role_score = 0.0
+	_ai_attack_slot = false
+	_ai_has_los = true
+	_ai_flow_direct = false
+	_ai_density_push = Vector2.ZERO
+	_ai_density_level = 0.0
+	_ai_queue_push = Vector2.ZERO
+	_ai_queue_pressure = 0.0
+	_ai_wall_push = Vector2.ZERO
+	_ai_stuck_count = 0
+	_ai_stuck_anchor = Vector2.ZERO
+	_ai_unstuck_ticks = 0
+
 func idle_state():
 	reset_physics_interpolation()
 	is_idle = 1
 	_target_cache = null
 	_target_cache_frame = -1
 	route_target = null
+	ai_profile = null
+	_reset_ai_runtime()
 	PoolManager.unregister_active_enemy(self)
 	frozen = false
 	faction = Faction.ENEMY_SIDE
@@ -313,9 +376,269 @@ func get_direction_to_player():
 		return (t.global_position - global_position).normalized()
 	return Vector2.ZERO
 
+# ---------------- AI 走位接口 ----------------
+
+func set_ai_profile(profile: EnemyAIProfile) -> void:
+	ai_profile = profile
+
+func ai_active() -> bool:
+	if ai_role == AIRole.NONE:
+		return false
+	return not has_meta("network_remote_enemy")
+
+# 冲撞型敌人覆写：预警/冲撞期间不参与阵型（避免冲锋起点横向漂移）。
+func ai_formation_allowed() -> bool:
+	return true
+
+func _ai_ensure_side() -> void:
+	if _ai_fan_side == 0.0:
+		_ai_fan_side = 1.0 if (get_instance_id() & 1) == 0 else -1.0
+	if _ai_strafe_sign == 0.0:
+		_ai_strafe_sign = _ai_fan_side
+
+func _ai_is_player_target(target) -> bool:
+	if target == null or not is_instance_valid(target):
+		return false
+	if not (target is Node):
+		return false
+	return target.is_in_group("Player") or target.is_in_group("RemotePlayer")
+
+# 远程横移方向：有难度 profile 时按实例固定，否则沿用各脚本原本的随机取值。
+func ai_strafe_index(default_index: int) -> int:
+	if ai_profile == null:
+		return default_index
+	_ai_ensure_side()
+	return 0 if _ai_strafe_sign > 0.0 else 1
+
+# 稳定的横移方向符号（±1）；供远程脚本自己拼切向使用。
+func ai_strafe_sign() -> float:
+	_ai_ensure_side()
+	return _ai_strafe_sign
+
+# 前方探针被挡时按「尽量保持原意」的顺序找替代方向：
+# 先沿本体方向的左右，再沿流向的左右，最后才反向朝玩家走（避免远程后撤顶墙时反向扑人）。
+func _ai_avoid_blocked_ahead(position: Vector2, dir: Vector2, grad: Vector2) -> Vector2:
+	if not EnemyNavField.is_solid(position + dir * AI_LOOKAHEAD):
+		return dir
+	var candidates: Array[Vector2] = []
+	if dir.length_squared() > 0.0001:
+		candidates.append(dir.orthogonal() * _ai_fan_side)
+		candidates.append(-dir.orthogonal() * _ai_fan_side)
+	if grad != Vector2.ZERO:
+		candidates.append(grad.orthogonal() * _ai_fan_side)
+		candidates.append(-grad.orthogonal() * _ai_fan_side)
+		candidates.append(grad)
+	for candidate in candidates:
+		if candidate == Vector2.ZERO:
+			continue
+		var probe := candidate.normalized()
+		if not EnemyNavField.is_solid(position + probe * AI_LOOKAHEAD):
+			return probe
+	return dir
+
+# ---------------- 意图 → 方向 ----------------
+
+# 距离分层权重：远 → 只做最小散开（优先拉近距离）；环带 → 全力占位；贴脸 → 纯直冲。
+func _melee_band_weight(profile: EnemyAIProfile, distance: float, ring: float) -> float:
+	var far_gate := 1.0 - smoothstep(ring * 1.2, ring * 2.4, distance)
+	var near_gate := smoothstep(profile.melee_engage_radius * 0.8, profile.melee_engage_radius * 1.3, distance)
+	var band := profile.melee_encircle * near_gate * far_gate
+	return maxf(band, profile.far_spread * (1.0 - far_gate))
+
+func _ai_is_low_hp_rush(profile: EnemyAIProfile) -> bool:
+	if profile.low_hp_rush_ratio <= 0.0:
+		return false
+	if stats == null or stats.max_hp <= 0:
+		return false
+	return float(stats.hp) / float(stats.max_hp) <= profile.low_hp_rush_ratio
+
+func _intent_weight(profile: EnemyAIProfile, intent: int, distance: float, radius: float) -> float:
+	if intent == AIIntent.KITE or intent == AIIntent.HOLD:
+		return clampf(profile.ranged_kite, 0.0, 1.0)
+	if intent == AIIntent.REPOS:
+		return 1.0
+	var band := _melee_band_weight(profile, distance, maxf(radius, 1.0))
+	if intent == AIIntent.CHASE and _ai_attack_slot:
+		band *= 0.3
+	return band
+
+# 脱困：横向脱离（不改变径向意图，只保证离开卡住的位置）
+func _unstuck_steer(flow: Vector2) -> Vector2:
+	var dir := flow.orthogonal() * _ai_fan_side + flow * 0.2
+	if dir == Vector2.ZERO:
+		return flow
+	return dir.normalized()
+
+# 统一合成：径向（靠近/驻留/后撤）+ 切向（归位到分配方位）+ 密度散开 + 反排队
+func _steer_intent(profile: EnemyAIProfile, target: Node2D, grad: Vector2, toward: Vector2, _mode: int, _standoff: float) -> Vector2:
+	var flow := grad if grad != Vector2.ZERO else toward
+	if flow == Vector2.ZERO:
+		return flow
+	if not ai_formation_allowed():
+		return flow
+	if _ai_is_low_hp_rush(profile):
+		return flow
+	if _ai_unstuck_ticks > 0:
+		return _unstuck_steer(flow)
+	if _ai_intent == AIIntent.NONE:
+		return flow
+	# 极坐标原点由求解器下发：前排/环带/远程=玩家锚点、前插=预判落点。
+	var anchor: Vector2 = _ai_anchor
+	if anchor == Vector2.ZERO:
+		anchor = EnemyAI.predict_anchor(target, profile.predict_lead_seconds)
+	var to_anchor := anchor - global_position
+	var anchor_distance := to_anchor.length()
+	if anchor_distance < 0.001:
+		return flow
+	# 槽位站不住（墙边/收不下去）时**不能**退回纯 flow，否则全员跟同一条导航流向排成一列。
+	# 近战仍按保留的方位角塑形，只是不再要求站到那个半径。
+	var slot_ok: bool = _ai_slot_valid and _ai_target_radius > 0.0
+	var is_melee_intent: bool = _ai_intent == AIIntent.CHASE or _ai_intent == AIIntent.RING \
+		or _ai_intent == AIIntent.CUTOFF or _ai_intent == AIIntent.RUSH
+	if not slot_ok and not is_melee_intent:
+		return flow
+	var radius: float = _ai_target_radius
+	var player_distance := global_position.distance_to(target.global_position)
+	var radial := 1.0
+	match _ai_intent:
+		AIIntent.CHASE, AIIntent.RUSH:
+			radial = 1.0
+		AIIntent.RING:
+			# 环带：只进不退（下限 0），到自己的环半径就沿切向归位
+			radial = clampf((anchor_distance - radius) / maxf(1.0, radius * 0.35), 0.0, 1.0)
+		AIIntent.CUTOFF:
+			# 前插只许靠近、不许后退；玩家已经贴到跟前时降级为压迫
+			if player_distance < radius * 0.5:
+				radial = 1.0
+			else:
+				radial = clampf((anchor_distance - radius) / maxf(1.0, radius * 0.35), 0.0, 1.0)
+		AIIntent.KITE:
+			radial = -1.0
+		_:
+			radial = clampf((anchor_distance - radius) / maxf(1.0, radius * 0.35), -1.0, 1.0)
+	var weight := _intent_weight(profile, _ai_intent, anchor_distance, radius)
+	if not slot_ok:
+		radial = 1.0
+		weight *= 0.5
+	# 队列纪律：环带正前方被堵实了就停推，避免"一坨人死挤"；前排与前插不吃这个衰减。
+	if _ai_intent == AIIntent.RING and _ai_queue_pressure > 0.0:
+		radial = maxf(0.0, radial) * (1.0 - EnemyAI.QUEUE_DAMP * _ai_queue_pressure)
+	var bearing := (global_position - anchor).angle()
+	var max_turn := deg_to_rad(maxf(1.0, profile.max_turn_deg))
+	var turn := clampf(angle_difference(bearing, _ai_slot_angle), -max_turn, max_turn)
+	# 切向死区：方位差很小的时候不再修正，避免"过冲→反向"的左右极限环
+	var tangent := Vector2.ZERO
+	if absf(turn) > EnemyAI.TANGENT_DEADZONE:
+		tangent = flow.orthogonal() * signf(turn) * minf(absf(turn) / max_turn, 1.0) * weight
+	# 横向合力封顶：切向 + 密度 + 反排队必须小于径向，否则整群会被"推得散开但不接近"。
+	var lateral: Vector2 = tangent
+	if profile.separation_strength > 0.0:
+		if _ai_density_push != Vector2.ZERO:
+			lateral += _ai_density_push * profile.separation_strength
+		if _ai_queue_push != Vector2.ZERO:
+			lateral += _ai_queue_push * profile.separation_strength
+	if lateral.length() > EnemyAI.LATERAL_CAP:
+		lateral = lateral.normalized() * EnemyAI.LATERAL_CAP
+	var dir: Vector2 = flow * radial + lateral
+	# 离墙力必须在「驻留判零」之前：贴墙敌人不能因为 radial≈0 就停在墙上（安全项，不参与横向预算）
+	if ai_formation_allowed() and _ai_wall_push != Vector2.ZERO:
+		dir += _ai_wall_push * EnemyAI.WALL_PUSH_WEIGHT
+	# 已经停在目标半径且方位对齐 → 驻留（返回零向量让 move() 减速停下）。
+	# 不能返回 flow，否则会继续贴上去；也不能让近零向量进归一化，否则方向会被放大成噪声。
+	if dir.length_squared() < 0.0004:
+		return Vector2.ZERO
+	return dir
+
+func ai_steer(base_dir: Vector2, _mode: int, _standoff: float = -1.0) -> Vector2:
+	if base_dir == Vector2.ZERO:
+		return base_dir
+	if not ai_active():
+		return base_dir
+	if faction == Faction.PLAYER_SIDE:
+		return base_dir
+	if route_target != null or aggro_override != null:
+		return base_dir
+	if is_standby():
+		return base_dir
+	var raw_target := get_target()
+	if not _ai_is_player_target(raw_target):
+		return base_dir
+	var target := raw_target as Node2D
+	_ai_ensure_side()
+	var lead: float = ai_profile.predict_lead_seconds if ai_profile != null else 0.0
+	EnemyAI.ensure_solved(target, lead)
+	var has_field := EnemyNavField.is_ready(target)
+	var position := global_position
+	var to_target := target.global_position - position
+	var distance := to_target.length()
+	if distance < 0.001:
+		return base_dir
+	var toward := to_target / distance
+	var grad := Vector2.ZERO
+	if has_field:
+		if _ai_flow_direct:
+			grad = toward  # 直线可走：不走格子流，避免等距格的对角锯齿
+		else:
+			grad = EnemyAI._smooth_field_flow(position, target, toward)
+	var profile := ai_profile
+	var dir := base_dir
+	if profile == null:
+		# 无障碍 profile：只补基础扇开与密度散开/离墙，不改难度表现
+		if ai_formation_allowed():
+			dir += toward.orthogonal() * _ai_fan_side * EnemyAI.FAN_BASE
+			if _ai_density_push != Vector2.ZERO:
+				dir += _ai_density_push * EnemyAI.SEP_BASE
+			if _ai_wall_push != Vector2.ZERO:
+				dir += _ai_wall_push * EnemyAI.WALL_PUSH_WEIGHT
+	else:
+		dir = _steer_intent(profile, target, grad, toward, _mode, _standoff)
+		if dir == Vector2.ZERO:
+			return Vector2.ZERO  # 驻留
+	if dir == Vector2.ZERO:
+		return base_dir
+	dir = dir.normalized()
+	if has_field:
+		dir = _ai_avoid_blocked_ahead(position, dir, grad)
+	if dir == Vector2.ZERO:
+		return base_dir
+	if not (is_finite(dir.x) and is_finite(dir.y)):
+		return base_dir
+	return dir
+
+# 冲撞发起前的一次性通路判定：无场 / 非玩家目标 / 极近距离一律放行（旧行为）。
+func ai_charge_path_clear(target: Node2D) -> bool:
+	if target == null or not ai_active():
+		return true
+	if faction == Faction.PLAYER_SIDE:
+		return true
+	if not _ai_is_player_target(target):
+		return true
+	if not EnemyNavField.is_ready(target):
+		EnemyAI.ensure_solved(target)
+		if not EnemyNavField.is_ready(target):
+			return true
+	var from := global_position
+	var to := target.global_position
+	var total := from.distance_to(to)
+	if total <= AI_LOS_SKIP * 2.0:
+		return true
+	var travelled := AI_LOS_SKIP
+	var limit := total - AI_LOS_SKIP
+	while travelled < limit:
+		if EnemyNavField.is_solid(from.lerp(to, travelled / total)):
+			return false
+		travelled += AI_LOS_STEP
+	return true
+
 func time_count():
 	
-	direction = get_direction_to_player()
+	var base_dir: Vector2 = get_direction_to_player()
+	# 只有近战角色走难度分层走位；远程在自己的 get_distance_to_player 里接入。
+	# 其余（Boss / 固定靶 / 未来新增脚本）ai_role 恒为 NONE，这里等价于 direction = base_dir。
+	direction = ai_steer(base_dir, AIMode.ADVANCE) if ai_role == AIRole.MELEE else base_dir
+	
+	if _ai_unstuck_ticks > 0:
+		_ai_unstuck_ticks -= 1
 	
 	_convert_tick()
 	
@@ -400,6 +723,8 @@ func _on_revert():
 	create_damage_data()
 	_clear_all_buffs()
 	_set_convert_visual(false)
+	# 策反期间不进候选集，_ai_* 会冻结在策反前的值；不清掉的话回归的头 200ms 会拿旧锚点做形塑
+	_reset_ai_runtime()
 	converted_changed.emit(false)
 
 func _on_buff_expired(buff: Buff):
@@ -431,6 +756,7 @@ func apply_network_conversion(gauge: int, converted: bool) -> void:
 		remove_from_group("Converted")
 		_propagate_faction()
 		_set_convert_visual(false)
+		_reset_ai_runtime()
 		converted_changed.emit(false)
 
 func refresh_converted_buff():

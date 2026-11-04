@@ -109,7 +109,13 @@ func spawn_enemy_body(enemy: EnemyCard):
 		route_scene = enemy.route
 	if route_scene != null:
 		_setup_path(enemy_body, route_scene, path_value)
-	
+
+	# 难度分层走位：Boss / 测试房 / 路线型敌人不注入，走位保持原样。
+	if enemy_body.has_method("set_ai_profile"):
+		var profile := _resolve_ai_profile(enemy, enemy_body)
+		enemy_body.set_ai_profile(profile)
+		_log_ai_profile(profile)
+
 	enemy_body.global_position = global_position
 	if is_intruder:
 		enemy_body.add_to_group("BossIntruder")
@@ -153,8 +159,39 @@ func spawn_enemy_body(enemy: EnemyCard):
 func on_round_end():
 	can_spawn = false
 	_release_claim()
+	_ai_profile_logged = false
 	PoolManager.erase_pool("spawn_anim")
 	queue_free()
+
+# 敌人 AI 的兜底 profile：正式战斗默认就带 AI，难度只决定强度。
+# （历史上这里返回 null 表示「关闭」，导致 NORMAL/未设难度的流程完全没有走位。）
+const DEFAULT_AI_PROFILE: EnemyAIProfile = preload("res://resources/enemy_ai/normal.tres")
+
+static var _ai_profile_logged: bool = false
+
+# 难度分层走位参数：Boss / 测试房 / 路线型敌人返回 null（保持改造前的走位）。
+func _resolve_ai_profile(card: EnemyCard, body: Node) -> EnemyAIProfile:
+	if is_boss or card is BossCard:
+		return null
+	if PlayerData.on_test_room:
+		return null
+	if card != null and card.route != null:
+		return null
+	if body != null and body.get("route_target") != null:
+		return null
+	var level := PlayerData.current_level
+	if level != null and level.enemy_ai != null:
+		return level.enemy_ai
+	return DEFAULT_AI_PROFILE
+
+# dev_mode 下每回合打印一次，避免「以为在测新 AI、其实 profile 是 null」。
+func _log_ai_profile(profile: EnemyAIProfile) -> void:
+	if not Game.dev_mode or _ai_profile_logged:
+		return
+	_ai_profile_logged = true
+	var level_id: String = PlayerData.level_id if PlayerData.current_level != null else "<none>"
+	var profile_id: String = profile.id if profile != null else "<off>"
+	print("[ETNAI] round=%d level=%s profile=%s" % [PlayerData.now_round, level_id, profile_id])
 
 func _setup_path(enemy_body: Node, route_scene: PackedScene, start_value: float) -> void:
 	if route_scene == null:

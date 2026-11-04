@@ -23,9 +23,9 @@
 |---|---|
 | `scenes/` | 场景 + **与场景同目录同名的脚本**（feature subfolders）。含 `player/`, `enemies/`, `bullet/`, `update_item/`, `manager/`, `main/`, `weapon/`, `summoned/`, `item/`, `debuff/`, `shop/`, `props/`, `player_support/`, `game_camera/`, `crosshair/`, `shadow/`。 |
 | `script/` | 跨场景/全局系统脚本：autoload 脚本（`Game.gd`, `GameEvents.gd`, `PlayerData.gd`, `locale_font.gd`, `extension_hooks.gd`…）、基类与路由器（`entity_ENEMY.gd`, `Stats.gd`, `damage_router.gd`, `buff_router.gd`, `projectile_spawner.gd`, `boss_enemy.gd`/`boss_round_controller.gd`…）、`props/` 道具脚本。 |
-| `resources/` | 数据资源：每类一个 `class_name` 脚本 + 大量 `<snake_case>.tres`。子类：`buff/`(+`components/`,`player_buff/`,`enemy_buff/`,`summoned_buff/`)、`upgrades/`、`player/`(+`PS/`)、`enemy/`、`boss/`（`BossCard`/`BossSchedule`/`BossRoundProfile`/`BossSpawnCondition` 等）、`shop/character/`、`clothes/`、`equip/`、`game_mode/`、`level/`、`raid_formwork/`、`support/`、`talk/`。 |
+| `resources/` | 数据资源：每类一个 `class_name` 脚本 + 大量 `<snake_case>.tres`。子类：`buff/`(+`components/`,`player_buff/`,`enemy_buff/`,`summoned_buff/`)、`upgrades/`、`player/`(+`PS/`)、`enemy/`、`boss/`（`BossCard`/`BossSchedule`/`BossRoundProfile`/`BossSpawnCondition` 等）、`shop/character/`、`clothes/`、`equip/`、`game_mode/`、`level/`、`enemy_ai/`（`EnemyAIProfile`：敌人走位难度参数，见 `SYSTEMS.md` §5.12）、`raid_formwork/`、`support/`、`talk/`。 |
 | `sprites/` | 全部源贴图（`.png` + `.import`），按主题分子目录。 |
-| `ui/` | 菜单/HUD/卡片：`ui/*.tscn` + 同名 `.gd` + 图标；含 `ark_of_Shittim/`, `support_ui/`, `health/`, `weapon/`, `res/`, `school/`, `card icon/`；多 Boss HUD 为 `boss_hp_group.gd`/`boss_hp_slot.gd`。另含主菜单弹窗 `option.tscn`（设置，通用容器；子页 `game_option.tscn`（设置：DISPLAY/FEEDBACK/AUDIO 卡片）/`controls_option.tscn`/`mod_option.tscn`（设置 / 按键说明 / MOD 管理：分组列表 + 常驻详情），基类 `script/option_menu.gd`、页签 `option_button.tscn`、共享开关 `option_toggle.tscn`）、`scoreboard.tscn`（记分板）、`credits.tscn`（鸣谢，可滚动翻译者名单，复用 `shaders/motion_screen.gdshader` 做背景模糊）。 |
+| `ui/` | 菜单/HUD/卡片：`ui/*.tscn` + 同名 `.gd` + 图标；含 `ark_of_Shittim/`, `support_ui/`, `health/`, `weapon/`, `res/`, `school/`, `card icon/`；多 Boss HUD 为 `boss_hp_group.gd`/`boss_hp_slot.gd`。另含主菜单弹窗 `option.tscn`（设置，通用容器；子页 `game_option.tscn`（设置：DISPLAY/FEEDBACK/AUDIO 卡片）/`controls_option.tscn`/`mod_option.tscn`（设置 / 按键说明 / MOD 管理：分组列表 + 常驻详情），基类 `script/option_menu.gd`、页签 `option_button.tscn`、共享开关 `option_toggle.tscn`）、`scoreboard.tscn`（记分板）、`credits.tscn`（鸣谢，可滚动翻译者名单，复用 `shaders/motion_screen.gdshader` 做背景模糊）、`cheat_menu.tscn`（开发者控制台，`` ` `` 打开，含敌人 AI 可视化开关）、`ai_debug_overlay.tscn`（敌人 AI 决策叠加层：密度场热力 + 意图/推力向量，由 `cheat_menu` 懒创建、默认关闭）。 |
 | `shaders/` | `shader_type canvas_item;` 着色器 + `funcs.gdshaderinc` + `erotion_shader.tres`。 |
 | `sounds/` | `BGM/` 与 `voice/`；根目录为 SFX。 |
 | `fonts/` | 位图字体 + `theme.tres`（全局 UI 主题）。 |
@@ -118,6 +118,7 @@ test_room.tscn     (Node2D, test_room.gd)  ← 沙盒/测试房（从 menu 进�
 | 词条芯片 / 同场词条 / 场地词条接口 | `docs/SYSTEMS.md` §6.4 → `scenes/manager/chip_manager.gd`, `scenes/manager/field_mod_manager.gd`, `scenes/field_mods/field_mod_effect.gd`, `ui/chip_hud.gd` |
 | 地图分块 / 地形效果 | `docs/SYSTEMS.md` §6.5 → `script/map_chunks.gd`, `scenes/field_mods/terrain_field_effect.gd`, `script/map_bounds.gd` |
 | 敌人/玩家/召唤物 | `docs/SYSTEMS.md` §Entities → `script/entity_ENEMY.gd`, `script/player.gd`, `script/summoned.gd` |
+| 敌人 AI 走位（导航场 / 包围 / 走 A / 冲撞） | `docs/SYSTEMS.md` §5.12–§5.13、§6.6 → `script/enemy_nav_field.gd`, `script/enemy_ai.gd`, `resources/enemy_ai/enemy_ai_profile.gd`, `scenes/field_mods/terrain_field_effect.gd` |
 | 数据资源字段 | `docs/SYSTEMS.md` §Resource data model |
 | 命名/层/本地化/输入 | `docs/CONVENTIONS.md` |
 | 道具固定加成 / 卡片立绘绑定 | `docs/SYSTEMS.md` §8 / §10 → `script/equip_item.gd`、`script/lazy_texture_binding.gd`；本次验证见 `docs/REFACTOR_REUSE.md`。 |

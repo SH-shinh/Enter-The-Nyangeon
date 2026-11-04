@@ -277,6 +277,10 @@
 
 - **Goliath 联机同步（2026-10-19）**：`goliath_visual` 载荷附 `net_id`，`_on_network_boss_event` 只处理匹配自己的事件；射击模板通过 `sync_shoot_template_random/strafe` 广播，镜像据此选择 random/strafe。镜像的 `L_shoot`/`R_shoot` 与 `CHARGING` 的 `StaticBullet1` 只保留音效/枪口火光/动画，跳过本地投射物；host 的敌人子弹/环形弹幕走现有 `ProjectileSpawner` 权威同步。大炮 host 生成真实炮弹后广播 `spawn_cannon_visual`（含夹取落点 `pos`），镜像用 `cannon_bullet.visual_only` 生成纯视觉副本；host 真实炮弹标 `_coop_visual_broadcast` 防通用视觉通道重复广播。中途加入/重连由 `coop_net._send_boss_visual_states_to_peer()` 在 `_send_existing_enemies_to_peer()` 后定向补发断手事件（`destroy_left/right_arm_visual` + `net_id`）。远端 `interrupt_attack_visual()` 无条件停射击/冲撞/大炮协程。证据：`scenes/enemies/boss/goliath.gd:140-176,544-682,690-737,891-1041`、`scenes/enemies/cannon_bullet.gd:20-82`、`mod_sdk/coop_mod/mods/etn_coop/net/coop_net.gd:1268-1284,6479-6495,8788-8799`。
 
+- **敌人 AI 难度分层 + 导航场（2026-11-04）**：`Enemy` 新增 `ai_role`（`AIRole.NONE/MELEE/RANGED`，默认 `NONE`；角色由各脚本 `_init()` 给出：`sweeper.gd`→MELEE，`automaton.gd`/`tester_automaton_shield.gd`/`enemy_tank.gd`→RANGED）与 `ai_profile`（`EnemyAIProfile`，`spawn_anim.spawn_enemy_body()` 生成时注入、`idle_state()` 清空）。`ai_steer(base_dir, mode, standoff)` 是唯一走位入口：无角色 / 场不可用 / 无 profile 时**原样返回 `base_dir`**，所以 NORMAL、测试房、作弊菜单、Boss 与改造前逐值一致。近战 = 跟随 `EnemyNavField` 流向 + 稳定侧向（`_ai_fan_side`，实例 id 奇偶）+ 同类排斥，`melee_engage_radius` 内侧向收敛为 0 以保证贴脸；远程 = 径向带纠偏 + 稳定切向（`_ai_strafe_sign`）+ 排斥。详情见 §5.12。
+- **Boss 不参与该 AI（必须保持）**：`goliath.gd:362`、`erosion_tower.gd:85` 的 `time_count()` 都会调 `super.time_count()`，所以基类钩子**必须按 `ai_role` 短路**；Boss/固定靶恒为 `NONE`，且 `spawn_anim._resolve_ai_profile()` 对 `is_boss`/`BossCard` 返回 `null`。只有 Boss 在场时 `EnemyAI.ensure_solved()` 不会建场（Boss 回合零额外开销）。
+- **冲撞型敌人（`mystic_sweeper`）**：发起前用 `ai_charge_path_clear()` 一次性判定「到玩家直线是否无障碍」，被挡则不发起并 1 秒后重试；锁定仍走 `get_direction_to_player()`（不改造方向）；途中不再判定，撞墙（`get_slide_collision_count()>0`）立即结束。收尾统一走 `_end_charge(cd)`。详情见 §5.13。
+
 ### 5.3 EnemyStats — `script/EnemyStats.gd`
 - 信号 `hp_changed/hp_hurt/is_dead`；`hp` setter 通过 `hp_change_cd`/`hurt_count` 批处理，emit `enemy_hurt_hp`/`enemy_dead_hurt_damage`/`enemy_dead_score`/`is_dead`。
 - ⚠️ setter 中 `hurt_hp = hp - v; if hurt_hp > hp: emit_enemy_dead_overflow_hp(...)` 用旧 `hp` 比较（`:73-76`），与 `HealthComponent` 的 overkill 重复/不一致。
@@ -341,6 +345,11 @@
 - **客机自动重连**：`_on_server_disconnected`/`_on_connection_failed`/心跳超时 → `_begin_reconnect`（保持场景；`close_connection` 在 `_reconnecting` 时跳过 `_reset_run_state` 与清 `_last_join_params`），遮罩 + 冻结 + 退避（1.5→5s）；`_hello_accept` → `_finish_reconnect`；超宽限/拒绝 → `_abort_reconnect_to_menu`。传输释放走 `call_deferred`（严禁在 multiplayer 信号栈内改 peer）。
 - **服务端**（`mod_sdk/coop_mod/server/relay_server.py`）：`join_room` 在容量判断前对同 token 的旧 `clients` 先 `remove_peer`（释放名额，修满房误拒 + 半开幽灵占位）并广播 `peer_disconnected(old_id)` 让 host 进宽限；`heartbeat_peers` 主动 WebSocket PING，`PEER_TIMEOUT_MSEC` 无数据即回收半开连接。
 - **回合切换冻结（掉线期间不停旧回合）**：host `_reconnecting_peers` 非空时——`_gate_round_end_emit` 暂缓本回合结束（`_deferred_round_end`）、`_maybe_finish_round_upgrade` 暂缓升级页推进；重连/超时后 `_on_rejoin_settled` 解冻（补发 `emit_round_end` / 重判升级）。重连识别后若 host 正处于升级页（`_round_upgrade_active`），补发 `_remote_round_end`+`_remote_round_upgrade`，让重连者进入升级页，不丢升级（客机 `_in_round_upgrade` 幂等；`_on_round_upgrade_end_local` 复位）。各端显示轻量等待遮罩（`wait_reconnect_show`/`wait_reconnect_hide` → `coop_round_wait` light 模式：无背景遮罩 + 小字号(12)、回合计时下方顶部居中（`LIGHT_TOP_MARGIN=44`，避开 `ui/round_timer.tscn` 顶部计时，2026-10-09 调整）+ 鼠标穿透、世界仍可操作；名字按视口宽度换行不溢出）。
+- **客机回主菜单收尾（2026-10-25，0.1.15）**：房主离开时 `_on_peer_disconnected(1)` → `_schedule_host_left_return()`（置 `_returning_to_menu_due_to_close` + `call_deferred(_handle_host_left)`）；同 poll 的 `_on_server_disconnected()` 在该标志为真时必须**直接 return**，不能再排 `close_connection`。旧实现两处都排了延迟调用：`_handle_host_left` 在 `await process_frame` 挂起后，`close_connection` 递增 `_session_generation`、`_reset_run_state` 又把去重标志清掉 → 协程恢复即 return，客机永远停在已断线的战斗场景（无头/窗口均复现；玩家侧表现为「闪退/卡死」）。现在退房协程用独立 `_session_epoch` 判活（只由 `host_game`/`join_game`/`create_relay_room`/`join_relay_room`/`close_session` 递增），`_reset_run_state` 不再清该标志；`_remote_change_scene` 客机侧补 `_flow_phase = BATTLE`（dev-flow 实测客机停在 ALL_READY 与房主 BATTLE 不一致，阶段相关判定/UI 会读到旧值）。
+- **定向 RPC 存活门控（2026-10-25）**：宽限期内 peer 已不在 `get_peers()`（状态/镜像仍保留），`rpc_id(<存储 id>)` 会刷 `Attempt to call RPC with unknown peer ID`。新增 `_peer_online(id)`（`_net_connected()` + `get_peers().has(id)`，本机恒真），用于补发类（敌人/召唤/医疗箱/Boss 视觉/轨道/场地/词条）与归属类（attacker/owner 的 proc、buff、击退、升级）定向发送；客机经 host 中转的分支不套用（客机 `get_peers()` 只有房主 1）。详见 `LEARNINGS.md` 同主题条目。
+- **崩溃取证：面包屑日志（2026-10-25）**：`net/coop_trail.gd` 写 `user://logs/coop_trail.log`（事件级、≤50 行/秒、256KB 轮转保留 3 份、逐行 flush、退出 `seal()`），埋点覆盖 `gate_scene`/`remote_scene`/`peer_on|off`/`server_off`/`grace`/`cleanup`/`migrate`/`hello_ok`/`close`/`teardown`/`first_round`/`spawn_remote`/`scene_ready`/`reset_sync`，`_physics_process` 每 10s 一行 `mem` 心跳；开关 `coop_settings.debug.network_trail`（默认开）。release 包无 crash handler，崩溃时最后一行即现场；`mem` 单调上涨才判泄漏/内存涨爆。
+- **假掉线收敛（2026-10-25）**：客机判房主离开从「8s 单次超时」改为「12s 窗口 + 每 1s 累计、连续 3 次才判」（约 15s 才认掉线，45s 宽限内仍可重连）；`coop_enet_peer._get_max_packet_size()` 16MB→64KB，避免超大 RPC 走 ENet 分片拖住可靠通道（心跳被队头阻塞 → 误判掉线 → 重连/迁移风暴）。
+- **断线清理不在网络回调栈内做（2026-10-25）**：`_on_peer_disconnected` 只同步置位/进宽限，破坏性清理走 `_cleanup_peer_soon(id)`（`call_deferred` + `_session_epoch` 复检），避免重复仓库已记录的「multiplayer 回调栈内释放 → segfault」。
 - **局限**：房主自身重连未做。详见 `LEARNINGS.md`。
 
 - **身份恢复修正（2026-10-13，官方 mod 0.1.11 / 协议 4）**：迁移包含升级/选人/准备房就绪表、金币倍率及道具视觉记录；房主向所有存活端广播旧/新身份与权威恢复状态，补回召唤物、支援选择、名字和倒地状态，LAN 换 ID 与 Relay 复用同 ID 均补发恢复；同 ID 迁移直接保持字典，召唤物节点/proxy 的 `owner_peer_id` 同步更新（`coop_net.gd:1105-1107,1121,1167`）。客机封面完成后在恢复握手时幂等重报升级就绪（`:3558-3569`）。正式关卡三端带召唤物/道具/倒地恢复，以及客机先继续后重连的回合屏障均有回归。
@@ -367,8 +376,109 @@
 - 侵蚀之塔的联机 net entity 是 `erosion_tower_group` 根 Node2D（聚合血量），不在 `BOSS`/`Enemy` 组、没有 `Enemy.frozen`。Ako 链命中子塔后 mod 会回溯到该根；host 权威锁定必须先做能力检查：`frozen == null` 的实体拒绝登记并收回链（`_apply_ako_lock` 返回 bool + `_ako_release_owner_chain`），`_tick_ako_locks` 不再夹取。否则原实现会在写 `frozen` 时中断函数、但仍留下锁记录 → 整组塔被拖。
 - 本体不参与：`ako_chain._process_locked` 对 BOSS 只按超距释放；塔组根位移只来自 mod 的 host tick。证据与通用教训见 `docs/LEARNINGS.md` 同名条目。
 
-## 6. Managers / 管理器
+### 5.12 敌人 AI：共享导航场 + 难度分层走位（2026-11-04）
 
+- **组成**：`script/enemy_nav_field.gd`（`class_name EnemyNavField`，格子图 + BFS 距离场 + 阻挡集，纯静态不注册 autoload）、`script/enemy_ai.gd`（`class_name EnemyAI`，5Hz 求解编排：密度场 / 意图与目标点 / 视线 / 脱困）、`resources/enemy_ai/enemy_ai_profile.gd`（`class_name EnemyAIProfile`，难度参数）+ `resources/enemy_ai/{normal,hard,extreme,insane,torment}.tres`。
+- **数据流**：`resources/level/<难度>.tres` 的 `enemy_ai` → `spawn_anim.spawn_enemy_body()` 注入 `Enemy.ai_profile` → `EnemyAI.solve_now()` 每 200ms 下发 `_ai_intent / _ai_anchor / _ai_slot_angle / _ai_target_radius / _ai_attack_slot / _ai_has_los / _ai_flow_direct / _ai_density_push / _ai_queue_push / _ai_queue_pressure / _ai_wall_push / _ai_role_score` → `Enemy.ai_steer()` 每 tick 合成方向。
+  **AI 默认开启**：`enemy_ai` 留空（或 `PlayerData.current_level == null`）时回退 `spawn_anim.DEFAULT_AI_PROFILE`（即 `resources/enemy_ai/normal.tres`），只有 **Boss / 测试房 / 路线型敌人** 才真正 `null`（关闭）。⚠️ 历史坑：这里原本「留空 = 关闭」，导致 NORMAL 完全没有走位 → 敌人被碰撞挤成一条竖列（识别特征：间距是碰撞半径 ≈27px，而不是排斥半径）。
+- **格子图**：源用 `MapChunks.get_all_cells()`（实测 **729** 格）。等距瓦片 `64×32`（`main.tscn:76` `tile_shape=1`）下四邻接的世界间距恒等 ≈35.8px，因此用等权 BFS（`Array` FIFO），不需要优先队列。边界必须等 `MapBounds.get_boundary_source() == "walls"`，否则不建场、下一次重试（避开首帧 `spawnmap` 兜底把场建小一圈的已知坑）。
+- **阻挡集**：① 显式注册 `add_block(source_id, cells)` / `remove_block(source_id)`，按来源引用计数，由 `scenes/field_mods/terrain_field_effect.gd` 的 `blocks_movement` 接入；② 建拓扑时自动扫描 `StaticBody2D` 且 `collision_layer & 256`（层 9 = `wall`，`script/props/prop_wall_body.gd:9` 只用 256/+2 且 `mask=0`），取子 `CollisionShape2D` 世界 AABB 外扩 `OBSTACLE_INFLATE=28px` 标记覆盖格。**绝不使用逐格 `intersect_point`**：那会把 Boss/敌人/玩家（CharacterBody2D）本身标成障碍。
+- **意图表（2026-11-04 三期，统一近战/远程；六期重定近战两层）**：求解器给每只敌人下发一个 `AIIntent`，`ai_steer()` 按意图合方向。顺序必须与 `EnemyAI.INTENT_*` 常量一致。
+
+  | 意图 | 谁 | 触发 | 极坐标原点 | 目标点 | 径向 |
+  |---|---|---|---|---|---|
+  | `CHASE` | 近战·前排 | `attack_count = clampi(attack_slots + (n-1)/4, 1, 6)` 人，**前排分最高**（近 + 正在收拢） | 玩家锚点 | 扇区中心（宽 `TAU/front_count`） | **恒 `+1`，贴脸** |
+  | `RING` | 近战·环带 | 其余近战 | 玩家锚点 | 同心环：`R_i = (max(ring, engage×1.6) + ring×34) × jitter` | `clamp(…, 0, 1)`，只进不退 |
+  | `CUTOFF` | 近战·前插 | `clamp(round(n×intercept_ratio), cutoff_slots, cutoff_max)` 人，**前插分最高**（ETA + 朝向） | **预判落点** | 前方扇形内均分角，`R = cutoff_distance` | `clamp(…, 0, 1)`，只进不退 |
+  | `CHASE` | 远程 | `dist > shoot_range` | 玩家锚点 | — | `+1` 接近 |
+  | `KITE` | 远程 | `dist < back_range` | 玩家锚点 | 本方位，`R_ranged` | `−1` 外退 |
+  | `HOLD` | 远程 | 带内且有视线 | 玩家锚点 | 本方位，`R_ranged` | 悬停 |
+  | `REPOS` | 远程 | 带内但视线被挡 | 玩家锚点 | 本方位 ±50°，`R_ranged` | 悬停 |
+  | `RUSH` | 双方 | `hp/max ≤ low_hp_rush_ratio` | — | — | 纯 `flow` |
+  | `UNSTUCK` | 双方 | 连续 1s 无位移 | — | 当前方位 + 横向 | 0.2 + 切向 |
+
+- **近战三层（七期核心）**：`CHASE` 前排（≤6 人，径向恒 `+1` 贴脸）+ `RING` 环带（其余，径向 `clamp(…, 0, 1)` 只进不退，到自己的环半径后沿切向归位）+ `CUTOFF` 前插（原点=预判落点，站到落点前方的扇形上）。**同心环**：`R_i = (max(melee_ring_radius, engage×1.6) + ring×RING_SPACING(34)) × jitter(±10%)`，每环容量 `floor(TAU×R_i/RING_SLOT_SIZE(32))`，近的先占内圈 → 人多自动往外扩圈（89 人≈3 圈），不会全部压向同一点。⚠️ 六期"压迫组全员径向恒 +1"在 70+ 人时会退化成追尾队列（间距=碰撞半径、队形沿玩家移动轴），必须分层。
+- **近战角色也用于枪手（十二期）**：`scenes/enemies/tester_automaton_shield.gd`（`class_name EliteAutomaton`，**同时被 `tester_automaton_shield.tscn` 与 `droid_helmet_smg.tscn` 使用**）的 `ai_role` 从 `RANGED` 改成 `MELEE`。设计意图是"一边射击一边压上来给压力"，而远程 standoff 会把它们钉在 `lerp(20,300,0.65)≈200px` —— 方向完全相反。改角色**不影响开火**：它们的 `move_mod` / `AIMING` / `SHOOTING` 由自己的 `shoot_range`/`back_range` 驱动，与 AI 角色无关，所以会一边瞄准射击一边按近战方向压上。⚠️ 「远战武器 + 近战走位」的单位必须走近战角色。
+  ⚠️ 这两个脚本的 `time_count()` 是**完整覆写且没调 `super`**，基类尾巴上的 `_ai_unstuck_ticks` 递减与 `_convert_tick()` 必须手动补（十二期已补；`enemy_tank.gd` 同样补上）。不补的话：脱困一旦触发就是永久侧移，且策反永远不结算。
+- **角色评分：位置 + 速度（九期）**：谁来当前排/前插不由"离得最近"决定，而由**角色适配分**决定（都读敌人的实际 `velocity`，即 `move_and_slide` 之后的值，所以被卡住的敌人自然≈0）：
+  - **前插分** `0.55×eta_norm + 0.45×ahead`：`eta = |到预判落点| / max(40, 速度·朝落点单位向量)`、`eta_norm = 1/(1+eta/ETA_REF(2s))`、`ahead = 0.5+0.5×cos(玩家前进方向 − 该敌方位)`（玩家静止时=0.5）。
+  - **前排分** `0.6×proximity + 0.4×closing_norm`：`proximity = 1/(1+d/ring)`（平滑衰减，远距离间仍保持次序）、`closing_norm = clamp(速度·朝玩家)/CLOSING_REF(140), 0, 1`。
+  - **留任加成** `ROLE_HYSTERESIS(0.15)`：当前已是该角色时加分，防 5Hz 抖动。
+  - 分配顺序：先按前插分取 `intercept_count` 个 → 再从剩下的按前排分取 `attack_count` 个 → 其余环带。**先选前插**是因为它稀缺，先选前排会把最好的前插候选人吃掉。
+  - 结果写进 `_ai_role_score`（调试可视化快照里有，但不上屏，避免文字过密）。
+- **远程提前后撤（九期）**：`_assign_ranged_slots()` 额外算 `closing = 玩家速度·(该敌位置−玩家位置).normalized()`，当 `closing > RANGED_DANGER_SPEED(120)` 且 `dist < min(shoot, standoff×1.1)` 时判 `KITE` —— 玩家高速冲过来时提前侧撤，而不是等贴到 `back_range` 才反应。
+- **角序保持分配（七期修正）**：每一层先按方位角 `(pos-anchor).angle()` 排序，再按同序把槽位角均分铺满（`angle_j = base_r + TAU×j/n`）。顺序一致 ⇒ 没人为了到位而横穿整群；即使 70 人全挤在玩家后方 60° 内，也会被铺到 360°（把"队列"掰成"包围"的关键一步）。⚠️ 不能用"数组下标 → 角度下标"的下标分配：`press_list` 是 `PoolManager` 注册顺序，与位置无关，等于随机指方位。
+- **横向力预算（七期修正）**：`lateral = 切向 + 密度×sep + 反排队×sep`，**总量超过 `LATERAL_CAP=0.6` 就按比例压回**，最后 `dir = flow×radial + lateral`。保证径向占比 ≥62%，不会出现"横向合力 1.65 > 径向 1.0 → 整群侧滑打转"。离墙力是安全项，不参与预算。
+- **失效槽降级（七期修正）**：`_fit_slot` 返回 `-1` 时只置 `_ai_slot_valid=false`（**保留 `_ai_slot_angle`**），`_steer_intent()` 不再 `return flow`，而是 `radial=1.0`、`weight×0.5` 继续按保留方位塑形。⚠️ 旧行为是"站不到就退回纯 flow"——89 人时靠墙槽位大量失效，全员跟同一条导航流向 → **单列长队**。
+- **直线优先 + 场流两点平均 + 切向死区（十期修正）**：⚠️ **等距瓦片的 4 邻接 BFS 只能给出 `(±0.894, ±0.447)` 四个对角方向**（`NEIGHBORS4` 的世界偏移是 `(±32,±16)`），**没有正上/正下/正左/正右**；敌人正好在玩家正上/正下时，两条对角线对称、跨格时会翻面 → 左右摇摆，而斜向敌人正常。修法三层：① 求解器每 5Hz 用 `_has_line_of_sight(pos, anchor)` 写 `_ai_flow_direct`，**直线可走时 `grad = toward`，完全不用场流**；② 直线被挡才用 `_smooth_field_flow(pos, target, toward)`：当前点 + 沿目标方向 26px 各采一次，锯齿处两点反向相加抵消，几乎完全抵消时退回 `toward`；③ `_steer_intent()` 加 `TANGENT_DEADZONE(0.05rad≈3°)`，方位差在死区内不施加切向，掐掉"过冲→反向"的极限环。
+  **识别特征**：只有正上/正下/正左/正右摆、斜向正常 → 一定是格流锯齿，不要靠调 `max_turn_deg` 或加平滑去压。
+- **极坐标合成**：`dir = flow × radial + flow.orthogonal() × sign(turn) × min(|turn|/max_turn,1) × weight`。`weight` 由 `_melee_band_weight()` 给出（远处≈`far_spread`、环带≈`encircle`、贴脸≈0），`_ai_attack_slot` 的贴脸者再 ×0.3。⚠️ 旧实现用 `flow.rotated(turn*w)`，径向分量恒为「朝玩家」，包围环只是曲线、敌人最终仍会贴成一团。
+- **分组缓存跨求解保留（七期修正）**：`_collect()` 不再 `_groups.clear()`，只重建 `all/melee/ranged` 数组并裁剪失效键，`base` / `cut_dir` 继续跨 200ms 平滑。⚠️ 每帧清空会让对称包围时 `base` 恒为 0、整群同步抽搐。
+- **槽位必须双向搜索到可行走区（五期收缩 + 八期外扩）**：`EnemyAI._fit_slot(target, anchor, angle, radius, min_radius, max_radius)` 先试原半径，失败后按 `SLOT_SHRINK_RATIO=0.8` 向内收缩（最多 12 步、到 `min_radius`），仍失败则按 `SLOT_GROW_RATIO=1.18` **向外增长**（最多 8 步、到 `max_radius`，`<0` 表示禁止外扩）。合法性判定统一在 `_slot_ok(point, target)`：`MapBounds.nearest_inside(point, 24) == point`（离墙内壁 ≥24px，**不能只用 `is_inside_walkable`**，那是内壁、不含本体半径）、`not EnemyNavField.is_solid(point)`、`EnemyNavField.dist(point, target) != INF`（可达）。都失败返回 `-1`（见「失效槽降级」）。近战环带 `max_radius = SLOT_MAX_RADIUS(420)`、前排不扩、前插上限 `cutoff_distance×1.6`。⚠️ 只会向内收缩时，玩家在场地顶点/墙边会让整圈环带无解，全员退化成"压向玩家"。
+- **自由弧（八期）**：`EnemyAI._free_arc(target, anchor, radius)` 在半径上均匀采样 `ARC_SAMPLES=32` 个角度，用同一个 `_slot_ok` 判定，取**最长连续可行段**（环形数组、允许跨 0°）。环带的角度与容量都按这段弧来：`capacity = floor(span × R / RING_SLOT_SIZE)`、`angle = start + span × (j+0.5)/take`。开阔地 `span≥0.9×TAU` 退化为整圈；玩家在菱形下半区时弧≈240°，环带被收进同一个扇面并**向外扩圈**，而不是被派到墙外再全部回退成"压线"。
+- **队列纪律（八期）**：`_assign_queue_push()` 顺带把"正前方 72px/35° 锥内、比我更接近目标"的接近度累加成 `_ai_queue_pressure ∈ [0,1]`；`_steer_intent()` 只对 `RING` 施加 `radial ×= 1 - QUEUE_DAMP(0.8) × pressure`。开阔地同环成员距离相近、不构成"在前方"→ pressure≈0，行为不变；走廊/挤压时后排自动停推，形成有间距的队列。前排 `CHASE` 与前插**不**衰减，保证真的有人压上去。
+- **半径平滑只能"向小"（七期修正）**：`_apply_slot()` 里 `smoothed = minf(lerpf(prev, fitted, SLOT_SMOOTH), fitted)`——收缩必须立刻到位，否则平滑出来的中间半径可能已经在墙外（探针会直接断言"所有下发槽点都合法"）。
+- **离墙力（五期修正）**：`EnemyAI._apply_wall_push()` 每 200ms 给每只敌人算 `_ai_wall_push`：8 方向 × 2 距离探针（`WALL_PROBE_NEAR=22` 权重 1.0、`WALL_PROBE_FAR=40` 权重 0.35），`is_solid` 命中则累加反方向；**先判自身格是否 solid**——被击退出界/卡在障碍格时 8 个探针会对称抵消（合力为 0），必须直接朝 `MapBounds.nearest_inside(pos, 24)` 走。`_steer_intent()` 在「驻留判零之前」叠加 `_ai_wall_push × WALL_PUSH_WEIGHT(0.75)`，冲撞窗口（`ai_formation_allowed()==false`）不叠加。
+- **驻留只属于远程与环带**：`radial≈0` 且 `turn≈0` 时合成结果是近零向量，**不能**归一化（会把噪声放大成任意方向），也不该回退成 `flow`。`_steer_intent()` 在 `length_squared < 0.0004` 时返回 `Vector2.ZERO`，交给 `move()` 减速停下。前排径向恒 +1 不会走到这里；环带/前插的径向下限是 0，只有远程 `HOLD/REPOS` 与"已到位的环带"会真正停下。
+- **近战距离分层**：`_melee_band_weight()` = `max(encircle × near_gate × far_gate, far_spread × (1 - far_gate))`，`far_gate = 1 - smoothstep(R*1.2, R*2.4, dist)`、`near_gate = smoothstep(engage*0.8, engage*1.3, dist)`。语义：**远处只做最小横向分道、优先拉近距离**；环带内全力绕行；贴脸归零。⚠️ 两个 gate 的方向不能写反（写反会让环带权重恒为 0）。
+- **前插配额（六期）**：`intercept_count = clamp(round(n × intercept_ratio), cutoff_slots, cutoff_max)`，再 `min(…, n-1)`（**永远至少留 1 个近战**）。选人带滞回：已在前插区（以预判落点为原点、`cutoff_distance×1.4` 内）的优先保留，其余按离预判落点最近补。贴脸名额只在剩下的近战里按距离取前 `attack_count`，前插组不占名额。玩家静止时扇形方向沿用缓存 `group["cut_dir"]`。
+- **远程错落站位**：`_assign_ranged_slots()` 给远程也分方位槽（`clamp(n,1,8)`，超出复用角度并加一档半径），`R_ranged = clamp(lerp(back, shoot, ratio) × jitter, back+12, shoot×0.95)`，`jitter ∈ [0.85,1.15]` 按实例 id 稳定。⚠️ 所有远程共用一个 standoff 半径 = 视觉上一圈摆拍。
+- **视线与换位**：`_has_line_of_sight()` 沿 `敌人 → 玩家` 每 24px 采样（跳过两端 40px），任一 `EnemyNavField.is_solid` 即视为被挡；被挡时远程改 `REPOS`（目标角偏移 ±50°，符号取稳定的 `_ai_strafe_sign`）。无导航场时视为有视线。
+- **调试可视化（六期，七期补「阻挡格」，八期补「自由弧」）**：`Game.dev_mode` 下按 `` ` `` 打开开发者控制台（`ui/cheat_menu.tscn`）→「AI 可视化」（子开关：密度场 / 决策向量 / 导航场流向 / 阻挡格）。叠加层 `ui/ai_debug_overlay.tscn` 由 `cheat_menu._get_ai_overlay()` **懒创建到战斗场景根**（不是挂在菜单 CanvasLayer 下——菜单关闭时 `visible=false` 会连带隐藏子节点），关闭只 `visible=false` 不销毁。四层：① 密度场热力；② 每只敌人的意图名+名次、站位点、三类推力箭头；③ 导航场流向（默认关）；④ **阻挡格**（默认关，`EnemyNavField.is_solid` 为真的格子画暗红）。另有**自由弧**提示（黄线，整圈时不画）：直接看出环带被限制在哪个扇面。刷新 15Hz，`layer=90`（低于 F3 性能面板的 100）。取数与绘制分离：`build_snapshot()` 返回纯数据（headless 可断言），`_on_draw()` 只消费缓存；只读入口为 `EnemyAI.debug_density()/debug_candidates()/intent_name()/cell_center()/debug_arc()`，不参与求解。关闭时 `_process` 首行早退，成本 ≈0。
+- **密度场分散（三期起，六期改为「只横散」）**：世界网格 `DENSITY_CELL=32px`；每只 splat 自身格 `+1.0`、四邻 `+0.45`、对角 `+0.2`；采样 3×3（**跳过自身格，并从邻格扣掉自己的 splat 份额**，否则单独一只也会被自己推开）。六期两条关键修正：① `DENSITY_BACKPRESSURE = 0.0`——`radial = acc·toward` 为负时**整段丢弃**，密度只能横推、绝不把人往远离玩家的方向推；② `DENSITY_MAG_REF = 2.5`——推力幅度 `clamp(|push|/2.5, 0, 1)` 软饱和，不再是"有一个邻居就满强度"，稀疏时≈0。⚠️ 这两条缺一，整群会表现为"散得开但不接近"。
+- **反排队**：`_assign_queue_push()` 只处理「正前方 72px、35° 锥内、且对方更靠近目标」的同类，沿垂直于目标方向推开，侧向取实例奇偶（左右各半 → 两两分道而不是整体平移）。与 `ai_formation_allowed()`（冲撞窗口）互斥。
+- **脱困与不可达**：`_update_stuck()` 每 200ms 比较位置，位移 < 6px 累计 4 次 → 写入 `_ai_unstuck_ticks = 8`（0.8s），期间 `Enemy.time_count()` 递减，方向取横向脱困。`EnemyNavField.dist(pos) == INF` 的敌人仍会拿到意图但方向由 `flow` 兜底。
+- **移动预判**：`EnemyAI.predict_anchor(target, lead)` = `MapBounds.nearest_inside(player_pos + limit(v,260) × lead × clamp(|v|/200,0,1), 24)`；`EnemyNavField.ensure_rebuilt(target, anchor)` 用它做**场种子**，于是整张场指向玩家即将到达的位置且天然绕障。前插组另用同一函数、以 `cutoff_speed_lead` 为提前量算出自己的站位原点。玩家静止 / 镜像无 `velocity` / `lead=0` 时锚点等于玩家位置。
+- **成本**：场重建 ≤5Hz（729 格 × 4 邻 ≈0.3–1ms）；密度 splat 9n + 采样 9n（n≤80）；每 tick 每敌 O(1)（一次 `ai_active` 判空 + 一次 `world_to_cell` + 若干向量运算）。没有角色敌人的回合不建场。客机镜像 `has_meta("network_remote_enemy")` 早退。
+- **可观测**：`Game.dev_mode` 开启时，每回合第一只敌人生成会打印一次 `[ETNAI] round=N level=<id> profile=<id|off>`（`spawn_anim._log_ai_profile()`，`round_end` 复位）。排查「敌人很傻」时先看这一行，能立刻区分「profile 没注入」与「AI 逻辑不对」。
+- **互斥**：`route_target != null`（路线型敌人）、`aggro_override != null`（嘲讽）、`faction == PLAYER_SIDE`（策反）、`is_standby()`、`frozen`、目标不是 `Player`/`RemotePlayer` 组节点时一律不接管方向。
+- **策反与 AI（十三期确认）**：策反期间（`faction == PLAYER_SIDE`）敌人被 `_is_candidate()` 排除在 `_candidates` 之外——**不占名额、不刷密度/离墙/排队推力、不参与角色评分**；`ai_steer()` 首段直接 `return base_dir`，所以走位完全交回脚本本身（目标由 `_select_target()` 的 `get_nearest_enemy()` 给出，`Targeting.nearest_enemy` 会跳过其它 PLAYER_SIDE 单位，不会内战）。
+  ⚠️ **回归时的空窗**：不在候选集里意味着 `_ai_intent / _ai_anchor / 槽位 / 三种推力 / _ai_flow_direct` 会**冻结在策反前的值**。`_on_revert()`（以及客机镜像的 `apply_network_conversion` 解除分支）现在会调 `Enemy._reset_ai_runtime()` 把它们清空——清空后首帧是安全的：`_ai_intent == NONE` → `_steer_intent()` 直接返回 `flow`；`_ai_anchor == ZERO` → `ai_steer()` 回退到 `predict_anchor(target, lead)`。下一次 5Hz 求解再重新接纳它并下发新状态。`idle_state()` 也复用同一个清理函数，池化复用不会带病。
+- **联机（十四期补全权威边界）**：AI 只在 host 生效，客户端镜像由快照驱动。**新增任何 `_ai_*` 状态都不需要同步**——镜像不模拟 AI，加同步会变成双份决策。
+
+  | 状态 | host | 客户端镜像 |
+  |---|---|---|
+  | `_ai_intent / _ai_anchor / 槽位 / _ai_density_push / _ai_wall_push / _ai_queue_push / _ai_queue_pressure / _ai_flow_direct / _ai_role_score` | 5Hz 求解写入 | **不存在**（不模拟） |
+  | 位置 / 速度 / 血量 / 动画状态 / 策反态 / `convert_gauge` | 权威 | 快照（`coop_net._send_enemy_snapshot` → `coop_enemy_proxy.apply_snapshot` 缓冲插值） |
+  | 物理帧 / `StateMachine` 物理帧 | 开启 | `disable_mirror_ai()` 关闭 |
+  | `time_count`（10Hz 全局 tick） | 开启 | **仍连接**（`active_state()` 里接的），但 `ai_steer()` 第一个 `if not ai_active()` 就返回，成本可忽略 |
+
+  **两个必须同时保留的拦截点**：`EnemyAI._is_candidate()`（镜像不进候选集、不占名额、不刷推力）与 `Enemy.ai_active()`（`ai_steer` 在 `ensure_solved()` **之前**返回 `base_dir`）。缺任何一个，客户端都会跑起 AI。
+  角色/难度参数不注入镜像也无所谓（镜像不读）；`EliteAutomaton` 改成 `MELEE` 对客户端无影响（同样被 `ai_active()` 早退）。
+- **难度参数（`EnemyAIProfile`）——先分清三个名额算谁**：
+
+  | 名额 | 参数 | 公式 | 意图 |
+  |---|---|---|---|
+  | **前排贴脸压迫** | `attack_slots` | `clamp(attack_slots + (n-1)/4, 1, 6)` | `CHASE`，径向恒 +1 压到脸上（`_ai_attack_slot` 再让切向 ×0.3 更直冲） |
+  | **前插围堵** | `intercept_ratio` + `cutoff_slots`（下限）+ `cutoff_max`（上限） | `clamp(round(n×ratio), 下限, 上限)` | `CUTOFF`，去**预判落点**前方扇形拦截 |
+  | **包围环** | —（剩余） | `n - 前排 - 前插` | `RING`，同心环、只进不退 |
+
+  ⚠️ `attack_slots` **不是围堵人数**，是"贴脸压迫"名额。
+  **三层保底（十六期）**：`count >= 6` 时强制 `intercept ≤ count-2`、`attack ≤ count-1-intercept`，保证前排/环带/前插各至少 1 个——否则人少时环带会被前排和前插吃光（旧 TORMENT n=8 是 5/3/0，完全体看不出分层）。
+
+- **难度梯度（十六期：INSANE = 完全体）**：
+
+  | 难度 | encircle | ring | attack_slots | predict | flank | intercept_ratio | cutoff min/max | sep | kite |
+  |---|---|---|---|---|---|---|---|---|---|
+  | NORMAL | .30 | 120 | 2 | .10 | 0 | .20 | 0/1 | .28 | .20 |
+  | HARD | .40 | 112 | 3 | .18 | .05 | .25 | 1/2 | .32 | .30 |
+  | EXTREME | .52 | 104 | 3 | .26 | .15 | .30 | 2/2 | .36 | .42 |
+  | **INSANE（完全体）** | **.75** | **92** | **4** | **.45** | **.45** | **.40** | **2/4** | **.45** | **.70** |
+  | TORMENT（同 AI） | .75 | 92 | 4 | .45 | .45 | .40 | 2/4 | .45 | .70 |
+
+  **INSANE 与 TORMENT 的 AI 参数完全相同**（EXTREME→INSANE 是能力跃迁）。TORMENT 的额外难度由非 AI 杠杆承担：`resources/level/torment.tres` 的 `level_hp 6.0`、`level_damage 3.5`、`boss_intrusion_enabled`（goliath + tower）、`havoc_required` + `havoc_min_enemy_mods 3`。
+  其余字段：近战 `melee_engage_radius`（五档都走默认 56）/ `far_spread` / `max_turn_deg`；预判 `predict_lead_seconds` / `flank_bias` / `low_hp_rush_ratio`；前插 `cutoff_distance` / `cutoff_speed_lead` / `cutoff_spread_deg`；远程 `ranged_kite` / `ranged_standoff_ratio`（五档都 0.65）；公共 `separation_strength`（密度推力**上限**）。调参只改 `.tres`，不动代码。
+
+### 5.13 冲撞型敌人：发起前通路判定 + 撞墙结束（2026-11-04）
+
+- **范围**：常规敌人中只有 `mystic_sweeper`（`charge=true`、`charge_speed_mult=3.0`，`mystic_sweeper.tscn:182-183`）会冲撞；`goliath` 是 Boss 且走自己的 `_charge_direction_to_target()`；`sandbag.gd` 的冲撞代码因场景未开 `charge` 属死代码。
+- **规则**：① 置 `can_charge = true` 之前调 `Enemy.ai_charge_path_clear(target)` 判定一次；被挡则 `charge_cd_time = CHARGE_RETRY_TICKS(10)` 稍后重试，不逐帧重判。② 判定通过后，15 tick 后仍用 `get_direction_to_player()` 锁定方向（不做方向改造）。③ 途中不再判定。④ `charge_move()` 的 `move_and_slide()` 一旦 `get_slide_collision_count() > 0` 立即 `_end_charge(50)`。
+- **为什么不需要筛碰撞体**：sweeper 家族根 `CharacterBody2D` 只与墙碰撞——`sweeper.tscn:162-163` 是 `layer=8 / mask=256`，`mystic_sweeper.tscn:178-179`（及 enhanced/modded）是 `mask=258`（墙 256 + 子弹墙 2），**不含玩家层(1)与敌人层(4)**，所以冲撞中产生碰撞只可能是墙/障碍。
+- **收尾必须唯一**：`move_mode` 只有 `_end_charge()` 会清零，`get_next_state` 在 `move_mode != 0` 时会一直走 `match`，漏清会**永久卡在 `CHARGING`**。`_end_charge(cd)` 同时清 `charge_time/charge_dir`，让撞墙当帧就减速停止，而不是在状态机重评前的 3 tick 里继续以 3× 速度冲。
+- **`ai_formation_allowed()`**：`sweeper` 覆写为 `charge_dir_time <= 0 and charge_time <= 0`，预警/冲撞期间不加侧向偏置，避免冲锋起点横向漂移。
+- **验证**：`tests/ai_probe.gd`（本地、不入库）覆盖「无阻挡放行 / 有阻挡拒绝 / 无场时恒放行」。
+
+## 6. Managers / 管理器
 | Manager | Responsibility / 职责 | 关键 API/信号 |
 |---|---|---|
 | `round_manager.gd` | 回合生命周期 + 每回合经济；回合结束清场 | 信号 `enemy_clear/coin_clear/bullet_clear/backlayer_clear/item_clear/player_portal`；`first_round_start()` `:70-85`, `_on_round_start()` `:87-105`, `_on_round_end()` `:107-136` |
@@ -424,6 +534,7 @@
 - 表现：Goliath / 侵蚀之塔保留入场与死亡动画，但乱入时不发 `camera_move` / `ui_visible` / `pause_lock`，也不 `get_tree().paused`；死亡照常掉金币。两者在乱入时不发 `emit_boss_round_end()`，避免误停普通回合计时。
 - 乱入提示（2026-10-24）：`EnemyManager._spawn_boss_intruder()` 在 `boss_spawn()` 成功后 `GameEvents.emit_boss_event("boss_intruder_start", {})`；`ui/round_timer.gd` 监听 `boss_event`，复用 `$FeverTime` 节点与 `fever_time`/`fever_anim` 动画及 `WarringSounds` 音效，把 Label 文本切为 `!! BOSS RAID !!`。`play_fever_anim()` 每次显式写回 `>> FEVER TIME >>`，避免乱入后残留。事件走既有 `boss_event` 通道，联机 host 广播后客机同显；当前仅 TORMENT 开启 `boss_intrusion_enabled`，故实际只在 TM 出现。
 - 普通计时归零：`round_timer._on_timer_timeout()` 若检测到 `EnemyManager.has_active_boss_intruder()`，调用 `start_intruder_fever(15.0)`，进入 15 秒 FEVER（红字/横幅；每 5 秒对场上 BOSS 施一次 rage buff），不直接结束回合。FEVER 结束调用 `resolve_boss_intruder_timeout()`：存活 Boss 播放 `enter_anim` 倒放后消失（不运镜/不暂停/不结算奖励），随后 `emit_round_end`。FEVER 内击杀会提前结束 FEVER；`resolve_boss_intruder_timeout()` 对已死亡 Boss 通过 `boss_intruder_wait_death()` 等待死亡动画后再结算。
+- **乱入撤退/入场加固（2026-10-25）**：入场（塔 3.0s / Goliath 2.5s）与撤退演出全程把 `HealthComponent.is_invincible = true`（塔为逐座子塔设置，`network_remote_enemy` 镜像跳过），拦掉同帧命中、DOT/火场、pending extra、`one_hit_kill` 在演出中打死 Boss；入场结束按 `_dead_started/_intruder_escaping/_is_idle/hp<=0` 守卫恢复，`active_state/idle_state/update_tower` 复位防池化残留。撤退**不再** `await animation_finished`：塔状态机在下一物理帧 `SHOOTING→IDLE` 时会用循环 `idle` 覆盖同一个 `animation_player_3`，信号永不发 → FEVER 结算永久挂起、回合卡死；现在先 `state_machine.set_physics_process(false)` + 显式 `tower.stop_shoot.emit()`，再按入场动画长度固定时长等待。`boss_intruder_wait_death()` 改为带 deadline 的轮询；`round_timer._finish_intruder_fever()` 增加 token + 8s watchdog（`fever_resolve_timeout`），即使 resolve 内部 await 永挂也必定 `emit_round_end()`（该信号本身会清空 `BossIntruder`）。两处 `_intruder_escaping` 早退门（塔组 `boss_dead` / `on_dead`）是 load-bearing：撤退优先、防止死亡路径在退场期间自释放。证据：`scenes/enemies/boss/erosion_tower_group.gd`、`scenes/enemies/boss/goliath.gd`、`ui/round_timer.gd`。
 - 清理：`BossIntruder` 组是新加的兜底索引；**侵蚀之塔组根节点不在 `Enemy` 组**，`main.gd:enemy_clear_unit()` 只清 `EnemiesRoot` 下直接属于 `Enemy` 组的节点，因此必须靠该组在 `round_end` / `game_over` / 乱入超时时显式 `queue_free`。
 - **联机清理同步（2026-10-25）**：host 侧乱入 Boss 的**死亡**走 `stats.is_dead` → `CoopNet._on_server_enemy_dead`（Boss 延时 `BOSS_DEATH_DESPAWN_SEC=4s` 兜底 + 镜像 `_coin_drops` 自释放）；**非死亡移除**（FEVER 超时 `boss_intruder_escape()`、`_clear_boss_intruders()` 的 `round_end`/`game_over`/首轮复位）**不会 emit `is_dead`**，改由 host 登记敌人时挂 `tree_exiting` → `_on_server_enemy_exiting()` → `_forget_enemy_net_id` + `_despawn_enemy_remote`（复用现有 RPC，无协议变更）。普通死亡已由 `_on_server_enemy_dead` 先抹掉映射、节点之后才离树，故该回调对普通死亡早退，不截断客机死亡动画；池化普通敌人走 `idle_state()` 不离树，不会误触发。客机镜像自带 `BossHP` 且 `main.enemy_clear_unit()` 跳过 `"BOSS"` 组，没有这条通道就会整局残留。
 
@@ -494,6 +605,15 @@
 - **轨道炮击客机音效（2026-10-25）**：客机纯表现 `scenes/effects/orbital_barrage_remote.gd` 补回放 host 同款音效——`add_marker()` 播 `BlipSounds1`（对齐 `orbital_barrage._spawn_next_target()`，默认 40ms 节流）、`spawn_blast()` 播 `ExplosionSounds2`（对齐 `_fire_blast()` 的 60ms 节流）；`add_marker(..., play_sound=false)` 供 `apply_state()` 晚加入/重连补发 marker 时静音，避免进房瞬间补播一串提示音。此前客机只见 marker/粒子、完全没有声音。腐化蔓延的 `CorruptionSpawn` 由客机镜像 `apply_remote_wave(ACTIVE)` → `_activate_wave()` 本地播放，本身已同步（同一 `AudioStreamPlayer` 重播，听感一次），不要再加第二份。
 - **轨道炮击金币优先落点 + 命中减速（2026-10-25）**：`orbital_barrage._choose_target_point()` 先走 `_choose_gold_target()`：从 `CoinManager.get_active_coins()` 只取**落地可拾取**金币（过滤 `pick_up`、`can_pick==false`、`is_idle`、无效/出树；面值权重 `clamp(coin,1,10)`），按 `gold_search_radius=180`（桶边长 90）求世界空间分桶权重质心，候选得分 = 半径内 `w × (1 - d/180)`；最高分 < `gold_min_weight=2` 视为不密集并回退玩家；得分 ≥ 最高分×`gold_pick_ratio=0.8` 的候选按得分加权随机抽取，叠加 0–16px 抖动与 `MapBounds.nearest_inside`，按 `strike_radius*1.5` 校验间距；全部候选都过近时仍返回最密集点（金币优先，不转去打玩家）。每次 marker 生成都会重新取样，因此“刚打出金币的区域”会被后续落点继续照顾。命中减速：炸到玩家时（爆炸半径内）对 `"Player"` 组调用 `BuffRouter.apply_buff(orbital_barrage_slow, [1,0.5,1.5], "orbital_barrage")`，敌人不挂；客机不跑场地效果，host 在 `_on_host_orbital_blast` 对每个在半径内的远端代理额外经既有 `_remote_player_buff` RPC 下发同一份配置（`get_player_slow_config()` 从本体 effect 读取，避免两份数值漂移）。不改 RPC 形状、不改 `PROTOCOL_VERSION`/`MOD_VERSION`，客机仍不评估金币、不自行算爆炸范围。
 - **待实现场地词条（backlog，2026-10-23）**：**扫射光幕**：横穿地图的预警线，1.5 秒后扫过并造成伤害；**引力乱流**：周期性全局推力、不直接伤害。两者暂不实现。
+
+### 6.6 场地词条的「阻挡移动」注册（2026-11-04）
+
+- **开关**：`scenes/field_mods/terrain_field_effect.gd` 新增 `@export var blocks_movement: bool = false`（**默认 false**，现有词条零行为变化；`corruption_spread` / `orbital_barrage` 都直接继承 `FieldModEffect`，不受影响）。
+- **注册**：`on_start()` 填完 `_cells` 后 `EnemyNavField.add_block(_reserved_source_id, get_terrain_cells())`；`on_stop()` 调 `EnemyNavField.remove_block(_reserved_source_id)`。`FieldModManager.clear_all()` 在 `round_end` / `round_upgrade` / `game_over` 都会调 `effect.stop()`，是可靠清理点。
+- **连通性**：`blocks_movement` 为真时，`on_start()` 用 `_filter_connected_chunks()` 逐块试加——只要某块会让「原本可达的可行走区域」被封死就丢弃该块（`_reachable_cells()` 以玩家格为种子做四邻接 BFS，`_keeps_regions_open()` 比对基线）。**Boss 没有寻路**，因此阻挡类地形必须做这一步；`corruption_spread` 的「按设计不做连通性校验」只适用于不挡路的雾。
+- **Boss 锚点**：`@export var avoid_center_radius: float = 240.0`，仅在 `blocks_movement` 时生效，`_allow_chunk()` 排除距 `CenterPosition` 组过近的块，避免塔/Goliath 刷在障碍里或开场被卡死。
+- **自动兜底**：即使词条忘了勾 `blocks_movement`，只要它用 `PropWallBody`（层 9）加碰撞体，`EnemyNavField` 建拓扑时的 `StaticBody2D` 扫描也会把覆盖格算进阻挡集。
+- **未来接入方式**：新阻挡词条 = `extends TerrainFieldEffect` + 勾 `blocks_movement` + 自备可视/碰撞表现，AI 侧零改动。
 
 ---
 

@@ -11,6 +11,10 @@ enum State {
 @export var charge: bool = false
 @export var charge_speed_mult: float = 1
 
+# 冲撞：发起前只判定一次"到玩家的直线是否无障碍"；途中不再判定，撞到墙即结束。
+const CHARGE_RETRY_TICKS := 10
+const CHARGE_END_CD := 50
+
 var can_charge: bool = false
 var charge_dir: Vector2 = Vector2.ZERO
 
@@ -21,6 +25,13 @@ var charge_dir_time: int = 0
 var charge_time: int = 0
 
 @onready var buff_box = $%BuffBox
+
+func _init() -> void:
+	ai_role = AIRole.MELEE
+
+# 冲撞预警/冲撞期间不参与难度阵型：避免冲锋起点被侧向偏置带跑。
+func ai_formation_allowed() -> bool:
+	return charge_dir_time <= 0 and charge_time <= 0
 
 func time_count():
 	
@@ -35,13 +46,21 @@ func time_count():
 	if charge_time > 0:
 		charge_time -= 1
 		if charge_time <= 0:
-			_apply_outline_state()
-			can_charge = false
-			charge_cd_time = 50
-			move_mode = 0
+			_end_charge(CHARGE_END_CD)
 	
 	if charge_cd_time > 0:
 		charge_cd_time -= 1
+
+# 冲撞统一收尾：正常结束、撞墙结束都走这里（move_mode 只有这里会清零）。
+func _end_charge(cd: int) -> void:
+	_apply_outline_state()
+	can_charge = false
+	charge_cd_time = cd
+	move_mode = 0
+	charge_time = 0
+	charge_dir = Vector2.ZERO
+	if $AnimationPlayer != null:
+		$AnimationPlayer.stop()
 
 func tick_physics(state: State, delta: float) -> void:
 	ACCELERATION = stats.move_acceleration()
@@ -61,8 +80,12 @@ func tick_physics(state: State, delta: float) -> void:
 		var charge_target := get_target() as Node2D
 		if charge_target != null and not is_standby():
 			var distance = self.position.distance_to(charge_target.position)
-			if distance < 150 and charge_cd_time <= 0:
-				can_charge = true
+			if distance < 150 and charge_cd_time <= 0 and not can_charge:
+				# 只在发起前判定一次：路线被障碍挡住就不冲，稍后重试（不逐帧重判）。
+				if ai_charge_path_clear(charge_target):
+					can_charge = true
+				else:
+					charge_cd_time = CHARGE_RETRY_TICKS
 
 func charge_move(delta: float, acceleration_local: float ,MAX_SPEED: float ) -> void:
 	if stats.hp != 0:
@@ -79,6 +102,10 @@ func charge_move(delta: float, acceleration_local: float ,MAX_SPEED: float ) -> 
 		velocity = Vector2.ZERO
 	
 	move_and_slide()
+	# 撞到墙/障碍即结束冲撞。sweeper 根 CharacterBody2D 只与 wall / bullet_wall 碰撞，
+	# 不与玩家或同类碰撞，所以这里不需要按碰撞体类型筛选。
+	if charge_time > 0 and get_slide_collision_count() > 0:
+		_end_charge(CHARGE_END_CD)
 
 func get_next_state(state: State) -> State:
 	

@@ -6,6 +6,20 @@ extends CanvasLayer
 
 @onready var upgrade_box: GridContainer = %UpgradeGrid
 @onready var enemy_box: GridContainer = %EnemyGrid
+@onready var ai_debug_toggle: Button = $Panel/VBox/Actions/Debug/AIDebug
+@onready var ai_density_toggle: Button = $Panel/VBox/Actions/Debug/AIDensity
+@onready var ai_vector_toggle: Button = $Panel/VBox/Actions/Debug/AIVector
+@onready var ai_nav_flow_toggle: Button = $Panel/VBox/Actions/Debug/AINavFlow
+@onready var ai_solids_toggle: Button = $Panel/VBox/Actions/Debug/AISolids
+
+const AI_OVERLAY: PackedScene = preload("res://ui/ai_debug_overlay.tscn")
+
+# 敌人 AI 可视化叠加层：首次开启时懒创建到战斗场景根，关闭只隐藏不销毁。
+var _ai_overlay: Node = null
+var _ai_show_density: bool = true
+var _ai_show_vectors: bool = true
+var _ai_show_nav_flow: bool = false
+var _ai_show_solids: bool = false
 
 var test_card = preload("res://ui/test_item_card.tscn")
 var enemy_card_scene = preload("res://ui/test_enemy_card.tscn")
@@ -34,6 +48,9 @@ func _exit_tree() -> void:
 		if t != null:
 			t.paused = false
 		GameEvents.emit_pause_lock(false)
+	if _ai_overlay != null and is_instance_valid(_ai_overlay):
+		_ai_overlay.queue_free()
+	_ai_overlay = null
 
 func _unhandled_input(event):
 	if not event.is_action_pressed("cheat_menu"):
@@ -50,6 +67,7 @@ func open_menu():
 	if self.visible == true:
 		return
 	self.visible = true
+	_sync_ai_toggles()
 	# 显示并解除鼠标锁定/隐藏
 	_prev_mouse_mode = Input.mouse_mode
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -198,3 +216,60 @@ func _on_purify_corruption_pressed() -> void:
 	if p == null or p.get("stats") == null:
 		return
 	p.stats.purify_corruption(max(1, int(round(p.stats.max_hp * 0.1))))
+
+# ===== 敌人 AI 可视化 =====
+
+# 懒创建：叠加层挂在战斗场景根（不是本 CanvasLayer——菜单关闭时 visible=false 会连带隐藏）。
+func _get_ai_overlay() -> Node:
+	if _ai_overlay != null and is_instance_valid(_ai_overlay):
+		return _ai_overlay
+	var root := get_parent()
+	if root == null:
+		return null
+	_ai_overlay = AI_OVERLAY.instantiate()
+	_ai_overlay.name = "AIDebugOverlay"
+	root.add_child(_ai_overlay)
+	_ai_overlay.call("set_show_density", _ai_show_density)
+	_ai_overlay.call("set_show_vectors", _ai_show_vectors)
+	_ai_overlay.call("set_show_nav_flow", _ai_show_nav_flow)
+	_ai_overlay.call("set_show_solids", _ai_show_solids)
+	_ai_overlay.call("set_enabled", false)
+	return _ai_overlay
+
+# 打开菜单时按叠加层的真实状态回填按钮，避免场景切换后按钮与实例不一致。
+func _sync_ai_toggles() -> void:
+	if _ai_overlay != null and not is_instance_valid(_ai_overlay):
+		_ai_overlay = null
+	var is_on: bool = _ai_overlay != null and is_instance_valid(_ai_overlay) \
+		and bool(_ai_overlay.get("enabled"))
+	ai_debug_toggle.set_pressed_no_signal(is_on)
+	ai_density_toggle.set_pressed_no_signal(_ai_show_density)
+	ai_vector_toggle.set_pressed_no_signal(_ai_show_vectors)
+	ai_nav_flow_toggle.set_pressed_no_signal(_ai_show_nav_flow)
+	ai_solids_toggle.set_pressed_no_signal(_ai_show_solids)
+
+func _on_ai_debug_toggled(pressed: bool) -> void:
+	var overlay := _get_ai_overlay()
+	if overlay == null or not is_instance_valid(overlay):
+		return
+	overlay.call("set_enabled", pressed)
+
+func _on_ai_density_toggled(pressed: bool) -> void:
+	_ai_show_density = pressed
+	if _ai_overlay != null and is_instance_valid(_ai_overlay):
+		_ai_overlay.call("set_show_density", pressed)
+
+func _on_ai_vector_toggled(pressed: bool) -> void:
+	_ai_show_vectors = pressed
+	if _ai_overlay != null and is_instance_valid(_ai_overlay):
+		_ai_overlay.call("set_show_vectors", pressed)
+
+func _on_ai_nav_flow_toggled(pressed: bool) -> void:
+	_ai_show_nav_flow = pressed
+	if _ai_overlay != null and is_instance_valid(_ai_overlay):
+		_ai_overlay.call("set_show_nav_flow", pressed)
+
+func _on_ai_solids_toggled(pressed: bool) -> void:
+	_ai_show_solids = pressed
+	if _ai_overlay != null and is_instance_valid(_ai_overlay):
+		_ai_overlay.call("set_show_solids", pressed)

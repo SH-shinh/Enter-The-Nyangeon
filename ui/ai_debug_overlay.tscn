@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://ui/ai_debug_overlay.gd" id="1_aid"]
+
+[node name="AIDebugOverlay" type="CanvasLayer"]
+layer = 90
+script = ExtResource("1_aid")

@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://cbhnmu8ks35sk" path="res://resources/level/level.gd" id="1_torment"]
 [ext_resource type="PackedScene" uid="uid://cnad11y7v8yyi" path="res://scenes/enemies/enemies_spawn/goliath_spawn.tscn" id="2_goliath"]
 [ext_resource type="PackedScene" uid="uid://c4w74uyv13qyg" path="res://scenes/enemies/enemies_spawn/tower_spawn.tscn" id="3_tower"]
+[ext_resource type="Resource" path="res://resources/enemy_ai/torment.tres" id="4_ai"]
 
 [sub_resource type="Curve" id="Curve_torment_hp_growth"]
 _limits = [0.0, 2.0, 0.0, 1000.0]
@@ -25,3 +26,4 @@ boss_intrusion_enabled = true
 boss_intrusion_scenes = Array[PackedScene]([ExtResource("2_goliath"), ExtResource("3_tower")])
 havoc_required = true
 havoc_min_enemy_mods = 3
+enemy_ai = ExtResource("4_ai")

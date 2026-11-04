@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="Level" load_steps=2 format=3 uid="uid://ba3flk6iu1lla"]
+[gd_resource type="Resource" script_class="Level" load_steps=3 format=3 uid="uid://ba3flk6iu1lla"]
 
 [ext_resource type="Script" path="res://resources/level/level.gd" id="1_jbba3"]
+[ext_resource type="Resource" path="res://resources/enemy_ai/insane.tres" id="2_ai"]
 
 [resource]
 script = ExtResource("1_jbba3")
@@ -13,3 +14,4 @@ level_hp = 5.0
 level_damage = 2.5
 level_score_mult = 2.3
 level_reward = 30.0
+enemy_ai = ExtResource("2_ai")

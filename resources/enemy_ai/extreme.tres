@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EnemyAIProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/enemy_ai/enemy_ai_profile.gd" id="1_ai"]
+
+[resource]
+script = ExtResource("1_ai")
+id = "extreme"
+melee_encircle = 0.52
+melee_ring_radius = 104.0
+attack_slots = 3
+far_spread = 0.22
+max_turn_deg = 55.0
+predict_lead_seconds = 0.26
+flank_bias = 0.15
+low_hp_rush_ratio = 0.25
+ranged_kite = 0.42
+ranged_standoff_ratio = 0.65
+separation_strength = 0.36
+intercept_ratio = 0.3
+cutoff_slots = 2
+cutoff_max = 2
+cutoff_distance = 90.0
+cutoff_speed_lead = 0.35
+cutoff_spread_deg = 42.0

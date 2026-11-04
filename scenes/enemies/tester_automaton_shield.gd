@@ -46,6 +46,16 @@ var aim: int = 0
 @onready var bullet_launcher = $Graphics/Gun/Sprite2D/BulletLauncher
 @onready var head = $Graphics/AnimatedSprite2D2
 
+func _init() -> void:
+	# 边打边压的枪手：走近战 AI 体系（前排/环带/前插），不再有 standoff、不再主动后撤。
+	# 射击状态机仍由自己的 shoot_range / back_range 驱动（move_mod / AIMING / SHOOTING），与 AI 角色无关。
+	ai_role = AIRole.MELEE
+
+func _ai_standoff() -> float:
+	if ai_profile == null:
+		return -1.0
+	return lerpf(float(back_range), float(shoot_range), ai_profile.ranged_standoff_ratio)
+
 func active_state():
 	reset_physics_interpolation()
 	super.active_state()
@@ -90,6 +100,12 @@ func time_count():
 				dir_v = get_distance_to_player()
 			shoot_and_move_speed = int(shoot_and_move * stats.MAX_SPEED)
 			decision_time = 5
+	
+	# 基类 time_count() 里还有这两件事，本函数是完整覆写（不能调 super，否则 flash/knockback 会一个 tick 减两次）：
+	# ① 脱困计数递减——否则一次 UNSTUCK 会变成永久侧移；② 策反结算。
+	if _ai_unstuck_ticks > 0:
+		_ai_unstuck_ticks -= 1
+	_convert_tick()
 
 func tick_physics(state: State, delta: float) -> void:
 	ACCELERATION = stats.move_acceleration()
@@ -139,15 +155,16 @@ func get_distance_to_player():
 	var tp := get_target_position()
 	distance = self.position.distance_to(tp)
 	var dir_to_target:Vector2 = (tp - global_position).normalized()
+	var standoff := _ai_standoff()
 	if distance > shoot_range:
 		move_mod = 0
-		return dir_to_target
+		return ai_steer(dir_to_target, AIMode.ADVANCE, standoff)
 	elif distance < back_range:
 		move_mod = 0
-		return -dir_to_target
+		return ai_steer(-dir_to_target, AIMode.RETREAT, standoff)
 	else:
 		move_mod = 2
-		return dir_to_target
+		return ai_steer(dir_to_target, AIMode.HOLD, standoff)
 
 func shoot_bullet():
 	if is_standby():

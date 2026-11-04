@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EnemyAIProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/enemy_ai/enemy_ai_profile.gd" id="1_ai"]
+
+[resource]
+script = ExtResource("1_ai")
+id = "torment"
+melee_encircle = 0.75
+melee_ring_radius = 92.0
+attack_slots = 4
+far_spread = 0.26
+max_turn_deg = 65.0
+predict_lead_seconds = 0.45
+flank_bias = 0.45
+low_hp_rush_ratio = 0.35
+ranged_kite = 0.7
+ranged_standoff_ratio = 0.65
+separation_strength = 0.45
+intercept_ratio = 0.4
+cutoff_slots = 2
+cutoff_max = 4
+cutoff_distance = 80.0
+cutoff_speed_lead = 0.45
+cutoff_spread_deg = 46.0

@@ -66,6 +66,14 @@ var target_position: Vector2 = Vector2.ZERO
 @onready var bullet_smoke: PackedScene = preload("res://script/explosion_damage.tscn")
 @onready var weak_shape_2d: CollisionShape2D = $WeakPart/CollisionShape2D
 
+func _init() -> void:
+	ai_role = AIRole.RANGED
+
+func _ai_standoff() -> float:
+	if ai_profile == null:
+		return -1.0
+	return lerpf(float(back_range), float(shoot_range), ai_profile.ranged_standoff_ratio)
+
 func _ready():
 	enemy_body.clear()
 	player = PlayerRef.resolve(self)
@@ -155,6 +163,12 @@ func time_count():
 		knockback_time -= 1
 		if knockback_time <= 0:
 			body_end_knockback()
+	
+	# 基类 time_count() 里还有这两件事，本函数是完整覆写（不能调 super，否则 flash/knockback 会一个 tick 减两次）：
+	# ① 脱困计数递减——否则一次 UNSTUCK 会变成永久侧移；② 策反结算。
+	if _ai_unstuck_ticks > 0:
+		_ai_unstuck_ticks -= 1
+	_convert_tick()
 
 func body_in_knockback():
 	in_knockback = true
@@ -268,12 +282,13 @@ func face_to_player():
 func get_distance_to_player():
 	var tp := get_target_position()
 	distance = self.global_position.distance_to(tp)
+	var standoff := _ai_standoff()
 	if distance > shoot_range:
 		move_mod = 0
-		return (tp - global_position).normalized()
+		return ai_steer((tp - global_position).normalized(), AIMode.ADVANCE, standoff)
 	elif distance < back_range:
 		move_mod = 0
-		return (global_position - tp).normalized()
+		return ai_steer((global_position - tp).normalized(), AIMode.RETREAT, standoff)
 	else:
 		distance_t = self.global_position.distance_to(target_position)
 		if distance_t > 40:

@@ -32,3 +32,7 @@ class_name Level
 @export_group("Havoc")
 @export var havoc_required: bool = false
 @export var havoc_min_enemy_mods: int = 1
+
+@export_group("Enemy AI")
+# 敌人走位的难度分层参数；留空 = 沿用改造前的直冲行为（NORMAL 即留空）。
+@export var enemy_ai: EnemyAIProfile

@@ -191,6 +191,51 @@ theme_override_fonts/font = ExtResource("18_m8l6k")
 theme_override_font_sizes/font_size = 12
 text = "净化腐化10%"
 
+[node name="Debug" type="VBoxContainer" parent="Panel/VBox/Actions" unique_id=1732552105]
+layout_mode = 2
+
+[node name="AIDebug" type="Button" parent="Panel/VBox/Actions/Debug" unique_id=1732552106]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("18_m8l6k")
+theme_override_font_sizes/font_size = 12
+toggle_mode = true
+text = "AI 可视化"
+
+[node name="AIDensity" type="Button" parent="Panel/VBox/Actions/Debug" unique_id=1732552107]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("18_m8l6k")
+theme_override_font_sizes/font_size = 12
+toggle_mode = true
+button_pressed = true
+text = "密度场"
+
+[node name="AIVector" type="Button" parent="Panel/VBox/Actions/Debug" unique_id=1732552108]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("18_m8l6k")
+theme_override_font_sizes/font_size = 12
+toggle_mode = true
+button_pressed = true
+text = "决策向量"
+
+[node name="AINavFlow" type="Button" parent="Panel/VBox/Actions/Debug" unique_id=1732552109]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("18_m8l6k")
+theme_override_font_sizes/font_size = 12
+toggle_mode = true
+text = "导航场流向"
+
+[node name="AISolids" type="Button" parent="Panel/VBox/Actions/Debug" unique_id=1732552110]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("18_m8l6k")
+theme_override_font_sizes/font_size = 12
+toggle_mode = true
+text = "阻挡格"
+
 [node name="Body" type="GridContainer" parent="Panel/VBox" unique_id=938726915]
 layout_mode = 2
 size_flags_vertical = 3
@@ -262,3 +307,8 @@ columns = 5
 [connection signal="toggled" from="Panel/VBox/Actions/Player/OneHitKill" to="." method="_on_one_hit_kill_toggled"]
 [connection signal="pressed" from="Panel/VBox/Actions/Player/Corruption" to="." method="_on_corruption_pressed"]
 [connection signal="pressed" from="Panel/VBox/Actions/Player/PurifyCorruption" to="." method="_on_purify_corruption_pressed"]
+[connection signal="toggled" from="Panel/VBox/Actions/Debug/AIDebug" to="." method="_on_ai_debug_toggled"]
+[connection signal="toggled" from="Panel/VBox/Actions/Debug/AIDensity" to="." method="_on_ai_density_toggled"]
+[connection signal="toggled" from="Panel/VBox/Actions/Debug/AIVector" to="." method="_on_ai_vector_toggled"]
+[connection signal="toggled" from="Panel/VBox/Actions/Debug/AINavFlow" to="." method="_on_ai_nav_flow_toggled"]
+[connection signal="toggled" from="Panel/VBox/Actions/Debug/AISolids" to="." method="_on_ai_solids_toggled"]

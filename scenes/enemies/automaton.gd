@@ -43,6 +43,14 @@ var aim: int = 0
 @onready var buff_box = $%BuffBox
 @onready var gun = $Graphics/Gun
 
+func _init() -> void:
+	ai_role = AIRole.RANGED
+
+func _ai_standoff() -> float:
+	if ai_profile == null:
+		return -1.0
+	return lerpf(float(back_range), float(shoot_range), ai_profile.ranged_standoff_ratio)
+
 func active_state():
 	reset_physics_interpolation()
 	super.active_state()
@@ -110,19 +118,20 @@ func face_to_player():
 func get_distance_to_player():
 	var tp := get_target_position()
 	distance = self.position.distance_to(tp)
+	var standoff := _ai_standoff()
 	if distance > shoot_range:
 		move_mod = 0
-		return (tp - global_position).normalized()
+		return ai_steer((tp - global_position).normalized(), AIMode.ADVANCE, standoff)
 	elif distance < back_range:
 		move_mod = 0
-		return (global_position - tp).normalized()
+		return ai_steer((global_position - tp).normalized(), AIMode.RETREAT, standoff)
 	else:
 		move_mod = 2
 		var n := (tp - global_position).normalized()
 		if dir_num == 0:
-			return Vector2(n.y, -n.x)
+			return ai_steer(Vector2(n.y, -n.x), AIMode.HOLD, standoff)
 		else:
-			return Vector2(-n.y, n.x)
+			return ai_steer(Vector2(-n.y, n.x), AIMode.HOLD, standoff)
 
 func shoot_bullet():
 	if is_standby():
@@ -201,7 +210,7 @@ func transition_state(_from:State, to: State) -> void:
 				sprite_2d.play("run")
 		
 		State.AIMING:
-			dir_num = randi_range(0,1)
+			dir_num = ai_strafe_index(randi_range(0,1))
 			rand_aim_and_move_speed()
 			surround_player()
 			aim = aim_time
