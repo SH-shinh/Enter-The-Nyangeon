@@ -3668,9 +3668,39 @@
 - Source / 来源: user + code + test
 - Date / 日期: 2026-11-04
 
+### [Enemy/AI] 性能必须先测：静态估算把最贵的一项低估了 10 倍
+- Evidence / 证据: `tests/ai_probe.gd` 的 `_run_perf_checks()`（本地、不入库）实测 n=89：`solve_now` 8324µs，其中 `_apply_wall_push` **2005µs**、反排队 1836µs、槽位分配 4897µs（**含反排队**）。优化后 3239µs。涉及 `script/enemy_ai.gd` 的 `_apply_wall_push()` / `_assign_queue_push()` / `_slot_ok()` / `_sorted_indices()`、`script/enemy_nav_field.gd` 的 `_clearance` / `_near_solid` / `cell_*`。
+- Notes / 说明: 直觉会以为"O(n²) 反排队 + 排序"是大头，实际**最大单项是每敌 8~16 次墙探针**（`is_solid` ≈1µs，89 只 × 12 ≈ 1ms）。四条可复用结论：① `world_to_cell` / `is_solid` / `nearest_inside` 都是 ~1µs 的引擎调用，**能预计算成按格数组就别逐次调**（`_clearance`、`_near_solid`、`_margin_ok`）；② 同一函数里对同一个点反复换格是纯浪费（`_slot_ok` 原来 3 次）；③ 计时口径要看清——`_assign_melee_slots` 的计时**包含**它内部调用的 `_assign_queue_push`，否则会重复计算、误判热点；④ "排序键预计算 + 手写归并排序（不走 Callable）"只省了 ~150µs（`sort_custom` 没想象中贵），而"墙探针快速放行"一改就省 1.8ms。**每次只改一项并复测**，否则无法归因。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-05
+
+### [Enemy/AI] Godot 4 的 `get()`/动态派发很便宜，别为它重构：真正的成本是 ~1µs 的引擎调用次数
+- Evidence / 证据: `script/enemy_ai.gd`（`_candidates: Array[Enemy]` + `_ctx_pos/_ctx_vel/_ctx_intent` 快照、`_is_candidate/_resolve_target` 直接字段、`predict_anchor` 位置精确缓存）、`script/enemy_nav_field.gd`（`epoch`）、`script/entity_ENEMY.gd`（`_ai_flow_*` 记忆化）；基准 `tests/ai_probe.gd::_run_perf_checks()`：3239µs → 3173µs（**-2%**），`ai_steer` 8.00µs 不变。
+- Notes / 说明: 把 89 只敌人的逐敌 `get()`/`global_position`/`set()` 全部换成类型化直接字段 + 打包数组快照后，总耗时只降 2%——**`Object.get()`/属性访问在 Godot 4 里是 ~0.1µs 量级**，不是瓶颈。真正的成本结构是：`world_to_cell` / `is_solid` / `nearest_inside` 各 **~1µs**，`_slot_ok` 每次最少 1 次换格、`_fit_slot` 89 次、密度 8 次、墙探针被放行后 0 次；再加上 GDScript 本身的算术体积（89 只 × 每人上百次浮点运算）。**结论**：① 优化优先"减少引擎调用次数"（预计算表、缓存、放行门），而不是"减少动态派发"；② 减法比换写法有用——本次真正的收益来自"墙探针放行"（-1.8ms）这种**跳过整段工作**的改动；③ 到了 3ms 量级后，剩下的只能靠**减少参与量**（人数上限/降频/静止跳过）或换语言（GDExtension），继续抠写法收益 <5%。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-05
+
+### [Enemy/AI] 每敌成本降不下去时，用「战术分层人数上限」把尖峰与人数解耦
+- Evidence / 证据: `script/enemy_ai.gd` 的 `TACTICAL_LIMIT = 60` 与 `_trim_group()`、`script/entity_ENEMY.gd` 的 `_ai_tactical`；`tests/ai_probe.gd::_run_perf_checks()` 实测 n=40/89/150 → 1411/2677/3652µs，其中 slots+queue（战术部分）在 89 与 150 时分别是 1192+354 / 1212+366（**基本不变**）。
+- Notes / 说明: 当一个 AI 系统的单次求解成本主要由「~1µs 的引擎调用 × 每敌次数 × 人数」决定时，继续抠写法收益 <5%（见上一条），真正的杠杆是**限制参与量**。做法是按目标分组、只保留最近 K 只进入战术层（角色/槽位/反排队），其余清空意图退回纯场流——`_steer_intent()` 对 `INTENT_NONE` 已经直接返回 `flow`，所以"降级"是零成本的既有路径，不需要新分支。两个必须做对的细节：① 被裁掉的敌人要**主动清** `_ai_intent/_ai_slot_valid/_ai_flow_direct`，否则会带着上一轮的意图和陈旧的直线判定继续被塑形；② 上限按**目标**而非全局计（联机两个玩家各 60），否则一个玩家会把另一个的份额吃光。⚠️ 该上限只约束战术层，`_collect`/密度/离墙仍随人数线性增长——要彻底封顶得连 `_candidates` 一起裁，代价是远处敌人失去离墙逃生。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-05
+
 ### [Enemy/AI] 给敌人加 AI 状态前先问"客机要不要"：镜像不模拟 AI，两个拦截点缺一不可
 - Evidence / 证据: `mod_sdk/coop_mod/mods/etn_coop/net/coop_enemy_proxy.gd`（`network_remote_enemy` meta、`disable_mirror_ai()`）、`mod_sdk/coop_mod/mods/etn_coop/net/coop_net.gd`（`_send_enemy_snapshot()` 打包 `pos/vel/hp/state/converted/gauge`）、`script/enemy_ai.gd` 的 `_is_candidate()`、`script/entity_ENEMY.gd` 的 `ai_active()` 与 `ai_steer()` 顺序、`tests/ai_probe.gd` 的 `_run_coop_mirror_checks()`。
 - Notes / 说明: 本项目是 **host 权威 + 客户端镜像快照插值**。镜像节点的判据是 `has_meta("network_remote_enemy")`，必须同时保持两个拦截点：① `EnemyAI._is_candidate()` 直接排除（否则镜像会占前排/环带/前插名额、被 splat 进密度场、被算进角色评分）；② `Enemy.ai_active()` 让 `ai_steer()` 在**调用 `ensure_solved()` 之前**返回 `base_dir`（否则客户端会自己跑求解）。缺任何一个都会变成"客户端也跑 AI"——表现是位置抖动、双份决策、甚至两边敌人走位不一致。反过来，**任何新的 `_ai_*` 运行时字段都不要加进快照**：镜像不模拟，同步过去只会覆盖出双份真相。当前快照只带 `pos/vel/hp/state/converted/gauge`，这是刻意的。
 - Source / 来源: code + test
 - Date / 日期: 2026-11-04
 
+### [Coop/Relay] 建房/入房有四段独立时钟；服务端先超时只会给客机一条无原因的 `STATE_CLOSED`
+- Evidence / 证据: `mod_sdk/coop_mod/server/relay_server.py:40-53`（4 个超时常量，均读环境变量）、`:612`（HTTP 头读取）、`:680-691`（读循环剩余时间 + `except asyncio.TimeoutError` 打 `[ADMIT] timeout`）、`:473-475`（`join_room` 接受时记 `peer.joined_at`）、`:501`（`client_ready` → 准入）；客户端 `mod_sdk/coop_mod/mods/etn_coop/net/coop_relay_peer.gd:11-12`（两个 30 s 常量）、`:84-91`（`STATE_CLOSED` 只报 "Relay connection failed"）；`tests/test_relay_limits.py` 的 `RelayTimeoutConfig` / `RelayAdmissionDeadline`。
+- Notes / 说明: ①「读 HTTP Upgrade 头」的 10 s 从 TCP accept 后起算（DNS/TCP 时间不计入），可它一旦先到点，客户端侧只看得到 `STATE_CLOSED → "Relay connection failed"`，完全看不出是服务端提前掐断——2026-10-11 把客户端握手放宽到 30 s 时漏了这里，2026-11-05 才统一到 30 s。原则：**服务端任何握手超时必须 ≥ 客户端同段预算**，否则报错信息会退化成一个没有任何线索的 disconnect。②`join_prepared → client_ready` 原本没有专属时限：`join_room` 接受后 `peer.room` 已非空，`JOIN_TIMEOUT_SEC` 立刻失效，只剩 20 s 无数据兜底；而服务端每 5 s 发 PING、客户端自动回 PONG 会刷新 `last_seen`，所以「TCP 活着但不推流程」的客机永远回收不掉，pending 又计入房间容量 → 别人看到 `Room full`。现在用独立 `ADMIT_TIMEOUT_SEC` 从 `join_room` 接受起算，`client_ready` 到达（`admitted=True`）后失效。③这类到点在实现上是 `asyncio.wait_for` 抛 `TimeoutError` 结束的，会落进通用 `except Exception`，必须单独 `except asyncio.TimeoutError` 才能留下可分辨的日志，否则日志里只有一条 `[DISCONNECT]`。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-05
+
+
+### [Combat] `damage_taken` 的数值含过杀，表现回放也会发它 —— 统计类消费者必须自己选口径
+- Evidence / 证据: `script/health_component.gd:161-168`（先算 `overkill_damage`，再 `stats.hp = max(0, hp - final_damage)`，最后 `damage_taken.emit(final_damage, ...)`）；`script/health_component.gd:50-56`（`play_hit_feedback` 也 `damage_taken.emit`，但不扣血）；`scenes/enemies/dps_count.gd`（沙袋 DPS 表按原值累计）
+- Notes / 说明: 挂在该信号上的统计（DPS 表/伤害计量/连击计数）拿到的不是「实际扣血」：目标只剩 35 血时一发 99999 记 99999（沙袋 `is_test_target=true` 且 0 血仍放行，几乎每发都是过杀）。要「构筑输出」就直接累加（沙袋 DPS 的选择），要「有效输出」必须自己用命中前的 `stats.hp` 夹一次。另：联机客机命中表现回放走 `play_hit_feedback` → 同一信号，本地计量会把它计入（与飘字一致）；做玩法结算的监听者不能假设「发信号 = 真掉血」。
+- Source / 来源: code
+- Date / 日期: 2026-11-05

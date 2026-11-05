@@ -344,6 +344,7 @@
 - **重连迁移（方案 B：新 id + host 迁移）**：`_old_peer_for_rejoin(token)` 命中旧 id → `_migrate_peer_state(old,new)` 搬移所有 per-peer 字典键、`last_attacker_by_net_id`/`summoned_owner_by_net_id` 引用、镜像 proxy `peer_id`；`_accept_peer` 不再覆盖已迁移角色。ENet 由 host 分配新 id、Relay 由服务端 `next_peer_id` 分配。
 - **客机自动重连**：`_on_server_disconnected`/`_on_connection_failed`/心跳超时 → `_begin_reconnect`（保持场景；`close_connection` 在 `_reconnecting` 时跳过 `_reset_run_state` 与清 `_last_join_params`），遮罩 + 冻结 + 退避（1.5→5s）；`_hello_accept` → `_finish_reconnect`；超宽限/拒绝 → `_abort_reconnect_to_menu`。传输释放走 `call_deferred`（严禁在 multiplayer 信号栈内改 peer）。
 - **服务端**（`mod_sdk/coop_mod/server/relay_server.py`）：`join_room` 在容量判断前对同 token 的旧 `clients` 先 `remove_peer`（释放名额，修满房误拒 + 半开幽灵占位）并广播 `peer_disconnected(old_id)` 让 host 进宽限；`heartbeat_peers` 主动 WebSocket PING，`PEER_TIMEOUT_MSEC` 无数据即回收半开连接。
+- **建房 / 入房超时（2026-11-05）**：这段链路上服务端有 4 个时限，全部可环境变量覆盖——`HTTP_HANDSHAKE_TIMEOUT_SEC`（读 HTTP Upgrade 头，默认 **30 s**，原 10 s 会在客户端 30 s 握手预算用完前先掐断，客机只看到 `STATE_CLOSED` → `Relay connection failed`）、`JOIN_TIMEOUT_SEC`（WS 建好后仍未 `join_room`，35 s）、`ADMIT_TIMEOUT_SEC`（`join_room` 已接受、等不到 `client_ready`，30 s；`join_prepared → client_ready` 原本无专属时限，而 PING/PONG 会刷新 `last_seen`，卡死但 TCP 活着的客机会长期占 pending，pending 又计入容量 → 别人看到 `Room full`）、`PEER_TIMEOUT_MSEC`（无数据兜底 20 s）。客户端侧 `CONNECT_TIMEOUT_MSEC`/`JOIN_HANDSHAKE_TIMEOUT_MSEC` 均为 30 s 常量（`coop_relay_peer.gd:12`/`:11`），**约束是服务端窗口 ≥ 客户端窗口**，弱网放宽须两边成对改。回归：`python -m unittest discover -s tests -p test_relay_limits.py`（13 项）。
 - **回合切换冻结（掉线期间不停旧回合）**：host `_reconnecting_peers` 非空时——`_gate_round_end_emit` 暂缓本回合结束（`_deferred_round_end`）、`_maybe_finish_round_upgrade` 暂缓升级页推进；重连/超时后 `_on_rejoin_settled` 解冻（补发 `emit_round_end` / 重判升级）。重连识别后若 host 正处于升级页（`_round_upgrade_active`），补发 `_remote_round_end`+`_remote_round_upgrade`，让重连者进入升级页，不丢升级（客机 `_in_round_upgrade` 幂等；`_on_round_upgrade_end_local` 复位）。各端显示轻量等待遮罩（`wait_reconnect_show`/`wait_reconnect_hide` → `coop_round_wait` light 模式：无背景遮罩 + 小字号(12)、回合计时下方顶部居中（`LIGHT_TOP_MARGIN=44`，避开 `ui/round_timer.tscn` 顶部计时，2026-10-09 调整）+ 鼠标穿透、世界仍可操作；名字按视口宽度换行不溢出）。
 - **客机回主菜单收尾（2026-10-25，0.1.15）**：房主离开时 `_on_peer_disconnected(1)` → `_schedule_host_left_return()`（置 `_returning_to_menu_due_to_close` + `call_deferred(_handle_host_left)`）；同 poll 的 `_on_server_disconnected()` 在该标志为真时必须**直接 return**，不能再排 `close_connection`。旧实现两处都排了延迟调用：`_handle_host_left` 在 `await process_frame` 挂起后，`close_connection` 递增 `_session_generation`、`_reset_run_state` 又把去重标志清掉 → 协程恢复即 return，客机永远停在已断线的战斗场景（无头/窗口均复现；玩家侧表现为「闪退/卡死」）。现在退房协程用独立 `_session_epoch` 判活（只由 `host_game`/`join_game`/`create_relay_room`/`join_relay_room`/`close_session` 递增），`_reset_run_state` 不再清该标志；`_remote_change_scene` 客机侧补 `_flow_phase = BATTLE`（dev-flow 实测客机停在 ALL_READY 与房主 BATTLE 不一致，阶段相关判定/UI 会读到旧值）。
 - **定向 RPC 存活门控（2026-10-25）**：宽限期内 peer 已不在 `get_peers()`（状态/镜像仍保留），`rpc_id(<存储 id>)` 会刷 `Attempt to call RPC with unknown peer ID`。新增 `_peer_online(id)`（`_net_connected()` + `get_peers().has(id)`，本机恒真），用于补发类（敌人/召唤/医疗箱/Boss 视觉/轨道/场地/词条）与归属类（attacker/owner 的 proc、buff、击退、升级）定向发送；客机经 host 中转的分支不套用（客机 `get_peers()` 只有房主 1）。详见 `LEARNINGS.md` 同主题条目。
@@ -430,6 +431,51 @@
 - **脱困与不可达**：`_update_stuck()` 每 200ms 比较位置，位移 < 6px 累计 4 次 → 写入 `_ai_unstuck_ticks = 8`（0.8s），期间 `Enemy.time_count()` 递减，方向取横向脱困。`EnemyNavField.dist(pos) == INF` 的敌人仍会拿到意图但方向由 `flow` 兜底。
 - **移动预判**：`EnemyAI.predict_anchor(target, lead)` = `MapBounds.nearest_inside(player_pos + limit(v,260) × lead × clamp(|v|/200,0,1), 24)`；`EnemyNavField.ensure_rebuilt(target, anchor)` 用它做**场种子**，于是整张场指向玩家即将到达的位置且天然绕障。前插组另用同一函数、以 `cutoff_speed_lead` 为提前量算出自己的站位原点。玩家静止 / 镜像无 `velocity` / `lead=0` 时锚点等于玩家位置。
 - **成本**：场重建 ≤5Hz（729 格 × 4 邻 ≈0.3–1ms）；密度 splat 9n + 采样 9n（n≤80）；每 tick 每敌 O(1)（一次 `ai_active` 判空 + 一次 `world_to_cell` + 若干向量运算）。没有角色敌人的回合不建场。客机镜像 `has_meta("network_remote_enemy")` 早退。
+- **成本与优化（十八期实测）**：基准在 `tests/ai_probe.gd` 的 `_run_perf_checks()`（本地、不入库），取 `EnemyAI.solve_now()` 中位数（µs）：
+
+  | n | 优化前 total | 优化后 total |
+  |---|---|---|
+  | 10 | 856 | 434 |
+  | 20 | 1637 | 783 |
+  | 40 | 3266 | 1466 |
+  | **89** | **8324** | **3239（-61%）** |
+
+  200ms 尖峰 8.3ms → 3.2ms。分项（n=89，前 → 后）：`_apply_wall_push` 2005 → 160（**-92%**，最大单项）、反排队 1836 → 641（-65%）、槽位分配 4897 → 1845（-62%，**该计时含反排队**）、`_collect` 283 → 282、密度 197 → 196；`ai_steer` 恒 8.00µs/次（10Hz × 89 ≈ 7ms/s）。
+
+  四项手段：
+  1. **视线缓存**：`_has_line_of_sight` 每 24px 一次 `is_solid`，地形不动 → 敌我位移 <24px 复用上次结果（`_ai_los_pos/_ai_los_anchor`，`_reset_ai_runtime()` 清理）。
+  2. **墙探针快速放行**：「格心离墙余量 > `WALL_PROBE_FAR + CELL_SPAN` 且 8 邻域无阻挡格」直接跳过 8~16 次探针（余量表 `_clearance` 与 8 邻域阻挡表 `_near_solid` 均在 `EnemyNavField` 建拓扑时预计算）。⚠️ `cell_index < 0`（出界）必须仍走 `nearest_inside` 逃生分支，否则 8 向探针互相抵消、出界敌人出不来。
+  3. **反排队分桶**：O(n²) 双层循环 → 80px 空间哈希（`QUEUE_BUCKET > QUEUE_RADIUS`，3×3 邻桶），判定条件逐行不变。
+  4. **槽位校验去重复换格**：`_slot_ok` 原为 3 次 `world_to_cell`（各 ~1µs）+ 1 次 polygon 判定 → 换格一次 + 预计算余量表 + 只在模糊带做 polygon。
+
+- **十九期复测（结论：剩下的不是"动态派发"）**：把 `_candidates` 改成 `Array[Enemy]`、`_is_candidate/_resolve_target` 走直接字段、热循环读 `_ctx_pos/_ctx_vel/_ctx_intent` 快照、`predict_anchor` 按 (目标, lead, 位置, 速度) 精确缓存、`EnemyNavField.epoch` + `_ai_flow_*` 做场流记忆化——**总计只从 3239 降到 3173µs（-2%）**。
+  | 分项 | 十八期后 | 十九期后 |
+  |---|---|---|
+  | total | 3239 | 3173 |
+  | 反排队 | 651 | 651 |
+  | 槽位（含反排队） | 1835 | 1832 |
+  | `_collect` | 282 | 292 |
+  | 密度 | 197 | 199 |
+  | 墙探针 | 159 | 135 |
+  | `ai_steer` | 8.00µs | 8.00µs（`_steer_intent` 3 + 避障 2 + `is_ready` 1 + 余量 2） |
+
+  即：**`get()`/动态派发在 Godot 4 里约 0.1µs 量级，不值得为它重构**；真正的成本是「~1µs 的引擎调用（`world_to_cell` / `is_solid` / `nearest_inside`）次数」与「GDScript 算术量」。想再降必须**减少每敌的引擎调用数或减少参与求解的敌人数**（见下方"剩余杠杆"）。
+  **剩余杠杆（默认都未启用）**：① `n > 60` 时求解间隔 200→250ms（-20% 总量，尖峰幅度不变）；② 只对最近的 K 只（如 60）做战术分层、其余走纯场流（**削平尖峰**，但远处的敌人不再参与包围）；③ 锚点几乎静止时跳过重新分槽（尖峰降到 ~1.2ms，但站位会滞后一次求解）。
+
+- **战术分层人数上限（二十期，已启用「最近 K 只」）**：`EnemyAI.TACTICAL_LIMIT = 60`（**每个目标各自计**，联机两个玩家各 60）。`_collect()` 末尾由 `_trim_group()` 把每个分组的 `all/melee/ranged` 裁到「离该目标最近的 60 只」；被裁掉的敌人：
+  - `_ai_intent = NONE`、`_ai_slot_valid = false`、`_ai_target_radius = 0`、`_ai_attack_slot = false`、`_ai_flow_direct = false`；
+  - 于是 `_steer_intent()` 对 `INTENT_NONE` 直接返回 `flow` → **纯场流**（仍会绕墙、仍受密度推力影响，只是不占前排/环带/前插名额、不参与反排队）；
+  - `_ai_tactical = false` 供调试/可视化区分。
+
+  实测（`_run_perf_checks()`）：
+
+  | n | total | slots(含反排队) | queue | collect | density | wall |
+  |---|---|---|---|---|---|---|
+  | 40 | 1411 | 793 | 196 | 137 | 95 | 63 |
+  | **89** | **2677** | **1192** | **354** | 423 | 200 | 141 |
+  | **150** | **3652** | **1212** | **366** | 718 | 331 | 226 |
+
+  **战术部分已与人数脱钩**（89 → 150 时 slots/queue 基本不变）；`_collect` / `density` / `wall` 仍随人数线性增长——它们跑在 `_candidates`（全部候选）上。若还要继续压，下一步是把 `_candidates` 本身也裁到 60（代价：远处的敌人失去离墙逃生与密度散开）。
 - **可观测**：`Game.dev_mode` 开启时，每回合第一只敌人生成会打印一次 `[ETNAI] round=N level=<id> profile=<id|off>`（`spawn_anim._log_ai_profile()`，`round_end` 复位）。排查「敌人很傻」时先看这一行，能立刻区分「profile 没注入」与「AI 逻辑不对」。
 - **互斥**：`route_target != null`（路线型敌人）、`aggro_override != null`（嘲讽）、`faction == PLAYER_SIDE`（策反）、`is_standby()`、`frozen`、目标不是 `Player`/`RemotePlayer` 组节点时一律不接管方向。
 - **策反与 AI（十三期确认）**：策反期间（`faction == PLAYER_SIDE`）敌人被 `_is_candidate()` 排除在 `_candidates` 之外——**不占名额、不刷密度/离墙/排队推力、不参与角色评分**；`ai_steer()` 首段直接 `return base_dir`，所以走位完全交回脚本本身（目标由 `_select_target()` 的 `get_nearest_enemy()` 给出，`Targeting.nearest_enemy` 会跳过其它 PLAYER_SIDE 单位，不会内战）。
@@ -477,6 +523,16 @@
 - **收尾必须唯一**：`move_mode` 只有 `_end_charge()` 会清零，`get_next_state` 在 `move_mode != 0` 时会一直走 `match`，漏清会**永久卡在 `CHARGING`**。`_end_charge(cd)` 同时清 `charge_time/charge_dir`，让撞墙当帧就减速停止，而不是在状态机重评前的 3 tick 里继续以 3× 速度冲。
 - **`ai_formation_allowed()`**：`sweeper` 覆写为 `charge_dir_time <= 0 and charge_time <= 0`，预警/冲撞期间不加侧向偏置，避免冲锋起点横向漂移。
 - **验证**：`tests/ai_probe.gd`（本地、不入库）覆盖「无阻挡放行 / 有阻挡拒绝 / 无场时恒放行」。
+
+### 5.14 测试场沙袋 DPS 统计（2026-11-05）
+
+- **文件**：`scenes/enemies/dps_count.gd`（沙袋根下 `DPS_count` 节点，`sandbag.tscn:297-320`）+ `script/dps_window.gd`（`class_name DpsWindow`，纯逻辑、可单测）。
+- **口径（2026-11-05 用户裁定）**：**3 秒滚动窗口的当前 DPS**。每个 `global_time_count` tick（0.1s）落一个桶，同一 tick 内多段命中合并进当前桶；窗口未满时按实际经过时间折算（`sum / min(session_ticks, window_ticks) / 0.1`），满窗后固定按 `window_ticks` 折算；旧伤害全部移出窗口后复位并 `play_backwards("new_animation")` 收起标签。标签格式 `DPS:%.1f`（1 位小数）。桶数取 `window_ticks + 1`——tick 边界测量时"当前 tick"还没有伤害，只留 `window_ticks` 格会让持续输出稳定少 3%。
+- **计数口径**：直接累加 `HealthComponent.damage_taken(actual_damage)`，该值是**含过杀**的 `final_damage`（`script/health_component.gd:161-168` 不夹到剩余血量），与飘字一致；治疗不发该信号，不计入。沙袋 `is_test_target=true`、0 血仍允许继续结算，所以单次读数可以远超 35。
+- **时间基**：`GameEvents.global_time_count` 10Hz，来自 `scenes/main/test_room.tscn:311-313` 的 `Timer.wait_time=0.1`；`dps_count.gd` 内 `TICK_SECONDS=0.1` 与窗口 tick 数换算。**不要为 DPS 改全局 tick 频率**（大量系统共用）。
+- **复位**：`GameEvents.test_room_reset` → `reset_dps()`，测试菜单换角色/重置（`ui/character_test_card.gd:77`、`ui/character_test_menu.gd:45`、`ui/test_menu.gd:113`）立即清零并收起。`PoolManager.clear_pool()` 只清池索引、不释放节点（`scenes/manager/PoolManager.gd:133`），不能指望节点重建来复位。
+- **窗口可调**：`dps_count.gd` 的 `dps_window_seconds`（默认 3.0，检视器可改），不需要改场景。
+- **验证**：`tests/test_dps_window.gd`（本地、不入库，`test_run` 套件 `dps_window`）覆盖 ramp-up / 持续速率 / 同 tick 合并 / 空窗复位 / 非正伤害 / `reset`；实机用 `project_run` + `game_eval` 抽查：35 伤单发 → 0.2s 时 `DPS:175.0`；每 tick 命中持续 3.3s → `DPS:350.0`；停手约 3s（受 0.1s tick 量化，最多晚 1 格）后标签隐藏且 `is_active()==false`；`emit_test_room_reset()` 立即回到 `DPS:0` 并收起。
 
 ## 6. Managers / 管理器
 | Manager | Responsibility / 职责 | 关键 API/信号 |

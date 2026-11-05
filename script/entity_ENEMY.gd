@@ -106,6 +106,16 @@ var _ai_attack_slot: bool = false
 var _ai_has_los: bool = true
 var _ai_flow_direct: bool = false # 求解器下发：直线到锚点可走 → 不用场流
 var _ai_stuck_anchor: Vector2 = Vector2.ZERO
+# 视线缓存：地形不动，双方位移 <24px 时沿用上次判定（视线是全链路最贵的一项之一）
+var _ai_los_pos: Vector2 = Vector2.ZERO
+var _ai_los_anchor: Vector2 = Vector2.ZERO
+# 场流缓存：场是「按格分段常量」，同一格内重复采样纯浪费（ai_steer 每 tick 要采 2 次）
+var _ai_flow_cell: Vector2i = Vector2i(2147483647, 2147483647)
+var _ai_flow_epoch: int = -1
+var _ai_flow_target_id: int = 0
+var _ai_flow_vec: Vector2 = Vector2.ZERO
+# 是否在"战术分层"人数上限内（false = 只走纯场流，不占前排/环带/前插名额）
+var _ai_tactical: bool = true
 var _ai_stuck_count: int = 0
 var _ai_unstuck_ticks: int = 0
 
@@ -170,6 +180,13 @@ func _reset_ai_runtime() -> void:
 	_ai_stuck_count = 0
 	_ai_stuck_anchor = Vector2.ZERO
 	_ai_unstuck_ticks = 0
+	_ai_los_pos = Vector2.ZERO
+	_ai_los_anchor = Vector2.ZERO
+	_ai_flow_cell = Vector2i(2147483647, 2147483647)
+	_ai_flow_epoch = -1
+	_ai_flow_target_id = 0
+	_ai_flow_vec = Vector2.ZERO
+	_ai_tactical = true
 
 func idle_state():
 	reset_physics_interpolation()
@@ -579,7 +596,18 @@ func ai_steer(base_dir: Vector2, _mode: int, _standoff: float = -1.0) -> Vector2
 		if _ai_flow_direct:
 			grad = toward  # 直线可走：不走格子流，避免等距格的对角锯齿
 		else:
-			grad = EnemyAI._smooth_field_flow(position, target, toward)
+			# 场是「按格分段常量」：同一格 + 同一场版本 + 同一目标时直接复用上次结果
+			var flow_cell := MapChunks.world_to_cell(position)
+			var target_id := target.get_instance_id()
+			if _ai_flow_epoch == EnemyNavField.epoch and _ai_flow_cell == flow_cell \
+					and _ai_flow_target_id == target_id:
+				grad = _ai_flow_vec
+			else:
+				grad = EnemyAI._smooth_field_flow(position, target, toward)
+				_ai_flow_cell = flow_cell
+				_ai_flow_epoch = EnemyNavField.epoch
+				_ai_flow_target_id = target_id
+				_ai_flow_vec = grad
 	var profile := ai_profile
 	var dir := base_dir
 	if profile == null:

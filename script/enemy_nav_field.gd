@@ -49,8 +49,19 @@ static var _block_sources: Dictionary = {}
 static var _block_counts: Dictionary = {}
 # 合并后的阻挡集（BFS / is_solid 都读它）
 static var _solid: Dictionary = {}
+# 每格"离墙余量是否足够站人"（一次性预计算，替代逐次 point_in_polygon）
+static var _margin_ok := PackedByteArray()
+# 每格格心到可行走边界的余量（px，二分 nearest_inside 求得，误差 <1px）
+static var _clearance := PackedFloat32Array()
+const SLOT_MARGIN := 24.0
+# 每格 8 邻域是否含阻挡格（用于墙探针的快速放行）
+static var _near_solid := PackedByteArray()
+# 格内任意点到格心的最大距离（64×32 格的半对角 35.8，留 1px 余量）
+const CELL_SPAN := 37.0
 
 static var _fields: Dictionary = {}
+# 场版本号：每次重建/清空 +1。敌人用它判断"场流采样结果还能不能复用"。
+static var epoch: int = 0
 
 
 # ---------------- 阻挡注册 ----------------
@@ -129,6 +140,7 @@ static func is_ready(target: Node2D = null) -> bool:
 
 static func _clear_fields() -> void:
 	_fields.clear()
+	epoch += 1
 
 
 # ---------------- 拓扑 ----------------
@@ -173,9 +185,14 @@ static func _build_topology(sig: int) -> void:
 	_index.clear()
 	_world = PackedVector2Array()
 	_world.resize(_cells.size())
+	_margin_ok.resize(_cells.size())
+	_clearance.resize(_cells.size())
 	for i in _cells.size():
 		_index[_cells[i]] = i
 		_world[i] = MapChunks.get_cell_world(_cells[i])
+		var margin := MapBounds.nearest_inside(_world[i], SLOT_MARGIN)
+		_margin_ok[i] = 1 if margin == _world[i] else 0
+		_clearance[i] = _measure_clearance(_world[i])
 	_scan_static_obstacles()
 	_rebuild_solid()
 	_clear_fields()
@@ -188,6 +205,22 @@ static func _rebuild_solid() -> void:
 		_solid[cell] = true
 	for cell in _block_counts:
 		_solid[cell] = true
+	# 8 邻域阻挡表（墙探针的快速放行用；必须随 _solid 一起刷新）
+	_near_solid.resize(_cells.size())
+	for i in _cells.size():
+		var origin := _cells[i]
+		var hit := _solid.has(origin)
+		if not hit:
+			for dx in [-1, 0, 1]:
+				for dy in [-1, 0, 1]:
+					if dx == 0 and dy == 0:
+						continue
+					if _solid.has(origin + Vector2i(dx, dy)):
+						hit = true
+						break
+				if hit:
+					break
+		_near_solid[i] = 1 if hit else 0
 
 
 # ---------------- 自动障碍扫描 ----------------
@@ -345,6 +378,7 @@ static func _rebuild_field(field: Field, seed: Vector2i) -> void:
 			field.flow[i] = direction.normalized()
 	field.alive = true
 	field.built_ms = Time.get_ticks_msec()
+	epoch += 1
 
 
 static func _nearest_index(seed: Vector2i) -> int:
@@ -375,6 +409,58 @@ static func _field_for(target: Node2D) -> Field:
 	if target != null and is_instance_valid(target):
 		return _fields.get(target.get_instance_id())
 	return _fields.values()[0]
+
+
+# ---------------- 按格索引快速查询（调用方自己换格一次，避免重复 world_to_cell） ----------------
+
+static func cell_index(cell: Vector2i) -> int:
+	return int(_index.get(cell, -1))
+
+
+# 格心到可行走边界的余量（px）。一次性算好，槽点校验不再逐次做 polygon 判定。
+static func cell_clearance(index: int) -> float:
+	if index < 0 or index >= _clearance.size():
+		return 0.0
+	return _clearance[index]
+
+
+# 二分求余量：nearest_inside(center, r) == center ⟺ 余量 >= r
+static func _measure_clearance(center: Vector2) -> float:
+	if MapBounds.nearest_inside(center, 0.0) != center:
+		return 0.0
+	var lo := 0.0
+	var hi := 320.0
+	for i in 8:
+		var mid := (lo + hi) * 0.5
+		if MapBounds.nearest_inside(center, mid) == center:
+			lo = mid
+		else:
+			hi = mid
+	return lo
+
+
+# 该格 8 邻域（含自身）是否有阻挡格：有就说明"附近可能有墙/阻挡"，不能走快速放行
+static func cell_near_solid(index: int) -> bool:
+	return index >= 0 and index < _near_solid.size() and _near_solid[index] == 1
+
+
+# 该格离墙余量是否够站人（预计算表，O(1)）
+static func cell_margin_ok(index: int) -> bool:
+	return index >= 0 and index < _margin_ok.size() and _margin_ok[index] == 1
+
+
+static func is_cell_solid(cell: Vector2i) -> bool:
+	return _solid.has(cell)
+
+
+# 返回该格到目标的场距离；<0 表示"未知/无场"（调用方按放行处理），INF 表示不可达
+static func cell_dist(index: int, target: Node2D) -> float:
+	var field := _field_for(target)
+	if field == null or not field.alive or index < 0:
+		return -1.0
+	if index >= field.dist.size():
+		return -1.0
+	return field.dist[index]
 
 
 static func sample(world_pos: Vector2, target: Node2D = null) -> Vector2:
