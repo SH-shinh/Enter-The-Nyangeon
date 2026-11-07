@@ -117,6 +117,12 @@ func spawn_enemy_body(enemy: EnemyCard):
 		_log_ai_profile(profile)
 
 	enemy_body.global_position = global_position
+	if not is_boss and enemy_body.has_method("set_ai_profile") and enemy_body.get("route_target") == null:
+		# 非 Boss / 非路线型 AI 敌人：生成点若落在壁垒/障碍格或紧贴障碍，挪到最近安全点。
+		if EnemyNavField.ensure_topology() and not EnemyNavField.is_body_safe(enemy_body.global_position, 1):
+			var safe := EnemyNavField.nearest_body_safe_point(enemy_body.global_position, 1)
+			if safe.is_finite():
+				enemy_body.global_position = safe
 	if is_intruder:
 		enemy_body.add_to_group("BossIntruder")
 		enemy_body.set_meta("boss_intruder", true)

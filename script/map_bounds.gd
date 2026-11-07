@@ -63,40 +63,69 @@ func _check_out_of_map() -> void:
 		return
 	_check_count += 1
 	_prune_pull_lock()
+	# 只有场景里确实存在 NavObstacle/注册阻挡时才建拓扑，平时保持原来的外边界开销。
+	var internal_walls: bool = EnemyNavField.has_blocks() and EnemyNavField.ensure_topology()
 	var player := tree.get_first_node_in_group("Player")
 	if player != null and is_instance_valid(player):
-		_resolve(player)
+		_resolve(player, internal_walls)
 	for enemy in PoolManager.get_active_enemies():
 		if enemy != null and is_instance_valid(enemy):
-			_resolve(enemy)
+			_resolve(enemy, internal_walls)
 	for summoned in tree.get_nodes_in_group("Summoned"):
 		if summoned == null or not is_instance_valid(summoned):
 			continue
 		if summoned.get("is_idle") == 1:
 			continue
-		_resolve(summoned)
+		_resolve(summoned, internal_walls)
+	for boss in tree.get_nodes_in_group("BOSS"):
+		if boss is Node2D and is_instance_valid(boss) and not boss.is_queued_for_deletion():
+			_resolve(boss, internal_walls)
+	# 医疗包也是会被墙覆盖的实体；放在这里统一走回位/卡墙兜底。
+	for item in tree.get_nodes_in_group("HealthItem"):
+		if item is Node2D and is_instance_valid(item) and not item.is_queued_for_deletion():
+			_resolve(item, internal_walls)
 
-func _resolve(entity: Node2D) -> void:
+func _resolve(entity: Node2D, internal_walls: bool = false) -> void:
 	if entity == null or not is_instance_valid(entity):
 		return
 	var pos: Vector2 = entity.global_position
 	# 正常边界：沿用已调好的外扩多边形判定与落点，行为不变。
 	if _boundary_source == &"walls":
-		if not _is_out(pos):
+		if _is_out(pos):
+			_apply_pull(entity, nearest_inside(pos, _body_radius(entity)), pos)
 			return
-		_apply_pull(entity, nearest_inside(pos, _body_radius(entity)), pos)
+		if internal_walls:
+			_resolve_internal_stuck(entity, pos)
 		return
 	# 兜底边界不可信：用"中心→实体"墙射线判断。贴墙时实体在墙内，不会误拉。
 	var crossing := _wall_crossing(pos)
 	if crossing.is_empty():
+		if internal_walls:
+			_resolve_internal_stuck(entity, pos)
 		return
 	if not is_beyond_wall(float(crossing["entity_dist"]), float(crossing["wall_dist"]), OUT_MARGIN):
+		if internal_walls:
+			_resolve_internal_stuck(entity, pos)
 		return
 	var radius := _body_radius(entity)
 	var dir: Vector2 = crossing["dir"]
 	var hit_pos: Vector2 = crossing["position"]
 	var landing := hit_pos - dir * (radius + INSET)
 	if not landing.is_finite():
+		return
+	_apply_pull(entity, landing, pos)
+
+# 内部墙体（NavObstacle/barricade）卡住：中心格 solid 时拉到最近 body-safe 格。
+# 只认 solid，贴墙但不进格不触发；落点仍 solid 则放弃，交给下一次 tick。
+func _resolve_internal_stuck(entity: Node2D, pos: Vector2) -> void:
+	if not EnemyNavField.is_solid(pos):
+		return
+	var landing := EnemyNavField.nearest_body_safe_point(pos, 1)
+	if not landing.is_finite():
+		return
+	if landing.distance_squared_to(pos) < 0.01:
+		return
+	if EnemyNavField.is_solid(landing):
 		return
 	_apply_pull(entity, landing, pos)
 

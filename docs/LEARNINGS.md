@@ -3704,3 +3704,400 @@
 - Notes / 说明: 挂在该信号上的统计（DPS 表/伤害计量/连击计数）拿到的不是「实际扣血」：目标只剩 35 血时一发 99999 记 99999（沙袋 `is_test_target=true` 且 0 血仍放行，几乎每发都是过杀）。要「构筑输出」就直接累加（沙袋 DPS 的选择），要「有效输出」必须自己用命中前的 `stats.hp` 夹一次。另：联机客机命中表现回放走 `play_hit_feedback` → 同一信号，本地计量会把它计入（与飘字一致）；做玩法结算的监听者不能假设「发信号 = 真掉血」。
 - Source / 来源: code
 - Date / 日期: 2026-11-05
+
+### [Godot/2D] Y-sort 会递归展平 `sort_y` 子树，TileMapLayer 可与玩家/敌人交错
+- Evidence / 证据: `main.tscn` 的 `YSort`/`PlayerRoot`/`FieldModRoot` 均 `y_sort_enabled=true`；Godot `renderer_canvas_cull.cpp::_collect_ysort_children` 在 `child_items[i]->sort_y` 为真时递归展平；`tile_map_layer.cpp` 在 y-sort 模式下按 `map_to_local().y + tile_y_sort_origin + y_sort_origin` 建每格 quadrant。
+- Notes / 说明: 挂在 `YSort` 下、自身开 `y_sort_enabled` 的 `TileMapLayer` 不需要退回“每格一个 Sprite2D”也能和角色/敌人前后遮挡；`TileData` 的每 tile `y_sort_origin` 决定排序点，`0` = 按格中心、`16` = 按底边。`barricade_tileset.tres` 按现有 Wall 标准用 `0`。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-05
+
+### [Godot/TileMapLayer] 独立 layer 的 cell body 归属于 layer 节点，`BulletWall` 组可直接被子弹命中
+- Evidence / 证据: `scenes/bullet/enemy_bullet.gd:52-58`（`body_entered` + `is_in_group("BulletWall")`）、`script/player_bullet.gd:177-190`（RayCast collider 同组检查）、`scenes/field_mods/barricade.gd::_build_overlay`；引擎 `tile_map_layer.cpp::_physics_update_cell` 的 `body_attach_object_instance_id(body, tile_map_node ? tile_map_node->get_instance_id() : get_instance_id())`。
+- Notes / 说明: 独立 `TileMapLayer`（不是旧 `TileMap` 子层）的物理 body instance id 就是 layer 节点自身，所以 `add_to_group("BulletWall")` 对玩家 RayCast 与敌人 Area2D 都生效。层必须同时含 `bullet_wall(2)` 与 `wall(256)`（本项目用 `collision_layer=258`）；只给 2 会挡不住角色，只给 256 会挡不住子弹。`EnemyNavField` 的自动障碍扫描现在认两类：`StaticBody2D`，以及 **`NavObstacle` 组**的 TileMapLayer/TileMap used cells；独立 TileMapLayer 加入 `NavObstacle` 后无需 `add_block`，cells 变化后 `invalidate()` 即可。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-05
+
+### [Godot/TileSet] 64×32 等距 tile 用 `texture_region_size=(64,32)+size_in_atlas=(1,2)` 得到 64×64 绘制区域
+- Evidence / 证据: `scenes/main/main.tscn` 的 `TileSet_5duvi`/`TileSet_1vifn`（`texture_region_size=Vector2i(64,32)`、`0:0/size_in_atlas=Vector2i(1,2)`、`texture_origin=(0,16)`）；Godot `tile_set.cpp::TileSetAtlasSource::get_tile_texture_region()`：`region_size = texture_region_size * size_in_atlas`。
+- Notes / 说明: 新墙体优先复用该标准：`tile_size=(64,32)`、`tile_shape=1`、每 tile 1×2、`texture_origin=(0,16)`、碰撞菱形 `(0,16),(-32,0),(0,-16),(32,0)`。`tile_wall_1.png`（256×64、4 个 64×64 变体）按 4 列 × 2 行放置为 `0:0`/`1:0`/`2:0`/`3:0`；不要再自算 13 之类的 origin（现有素材按现有标准画，`16` 即可）。
+- Source / 来源: code + user
+- Date / 日期: 2026-11-05
+
+### [Map/Bounds] 阻挡词条必须在 `MapBounds.get_boundary_source()=="walls"` 之后生成墙体
+- Evidence / 证据: `script/map_bounds.gd:19,325-344`（从 `CenterPosition` 向 ±x/±y 射线，mask=256 取 `FloorWall` 内壁）；`script/map_bounds.gd:35-48`（只有 `first_round_add` 会 invalidate，正常局内不重建）；`scenes/field_mods/field_mod_effect.gd` 的 `_await_bounds_ready()`；`scenes/field_mods/barricade.gd::on_start()` 的 walls 门控。
+- Notes / 说明: 若在兜底 `spawnmap` 阶段就把 layer 258 的墙放下，之后 `MapBounds` 重试射线时可能先命中新墙，把“可行走菱形”缩到墙内侧，触发每秒一次的误拉回。用 `FieldModEffect` 的基类会先等 walls；自建效果也必须显式门控，且不要用 SpawnMap 兜底 hull 生成阻挡物。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-05
+
+### [GDScript/FieldMods] 无类型 Array 不能直接赋给 `Array[MapChunk]`；连通性过滤在玩家种子无效时会静默跳过
+- Evidence / 证据: `scenes/field_mods/terrain_field_effect.gd:59`（本轮由 `chunks = _filter_connected_chunks(chunks)` 改为 `chunks.assign(...)`）、`:215-244`（`_reachable_cells()` 以玩家格为 BFS 种子，种子无效时返回空基线，`_filter_connected_chunks()` 直接返回源块）。
+- Notes / 说明: GDScript 4.7 实测把 `_filter_connected_chunks()` 返回的无类型 `Array` 直接赋给 `Array[MapChunk]` 会在运行时抛 `Trying to assign an array of type "Array" to a variable of type "Array[MapChunk]"`，打断场地词条；必须用 `Array.assign()` 复制。另：任何调用 `TerrainFieldEffect` 的阻挡词条都要在 `on_start()` 先确认玩家在当前 `all_cells` 内，否则连通性过滤会静默失效，可能把玩家/刷怪口围死。
+- Source / 来源: test + code
+- Date / 日期: 2026-11-05
+
+### [Tool/Godot] 运行期保存 `.tscn` 模板用 `PackedScene.pack` + `ResourceSaver.save`，只在编辑器运行时可写 `res://`
+- Evidence / 证据: `scenes/field_mods/barricade_template_editor.gd` 的 `_save_to()`（Node2D 根 + `ObstacleMapTemplate` 脚本 + `Core`/`Optional` 复制层 → `PackedScene.pack` → `ResourceSaver.save`）；`scenes/field_mods/barricade_templates/default.tscn` 即由该工具写出。
+- Notes / 说明: 工具是开发工具，不是 EditorPlugin；用 F6 在编辑器里运行，`res://` 可写。导出后的游戏 `res://` 只读，不能保存模板。目录创建要用 `ProjectSettings.globalize_path()` 转原生路径再 `DirAccess.make_dir_recursive_absolute()`；直接传 `res://...` 会报 `Could not create directory: 'res://scenes'`。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-05
+
+### [Map/Editor] 主地图中心是 `BattleRoom (704,448)`，模板红边界/参考图都要用它
+- Evidence / 证据: `scenes/main/main.tscn` 的 `BattleRoom` Marker2D `position=(704,448)`；`BackLayer/MapTest2` Sprite2D `position=(704,450)`、`rotation=-0.453786`、`scale=2.48`、`skew=-0.663225`；`scenes/field_mods/barricade_template_editor.tscn` 的红色菱形 `[(704,16),(1568,448),(704,880),(-160,448)]`。
+- Notes / 说明: 地图不是以原点为中心；模板编辑器如果按 (0,0) 画红边界会整体错位。`MapChunks` 的 cell 坐标与 `main.tscn` 的 `YSort` 同系；模板的 Core/Optional 层保持原点，不要给节点加位移。地图背景是旋转/斜切的 Sprite2D，不是等距 TileMap，所以模板工具必须复制它的 transform 才能“所见即所得”。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-05
+
+### [Map/Barricade] 整图模板的随机浮动只做减法；加法随机必须配连通性修复
+- Evidence / 证据: `scenes/field_mods/barricade.gd` 的 `_pick_terrain_chunks()`（`Optional` 按 `optional_keep_chance` 只保留/移除）、`_carve_out()`（只移除玩家/中心/portal/敌人/召唤物/预留格上的墙）、`_ensure_connectivity()` / `_find_wall_bridge()`（从玩家格 BFS 自由格；不可达区沿墙格最短路径拆开并 warning）。
+- Notes / 说明: 只移除墙不会产生新的封闭区；随机加墙可能把区域围死，必须每次生成后做自由格连通性检查。连通性修复在墙格图上 BFS 找“不可达自由区 → 已可达区”的最短拆墙路径，比逐块丢弃整图模板更细。模板目录扫描要“编辑器优先 `DirAccess`（能立刻看到刚保存的文件），导出回退 `ResourceLoader.list_directory`”；`_` 开头的模板文件跳过。实测：合成 4 格环包住 1 格自由格 → 修掉 1 格后全图 706/706 可达。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-05
+
+### [Godot/TileMapLayer] 离树读模板 cells 可行；模板实例用 `free()`，隐藏挂载兜底
+- Evidence / 证据: `scenes/field_mods/barricade.gd` 的 `_read_template_layers()`；模板场景根 `ObstacleMapTemplate` + `Core`/`Optional`；`PackedScene.instantiate()` 后不加入树即可 `get_used_cells()`/`get_cell_atlas_coords()`。
+- Notes / 说明: 模板只是数据源，Core/Optional 的 `collision_enabled=false`；离树读不到时（防御分支）挂到隐藏 `Node2D` 下再读，然后 `queue_free()`；正常路径直接 `free()`。不要在模板层上挂碰撞/可见的 Reference 到运行时（工具里的参考图不写进模板文件）。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-05
+
+### [Godot/2D] Y-sort 链上不能有非 y-sort 中间节点，否则整棵子树按该节点 y 排序
+- Evidence / 证据: `scenes/field_mods/barricade.tscn`（根 `Barricade` 现在 `y_sort_enabled=true`，子层 `ObstacleWall` 也开）；`scenes/field_mods/barricade.gd::_build_overlay()`；运行时把 `BarricadeEffect` 根临时设 `y_sort_enabled=true` 后，玩家在墙后时墙能遮住玩家腿部（截图对比）。
+- Notes / 说明: 层级是 `YSort → FieldModRoot → FieldMod_chip_barricade（BarricadeEffect）→ ObstacleWall（TileMapLayer）`。之前效果根 `y_sort_enabled=false`，Godot 的 y-sort 遇到非 y-sort 中间节点会把整棵墙体子树当成一个节点（按效果根 y≈0 排序），结果墙体永远在玩家后面、玩家永远盖住墙。**修复 = 从 YSort 到具体 TileMapLayer/Sprite 的每一级中间节点都开 y_sort_enabled**；墙层 `y_sort_origin=-3` 让排序点落在视觉底边中心（tile base 中心在格子中心 -3）。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-05
+
+### [Godot/TileSet] 碰撞多边形相对格子中心；`texture_origin` 的偏移必须在多边形上补偿
+- Evidence / 证据: `scenes/field_mods/barricade_tileset.tres` 的 4 个 tile 从 `PackedVector2Array(0,16,-32,0,0,-16,32,0)` 改为 `PackedVector2Array(0,0,-32,-16,0,-32,32,-16)`；`barricade_tileset.tres` 的 `texture_origin=(0,16)`；TileSet 编辑器的白点图对应 texture `(32,16),(0,32),(32,48),(64,32)`，换算到格子中心即新 points。
+- Notes / 说明: TileSet 编辑器里多边形看起来是相对**贴图区域中心**画的；运行时 body 原点在**格子中心**，而贴图又被 `texture_origin` 上移。`texture_origin=16` 时，编辑器预览与运行时碰撞差 16px；要让碰撞对齐贴图中心，必须把多边形整体上移 16。四个变体必须同步改，否则同一墙不同视觉变体碰撞位置不同。墙体视觉/碰撞仍共用 `ObstacleWall` 层，物理层 `258`。
+- Source / 来源: code + user
+- Date / 日期: 2026-11-05
+
+### [Godot/TileMapLayer] `BulletWall` 组必须挂在 TileMapLayer 节点上；效果根上的组不会被子弹 body 命中
+- Evidence / 证据: `scenes/field_mods/barricade.tscn` 的 `ObstacleWall` 节点 `groups=["BulletWall"]`；`scenes/field_mods/barricade.gd::_build_overlay()` 对场景层做防御性补组；实测 `shiroko_bullet.tscn`（`player_bullet.gd` RayCast mask=2）与 `enemy_bullet.tscn`（Area2D mask=2050）撞墙 `is_idle` 均 0→1，`ObstacleWall.is_in_group("BulletWall")` 为真。
+- Notes / 说明: 独立 TileMapLayer 的每个 cell 物理 body instance id 绑定 layer 节点；子弹检查的是 body 的组，所以组要挂在 `ObstacleWall`，不是 `BarricadeEffect` 根。场景里直接写 `groups=["BulletWall"]` 比运行时临时 `add_to_group` 更容易检查；代码仍保留补组防御。模板工具的 `CoreEdit`/`OptionalEdit` 是 `collision_enabled=false` 的数据层，不需要也不应挂这个组。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-05
+
+### [Godot/工具] Random 模板层是“必放 + 随机外观”，不要和 Optional 的“随机存在”混用
+
+SUPERSEDED: 2026-11-06 用户澄清 Random 是墙体贴图随机，本质仍是 Core 一类；不是独立放置层/第三模式，见下方新条目。
+- Evidence / 证据: `scenes/field_mods/barricade_template_editor.gd`（`PaintMode.RANDOM`、`_paint_at_hovered()` 强制 variant 0、`_save_to()` 写 `Random` 层）；`scenes/field_mods/barricade.gd::_pick_terrain_chunks()`（Random 优先于 Optional 加入 `wall_set`）。
+- Notes / 说明: Core = 必放固定外观；Optional = 按 `optional_keep_chance` 随机存在、固定外观；Random = 必定生成、运行时每格随机外观。同一格手工重叠时优先级 Core > Random > Optional；工具绘制会从另外两层擦除，正常不会重叠。
+- Source / 来源: code
+- Date / 日期: 2026-11-05
+
+### [Godot/工具] Random 模板格统一存 variant 0，绿色 tint 只是编辑器标识
+
+SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记，不是独立 Random 层，见下方新条目。
+- Evidence / 证据: `barricade_template_editor.gd::_copy_layer()` 把 atlas.x 夹到 0..3 后写 variant 0；`_save_to()` 给 `Random` 层 `modulate=Color(0.55,1,0.65,0.85)`；`barricade.gd::_build_overlay()` 对 `_random_variant_cells` 调 `_pick_variant()`（默认 `variant_weights=0.7/0.1/0.1/0.1`）。
+- Notes / 说明: 模板文件不记录随机结果；Random 格的外观完全由运行时 RNG/`variant_weights` 决定，所以同一模板重开回合会变化。要四种等概率就把 `variant_weights` 改成 `[1,1,1,1]`；绿色 tint 不会进入战斗渲染，只用于工具/模板场景里区分“随机”。
+- Source / 来源: code
+- Date / 日期: 2026-11-05
+
+### [Godot/工具] 删除模板用 DirAccess.remove_absolute，失败回退到目录 remove；删除当前模板要清空编辑区
+- Evidence / 证据: `barricade_template_editor.gd::_delete_path()`；实测工具保存 `probe_random.tscn` 后 `_load_path()` 计数恢复、`_delete_path()` 返回后 `FileAccess.file_exists=false`、当前模板被清成 New（`Core 0 / Optional 0 / 随机贴图 0`）。
+- Notes / 说明: 编辑器内运行工具时 `res://` 可写；`DirAccess.remove_absolute(ProjectSettings.globalize_path(path))` 正常，失败再 `DirAccess.open(TEMPLATE_DIR).remove(file)`。导出游戏不能写 `res://`，该工具是编辑器开发工具。删除非当前模板保留当前编辑内容；删除当前模板必须 `_new_template()`，避免继续保存到已删路径。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-05
+
+### [Godot/工具] 模板工具预览层也要 Y-Sort；只修战斗墙层不够
+- Evidence / 证据: `scenes/field_mods/barricade_template_editor.tscn` 的 `World` 与 `CoreEdit`/`OptionalEdit` 现在都 `y_sort_enabled=true`、`y_sort_origin=-3`；`barricade_template_editor.gd::_setup_editor_y_sort()` 在 `_ready()` 里防御性再设一次。用户截图（红边界 + 绿色随机贴图方块）里前方墙不遮挡后方墙，是工具预览层没有 y-sort，不是战斗表现。
+- Notes / 说明: 战斗的 `ObstacleWall` 已经在上一轮修好，但模板工具的编辑层默认 `y_sort_enabled=false`，墙块按绘制顺序画；Core/Optional 两层还要父节点 `World` 也开 y-sort，才能跨层正确交错。排查“墙不遮挡墙”时先看红边界/绿色 tint，确认是编辑器预览还是战斗；两者要分别设置，不能只修一边。
+- Source / 来源: user + code
+- Date / 日期: 2026-11-05
+
+### [Godot/工具] Random 是 Core/Optional 的随机贴图标记，不是独立放置层
+- Evidence / 证据: `scenes/field_mods/barricade_tileset.tres` 新增 source 1（`tile_wall_random.png`，第一墙体改绿色）；`barricade_template_editor.gd` 调色板第 5 项 `RANDOM_VARIANT=4`，绘制时 `set_cell(cell, RANDOM_SOURCE_ID=1, (0,0))`；`barricade.gd::_read_layer_cells()` 读 source 1 返回 `-1`，`_pick_terrain_chunks()` 只把该格加入 `_random_variant_cells`，`_build_overlay()` 用 `variant_weights` 随机 0~3。
+- Notes / 说明: 放置语义完全由 Core/Optional 决定：Core 必放、Optional 按概率保留；“随机贴图”只影响外观，不改变是否生成。模板 Core/Optional 里 source 0 是固定变体（atlas 0~3），source 1 是随机贴图标记；工具里 5 个调色板选项（4 变体 + 绿色随机）。旧版独立 `Random` 层只作兼容：效果按 Core 类必放随机贴图处理，工具加载时迁移到 Core source 1，保存后不再写该层。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] EnemyNavField 可直接从 NavObstacle TileMapLayer 生成阻挡场
+- Evidence / 证据: `script/enemy_nav_field.gd` 的 `_scan_static_obstacles()`/`_mark_obstacle_tilemap()`/`has_obstacle_tilemaps()`；`scenes/field_mods/barricade.tscn` 的 `ObstacleWall` 组 `["BulletWall","NavObstacle"]`；`scenes/field_mods/terrain_field_effect.gd` 的 `nav_use_obstacle_tilemap` 跳过 `add_block` 并在 `_build_overlay()` 后 invalidate。
+- Notes / 说明: 运行时障碍 tilemap 的 used cells 经 `map_to_local`/`to_global` 映射到 `MapChunks` 格，写入 `_solid_auto`；`has_blocks()` 包含 `has_obstacle_tilemaps()`，所以只有 tilemap 源、没有手动 `add_block` 时 AI 也会建场。cells 改变后必须 `invalidate()`，否则场缓存旧墙；`on_stop()` 先移出 `NavObstacle` 组再释放层，避免 `queue_free` 延迟期间重建扫到旧墙。身体安全用 `is_cell_body_safe`/`nearest_body_safe_point`（8 邻域无阻挡才算安全），刷怪/贴墙槽位/卡墙逃逸共用。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-06
+
+### [Map/Barricade] 模板工具所见 ≠ 实机：建墙先做避让减法，Optional 再随机删
+- Evidence / 证据: `scenes/field_mods/barricade.gd:208`（`_pick_terrain_chunks` 分层 Core/Optional）、`barricade.gd:406`（`_build_carve_ctx`：player 64 / portal cells+96 / 敌人 96 / 召唤物 80 / 预留格）、`barricade.gd:43`（`connectivity_scope=RANDOM_ONLY`）；`scenes/field_mods/barricade_layout.gd:32`（`carve_out`）。
+- Notes / 说明: 实机最终墙 = Core − 避让 − Boss 出场清墙 + 按 `optional_keep_chance` 保留的 Optional（再被随机墙连通回收）。编辑器以前只提供红边界/网格，所以“满环”在实机必然缺墙。模板工具新增实机避让圈、`PreviewEdit` 与页脚预计数量；调模板时先看页脚的“实机预计”。
+- Source / 来源: code + user + test
+- Date / 日期: 2026-11-06
+
+### [Map/Nav] 寻路场用主地图 TileMap 的格子（菱形），不是世界坐标正方形格
+- Evidence / 证据: `script/map_chunks.gd::ensure_ready()/get_all_cells()`（`map.get_used_cells()` + `map.local_to_map`/`map_to_local`，格子即主地图 TileMap 的 cell）；`script/enemy_nav_field.gd:53-57`（`NEIGHBORS8` + `DIAGONAL_COST`）、`:777-786`（`_diagonal_ok` 要求两侧正交格都可通行）、`:788-847`（`_rebuild_flow` 用 NEIGHBORS8 建流场）；`script/map_chunk_grid.gd:86-90`（4×4 只是按格坐标分块，块内仍是 TileMap 格）。
+- Notes / 说明: 寻路场的格子来自 64×32 等距 TileMap，视觉上是菱形；索引空间是方格坐标，但邻接是 tile 的 cell 邻接，不是另建的世界正方形网格。AI flow 用 8 邻域（直 1、对角 √2），对角步要求两侧正交格可通行，因此**可达连通块与 4 邻接完全等价**；8 邻域只改变流向/路径长度，不会让“4 邻接断开、8 邻接连通”的区域变成可走。壁垒模板的 4 邻接连通判定用的就是同一套 `MapChunks` 格坐标，和寻路场的连通块一致。`MapChunkGrid` 的 4×4 分块是索引空间的分块（选块/刷怪用），不是移动图的格。调试 overlay 只在小方块标记/箭头上画，不代表底层是正方形格。
+- Source / 来源: code + user
+- Date / 日期: 2026-11-06
+
+### [Map/Barricade] 可通行 = 实心墙不可通行 + 可行走格 4 邻接连通（2026-11-06 用户裁定）
+- Evidence / 证据: `scenes/field_mods/barricade_layout.gd`（`bfs_reachable` 4 邻接、`repair_optional_connectivity`）、`scenes/field_mods/barricade.gd`（`connectivity_scope=RANDOM_ONLY` 分支）。
+- Notes / 说明: **模板连通判定不使用 body-safe / clearance / 8 邻域 / 窄缝 3×3 扩宽**。solid 墙格不可通行；其余可行走格只按 4 邻接判断。Core 是作者基线（只读）；Core 自身不可达的区域（大块实心墙围住）视为不可通行，只进编辑器“信息”。只有 Optional（随机墙）把 Core 原本可走的区域隔断时才回收（拆 Optional 桥，拆不动则本轮 Optional 全丢），Core 不拆、不整图回退。1 格缺口按格连通可通过。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Map/Barricade] body-safe 用 16px clearance，不是 8 邻域；整图回退是误判
+- Evidence / 证据: `script/enemy_nav_field.gd:107,316`（AI 侧 clearance 主判据）；旧壁垒曾用 8 邻域近似。
+- Notes / 说明: 这是 AI 侧 body-safe 的判据（一格宽通道约 32px，窄缝 <16px 挡住）。**模板连通判定已按用户裁定改为“可行走格 4 邻接连通”，不再使用该 clearance**；不要再把 AI body-safe 与模板可通行混为一谈。
+- Source / 来源: code + user
+- Date / 日期: 2026-11-06
+- SUPERSEDED: 2026-11-06 模板判定不再使用 body-safe/clearance，见上条“可通行 = 可行走格 4 邻接连通”。
+
+### [Map/Barricade] Core 只作基线、Optional 才回收（RANDOM_ONLY）
+- Evidence / 证据: `scenes/field_mods/barricade_layout.gd`（`repair_optional_connectivity`：Core 基线只读，Optional 拆桥/本轮全丢）、`scenes/field_mods/barricade.gd`（RANDOM_ONLY 分支）。
+- Notes / 说明: 作者负责 Core 连通；运行时只保护 Core 基线下原本可达的**可行走格**（4 邻接）。Core 自身不可达只作信息，不拆、不整图回退。`connectivity_scope=ALL` 保留纯格连通的可拆 Core 兼容路径。
+- Source / 来源: user + code
+- Date / 日期: 2026-11-06
+
+### [Map/Barricade] Boss 中心保护延后到 Boss 出现；玩家起点 64
+- Evidence / 证据: `scenes/field_mods/barricade.gd:870`（boss 事件连接）、`barricade.gd:903`（`_clear_walls_in_radius`）、`barricade.gd:965`（`on_stop`）；`scenes/field_mods/barricade.tscn`（`avoid_player_start_radius=64`、`connectivity_scope=0`、`defer_boss_avoidance=true`）。
+- Notes / 说明: 建墙时只清玩家 64 / portal / 敌人 / 召唤物 / 预留格；中心 240 改为 `on_start` 扫描现有 `BOSS` + `boss_encounter_started` 计划位置 + `boss_joined` 实际位置再清。玩家碰撞半径约 12~16，最近的 ±y/斜墙格心 32~36px，64 足够清掉贴身墙；±x 的 64px 墙保留也有约 32px 余量。
+- Source / 来源: user + code
+- Date / 日期: 2026-11-06
+
+### [Godot/Tween] 效果 stop 后立刻 queue_free，淡出必须挂父节点 ghost
+- Evidence / 证据: `scenes/manager/field_mod_manager.gd`（`_remove_entry` 调 `stop()` 后立刻 `effect.queue_free()`）、`scenes/field_mods/barricade.gd:941`（`_spawn_fade_ghost`）、`barricade.gd:965`（`on_stop` 捕获 cells/variants，`super.on_stop()` 前隐藏主层，ghost 挂 `get_parent()`）。
+- Notes / 说明: 直接在 `on_stop()` 里 `await` tween 会被效果的 `queue_free` 连带释放；用 `collision_enabled=false`、不挂 `BulletWall`/`NavObstacle` 的临时 `TileMapLayer` 挂到父节点（`FieldModRoot`，y-sort 正确）做视觉淡出。主层碰撞/导航立即更新，Boss 清墙不会被淡出延迟。
+- Source / 来源: code
+- Date / 日期: 2026-11-06
+
+### [Map/Barricade] 当前 6 个模板实测 Core 数量与新策略
+- Evidence / 证据: 真实 `main.tscn` + 6 个模板复算（player 64 / portal cells+96 / 中心延后 / 无敌人/召唤物/预留格）。
+- Notes / 说明: `dark_forest_1` 184→120；`dark_forest_2` 499→355（Core 自身不可达区域只作信息，不处理）；`dark_forest_3` 144→108；`dark_forest_4` 288→226；`dark_forest_5` 125→77；`room_1` 236→236。Optional 全保留时由 Optional 桥回收；运行时当前 `keep=0` 不生成。表中不含 Boss 登场后的 240 清除。
+- Source / 来源: test
+- Date / 日期: 2026-11-06
+
+### [Map/Barricade] EnemyNavField 菱形常量与 tileset 碰撞多边形差 8px（AI 侧，待确认）
+- Evidence / 证据: `script/enemy_nav_field.gd` 的本地菱形常量 `(0,0),(-32,-16),(0,-32),(32,-16)` 与 `scenes/field_mods/barricade_tileset.tres` 的 `(0,8),(-32,-8),(0,-24),(32,-8)`。
+- Notes / 说明: 这是 **AI 侧** body-safe 的遗留 8px 偏差；模板连通判定已改为纯格连通，不再引用它。是否把 AI 的 clearance 改成 tileset 实际多边形另做确认，不在此次擅自改手感。
+- Source / 来源: code
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] flow 可走 = 非 solid（2026-11-06 用户要求；后被实机极限环推翻）
+- Evidence / 证据: `script/enemy_nav_field.gd::_flow_passable()`（只排除 `_solid`）、`_diagonal_ok()`（对角只要求两侧非 solid）、`_build_body_ok()`/`_update_safe_cell()`（body_ok 仍给 safe/attack/刷怪锚点）；`ui/ai_debug_overlay.gd::_draw_priority()`（数字=场距离；`-`=free 但 flow 未到且 body-unsafe；`x`=free+body-safe 但未到）。
+- Notes / 说明: 曾试过把 flow 改成只避 solid，让 1 格宽/格心离墙 <16px 的 free 格也入流；验证：x=15 全列加 block、只留 y=27 的 1 格缺口，缺口 `body_safe=false`，右侧 136 个 free 格 `far_inf=0`。但实机在墙边 body-unsafe 带出现 7↔8 往复：避障为了身体宽度绕到 dist 更高的格，flow 又按自由格把敌人拉回低 dist 格。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+- SUPERSEDED: 2026-11-06 实机 7↔8 极限环，flow 恢复 body-safe（见下条）。
+
+### [Enemy/AI] 纯场模式（MoveMode.PURE_FIELD）在夹墙/三只 CHASE#0 场景更顺（用户实机反馈）
+- Evidence / 证据: `EnemyNavField.move_mode = MoveMode.PURE_FIELD`、`Enemy.ai_steer()` 直接返回 `EnemyAI._smooth_field_flow()`；实机 10/11 夹墙三只的往复明显改善；AI probe 182/39（比 body-safe 基线多 3 条，含“竖直方向上每一点都应朝向玩家 worst_dot=0.000”）。
+- Notes / 说明: 纯场跳过阵型切向、密度/队列、`wall_push` 和 `_ai_avoid_blocked_ahead()`；黄色 `wall_push` 仍计算但不参与转向。它解决的是“避障选高 dist 格、flow 拉回低 dist 格”的合成冲突，但纯按格场流缺少直线/竖直稳定。现在作为**对照/回退模式**保留；默认已是 `FIELD_STRATEGY`（见下条）。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] FIELD_STRATEGY：场主方向 + 受约束横向（2026-11-06 用户拍板默认）
+- Evidence / 证据: `EnemyNavField.MoveMode`（`PURE_FIELD/FIELD_STRATEGY/LEGACY`）；`Enemy.ai_steer()`、`_ai_steer_field_strategy()`、`_steer_intent(..., project_strategy=true)`、`_project_perp()`、`_wall_safe_push()`、`_field_blend_direct()`、`_field_progress_worse()`、`_field_side_step()`；`_ai_dir_body_clear()` 整段采样。
+- Notes / 说明: 场负责绕墙/前进；阵型切向、密度、队列只投影到场垂直面并封顶；墙推去掉与场相反的分量；直线整段身体可过且场进度不变差时才补正上/正下/正左/正右；最终方向过 body-clear + 场进度校验，失败退回场方向或场相邻格侧步（180ms 滞后）。无 profile 单位保持旧行为；`PURE_FIELD`/`LEGACY` 保留。**路线模式默认关闭（2026-11-06 修正）**：`EnemyAI.local_route_mode=true` 会让 `solve_now()` 走 `_simple_follow()` 并绕过 `_assign_melee_slots/_assign_ranged_slots`，所有敌人保持默认 CHASE#0、无 rank/槽位（用户实机截图现象）；改成 false 后 AI probe 222/2，旧 36 条预存失败随 route mode 消失。剩余 2 条是“贴边槽位合法 3”（`_apply_slot` 平滑/attack anchor 边界）和“方位偏离横向修正”（测试用 toward 垂直面、代码用场垂直面）的边缘用例，未处理。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] flow 恢复 body-safe：body-unsafe 格会造成 7↔8 极限环
+- Evidence / 证据: `script/enemy_nav_field.gd::_flow_passable()`（`field.body_ok` / `_cell_body_safe_local` / `_cell_flow_blocked`）、`script/entity_ENEMY.gd::_ai_dir_body_clear()`/`_ai_avoid_blocked_ahead()`、实机截图（7/8 往复）、`tests/_tmp_flow_check`（body-unsafe 缺口 `far_inf>0`）。
+- Notes / 说明: **用户观察到的循环机制成立**：避障选 dist 更高的 body-unsafe 格，下一帧 flow 又拉回 dist 更低的格。只改避障会让敌人卡在低 dist 格（身体过不去），根因是 flow 把身体过不去的格当成可走。已恢复 flow 的 body-safe 过滤；模板/壁垒仍用可行走格 4 邻接 free 连通（那一层不受影响）。真正的 1 格宽 body-safe 通道（≈32px）仍会入流；墙边 body-unsafe 带显示 `-`（flow 未到）或 `x`（body-safe 但被断开），这是敌人身体宽度的真实信号。调试 overlay 新增品红色 `direction`（实际合成转向），黄色仍是 `wall_push`。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] 斜向墙/窄缝：BFS 场、视线与局部避障都必须 body-safe
+- Evidence / 证据: `script/enemy_nav_field.gd` 的 `_cell_flow_blocked()`/`_rebuild_field()`（BFS 跳过 `_near_solid`，seed 落墙边改取最近 body-safe 格）；`script/enemy_ai.gd::_has_line_of_sight()` 改用 `is_body_safe`、`_smooth_field_flow()` 的 lookahead 拒绝 body-blocked；`script/entity_ENEMY.gd::_ai_dir_body_clear()` 与 `_ai_avoid_blocked_ahead()` 的左右侧身体探针。
+- Notes / 说明: 斜向墙的墙块在角上相接，点可以从缝里穿过、身体（半径约 12）不能；只按 `_solid` 建 BFS/视线会把这种缝当通路，敌人堆在墙边。修法是让 **流场可走格 = 非 solid 且 8 邻域无 solid**，LOS 采样用同一 body-safe 判定，局部方向再查中心+两侧。注意：这是 **AI 移动**的 body-safe；模板可通行判定已改为纯格连通（2026-11-06 用户裁定），两者不要混用。**2026-11-06 曾试 flow 只避 solid，实机 7↔8 极限环，已恢复 body-safe；见上条。**
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] 玩家贴墙时：goal 与 standable 必须分开
+- Evidence / 证据: `script/enemy_nav_field.gd::ensure_rebuilt()`（仅 solid/越界才换 seed，`_near_solid` 保留）、`_rebuild_field()`（start 可 body-blocked；flow 允许 `next_index == start` 作为 goal）、`script/enemy_ai.gd::_smooth_field_flow()`（lookahead 在目标格/攻击距离内允许）、`script/entity_ENEMY.gd::_ai_dir_body_clear()`（目标格/攻击距离内豁免 body-safe）。
+- Notes / 说明: 玩家站在墙边时，玩家格是 `_near_solid`（敌人身体不能站），但它是**寻路终点**。把 seed 换成“最近 body-safe 格”会让流场指向远处，敌人不靠近。正确做法：玩家/锚点格只作为 goal 保留在场上，BFS 从它出发、flow 指向它；敌人仍只站 body-safe 格。`dist(player)=0`、旁边安全格 flow 指向玩家；攻击距离内 `_ai_dir_body_clear` 放行，靠碰撞阻止真正穿墙。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] 小角落/深 nook：goal_zone + 同 free 连通域安全起点
+- Evidence / 证据: `script/enemy_nav_field.gd` 的 `GOAL_ZONE_RADIUS_CELLS=3`、`GOAL_FALLBACK_MAX_CELLS=12`、`_build_goal_zone()`、`_nearest_body_safe_in_free_component()`、`_rebuild_flow()`、`Field.start_cell`；`script/enemy_ai.gd` 的 front/ring goal slot（`_fit_slot<0` 时 radius 0 + CHASE）。
+- Notes / 说明: 玩家在 1~3 格小角落时，玩家格和 4 邻格都可能 `_near_solid`，纯 body-safe BFS 会被隔离成“只有 seed 的零流场”。修法是把请求 seed 周围 3 格内的**非 solid 自由格**作为 goal_zone，仅允许流场穿越（不改变 `is_body_safe`/spawn/slot）；若 goal_zone 接不到任何 body-safe，沿**同一 free 连通域**找最近 body-safe（最多 12 步）作为有效 BFS 起点，不能取全局欧氏最近（会跨墙到另一侧）。深到 1 格窄走廊时敌人应停在走廊口/最近可达点，玩家在深处是安全的；不要为了靠近而穿墙。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] 外围反复走：attack anchor + hold，不是继续扩大 goal 区
+- Evidence / 证据: `script/enemy_nav_field.gd` 的 `Field.attack_cell`、`get_attack_point()`、`_choose_attack_index(seed, from_pos)`（从敌人所在 body-safe 连通域取离玩家最近点）、`_nearest_cell_in_component()`；`script/enemy_ai.gd::solve_now()` 的 `from_pos=最近敌人`、`_assign_melee_slots(attack_anchor, body_unreachable)`、`_assign_ranged_slots(attack_anchor, target_pos, body_unreachable)`；`script/entity_ENEMY.gd` 的 `_ai_attack_unreachable`/`_ai_hold_pos` 与 `ai_steer()` 驻留。
+- Notes / 说明: 玩家在墙环/安全孤岛里时，field 的 seed/goal 仍是玩家，但敌人实际可站的是**敌人连通域内离玩家最近的点**。如果阵型锚点仍留在玩家，front/ring、goal slot、16 方向兜底会把敌人往墙里推；流场再拉回可达点，就形成外围反复走。修法：attack_cell 从敌人侧连通域算；近战/远程阵型围绕 attack_cell；attack_cell != 玩家锚点时 `body_unreachable=true`，到 attack 点/槽位后 `ai_steer` 返回 ZERO 驻留，不再追进墙。远程 LOS 仍以玩家为目标，不能隔墙开火。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] 空旷地停住：不可达判定不能用世界距离
+- Evidence / 证据: `script/enemy_nav_field.gd::is_target_reachable_from(target, from_pos)`（玩家与最近敌人是否在同一 body-safe 连通域）；`script/enemy_ai.gd::solve_now()` 的 `body_unreachable := not is_target_reachable_from(...)`。
+- Notes / 说明: 上一版用 `attack_anchor.distance_squared_to(anchor) > 1.0` 判定不可达；attack 是格心，anchor 是玩家/预判世界坐标，空旷地也常差 >1 格，导致所有敌人被标 `_ai_attack_unreachable`，到玩家附近就 `ai_steer → ZERO` 停住。正确判定是**玩家格与最近敌人格是否同一 body-safe 连通域**：同域=可达（正常追/攻击），异域或玩家格 body-blocked=不可达（到 attack 点驻留）。墙环宽开口同域应正常进环；窄开口/身体不可达 nook 停在 attack 点是预期，不是丢寻路。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] 目标点取撞墙碰撞箱中心，不是脚下/精灵中心/第一个 CollisionShape2D
+- Evidence / 证据: `script/enemy_nav_field.gd::target_anchor()`/`_find_wall_body()`/`_wall_body_shapes()`；玩家 `scenes/player/momoi/momoi.tscn:264-276` 根 `CharacterBody2D` 在脚下、根 `CollisionShape2D=(0,-6)`、`HurtboxShape=(0,-8)`、`PickBox CollisionShape2D=(0,-11)`、`AnimatedSprite2D=(0,-17)`；敌人 `scenes/enemies/sweeper.tscn:161-192` 根 `collision_mask=256`、身体 `(0,-11)`。
+- Notes / 说明: 只取 `collision_mask & WALL_LAYER(256)` 的 `PhysicsBody2D`，并且只取它的**直接** `CollisionShape2D`/`CollisionPolygon2D`；`HurtBox`/`PickBox`/武器等 `Area2D` 或非直接子树全部排除。多个身体碰撞箱取中心均值，再 `MapBounds.nearest_inside` 夹回可走边界。玩家贴墙时脚下可能已经在墙内约 1.63px，裸 `global_position` 会把 field seed/reachability 带到墙格；用身体中心后目标格回到可走区。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] 组 field 不能只用最近敌人：优先“能到达玩家”的敌人
+- Evidence / 证据: `script/enemy_ai.gd::_nearest_reachable_group_enemy_position()`；`solve_now()` 在 `_nearest_reachable...` 为空时才回退 `_nearest_group_enemy_position()`；`EnemyNavField.is_target_reachable_from()` 用玩家与敌人的 body-safe 连通域。
+- Notes / 说明: 最近敌人可能在墙的另一侧/另一个 body-safe 连通域；若只用它算 `from_pos`，`Field.attack_cell`/`is_target_reachable_from`/`body_unreachable` 会把**整组**判成不可达，实际可达的敌人也一起 hold。正确顺序：组内先找任意能到达玩家的敌人作为 `from_pos`；全都不可达才用最近敌人 + hold。无人机 `ShirokoDrone` 是 `CharacterBody2D` 默认 layer 1/mask 1，敌人 layer 8/mask 256，不会物理挡路，也不在 Player/RemotePlayer/Converted/Summoned 组，不是目标。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] RING 视觉“卡住”：hold 半径覆盖槽位 + 环带无上限
+- Evidence / 证据: `script/entity_ENEMY.gd::ai_steer()` 的 hold 条件；`script/enemy_ai.gd::_assign_melee_slots()` 的 `MAX_MELEE_RINGS=3`、环带循环、溢出内圈；`ui/ai_debug_overlay.gd` 的 `_ai_attack_unreachable/_ai_hold_pos/_ai_ring_index`。
+- Notes / 说明: 旧 hold 用 `max(AI_HOLD_RADIUS, _ai_target_radius+6)`；RING 敌人到槽位时距离≈target_radius，必在 hold 半径内 → 整圈 RING 被提前 ZERO。改为只对 `_ai_attack_slot` / CHASE / CUTOFF / RUSH 且在 attack 点 `AI_ATTACK_REACH+8` 内生效；RING/queue 不触发。RING 环带最多 3 圈；溢出优先复用 `ring_base` 压缩角度，站不下才退第二圈，不再铺第 4 圈。实机 7 敌人验证：RING(r=120) `unreachable=true` 但 `_ai_ring_index=0`、不再被 hold；前排 CHASE(r=13) 仍驻留。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] 障碍聚集先用 simple follow 隔离“阵型 vs field”
+- Evidence / 证据: `script/enemy_ai.gd::simple_follow_debug`、`_simple_follow()`、`last_melee_debug`；`ui/cheat_menu.gd` 的 SimpleFollow 按钮；`ui/ai_debug_overlay.gd` 的 SIMPLE FOLLOW/melee 计数。
+- Notes / 说明: 可视化出现 CHASE=0、RING/NONE 大量时，先别盲改 field。开关打开后跳过 density/melee/ranged/queue 阵型，所有 candidate 强制 `INTENT_CHASE`、anchor=target_anchor、radius 0、slot_valid/attack_slot=true、unreachable=false、hold ZERO、flow_direct=false，仍用 EnemyNavField 绕障。实机 4 敌人：全部 intent=1 CHASE、ring=-4、unreachable=false、hold=ZERO。若 simple follow 能靠近而原策略不能，问题在阵型/槽位/hold；若仍聚集，再查 field/目标点/墙簇连通域。`last_melee_debug` 输出 melee/press/front/cutoff/attack_count，用于解释 CHASE=0。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] 寻路场 flow 根必须是玩家/seed；attack_cell 只是阵型锚点
+- Evidence / 证据: `script/enemy_nav_field.gd::_rebuild_field()` 的 `start` 现在从 `seed` 取，`attack` 只写 `field.attack_cell`；`debug_field()`/`debug_cell()`/`debug_field_cells()`；`ui/ai_debug_overlay.gd` 的 per-cell nav flow + seed/start/attack/target markers。
+- Notes / 说明: 旧版 `start = attack`，BFS/flow 指向 attack 点而不是玩家；玩家体旁的敌人会沿流场往外走（尤其墙簇 attack 在环外时）。改为 start=seed/玩家（body-blocked 时靠 goal_zone 接 body-safe），attack 仅用于 AI 阵型/攻击锚点。实机：seed=start=target=(11,32)，probe 格 flow 点积 0.979 指向玩家。Nav overlay 打开时默认显示每 2 格 flow 箭头 + seed(黄)/start(绿)/attack(红)/target(蓝) 标记。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] 玩家 target 贴墙会归到墙格：target_anchor 需同 free 连通域 body-safe snap
+- Evidence / 证据: `script/enemy_nav_field.gd::target_anchor()` 的 snap；`debug_field()` 的 `target_safe/target_solid/target_body_safe`；`_choose_attack_index()` 的玩家侧优先；`EnemyAI.solve_now()` field seed 用 `target_anchor`。
+- Notes / 说明: `MapBounds.nearest_inside` 只夹地图外边界，不避开 barricade/ObstacleWall；玩家贴墙时身体中心格可能 solid/body-blocked，target_cell/field seed 会落在墙上。target_anchor 现在：身体中心 → MapBounds → 若 cell 非 body-safe，则在同一 free 连通域找最近安全格（cell 不可通行时退到脚下格），找到则返回安全格世界点。实机 target_solid=false、target_safe=true；但安全格是**格子中心**，贴墙时 target 会比玩家身体远约一格，这是为了不把目标放进墙里。attack 玩家侧优先、field seed=target 已同步。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] target 只取局部安全格：U 形地形不能用全局最近安全点
+- Evidence / 证据: `script/enemy_nav_field.gd::target_anchor()`（不再 snap）、`target_safe_anchor()`（`TARGET_SAFE_RADIUS=3`，free BFS 同连通域）、`target_safe_cell()`；`debug_field()` 的 `target_safe_cell/target_safe/target_solid`；overlay 的 `safe` 标记。
+- Notes / 说明: target 只取 body-safe 格是对的，但“全局最近安全格”会在 U 形地形从开口跑到外面，导致 flow/target 整体外移。`target_anchor` 保留玩家身体点；`target_safe_anchor` 只在玩家附近 3 格、同一 free 连通域内找最近 body-safe 格，找不到才用现有 fallback。field seed=target_safe；ranged LOS target 仍用实际 target_anchor；刷怪/槽位用 target_safe。实机空地：target_anchor=safe=身体中心，seed/start/attack 同格。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] target 用玩家脚下 + 8 邻域 flow
+- Evidence / 证据: `script/enemy_nav_field.gd::target_anchor()`（`target.global_position` + MapBounds）、`target_safe_anchor()`（局部 3 格同 free 连通域）、`_rebuild_flow()` 的 `NEIGHBORS8`/`DIAGONAL_COST`/小顶堆；`EnemyAI.solve_now()` field seed=target_anchor。
+- Notes / 说明: body-center/collision-center target 会带来额外偏移；target 改回玩家脚下 `global_position`，只做 MapBounds 夹回。field seed 用脚下 target；attack/reachability/spawn 用 `target_safe_anchor`（局部安全格）。flow 从 4 邻域改 8 邻域，直线 1.0、对角 √2，Dijkstra 小顶堆；对角步要求两侧正交格都可通行，避免穿墙角。headless 项目加载无脚本错误；编辑器内旧 `diagonal` parse error 是脚本缓存未刷新，plugin reload 后编辑器连接断开，需要重新打开/连接 Godot 编辑器。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] target 脚下 solid 只做局部非 solid snap；safe/attack 跟 field.dist
+- Evidence / 证据: `script/enemy_nav_field.gd::target_anchor()` 的 `_nearest_free_cell_local(TARGET_SOLID_SNAP_RADIUS=3)`；`target_safe_anchor()` 先取 `field.dist` 最小 body-safe；`ensure_rebuilt()` 在 `_rebuild_field` 后用 `target_safe_cell` 覆盖 `field.attack_cell`。
+- Notes / 说明: 玩家贴 U 形左夹角时脚下点可能 solid；只做局部 3 格“非 solid” snap，不要求 body-safe、不取全局最近。safe/attack 不再用 12 步自由 BFS 的几何最近，而是取 field.dist 最小的 body-safe（与 flow 同侧），并在 ensure 后用 target_safe 覆盖 field.attack_cell，保证 attack=safe。headless 项目加载无脚本错误。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] 简化：一张按玩家的场 + 近似路线参考 + 局部避障
+- Evidence / 证据: `script/enemy_ai.gd::local_route_mode`、`_route_points`、`ensure_route()`、`route_direction()`；`script/enemy_nav_field.gd::route_points()`/`_route_next()`；`script/entity_ENEMY.gd::ai_steer()` 的 route 分支。
+- Notes / 说明: per-target 729 格 Dijkstra + `target_safe` 729 遍历 + debug nav 729/帧在 48+ 敌人下过重且 safe/attack 仍偏。改为 `local_route_mode`：只按玩家建一张 field（低频），从敌人侧沿 field.dist 抽 10~20 个 waypoint 的近似路线；敌人取最近 segment 切线做参考，最终仍用 `_ai_dir_body_clear`/`_ai_avoid_blocked_ahead`/wall push/unstuck 局部避障。route 模式跳过 `_nearest_reachable` 的 target_safe 遍历，减少每敌开销。headless 项目加载无脚本错误；编辑器插件断开需重开。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] 极简模式：flow 只指向玩家，去 safe/attack/local 避障
+- Evidence / 证据: `script/enemy_nav_field.gd::simple_field_mode`、`_flow_passable`（not solid）、`_rebuild_field` simple 分支（start=player/nearest free，attack=start）；`script/enemy_ai.gd::solve_now` simple 分支；`script/entity_ENEMY.gd::ai_steer` simple 分支（`sample` 直接返回）。
+- Notes / 说明: 之前 safe/attack + body-safe/near-solid + 局部避障叠加，既会偏移又卡顿。极简模式只做：field 从玩家脚下出发，`_flow_passable` 只排除 solid；敌人直接 `EnemyNavField.sample` 的 flow，不做 `_ai_dir_body_clear`/`_ai_avoid_blocked_ahead`/wall push/hold/RING/queue；窄缝/墙角交给物理碰撞。headless 项目加载无脚本错误；编辑器插件断开需重开。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] 一格宽通道用墙面 clearance，不用 8 邻域 near-solid
+- Evidence / 证据: `script/enemy_nav_field.gd::_wall_clearance`/`BODY_CLEARANCE`/`_rebuild_wall_clearance()`/`_measure_wall_clearance()`；`is_cell_body_safe()`/`_cell_flow_blocked()` 改用 clearance；`_local_wall_component()`/`_cell_body_safe_local()`；`Field.local_walls` 传入 `_flow_passable`/`_rebuild_flow`/`route_points`。
+- Notes / 说明: 8 邻域 near-solid 会把一格宽长通道整条判死（每格 8 邻域都有墙），但 64px 通道远宽于敌身直径约 24px。改为格心到 solid 格 diamond 边缘的 clearance（阈值 16px）；1 格通道中心约 32px 可通过，真正窄缝仍挡。玩家脚下格相邻的 solid 连通块记 `local_walls`，这组墙的 clearance 不计入，避免 target/safe 被推远；其它墙仍挡。`simple_field_mode` 默认改为 false，保留开关对比。headless 项目加载无脚本错误。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] 玩家场 body_ok/safe 预计算 + 玩家相连 free 口袋
+- Evidence / 证据: `script/enemy_nav_field.gd::Field.body_ok`/`player_pocket`/`safe_cell`；`_player_pocket_cells()`（4 邻接、限 16 格）；`_build_body_ok()`；`_update_safe_cell()`；`_field_reusable()`（seed≤1、300ms）；`_flow_passable()` 读 body_ok；`target_safe_anchor()` 读 safe_cell。
+- Notes / 说明: 原来每次查询都跑 `_cell_body_safe_local`→`_wall_clearance_excluding`，且玩家沿墙每格重建 field，导致墙边卡。改为一张玩家场：重建时一次算 `player_pocket`/`body_ok`（clearance 通过或属于玩家口袋）/`safe_cell`，查询 O(1)；field 在 seed≤1 且 <300ms 时复用。玩家相连 free 口袋（限 16 格）额外放行，保留原墙面判断给其它格；1 格宽通道仍按 clearance 通过。headless 项目加载无脚本错误。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] 路线 lookahead + 平滑 + 末端锁定玩家
+- Evidence / 证据: `script/enemy_ai.gd::route_direction()` 沿 route 推进 `ROUTE_LOOKAHEAD=32`；`ROUTE_SMOOTH_RATE=10`；`PLAYER_LOCK_RANGE=96`/`PLAYER_UNLOCK_RANGE=112`；`script/entity_ENEMY.gd::_update_route_lock()` 与 `ai_steer()` 的 route 分支（`_ai_route_smooth` lerp）。
+- Notes / 说明: 之前 route 模式直接返回最近 segment 切线，segment 边界会“被场推”一样顿；改成 lookahead 方向 + 每敌 `_ai_route_smooth` 指数平滑，减少抖动。进入 96px 或身体直线可走时锁定玩家，`desired=toward` 直接朝玩家；超过 112px 或隔墙才退出，做滞回。field 只生成 route，不参与每帧推力。headless 项目加载无脚本错误。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] 多 lane 优先级选路：场只给距离，敌人按优先级分散
+- Evidence / 证据: `script/enemy_nav_field.gd::route_lanes()`（玩家口袋边界入口，3~5 条 lane）；`script/enemy_ai.gd::ensure_lanes()`/`lane_direction()`/`assign_lane()`（`LANE_CAPACITY=8`，拥挤/绕路/换道评分）；`script/entity_ENEMY.gd::_ai_route_lane`（每 300ms 重选）。
+- Notes / 说明: 单 route 在 48+ 敌人时会堆在同一侧。改为多 lane：场只给 field.dist/口袋边界，lane 从入口沿 dist 到玩家；敌人按 `到入口距离 + 拥挤*80 + length*0.02 + 换道 60 + 超容量 1000` 选 lane，容量 8。route 方向仍用 lookahead 32 + `_ai_route_smooth` 10，末端 96/112 锁定玩家。headless 项目加载无脚本错误。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] 玩家场改为格子距离优先级，敌人跟 dist 梯度
+- Evidence / 证据: `script/enemy_nav_field.gd::sample()` 返回朝低 dist 邻居的方向；`script/entity_ENEMY.gd::ai_steer()` route 分支直接 `EnemyNavField.sample(position, target)`；`script/enemy_ai.gd::solve_now()` route 分支只 `ensure_rebuilt`；`ui/ai_debug_overlay.gd::show_priority`/`_draw_priority()`。
+- Notes / 说明: 不再抽 lane/route/safe/attack 做移动；`field.dist` 就是优先级（玩家 0，越远越大），敌人采样梯度自然绕墙。保留末端锁定（96/112）和 `_ai_route_smooth` 平滑。overlay 默认 `show_priority=true`、`show_nav_flow=false`，只画优先级热力/数字，隐藏箭头/seed/start/attack/target/safe。headless 项目加载无脚本错误。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] 移动恢复 route lookahead/平滑 + 末端锁定；优先级仅显示
+- Evidence / 证据: `script/entity_ENEMY.gd::ai_steer()` route 分支恢复 `EnemyAI.route_direction()`；`script/enemy_ai.gd::solve_now()` route 分支恢复 `ensure_route()`；`ui/ai_debug_overlay.gd::show_priority` 保持不变。
+- Notes / 说明: 直接跟 `sample()` 的 cell flow 会有“被场推”的顿挫；恢复单 route 的 lookahead(32) + `_ai_route_smooth`(10) + 末端锁定(96/112)。优先级 dist 仍用于显示/兜底，不再直接作为移动方向。lane 代码保留但休眠，不参与当前移动。headless 项目加载无脚本错误。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] 凹口 3↔2 徘徊：距离场 3→2 正常；修 route 稀/身后段/无死区
+- Evidence / 证据: `script/enemy_nav_field.gd::route_points()` 默认 `step_cells=1`；`script/enemy_ai.gd::_direction_from_points()` 投影 t>0.9 时推进到下一段；`ROUTE_DEADBAND_DEG=18`；`PLAYER_UNLOCK_RANGE=128`；`script/entity_ENEMY.gd::ai_steer()` 死区保持上一帧方向。
+- Notes / 说明: 距离场相邻步最多 1（对角 √2），3→2 是正确梯度，3→1 是跳过一格。凹口徘徊来自 waypoint 太稀、最近 segment 可能选到身后、lookahead 32 太短、无方向死区。改为 step=1、只选前方段、18° 死区内保持旧方向、锁定退出 112→128。headless 项目加载无脚本错误。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] 斜向格近距离：统一 8 邻域 corner-cut（_diagonal_ok）
+- Evidence / 证据: `script/enemy_nav_field.gd::_diagonal_ok()`；`_rebuild_flow()` 的 Dijkstra 与 flow 循环用它；`_route_next()` 也加同一检查。
+- Notes / 说明: 8 邻域 Dijkstra 允许从两个墙块夹角斜穿时，格本身非 solid、clearance 够，dist 会被算低；物理碰撞又走不过去。把“对角步必须两侧正交格都可通行”抽成 `_diagonal_ok`，flow 与 route 共用；斜穿路径不再产生低 dist。headless 项目加载无脚本错误。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] 性能：overlay 10Hz/隔格数字、route 方向缓存、body_ok nearest-wall 剪枝
+- Evidence / 证据: `ui/ai_debug_overlay.gd::REFRESH_INTERVAL=1/10`、`_draw_priority()` 数字每 2 格；`script/enemy_ai.gd::route_epoch`（ensure_route 重建 +1）；`script/entity_ENEMY.gd::_ai_route_dir_epoch/_cell/_vec`；`script/enemy_nav_field.gd::_wall_nearest`/`_wall_probe_nearest`，`_cell_body_safe_local()` 最近墙非 local 直接 false；`_field_reusable()` 300→400ms。
+- Notes / 说明: 掉帧主因是 15Hz 画 729 格 + 365 个字符串、每敌每帧遍历整条 route、body_ok 逐格全扫 solid。改为 10Hz/数字隔格、route 方向按 route_epoch+格缓存、body_ok 先看最近墙（非 local 直接 false）、field 复用 400ms。headless 项目加载无脚本错误。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] 调试优先级每格都标数字（solid=#，INF=-）
+- Evidence / 证据: `ui/ai_debug_overlay.gd::_draw_priority()` 去掉 `i % 2`，每格 `draw_string`；`solid` 显示 `#`，`dist>=INF` 显示 `-`，可达显示 `dist`；字号 6，10Hz。
+- Notes / 说明: 之前只画 `i % 2 == 0` 且跳过 INF/solid，看起来像中间空了一块。现在每格都有标签；solid 暗红 `#`、INF 深灰 `-`、body_safe=false 数字变暗。headless 项目加载无脚本错误。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [Enemy/AI] 3→4 而非 2：共享 route 覆盖本地 field 梯度，45° 兜底
+- Evidence / 证据: `script/entity_ENEMY.gd::ai_steer()` route 分支新增 `field_dir = EnemyNavField.sample()`；`ROUTE_FIELD_GUARD_DEG=45`，route 与 field 夹角超过时用 field。
+- Notes / 说明: route 从一个 `_nearest_group_enemy_position()` 出发，站在 3 的其他敌人可能不在 route 起点附近，route lookahead 会指向 4 侧，覆盖 field 的 3→2。加本地梯度兜底后，route 只做平滑，明显冲突时用 field。headless 项目加载无脚本错误。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+- SUPERSEDED: 2026-11-06 实测无明显区别，已回退 route-only。
+
+### [Coop] buff `value` 数组在联机消毒里只保留 3 项 → 条目标记改走 `source_id`
+- Evidence / 证据: `mod_sdk/coop_mod/mods/etn_coop/net/coop_net.gd:_sanitize_buff_value`（`mini(value.size(), 3)`）；`scenes/manager/buff_manager_base.gd:apply_buff`（`entry["source_id"] = source_id`）；`scenes/manager/enemy_buff_manager.gd:_refresh_dot_crit_source`。
+- Notes / 说明: 想给 buff 条目带标记（如「该来源的异常 DOT 可暴击」）时**不要**塞 `value[3+]`：客机 `apply_buff` 会被 `enemy_buff_apply_gate` 转发到 host，而 host 侧 `_sanitize_buff_value` 只保留前 3 项 → 单机正常、联机静默失效。`source_id` 不在消毒范围内（恶寒按来源计层本就依赖它），故标记放在 `entry["source_id"]` 上。`entry["can_crit"]` 采用粘滞语义（被白名单来源施加过即保持到条目销毁），避免被其它道具的后续施加覆盖成时有时无。headless 探针 `tests/maki_passive_probe.gd` 覆盖（maki_ps 可暴击 / 其它来源不可）。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-06
+
+### [Coop] 镜像玩家 PS 的 `_ready` 早于 mod 断开全局信号 → 新 PS 必须自带本地守卫
+- Evidence / 证据: `mod_sdk/coop_mod/mods/etn_coop/net/coop_net.gd:spawn_remote_player`（先 `remove_from_group("Player")` 再 `add_child`，随后 `_attach_player_proxy` → `setup` → `_disconnect_remote_global_signals`）；`scenes/player/maki/maki_ps.gd:_is_local_player`。
+- Notes / 说明: 远端玩家镜像会实例化**整个**玩家场景（含 PS），其 `_ready` 在 `add_child` 期间就执行并订阅 `GameEvents`；mod 只是事后按节点断开连接。若 PS 有全局副作用（开火掷概率、命中施加 buff、改 `PlayerData` 乘区），必须在 `_ready` 首行判「本机玩家」（组 `Player` + 无 `network_remote_player` meta），镜像直接不订阅、不注册；否则镜像 PS 会重复结算。探针验证镜像 `_local=false` 且未订阅 `player_shot_position`。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-06
+
+### [Buff] 恶寒按来源独立叠层：上限取来源自己的 value[0]，不要动全局上限
+- Evidence / 证据: `scenes/manager/enemy_buff_manager.gd:_uses_source_caps`（`chill_dot` 恒真）/`_add_source_layer`/`_source_cap_total`；`scenes/bullet/chill_ring.gd`（`chill_layer_cap=5`、`source_id`）；`scenes/update_item/nagusa_doll.gd:42-43`（cap=5+quantity、`source_id=item_id`）；`scenes/player/maki/maki_ps.gd:_element_value`（CHILL `[cap, 0, 3]`）。
+- Notes / 说明: 恶寒 `entry["layer"]` 是各来源层数之和、`max_layer` 是各来源上限之和；**一次 `apply_buff` 只加 1 层**（`value[0]` 只是该来源的上限）。给角色/道具新增恶寒来源时，只设自己的 `value[0]` 上限并传独立 `source_id`（Maki 用 `max(1, round(5 × stats.chill_layer_mult))`），不要改全局上限、也不要复用别人的 `source_id`，否则会互相侵占。另：`chill_dot.tres` 未设 `remove_by_layer`，整条 buff 到期时所有来源一起清空（既有行为，本次不改）。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-06
+
+### [FX] 多元素配色的粒子：每个颜色一个 GPUParticles2D（floor_paint 范式）
+- Evidence / 证据: `script/floor_paint.tscn`（Pink/Blue/Yellow 三个 GPUParticles2D，各自独立 `ParticleProcessMaterial`）；`scenes/effects/anomaly_paint.tscn`（Fire/Poison/Chill 同构，颜色取 `DamageData.TYPE_COLORS`）；`scenes/effects/goliath_cannon_particles.tscn`（需要运行期改参时才用 `resource_local_to_scene=true`）。
+- Notes / 说明: `.tscn` 里的 `ParticleProcessMaterial`/`Gradient` 是**场景内共享子资源**；同一场景被池化复用多个实例时，运行期改 `process_material.color`/`color_initial_ramp` 会串到所有实例（包括正在播放的旧实例）。固定几种颜色就用「一色一个发射器 + 按需 `restart()`」（floor_paint / anomaly_paint），只有确实要按实例调参时才 `resource_local_to_scene=true`（Goliath 粒子即此）。另：2D 粒子最终颜色按线性空间呈现，场景里填的 sRGB 常量看起来会比色卡更暗/更饱和；与伤害数字同源（`DamageData.TYPE_COLORS`）即可保持一致观感。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-07
+
+### [Coop/Field] 壁垒联机的首帧不能只读 `field_mod_started` 时的 `_cells`
+- Evidence / 证据: `mod_sdk/coop_mod/mods/etn_coop/net/coop_net.gd:_attach_barricade_effect`；`scenes/field_mods/barricade.gd:on_start`（`FieldModEffect.start()` 内 await `MapBounds`）与 `walls_built`（`_build_overlay`/`_clear_walls_in_radius`）。
+- Notes / 说明: `FieldModManager._start_chip()` 调 `effect.call("start")` 后立刻 emit `field_mod_started`，而 `FieldModEffect.start()` 是 async，`on_start()` 可能还没跑；此时 `_cells` 为空。Host 必须连接 `walls_built` 并全量转发，同时用 `get_wall_data()` 补一次当前快照；客机 `apply_network_walls()` 只重建 tilemap/碰撞/NavObstacle，不跑模板/随机/避让/连通。客机 `field_mod_spawn_gate` 拦本地 `barricade.tscn`，否则 host 镜像 + 本地随机墙两套。单进程镜像测试 `[BARRICADE_NET_CHECK] ok=1`。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-07
+
+### [Coop/Field] 壁垒重连：handshake 早于场景 ready，且空快照必须显式 stop
+- Evidence / 证据: `mod_sdk/coop_mod/mods/etn_coop/net/coop_net.gd` 的 `_client_hello`（`_migrate_peer_state` → `_accept_peer`）、`_accept_peer`（`_send_barricade_state_to_peer`）、`_client_scene_ready`（battle 分支末尾补发）、`_finish_reconnect`（`_clear_barricade_mirror`）、`_send_barricade_state_to_peer`（cache/现场为空 → `_remote_barricade_stop`）。
+- Notes / 说明: 重连握手在客机 `_hello_accept`/`_finish_reconnect` 之前完成，且客机可能仍停在旧场景；只在 `_accept_peer` 发壁垒快照会落到旧场景或与旧 mirror 竞争，所以 `_client_scene_ready` 必须再补一次。客机断线期间壁垒结束/清墙时 host 的 `_barricade_walls_cache` 为空；旧实现直接 `return`，客机会一直保留旧墙，因此空数据必须显式发 `_remote_barricade_stop`。客机 `_finish_reconnect` 先清 mirror，随后由 host 的 `_remote_barricade_walls` 全量重建或 `_remote_barricade_stop` 保持清空；两条路径都幂等，不需要迁移 per-peer 壁垒状态。实测：双进程 dev battle（host `--coop-devbarricade`、client `--coop-devbarricade --coop-devdrop=2`）host `cells=324`，客机重连后再打印 `cells=324`；`run_coop_recovery_checks.py --cases rejoin3` 为 PASS。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-07
+
+### [Field/Item] 医疗包随机 tile 可能是壁垒格；`MapBounds.nearest_inside()` 只管外边界
+- Evidence / 证据: `scenes/manager/pick_item_manager.gd:51-70`（旧随机 `tilemap.get_used_cells(0)` 无墙检查，`randi_range(0, cells.size()) - 1` 还会取到 `-1`）；`script/enemy_nav_field.gd:1450-1479`（`is_solid`/`nearest_body_safe_point`）；`scenes/field_mods/barricade.gd:714-730`（客机镜像只重建 overlay）。
+- Notes / 说明: 医疗包刷新取的是 `SpawnMap` 地面格，壁垒/地形词条可以在同一格放墙；`MapBounds.nearest_inside()` 只按外边界内缩，不能把内部墙格拉出来。修法：`EnemyNavField.safe_pickup_point()` 用 `is_solid()` 判墙并回退 `nearest_body_safe_point()`；`PickItemManager` 随机/玩家脚下、联机 host `_spawn_medkit_networked()` 都走它，找不到安全点就跳过生成。另加 `MapBounds` 1s 卡墙兜底：`HealthItem`/玩家/敌人/召唤物/Boss 中心格 solid 时复用 `_pull_lock` 拉到最近 body-safe 点；只认 `is_solid`，贴墙不误拉。客户端镜像 `apply_network_walls()` 后必须 `EnemyNavField.invalidate()`，否则仍用旧阻挡集。实测 `[MEDKIT_WALL_CHECK] ok=1 fail=0`（墙格生成被挪出、假 `HealthItem` 一次拉出、第二次不回弹）。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-07

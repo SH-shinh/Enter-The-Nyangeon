@@ -1,0 +1,55 @@
+[gd_scene format=3 uid="uid://xckeomv4ifkj"]
+
+[ext_resource type="Script" uid="uid://d11ktnt5oerqm" path="res://scenes/field_mods/barricade_template_editor.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://j07n5onbbtql" path="res://sprites/tile_map/map_test_2.png" id="2_bg"]
+[ext_resource type="TileSet" uid="uid://bqlvw0tb7yd0g" path="res://scenes/field_mods/barricade_tileset.tres" id="3_tileset"]
+
+[node name="BarricadeTemplateEditor" type="Node2D" unique_id=1902470243]
+script = ExtResource("1_script")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=850342039]
+position = Vector2(704, 448)
+offset = Vector2(95, 0)
+zoom = Vector2(0.25, 0.25)
+
+[node name="World" type="Node2D" parent="." unique_id=1972531475]
+y_sort_enabled = true
+
+[node name="MapReference" type="Sprite2D" parent="World" unique_id=695381942]
+modulate = Color(0.5278, 0.54691, 0.91, 1)
+z_index = -2
+position = Vector2(704, 450)
+rotation = -0.453786
+scale = Vector2(2.48, 2.48)
+skew = -0.663225
+texture = ExtResource("2_bg")
+
+[node name="Boundary" type="Line2D" parent="World" unique_id=1553625459]
+z_index = 2
+points = PackedVector2Array(704, 16, 1568, 448, 704, 880, -160, 448)
+closed = true
+width = 16.0
+default_color = Color(1, 0.15, 0.15, 1)
+
+[node name="CoreEdit" type="TileMapLayer" parent="World" unique_id=1676998483]
+y_sort_enabled = true
+tile_set = ExtResource("3_tileset")
+y_sort_origin = -3
+collision_enabled = false
+
+[node name="OptionalEdit" type="TileMapLayer" parent="World" unique_id=1310578898]
+modulate = Color(0.6, 0.9, 1.25, 1)
+y_sort_enabled = true
+tile_set = ExtResource("3_tileset")
+y_sort_origin = -3
+collision_enabled = false
+
+[node name="Cursor" type="Line2D" parent="World" unique_id=783043924]
+visible = false
+z_index = 3
+points = PackedVector2Array(0, -16, 32, 0, 0, 16, -32, 0)
+closed = true
+width = 3.0
+default_color = Color(1, 1, 0.4, 0.9)
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=1961014115]

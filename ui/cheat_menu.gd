@@ -18,8 +18,9 @@ const AI_OVERLAY: PackedScene = preload("res://ui/ai_debug_overlay.tscn")
 var _ai_overlay: Node = null
 var _ai_show_density: bool = true
 var _ai_show_vectors: bool = true
-var _ai_show_nav_flow: bool = false
+var _ai_show_nav_flow: bool = true
 var _ai_show_solids: bool = false
+var _simple_follow_btn: Button = null
 
 var test_card = preload("res://ui/test_item_card.tscn")
 var enemy_card_scene = preload("res://ui/test_enemy_card.tscn")
@@ -38,6 +39,25 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	add_card()
 	add_enemy_card()
+	_ensure_simple_follow_btn()
+
+
+func _ensure_simple_follow_btn() -> void:
+	if _simple_follow_btn != null and is_instance_valid(_simple_follow_btn):
+		return
+	var parent := ai_debug_toggle.get_parent()
+	if parent == null:
+		return
+	_simple_follow_btn = Button.new()
+	_simple_follow_btn.text = "SimpleFollow"
+	_simple_follow_btn.toggle_mode = true
+	_simple_follow_btn.set_pressed_no_signal(EnemyAI.simple_follow_debug)
+	_simple_follow_btn.toggled.connect(_on_simple_follow_toggled)
+	parent.add_child(_simple_follow_btn)
+
+
+func _on_simple_follow_toggled(pressed: bool) -> void:
+	EnemyAI.simple_follow_debug = pressed
 
 func _exit_tree() -> void:
 	# 兜底：本菜单在打开状态被释放（如切换场景）时恢复暂停

@@ -13,7 +13,9 @@ class_name EnemyAI
 ## 注意：这里刻意不引用 Enemy 类型（只用 duck typing），避免与 entity_ENEMY.gd
 ## 形成 class_name 循环引用；意图常量必须与 Enemy.AIIntent 的枚举顺序一致。
 
-const SOLVE_INTERVAL_MS := 200
+const SOLVE_INTERVAL_MS := 360
+## 壁垒场开启时的决策频率进一步降低（有场/绕墙更贵，且不需要 5Hz 更新）。
+const FIELD_SOLVE_INTERVAL_MS := 600
 const FAN_BASE := 0.18
 const SEP_BASE := 0.20
 
@@ -52,6 +54,8 @@ const TANGENT_DEADZONE := 0.05
 # 近战同心环：环间距要 > 体宽，环内按弧长算容量（人多自动往外扩圈）
 const RING_SPACING := 34.0
 const RING_SLOT_SIZE := 32.0
+## RING 环带最多铺 3 圈；溢出优先往内圈压缩，不再继续外扩。
+const MAX_MELEE_RINGS := 3
 # 槽点搜索：向内收缩 / 向外增长都允许（墙边、角落时"往外挪"才有空间）
 const SLOT_GROW_RATIO := 1.18
 const SLOT_GROW_MAX_STEPS := 8
@@ -102,7 +106,39 @@ const PREDICT_FULL_SPEED := 200.0
 const PREDICT_CLAMP_RADIUS := 24.0
 
 static var _last_solve_ms: int = -99999
+## 3 相拆帧：0=collect/density，1=density/wall push，2=组内槽位/场；每 5Hz 调一次，整轮 600ms。
+static var _solve_phase: int = 0
+## 第一轮/新目标/队伍变化强制全跑一次，避免开局或换队 600ms 没有槽位。
+static var _solve_primed: bool = false
+static var _last_group_sig: int = 0
 static var _candidates: Array[Enemy] = []
+## 调试：关闭阵型/密度/队列，只保留 field 跟随，用于隔离“策略 vs 寻路”。
+static var simple_follow_debug: bool = false
+## 简化寻路：一张按玩家的 field + 近似路线参考，敌人局部避障。
+## 注意：开启时会绕过 _assign_melee_slots/_assign_ranged_slots，敌人意图/名次/槽位全部不更新
+## （调试 overlay 会看到所有敌人都是 CHASE#0）。FIELD_STRATEGY 需要策略决策，默认必须关闭。
+static var local_route_mode: bool = false
+## 路线 lookahead / 平滑 / 玩家锁定参数。
+const ROUTE_LOOKAHEAD := 32.0
+const ROUTE_SMOOTH_RATE := 10.0
+const PLAYER_LOCK_RANGE := 96.0
+const PLAYER_UNLOCK_RANGE := 128.0
+## 方向死区：小于该角度保持上一帧方向，避免凹口 3↔2 抖动。
+const ROUTE_DEADBAND_DEG := 18.0
+## 多 lane 优先级选择：容量 + 拥挤 + 换道惩罚。
+const LANE_CAPACITY := 8
+static var _route_lanes: Array = []
+static var _route_lane_target_id: int = 0
+static var _route_lane_built_ms: int = -99999
+static var _lane_counts: Array = []
+static var _route_points: Array = []
+static var _route_target_id: int = 0
+static var _route_built_ms: int = -99999
+static var _route_from: Vector2 = Vector2.ZERO
+## route 版本号：ensure_route 重建时 +1，敌人用它缓存方向。
+static var route_epoch: int = 0
+## 近战分配诊断：melee/press/front/cutoff/attack_count。
+static var last_melee_debug: Dictionary = {}
 # 求解上下文快照（与 _candidates 同序）：热路径不再逐敌读 global_position / velocity / _ai_intent
 static var _ctx_pos := PackedVector2Array()
 static var _ctx_vel := PackedVector2Array()
@@ -184,7 +220,7 @@ static func target_velocity(target) -> Vector2:
 static func predict_anchor(target: Node2D, lead_seconds: float) -> Vector2:
 	if target == null or not is_instance_valid(target):
 		return Vector2.ZERO
-	var position: Vector2 = target.global_position
+	var position: Vector2 = EnemyNavField.target_anchor(target)
 	if lead_seconds <= 0.0:
 		return position
 	var velocity := target_velocity(target)
@@ -215,7 +251,8 @@ static func ensure_solved(target: Node2D, lead_seconds: float = 0.0) -> void:
 	if target == null or not is_instance_valid(target):
 		return
 	var now := Time.get_ticks_msec()
-	if now - _last_solve_ms < SOLVE_INTERVAL_MS:
+	var interval := FIELD_SOLVE_INTERVAL_MS if EnemyNavField.complex_path_enabled else SOLVE_INTERVAL_MS
+	if now - _last_solve_ms < interval:
 		return
 	_last_solve_ms = now
 	if not EnemyNavField.has_blocks() and not _any_enemy_has_profile():
@@ -227,9 +264,84 @@ static func solve_now(lead_seconds: float = 0.0) -> void:
 	_collect()
 	if _candidates.is_empty():
 		return
+	if EnemyNavField.simple_field_mode:
+		for key in _groups:
+			var g: Dictionary = _groups[key]
+			var target_node = g.get("node")
+			if target_node == null or not is_instance_valid(target_node):
+				continue
+			EnemyNavField.ensure_rebuilt(target_node, EnemyNavField.target_anchor(target_node))
+		_simple_follow()
+		_update_stuck()
+		return
+	if local_route_mode:
+		_apply_wall_push()
+		for key in _groups:
+			var g: Dictionary = _groups[key]
+			var target_node = g.get("node")
+			if target_node == null or not is_instance_valid(target_node):
+				continue
+			var from_pos := _nearest_group_enemy_position(g, target_node)
+			EnemyNavField.ensure_rebuilt(target_node, EnemyNavField.target_anchor(target_node), from_pos)
+			ensure_route(target_node, from_pos)
+		_simple_follow()
+		_update_stuck()
+		return
+	if simple_follow_debug:
+		_apply_wall_push()
+		for key in _groups:
+			var g: Dictionary = _groups[key]
+			var target_node = g.get("node")
+			if target_node == null or not is_instance_valid(target_node):
+				continue
+			var from_pos := _nearest_group_enemy_position(g, target_node)
+			EnemyNavField.ensure_rebuilt(target_node, EnemyNavField.target_anchor(target_node), from_pos)
+		_simple_follow()
+		_update_stuck()
+		return
+	# 首轮/换目标/队伍变化强制整套跑一次；之后按 3 相拆帧，每 5Hz 只做一相。
+	var sig := 0
+	for key in _groups:
+		sig = sig * 31 + int(key)
+		var g: Dictionary = _groups[key]
+		for e in g.get("all", []):
+			if e != null and is_instance_valid(e):
+				sig = sig * 31 + e.get_instance_id()
+	if not _solve_primed or sig != _last_group_sig:
+		_solve_primed = true
+		_last_group_sig = sig
+		_run_full_solve(lead_seconds)
+		return
+	_solve_phase = (_solve_phase + 1) % 3
+	if _solve_phase == 0:
+		_build_density()
+	elif _solve_phase == 1:
+		_apply_density_push()
+		_apply_wall_push()
+	else:
+		_assign_groups(lead_seconds)
+	_update_stuck()
+
+
+static func _run_full_solve(lead_seconds: float) -> void:
 	_build_density()
 	_apply_density_push()
 	_apply_wall_push()
+	_assign_groups(lead_seconds)
+	_update_stuck()
+
+
+## 测试/一次性入口：不做 3 相拆帧，直接完整跑一轮。
+static func solve_now_full(lead_seconds: float = 0.0) -> void:
+	_collect()
+	if _candidates.is_empty():
+		return
+	_last_solve_ms = Time.get_ticks_msec()
+	_solve_primed = true
+	_run_full_solve(lead_seconds)
+
+
+static func _assign_groups(lead_seconds: float) -> void:
 	for key in _groups:
 		var group: Dictionary = _groups[key]
 		var node = group.get("node")
@@ -238,11 +350,181 @@ static func solve_now(lead_seconds: float = 0.0) -> void:
 		var lead: float = lead_seconds
 		if lead <= 0.0:
 			lead = _group_lead(group)
-		var anchor := predict_anchor(node, lead)
-		EnemyNavField.ensure_rebuilt(node, anchor)
-		_assign_melee_slots(group, anchor)
-		_assign_ranged_slots(group, anchor)
-	_update_stuck()
+		var target_pos := EnemyNavField.target_anchor(node)
+		var from_pos: Vector2
+		var attack_anchor: Vector2
+		var body_unreachable := false
+		if EnemyNavField.complex_path_enabled:
+			from_pos = _nearest_reachable_group_enemy_position(group, node)
+			if from_pos == Vector2.ZERO:
+				from_pos = _nearest_group_enemy_position(group, node)
+			EnemyNavField.ensure_rebuilt(node, target_pos, from_pos)
+			attack_anchor = EnemyNavField.get_attack_point(node)
+			if attack_anchor == Vector2.ZERO:
+				attack_anchor = EnemyNavField.target_safe_anchor(node)
+			body_unreachable = not EnemyNavField.is_target_reachable_from(node, from_pos)
+		else:
+			# 非壁垒场景没有场：直接以玩家/目标锚点为攻击点，走直连。
+			from_pos = _nearest_group_enemy_position(group, node)
+			attack_anchor = target_pos
+		_assign_melee_slots(group, attack_anchor, body_unreachable)
+		_assign_ranged_slots(group, attack_anchor, target_pos, body_unreachable)
+
+
+static func ensure_route(target: Node2D, from_pos: Vector2) -> void:
+	if target == null or not is_instance_valid(target):
+		return
+	var now := Time.get_ticks_msec()
+	var id := target.get_instance_id()
+	if id == _route_target_id and now - _route_built_ms < 450 \
+			and from_pos.distance_squared_to(_route_from) < 64.0:
+		return
+	_route_points = EnemyNavField.route_points(target, from_pos)
+	_route_target_id = id
+	_route_built_ms = now
+	_route_from = from_pos
+	route_epoch += 1
+
+
+## 最近路线 segment 的切线（朝玩家）。只作参考，最终由局部探针避障。
+static func route_direction(target: Node2D, position: Vector2) -> Vector2:
+	if target == null or not is_instance_valid(target):
+		return Vector2.ZERO
+	if _route_target_id != target.get_instance_id() or _route_points.size() < 2:
+		return Vector2.ZERO
+	return _direction_from_points(_route_points, position)
+
+
+static func _direction_from_points(points: Array, position: Vector2) -> Vector2:
+	if points.size() < 2:
+		return Vector2.ZERO
+	var best_dist := INF
+	var best_index := -1
+	var best_t := 0.0
+	for i in points.size() - 1:
+		var a: Vector2 = points[i]
+		var b: Vector2 = points[i + 1]
+		var seg := b - a
+		var len2 := seg.length_squared()
+		if len2 < 0.0001:
+			continue
+		var t := clampf((position - a).dot(seg) / len2, 0.0, 1.0)
+		var p := a + seg * t
+		var d := position.distance_squared_to(p)
+		if d < best_dist:
+			best_dist = d
+			best_index = i
+			best_t = t
+	if best_index < 0:
+		return Vector2.ZERO
+	# 只走前方：投影落在 segment 末端时，推进到下一段，避免选到身后段。
+	if best_t > 0.9 and best_index < points.size() - 2:
+		best_index += 1
+		best_t = 0.0
+	# 沿路线向前推 ROUTE_LOOKAHEAD，返回“当前位置 → lookahead”的方向。
+	var look: Vector2 = points[best_index]
+	var remain := ROUTE_LOOKAHEAD
+	var idx := best_index
+	var t2 := best_t
+	while remain > 0.0 and idx < points.size() - 1:
+		var p0: Vector2 = points[idx]
+		var p1: Vector2 = points[idx + 1]
+		var s := p1 - p0
+		var sl := s.length()
+		if sl < 0.0001:
+			idx += 1
+			t2 = 0.0
+			continue
+		var left := sl * (1.0 - t2)
+		if remain <= left:
+			look = p0 + s.normalized() * (sl * t2 + remain)
+			remain = 0.0
+			break
+		remain -= left
+		idx += 1
+		t2 = 0.0
+	if remain > 0.0:
+		look = points[points.size() - 1]
+	var dir := look - position
+	if dir.length_squared() < 0.0001:
+		return Vector2.ZERO
+	return dir.normalized()
+
+
+static func ensure_lanes(target: Node2D, from_pos: Vector2) -> void:
+	if target == null or not is_instance_valid(target):
+		return
+	var now := Time.get_ticks_msec()
+	var id := target.get_instance_id()
+	if id == _route_lane_target_id and now - _route_lane_built_ms < 450:
+		return
+	_route_lanes = EnemyNavField.route_lanes(target, from_pos)
+	_lane_counts.clear()
+	for i in _route_lanes.size():
+		_lane_counts.append(0)
+	_route_lane_target_id = id
+	_route_lane_built_ms = now
+
+
+static func lane_direction(target: Node2D, position: Vector2, lane_index: int) -> Vector2:
+	if target == null or not is_instance_valid(target):
+		return Vector2.ZERO
+	if lane_index < 0 or lane_index >= _route_lanes.size():
+		return Vector2.ZERO
+	var points: Array = _route_lanes[lane_index].get("points", [])
+	return _direction_from_points(points, position)
+
+
+## 按“到入口距离 + 拥挤 + 绕路 + 换道惩罚”选 lane；超容量降权。
+static func assign_lane(_target: Node2D, position: Vector2, previous_lane: int) -> int:
+	if _route_lanes.is_empty():
+		return -1
+	var best := -1
+	var best_score := INF
+	for i in _route_lanes.size():
+		var lane: Dictionary = _route_lanes[i]
+		var entry: Vector2 = lane.get("entry", position)
+		var count := int(_lane_counts[i]) if i < _lane_counts.size() else 0
+		var score := position.distance_to(entry) + float(count) * 80.0
+		score += float(lane.get("length", 0.0)) * 0.02
+		if i != previous_lane:
+			score += 60.0
+		if count >= LANE_CAPACITY:
+			score += 1000.0
+		if score < best_score:
+			best_score = score
+			best = i
+	if best >= 0 and best < _lane_counts.size():
+		_lane_counts[best] = int(_lane_counts[best]) + 1
+	return best
+
+
+static func _simple_follow() -> void:
+	last_melee_debug = {
+		"melee": _candidates.size(), "press": 0, "front": 0,
+		"cutoff": 0, "attack_count": 0,
+	}
+	for enemy in _candidates:
+		var target := _resolve_target(enemy)
+		if target == null:
+			continue
+		var anchor := EnemyNavField.target_anchor(target)
+		enemy._ai_intent = INTENT_CHASE
+		enemy._ai_anchor = anchor
+		enemy._ai_slot_angle = 0.0
+		enemy._ai_slot_valid = true
+		enemy._ai_target_radius = 0.0
+		enemy._ai_attack_slot = true
+		enemy._ai_attack_unreachable = false
+		enemy._ai_hold_pos = Vector2.ZERO
+		enemy._ai_flow_direct = false
+		enemy._ai_density_push = Vector2.ZERO
+		enemy._ai_density_level = 0.0
+		enemy._ai_queue_push = Vector2.ZERO
+		enemy._ai_queue_pressure = 0.0
+		enemy._ai_ring_index = -4
+		enemy._ai_role_score = 0.0
+		enemy._ai_tactical = true
 
 
 static func _any_enemy_has_profile() -> bool:
@@ -254,6 +536,39 @@ static func _any_enemy_has_profile() -> bool:
 		if enemy.get("ai_profile") != null:
 			return true
 	return false
+
+
+static func _nearest_group_enemy_position(group: Dictionary, node: Node2D) -> Vector2:
+	var best := Vector2.ZERO
+	var best_dist := INF
+	for enemy in group.get("all", []):
+		if enemy == null or not is_instance_valid(enemy):
+			continue
+		var p := EnemyNavField.target_anchor(enemy)
+		var d: float = p.distance_squared_to(EnemyNavField.target_anchor(node))
+		if d < best_dist:
+			best_dist = d
+			best = p
+	return best
+
+
+## 组内优先选“能到达玩家”的敌人作为 from_pos：
+## 只用最近敌人时，若它恰好在墙另一侧，整组会被误判不可达并 hold。
+static func _nearest_reachable_group_enemy_position(group: Dictionary, node: Node2D) -> Vector2:
+	var best := Vector2.ZERO
+	var best_dist := INF
+	var node_anchor := EnemyNavField.target_anchor(node)
+	for enemy in group.get("all", []):
+		if enemy == null or not is_instance_valid(enemy):
+			continue
+		var p := EnemyNavField.target_anchor(enemy)
+		if not EnemyNavField.is_target_reachable_from(node, p):
+			continue
+		var d: float = p.distance_squared_to(node_anchor)
+		if d < best_dist:
+			best_dist = d
+			best = p
+	return best
 
 
 # ---------------- 分桶 ----------------
@@ -417,6 +732,8 @@ static func cell_center(cell: Vector2i) -> Vector2:
 static func _build_density() -> void:
 	_density.clear()
 	for enemy in _candidates:
+		if not enemy._ai_tactical:
+			continue
 		var base := _cell_of(enemy.global_position)
 		_density[base] = float(_density.get(base, 0.0)) + 1.0
 		for offset in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
@@ -447,6 +764,9 @@ static func _apply_density_push() -> void:
 	]
 	for i in _candidates.size():
 		var enemy := _candidates[i]
+		if not enemy._ai_tactical:
+			enemy._ai_density_push = Vector2.ZERO
+			continue
 		var position: Vector2 = _ctx_pos[i]
 		var self_cell := _cell_of(position)
 		enemy._ai_density_level = float(_density.get(self_cell, 0.0))
@@ -465,9 +785,10 @@ static func _apply_density_push() -> void:
 			enemy._ai_density_push = Vector2.ZERO
 			continue
 		var target := _resolve_target(enemy)
+		var target_anchor := EnemyNavField.target_anchor(target as Node2D)
 		var toward := Vector2.ZERO
-		if target != null:
-			var toward_vec := target.global_position - position
+		if target_anchor != Vector2.ZERO:
+			var toward_vec := target_anchor - position
 			if toward_vec.length_squared() > 0.0001:
 				toward = toward_vec.normalized()
 		var push: Vector2 = acc
@@ -490,6 +811,9 @@ static func _apply_wall_push() -> void:
 		directions.append(Vector2.from_angle(TAU * float(i) / 8.0))
 	for i in _candidates.size():
 		var enemy := _candidates[i]
+		if not enemy._ai_tactical:
+			enemy._ai_wall_push = Vector2.ZERO
+			continue
 		var position: Vector2 = _ctx_pos[i]
 		# 快速放行：离墙远、且所在格 8 邻域没有阻挡格 → 不可能有墙在探针距离内，直接跳过 8 次探针
 		# （这是全程最贵的一项：89 只 × 8~16 次 is_solid）
@@ -500,7 +824,9 @@ static func _apply_wall_push() -> void:
 			enemy._ai_wall_push = Vector2.ZERO
 			continue
 		if cell_index < 0 or EnemyNavField.is_cell_solid(cell):
-			var escape: Vector2 = MapBounds.nearest_inside(position, SLOT_WALL_MARGIN) - position
+			var escape: Vector2 = EnemyNavField.nearest_body_safe_point(position, 1) - position
+			if escape.length_squared() <= 0.0001:
+				escape = MapBounds.nearest_inside(position, SLOT_WALL_MARGIN) - position
 			if escape.length_squared() > 0.0001:
 				enemy._ai_wall_push = escape.normalized()
 			else:
@@ -529,7 +855,7 @@ static func _has_line_of_sight(from: Vector2, to: Vector2) -> bool:
 	var travelled := LOS_SKIP
 	var limit := total - LOS_SKIP
 	while travelled < limit:
-		if EnemyNavField.is_solid(from.lerp(to, travelled / total)):
+		if not EnemyNavField.is_body_safe(from.lerp(to, travelled / total), 1):
 			return false
 		travelled += LOS_STEP
 	return true
@@ -654,17 +980,19 @@ static func _bearing_keys(items: Array, anchor: Vector2) -> PackedFloat32Array:
 # 只换一次格；离墙余量先用预计算表判定，只有"模糊带"才真的做 polygon 判定（原来每次都判）。
 static func _slot_ok(point: Vector2, target: Node2D) -> bool:
 	slot_ok_calls += 1
+	# 地图边界必须无条件校验：只在“近距离墙”分支里查 MapBounds 会漏掉贴边但格心不 near_solid 的点。
+	if MapBounds.nearest_inside(point, SLOT_WALL_MARGIN) != point:
+		return false
 	var cell := MapChunks.world_to_cell(point)
 	var index := EnemyNavField.cell_index(cell)
 	if index < 0:
+		return false
+	if EnemyNavField.cell_near_solid(index):
 		return false
 	var margin := EnemyNavField.cell_clearance(index)
 	var span := EnemyNavField.CELL_SPAN
 	if margin + span < SLOT_WALL_MARGIN:
 		return false
-	if margin < SLOT_WALL_MARGIN + span:
-		if MapBounds.nearest_inside(point, SLOT_WALL_MARGIN) != point:
-			return false
 	if EnemyNavField.is_cell_solid(cell):
 		return false
 	var d := EnemyNavField.cell_dist(index, target)
@@ -762,6 +1090,7 @@ static func _apply_slot(enemy, angle: float, radius: float, intent: int) -> void
 	e._ai_slot_valid = true
 	e._ai_target_radius = smoothed_radius
 	e._ai_intent = intent
+	e._ai_decision_ms = Time.get_ticks_msec()
 
 
 # ---------------- 角色评分（位置 + 速度） ----------------
@@ -827,6 +1156,14 @@ static func _smooth_field_flow(pos: Vector2, target: Node2D, toward: Vector2) ->
 	var b := EnemyNavField.sample(pos + toward * FLOW_LOOKAHEAD, target)
 	if b == Vector2.ZERO:
 		return a
+	# lookahead 不能跨过身体不可站的格；但玩家/目标格本身是 goal，允许靠近。
+	var lookahead := pos + toward * FLOW_LOOKAHEAD
+	if not EnemyNavField.is_body_safe(lookahead, 1):
+		var target_anchor := EnemyNavField.target_anchor(target)
+		var target_cell := MapChunks.world_to_cell(target_anchor)
+		if MapChunks.world_to_cell(lookahead) != target_cell \
+				and lookahead.distance_to(target_anchor) > FLOW_LOOKAHEAD:
+			return a
 	var mixed := a + b
 	if mixed.length() < 0.15:
 		return toward
@@ -835,7 +1172,7 @@ static func _smooth_field_flow(pos: Vector2, target: Node2D, toward: Vector2) ->
 
 # ---------------- 近战：包围 + 封堵 ----------------
 
-static func _assign_melee_slots(group: Dictionary, anchor: Vector2) -> void:
+static func _assign_melee_slots(group: Dictionary, anchor: Vector2, body_unreachable: bool = false) -> void:
 	var melee: Array = group.get("melee", [])
 	var count := melee.size()
 	if count <= 0:
@@ -907,7 +1244,7 @@ static func _assign_melee_slots(group: Dictionary, anchor: Vector2) -> void:
 	# 5) 前插组：围绕「预判落点」站位（不是玩家当前位置）。人数按比例分配，至少留 1 个压迫。
 	#    选人用「ETA + 朝向」评分：离得近但被卡住（速度≈0）的敌人不该抢走名额。
 	var intercept_anchor: Vector2 = anchor
-	if profile.cutoff_speed_lead > 0.0:
+	if not body_unreachable and profile.cutoff_speed_lead > 0.0:
 		intercept_anchor = predict_anchor(node, profile.cutoff_speed_lead)
 	var player_head: float = NAN
 	if velocity != Vector2.ZERO:
@@ -942,6 +1279,7 @@ static func _assign_melee_slots(group: Dictionary, anchor: Vector2) -> void:
 		else:
 			_apply_slot(cutoff_list[i], angle, fitted, INTENT_CUTOFF)
 			cutoff_list[i].set("_ai_anchor", intercept_anchor)
+			cutoff_list[i].set("_ai_ring_index", -3)
 
 	# 7) 压迫组拆成「前排 + 同心环」
 	var press_list: Array = []
@@ -975,6 +1313,13 @@ static func _assign_melee_slots(group: Dictionary, anchor: Vector2) -> void:
 			front_best_keys.remove_at(front_best_keys.size() - 1)
 	var front_count := front_best.size()
 	var front: Array = front_best
+	last_melee_debug = {
+		"melee": count,
+		"press": press_list.size(),
+		"front": front_count,
+		"cutoff": cutoff_list.size(),
+		"attack_count": attack_count,
+	}
 	for i in front_count:
 		front[i].set("_ai_role_score", float(front_score_of[front[i].get_instance_id()]))
 	# 环带按距离升序占内圈：直接复用已按距离排好的 by_dist（不再单独排一次）
@@ -994,8 +1339,13 @@ static func _assign_melee_slots(group: Dictionary, anchor: Vector2) -> void:
 		var angle: float = base + TAU * float(i) / maxf(1.0, float(front_count))
 		var front_radius: float = profile.melee_engage_radius
 		var fitted: float = _fit_slot(node, anchor, angle, front_radius, 0.0)
-		_apply_slot(front[i], angle, fitted if fitted > 0.0 else front_radius, INTENT_CHASE)
+		# 角落/小 nook 中前排也可能完全站不下：给 goal slot，朝玩家靠近，靠碰撞停住。
+		if fitted < 0.0:
+			_apply_slot(front[i], angle, 0.0, INTENT_CHASE)
+		else:
+			_apply_slot(front[i], angle, fitted, INTENT_CHASE)
 		front[i].set("_ai_anchor", anchor)
+		front[i].set("_ai_ring_index", -2)
 
 	# 7b) 同心环：角度只铺在「最长连续可站立弧」内；环内按方位角同序铺满。
 	#     玩家在角落/墙边时可站弧变窄，半径随圈数外扩，形成扇形包围而不是挤成一条线。
@@ -1008,7 +1358,7 @@ static func _assign_melee_slots(group: Dictionary, anchor: Vector2) -> void:
 	group["arc_radius"] = ring_base
 	var remaining: Array = ring_pool
 	var ring_index := 0
-	while not remaining.is_empty() and ring_index < 10:
+	while not remaining.is_empty() and ring_index < MAX_MELEE_RINGS:
 		var radius: float = (ring_base + RING_SPACING * float(ring_index)) * _jitter_of(remaining[0], 0.2)
 		var capacity: int = maxi(1, int(arc_span * radius / RING_SLOT_SIZE))
 		var take: int = mini(capacity, remaining.size())
@@ -1020,11 +1370,34 @@ static func _assign_melee_slots(group: Dictionary, anchor: Vector2) -> void:
 			var fitted: float = _fit_slot(node, anchor, angle, radius,
 				profile.melee_engage_radius, SLOT_MAX_RADIUS)
 			if fitted < 0.0:
-				_invalidate_slot(members[j])
+				# 全部槽位都站不下：goal slot，先朝玩家/锚点靠近。
+				_apply_slot(members[j], angle, 0.0, INTENT_CHASE)
+				members[j].set("_ai_anchor", anchor)
+				members[j].set("_ai_ring_index", ring_index)
 			else:
 				_apply_slot(members[j], angle, fitted, INTENT_RING)
 				members[j].set("_ai_anchor", anchor)
+				members[j].set("_ai_ring_index", ring_index)
 		ring_index += 1
+
+	# 7c) 环带上限后，溢出敌人往内圈压：优先 ring_base，站不下才第二圈；
+	#     不允许第 4 圈外扩。内圈容量有限，允许超容量槽位，由 density/queue 错开。
+	if not remaining.is_empty():
+		var overflow_count := remaining.size()
+		for j in overflow_count:
+			var angle: float = arc_start + arc_span * (float(j) + 0.5) / float(overflow_count)
+			var fitted := _fit_slot(node, anchor, angle, ring_base,
+				profile.melee_engage_radius, SLOT_MAX_RADIUS)
+			if fitted < 0.0:
+				fitted = _fit_slot(node, anchor, angle, ring_base + RING_SPACING,
+					profile.melee_engage_radius, SLOT_MAX_RADIUS)
+			if fitted < 0.0:
+				_invalidate_slot(remaining[j])
+				remaining[j].set("_ai_ring_index", -1)
+			else:
+				_apply_slot(remaining[j], angle, fitted, INTENT_RING)
+				remaining[j].set("_ai_anchor", anchor)
+				remaining[j].set("_ai_ring_index", -1)
 
 	# 8) 名次与攻击位标记（只影响切向权重，不改意图）。前排=贴脸名额。
 	var front_set: Dictionary = {}
@@ -1043,11 +1416,15 @@ static func _assign_melee_slots(group: Dictionary, anchor: Vector2) -> void:
 			e._ai_role_score = 0.0
 
 	_assign_queue_push(melee, anchor, dist_rank)
+	for enemy in melee:
+		enemy.set("_ai_attack_unreachable", body_unreachable)
+		enemy.set("_ai_hold_pos", anchor)
 
 
 # ---------------- 远程：错落站位 + 视线换位 ----------------
 
-static func _assign_ranged_slots(group: Dictionary, anchor: Vector2) -> void:
+static func _assign_ranged_slots(group: Dictionary, anchor: Vector2,
+		target_pos: Vector2 = Vector2.ZERO, body_unreachable: bool = false) -> void:
 	var ranged: Array = group.get("ranged", [])
 	var count := ranged.size()
 	if count <= 0:
@@ -1058,6 +1435,8 @@ static func _assign_ranged_slots(group: Dictionary, anchor: Vector2) -> void:
 	var node = group.get("node")
 	if node == null or not is_instance_valid(node):
 		return
+	if target_pos == Vector2.ZERO:
+		target_pos = EnemyNavField.target_anchor(node)
 	var base := _mean_bearing(ranged, anchor)
 	if is_nan(base):
 		base = float(group.get("base", 0.0))
@@ -1065,13 +1444,16 @@ static func _assign_ranged_slots(group: Dictionary, anchor: Vector2) -> void:
 		var los_pos: Vector2 = enemy.global_position
 		var last_pos = enemy.get("_ai_los_pos")
 		var last_anchor = enemy.get("_ai_los_anchor")
-		if last_pos is Vector2 and last_anchor is Vector2 \
+		var last_target = enemy.get("_ai_los_target")
+		if last_pos is Vector2 and last_anchor is Vector2 and last_target is Vector2 \
 				and (last_pos as Vector2).distance_squared_to(los_pos) < 576.0 \
-				and (last_anchor as Vector2).distance_squared_to(anchor) < 576.0:
+				and (last_anchor as Vector2).distance_squared_to(anchor) < 576.0 \
+				and (last_target as Vector2).distance_squared_to(target_pos) < 576.0:
 			continue
-		enemy.set("_ai_flow_direct", _has_line_of_sight(los_pos, anchor))
+		enemy.set("_ai_flow_direct", _has_line_of_sight(los_pos, target_pos))
 		enemy.set("_ai_los_pos", los_pos)
 		enemy.set("_ai_los_anchor", anchor)
+		enemy.set("_ai_los_target", target_pos)
 	var player_velocity := target_velocity(node)
 	var slots := clampi(count, 1, MAX_SLOTS)
 	for i in count:
@@ -1100,7 +1482,7 @@ static func _assign_ranged_slots(group: Dictionary, anchor: Vector2) -> void:
 		elif distance < back or (closing > RANGED_DANGER_SPEED and distance < danger_range):
 			intent = INTENT_KITE
 		else:
-			var has_los := _has_line_of_sight(position, anchor)
+			var has_los := _has_line_of_sight(position, target_pos)
 			enemy.set("_ai_has_los", has_los)
 			if not has_los:
 				var side: float = float(enemy.get("_ai_strafe_sign"))
@@ -1116,6 +1498,9 @@ static func _assign_ranged_slots(group: Dictionary, anchor: Vector2) -> void:
 		else:
 			_apply_slot(enemy, angle, fitted, intent)
 			enemy.set("_ai_anchor", anchor)
+	for enemy in ranged:
+		enemy.set("_ai_attack_unreachable", body_unreachable)
+		enemy.set("_ai_hold_pos", anchor)
 
 
 static func _num_of(value, fallback: float) -> float:

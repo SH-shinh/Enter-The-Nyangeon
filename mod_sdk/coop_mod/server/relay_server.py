@@ -37,10 +37,20 @@ HEARTBEAT_INTERVAL_SEC = float(os.environ.get("HEARTBEAT_INTERVAL_SEC", "5"))
 # 与 CoopRelayPeer._get_max_packet_size 的 16 MiB 契约一致，另加目标 peer 头。
 MAX_FRAME_BYTES = (1 << 24) + HEADER_SIZE
 MAX_BUFFER_BYTES = MAX_FRAME_BYTES + 65536 + 14
-HTTP_HANDSHAKE_TIMEOUT_SEC = 10.0
-JOIN_TIMEOUT_SEC = 35.0
+# 读 HTTP Upgrade 头的时限：从 TCP 被 accept 后起算（DNS/TCP 连接时间不计入）。移动链路抖动大，
+# 原来 10s 会在客户端 30s 握手预算（CONNECT_TIMEOUT_MSEC）用完之前先掐断，客机只能看到 STATE_CLOSED
+# 并提示 "Relay connection failed"，拿不到原因，故 2026-11-05 放宽到 30s；仍可用环境变量回压
+# （该值同时是「慢连接占用 socket 的上限」）。
+HTTP_HANDSHAKE_TIMEOUT_SEC = float(os.environ.get("HTTP_HANDSHAKE_TIMEOUT_SEC", "30"))
+# WS 已建好却仍未 join_room 的连接时限：服务端兜底，须 ≥ 客户端 JOIN_HANDSHAKE_TIMEOUT_MSEC(30s)。
+JOIN_TIMEOUT_SEC = float(os.environ.get("JOIN_TIMEOUT_SEC", "35"))
 FRAME_TIMEOUT_SEC = 30.0
 WRITE_TIMEOUT_SEC = 5.0
+# 准入兜底：join_room 已被接受、停在 Room.pending 等 client_ready 的连接。这一段不能只靠无数据超时
+# 回收——服务端每 HEARTBEAT_INTERVAL_SEC 发一次 PING，客户端自动回 PONG 会刷新 last_seen，卡死但
+# TCP 还活着的客机会长期占位；而 pending 计入房间容量（见 join_room 的 max_clients 判断），别人
+# 会看到 "Room full"。该时限从 join_room 被接受起算，client_ready 到达（admitted=True）后失效。
+ADMIT_TIMEOUT_SEC = float(os.environ.get("ADMIT_TIMEOUT_SEC", "30"))
 # 资源上限：房间总数与在线连接总数，超限拒绝新建（环境变量可配，默认按单机小规模中继估算）。
 MAX_ROOMS = int(os.environ.get("MAX_ROOMS", "256"))
 MAX_TOTAL_CLIENTS = int(os.environ.get("MAX_TOTAL_CLIENTS", "512"))
@@ -77,6 +87,8 @@ class Peer:
     last_seen: float = 0.0
     connected_at: float = field(default_factory=time.monotonic)
     frame_started: float | None = None
+    # join_room 被接受（进入 Room.pending）的时刻；client_ready 前用于 ADMIT_TIMEOUT_SEC 兜底。
+    joined_at: float | None = None
     # 背压：首次超过软水位的时刻（monotonic，0.0 表示未超）；超过宽限仍未回落才断开。
     over_since: float = 0.0
     # 对端 IP（握手后取 peername），用于每 IP 的 join 限速
@@ -459,6 +471,8 @@ async def handle_control(peer: Peer, payload: bytes):
         peer.token = token
         peer.admitted = False
         room.pending.add(peer)
+        # 准入兜底计时起点：从「已被接受进 pending」起算，而不是从 client_ready 起算。
+        peer.joined_at = time.monotonic()
 
         peers = [
             {"peer_id": room_peer.id, "name": room_peer.name or ""}
@@ -663,11 +677,24 @@ async def handle_websocket(reader: asyncio.StreamReader, writer: asyncio.StreamW
             now = time.monotonic()
             if peer.room is None:
                 remaining = min(remaining, JOIN_TIMEOUT_SEC - (now - peer.connected_at))
+            if peer.joined_at is not None and not peer.admitted:
+                remaining = min(remaining, ADMIT_TIMEOUT_SEC - (now - peer.joined_at))
             if peer.frame_started is not None:
                 remaining = min(remaining, FRAME_TIMEOUT_SEC - (now - peer.frame_started))
             if remaining <= 0:
                 break
-            chunk = await asyncio.wait_for(reader.read(65536), remaining)
+            try:
+                chunk = await asyncio.wait_for(reader.read(65536), remaining)
+            except asyncio.TimeoutError:
+                # 到点由 wait_for 抛出，走的是通用 except 分支；这里单独识别准入超时并留痕，
+                # 否则日志里只有一条 DISCONNECT，排查时看不出是「等不到 client_ready」。
+                if (
+                    peer.joined_at is not None
+                    and not peer.admitted
+                    and time.monotonic() - peer.joined_at >= ADMIT_TIMEOUT_SEC
+                ):
+                    print(f"[ADMIT] timeout peer={peer.id or '?'}; closing", flush=True)
+                break
             if not chunk:
                 break
 

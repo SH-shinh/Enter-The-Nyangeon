@@ -11,7 +11,7 @@ extends CanvasLayer
 ## 取数与绘制分离：build_snapshot() 返回纯数据（可 headless 断言），
 ## _on_draw() 只消费缓存，避免把逻辑塞进绘制回调。
 
-const REFRESH_INTERVAL := 1.0 / 15.0
+const REFRESH_INTERVAL := 1.0 / 10.0
 const MAX_CELLS := 400
 const VECTOR_SCALE := 18.0
 const FONT_SIZE := 8
@@ -35,6 +35,7 @@ var enabled: bool = false
 var show_density: bool = true
 var show_vectors: bool = true
 var show_nav_flow: bool = false
+var show_priority: bool = true
 var show_solids: bool = false
 
 var _draw_root: Control
@@ -84,6 +85,12 @@ func set_show_nav_flow(value: bool) -> void:
 		_refresh()
 
 
+func set_show_priority(value: bool) -> void:
+	show_priority = value
+	if enabled:
+		_refresh()
+
+
 func set_show_solids(value: bool) -> void:
 	show_solids = value
 	if enabled:
@@ -125,12 +132,16 @@ func build_snapshot() -> Dictionary:
 			"rank": int(enemy.get("_ai_dist_rank")),
 			"role_score": float(enemy.get("_ai_role_score")),
 			"attack": enemy.get("_ai_attack_slot") == true,
+			"unreachable": enemy.get("_ai_attack_unreachable") == true,
+			"hold": _vec(enemy, "_ai_hold_pos"),
+			"ring_index": int(enemy.get("_ai_ring_index")),
 			"intercept": intent == EnemyAI.INTENT_CUTOFF,
 			"has_los": enemy.get("_ai_has_los") != false,
 			"unstuck": int(enemy.get("_ai_unstuck_ticks")) > 0,
 			"density_push": _vec(enemy, "_ai_density_push"),
 			"wall_push": _vec(enemy, "_ai_wall_push"),
 			"queue_push": _vec(enemy, "_ai_queue_push"),
+			"direction": _vec(enemy, "direction"),
 		})
 
 	var cells: Array = []
@@ -149,16 +160,20 @@ func build_snapshot() -> Dictionary:
 			cells.resize(MAX_CELLS)
 
 	var nav_arrows: Array = []
+	var nav_info: Dictionary = {}
+	var nav_cells: Array = []
+	var priority_cells: Array = []
+	if show_priority:
+		var target := _first_target()
+		if target != null:
+			priority_cells = EnemyNavField.debug_field_cells(target)
 	if show_nav_flow:
 		var target := _first_target()
 		if target != null:
-			var map_cells := MapChunks.get_all_cells()
-			for i in range(0, map_cells.size(), 3):
-				var world: Vector2 = MapChunks.get_cell_world(map_cells[i])
-				var flow := EnemyNavField.sample(world, target)
-				if flow == Vector2.ZERO:
-					continue
-				nav_arrows.append({"from": world, "dir": flow})
+			nav_info = EnemyNavField.debug_field(target)
+			var all_cells := EnemyNavField.debug_field_cells(target)
+			for i in range(0, all_cells.size(), 2):
+				nav_cells.append(all_cells[i])
 
 	# 阻挡格：确认「排队成一条线」到底是不是场地走廊/障碍造成的
 	var solids: Array = []
@@ -176,6 +191,9 @@ func build_snapshot() -> Dictionary:
 		"enemies": enemies,
 		"counts": counts,
 		"nav_arrows": nav_arrows,
+		"nav_info": nav_info,
+		"nav_cells": nav_cells,
+		"priority_cells": priority_cells,
 		"solids": solids,
 		"arc": EnemyAI.debug_arc(),
 	}
@@ -209,6 +227,7 @@ func _on_draw() -> void:
 	var font := ThemeDB.fallback_font
 	var xf := get_viewport().get_canvas_transform()
 	_draw_solids(xf)
+	_draw_priority(font, xf)
 	_draw_density(font, xf)
 	_draw_arc(xf)
 	_draw_nav_flow(xf)
@@ -218,6 +237,52 @@ func _on_draw() -> void:
 
 func _screen(xf: Transform2D, world: Vector2) -> Vector2:
 	return xf * world
+
+
+func _draw_priority(font: Font, xf: Transform2D) -> void:
+	var cells: Array = _snapshot.get("priority_cells", [])
+	if cells.is_empty():
+		return
+	var max_dist := 1.0
+	for entry in cells:
+		var d := float(entry.get("dist", INF))
+		if d < INF:
+			max_dist = maxf(max_dist, d)
+	var half: float = EnemyAI.DENSITY_CELL * 0.5
+	var size := Vector2(half * 2.0, half * 2.0)
+	for entry in cells:
+		var dist := float(entry.get("dist", INF))
+		var solid: bool = entry.get("solid", false)
+		var body_safe: bool = entry.get("body_safe", true)
+		var center := _screen(xf, entry["world"])
+		var color := Color(0, 0, 0, 0)
+		var label := ""
+		var fg := Color(1, 1, 1, 0.45)
+		if solid:
+			color = Color(0.9, 0.2, 0.2, 0.14)
+			label = "#"
+			fg = Color(1.0, 0.4, 0.4, 0.55)
+		elif dist >= INF:
+			if not body_safe:
+				# 可行走、但 flow 没到（body-safe 过滤或 solid 隔开）；flow 仍用 body-safe 可走集合。
+				color = Color(0.45, 0.25, 0.55, 0.16)
+				label = "-"
+				fg = Color(0.85, 0.65, 1.0, 0.6)
+			else:
+				# 可行走且 body-safe，但 flow 没到（真正被断开/无场）。
+				color = Color(0.3, 0.3, 0.3, 0.16)
+				label = "x"
+				fg = Color(0.75, 0.75, 0.75, 0.5)
+		else:
+			var t: float = clampf(dist / max_dist, 0.0, 1.0)
+			color = Color(0.2, 0.9, 0.35).lerp(Color(0.95, 0.3, 0.2), t)
+			color.a = 0.10
+			label = str(int(dist))
+			if not body_safe:
+				fg = Color(1, 1, 1, 0.25)
+		_draw_root.draw_rect(Rect2(center - Vector2(half, half), size), color)
+		_draw_root.draw_string(font, center - Vector2(5, 2), label,
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 6, fg)
 
 
 func _draw_density(font: Font, xf: Transform2D) -> void:
@@ -277,11 +342,47 @@ func _draw_arc(xf: Transform2D) -> void:
 
 
 func _draw_nav_flow(xf: Transform2D) -> void:
-	for arrow in _snapshot.get("nav_arrows", []):
-		var world: Vector2 = arrow["from"]
+	for entry in _snapshot.get("nav_cells", []):
+		var world: Vector2 = entry["world"]
 		var from := _screen(xf, world)
-		var dir: Vector2 = arrow["dir"]
-		_draw_root.draw_line(from, from + dir * 8.0, Color(1.0, 1.0, 1.0, 0.35), 1.0)
+		var dir: Vector2 = entry["flow"]
+		var color := Color(0.3, 0.85, 1.0, 0.55)
+		if entry["solid"]:
+			color = Color(1.0, 0.2, 0.2, 0.55)
+		elif entry["goal"]:
+			color = Color(1.0, 1.0, 0.3, 0.65)
+		elif entry["body_safe"]:
+			color = Color(0.2, 1.0, 0.4, 0.5)
+		elif entry["near_solid"]:
+			color = Color(0.8, 0.5, 1.0, 0.4)
+		if dir.length_squared() > 0.0001:
+			var tip := from + dir.normalized() * 6.0
+			_draw_root.draw_line(from, tip, color, 1.0)
+			var side := dir.orthogonal().normalized() * 2.0
+			_draw_root.draw_line(tip, tip - dir.normalized() * 3.0 + side, color, 1.0)
+			_draw_root.draw_line(tip, tip - dir.normalized() * 3.0 - side, color, 1.0)
+		elif entry["solid"]:
+			_draw_root.draw_rect(Rect2(from - Vector2(2, 2), Vector2(4, 4)), color)
+
+	var info: Dictionary = _snapshot.get("nav_info", {})
+	if info.is_empty():
+		return
+	var markers := [
+		["seed", info.get("seed_cell", null), Color(1.0, 1.0, 0.3, 0.95)],
+		["start", info.get("start_cell", null), Color(0.2, 1.0, 0.4, 0.95)],
+		["attack", info.get("attack_cell", null), Color(1.0, 0.3, 0.3, 0.95)],
+		["target", info.get("target_cell", null), Color(0.4, 0.8, 1.0, 0.95)],
+		["safe", info.get("target_safe_cell", null), Color(0.9, 0.5, 0.9, 0.95)],
+	]
+	for marker in markers:
+		if marker[1] == null:
+			continue
+		var cell: Vector2i = marker[1]
+		var world := MapChunks.get_cell_world(cell)
+		var p := _screen(xf, world)
+		_draw_root.draw_arc(p, 5.0, 0.0, TAU, 12, marker[2], 1.5, true)
+		_draw_root.draw_string(ThemeDB.fallback_font, p + Vector2(6, -6), marker[0],
+			HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, marker[2])
 
 
 func _draw_enemies(font: Font, xf: Transform2D) -> void:
@@ -322,10 +423,18 @@ func _draw_enemies(font: Font, xf: Transform2D) -> void:
 			_arrow(screen, entry["density_push"], Color(0.3, 1.0, 0.4, 0.9))
 			_arrow(screen, entry["wall_push"], Color(1.0, 0.9, 0.2, 0.9))
 			_arrow(screen, entry["queue_push"], Color(0.2, 0.9, 0.9, 0.9))
+			# 实际合成后的转向（flow + 阵型 + 推力 + 避障），不是单一路径箭头。
+			_arrow(screen, entry["direction"], Color(1.0, 0.3, 1.0, 0.95))
 
-		var label := "%s#%d" % [EnemyAI.intent_name(intent), int(entry["rank"])]
+		var label := "%s%s#%d" % [
+			"H" if entry["unreachable"] else "",
+			EnemyAI.intent_name(intent), int(entry["rank"])]
 		_draw_root.draw_string(font, screen + Vector2(-10.0, -9.0), label,
 			HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, Color(color.r, color.g, color.b, 0.95))
+		if entry["ring_index"] >= -1:
+			_draw_root.draw_string(font, screen + Vector2(-10.0, 1.0),
+				"r%d" % int(entry["ring_index"]),
+				HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE - 1, Color(color.r, color.g, color.b, 0.75))
 
 
 func _arrow(from: Vector2, dir, color: Color) -> void:
@@ -345,6 +454,19 @@ func _draw_legend(font: Font) -> void:
 	var lines: Array[String] = []
 	lines.append("AI debug  candidates=%d  density_max=%.1f" % [
 		_snapshot.get("enemies", []).size(), float(_snapshot.get("max_density", 0.0))])
+	var mode_names := ["PURE_FIELD", "FIELD_STRATEGY", "LEGACY"]
+	lines.append("move_mode=%s" % mode_names[clampi(EnemyNavField.move_mode, 0, mode_names.size() - 1)])
+	if EnemyAI.simple_follow_debug:
+		lines.append("SIMPLE FOLLOW (formation/density/queue off)")
+	if show_nav_flow:
+		lines.append("nav: #=solid  -=free但flow未到(body-unsafe)  x=free+body-safe但未到  数字=场距离")
+	if show_vectors:
+		lines.append("vec: density=green wall=yellow queue=cyan steer=magenta")
+	var md: Dictionary = EnemyAI.last_melee_debug
+	if not md.is_empty():
+		lines.append("melee=%d press=%d front=%d cutoff=%d atk=%d" % [
+			int(md.get("melee", 0)), int(md.get("press", 0)), int(md.get("front", 0)),
+			int(md.get("cutoff", 0)), int(md.get("attack_count", 0))])
 	var counts: Dictionary = _snapshot.get("counts", {})
 	if not counts.is_empty():
 		var parts: Array[String] = []

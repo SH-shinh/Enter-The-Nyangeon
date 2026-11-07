@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://bv1mrp6ujtgc3"]
+
+[ext_resource type="Script" uid="uid://bpd5yhf8fu62v" path="res://scenes/field_mods/barricade.gd" id="1_script"]
+[ext_resource type="TileSet" uid="uid://bqlvw0tb7yd0g" path="res://scenes/field_mods/barricade_tileset.tres" id="2_tileset"]
+
+[node name="Barricade" type="Node2D" unique_id=153045440]
+y_sort_enabled = true
+script = ExtResource("1_script")
+wall_tile_set = ExtResource("2_tileset")
+chunk_size = Vector2i(2, 2)
+chunk_count = 6
+avoid_player_start_radius = 64.0
+blocks_movement = true
+nav_use_obstacle_tilemap = true
+connectivity_scope = 0
+defer_boss_avoidance = true
+
+[node name="ObstacleWall" type="TileMapLayer" parent="." unique_id=1754885252 groups=["BulletWall", "NavObstacle"]]
+y_sort_enabled = true
+tile_set = ExtResource("2_tileset")
+y_sort_origin = -3

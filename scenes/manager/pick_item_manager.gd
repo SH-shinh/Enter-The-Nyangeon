@@ -52,22 +52,56 @@ func add_medical_kit(spawn_position: Vector2):
 	if ExtensionHooks.intercept_named("medkit_spawn_gate", [self, spawn_position]):
 		return
 	player = PlayerRef.ensure(self, player)
-	if spawn_position == Vector2.ZERO and spawn_at_player and player != null:
-		spawn_position = player.global_position
-	if spawn_position == Vector2.ZERO:
-		var ran = RandomNumberGenerator.new()
-		var cells: Array = tilemap.get_used_cells(0)
-		var rand_position_num = ran.randi_range(0, cells.size()) - 1
-		var rand_position = tilemap.map_to_local(cells[rand_position_num])
-		var ins = medical_kit.instantiate()
-		ins.global_position = rand_position
-		get_tree().get_first_node_in_group("CoinRoot").add_child(ins)
-		ExtensionHooks.notify_named("on_medkit_spawned", [ins])
-	else:
-		var ins = medical_kit.instantiate()
-		ins.global_position = spawn_position
-		get_tree().get_first_node_in_group("CoinRoot").add_child(ins)
-		ExtensionHooks.notify_named("on_medkit_spawned", [ins])
+	var pos := spawn_position
+	if pos == Vector2.ZERO and spawn_at_player and player != null:
+		pos = player.global_position
+	if pos == Vector2.ZERO:
+		pos = _random_medkit_position()
+	if not pos.is_finite():
+		return
+	pos = EnemyNavField.safe_pickup_point(pos)
+	if not pos.is_finite():
+		return
+	_spawn_medical_kit(pos)
+
+
+# 随机医疗包：先按地面 tile 取候选，墙体/障碍命中则重试；都失败时退回最近安全点。
+func _random_medkit_position() -> Vector2:
+	if tilemap == null or not is_instance_valid(tilemap) or not tilemap.has_method("get_used_cells"):
+		return Vector2.INF
+	var cells: Array = tilemap.get_used_cells(0)
+	if cells.is_empty():
+		return Vector2.INF
+	var nav_ready := EnemyNavField.ensure_topology()
+	var last := Vector2.ZERO
+	for attempt in 16:
+		var idx := randi_range(0, cells.size() - 1)
+		var cell = cells[idx]
+		if not (cell is Vector2i):
+			continue
+		var candidate: Vector2 = tilemap.to_global(tilemap.map_to_local(cell))
+		last = candidate
+		if nav_ready and EnemyNavField.is_solid(candidate):
+			continue
+		return candidate
+	if nav_ready:
+		return EnemyNavField.safe_pickup_point(last)
+	return last
+
+
+func _spawn_medical_kit(pos: Vector2) -> void:
+	if medical_kit == null:
+		return
+	var root := get_tree().get_first_node_in_group("CoinRoot")
+	if root == null:
+		return
+	var ins = medical_kit.instantiate()
+	if ins == null:
+		return
+	root.add_child(ins)
+	if ins is Node2D:
+		(ins as Node2D).global_position = pos
+	ExtensionHooks.notify_named("on_medkit_spawned", [ins])
 
 func medical_kit_spawn():
 	player = PlayerRef.ensure(self, player)

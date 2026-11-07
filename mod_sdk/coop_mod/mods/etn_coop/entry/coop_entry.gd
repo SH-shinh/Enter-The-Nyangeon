@@ -185,6 +185,7 @@ func _handle_dev_args() -> void:
 	var mode := ""
 	var target := ""
 	var devbattle := false
+	var devbarricade := false
 	var devenemy := false
 	var devhit := false
 	var devbullet := false
@@ -258,6 +259,8 @@ func _handle_dev_args() -> void:
 			relay_target = a.substr("--coop-relay-join=".length())
 		elif a == "--coop-devbattle":
 			devbattle = true
+		elif a == "--coop-devbarricade":
+			devbarricade = true
 		elif a == "--coop-devenemy":
 			devenemy = true
 		elif a == "--coop-devhit":
@@ -536,6 +539,8 @@ func _handle_dev_args() -> void:
 		if devenemy and mode == "host":
 			_coop.call("register_existing_enemies")
 			print("[etn_coop] dev registered %d enemies" % _coop.enemy_by_net_id.size())
+		if devbarricade and mode == "host":
+			await _dev_start_barricade()
 		if devdown and mode == "host":
 			for i in 12:
 				await get_tree().create_timer(0.5).timeout
@@ -563,6 +568,8 @@ func _handle_dev_args() -> void:
 				await get_tree().create_timer(0.2).timeout
 				waited += 0.2
 			await get_tree().create_timer(0.5).timeout
+			if devbarricade:
+				await _dev_wait_barricade_mirror()
 			var before: int = int(_coop.call("dev_enemy_hp", 1))
 			if devhit:
 				_coop.call("dev_hit_enemy", 1, 30)
@@ -622,6 +629,9 @@ func _handle_dev_args() -> void:
 		print("[etn_coop] dev-drop state=%s" % str(_coop.call("dev_reconnect_state")))
 		await get_tree().create_timer(5.0).timeout
 		print("[etn_coop] dev-drop after state=%s" % str(_coop.call("dev_reconnect_state")))
+		if devbarricade:
+			# 重连后必须还能拿到 host 的壁垒快照，而不是停在断线前的旧 mirror。
+			await _dev_wait_barricade_mirror()
 	if devpause:
 		await get_tree().create_timer(1.0).timeout
 		_coop.call("dev_pause_probe")
@@ -1034,3 +1044,33 @@ func _handle_dev_args() -> void:
 		_coop.call("close_connection", true)
 	await get_tree().process_frame
 	get_tree().quit()
+
+## dev 测试入口：host 真实建一次壁垒，coop 走 walls_built/RPC；client 等到镜像后打印格数。
+func _dev_start_barricade() -> void:
+	var root := get_tree().get_first_node_in_group("FieldModRoot")
+	if root == null:
+		root = get_tree().current_scene
+	if root == null:
+		print("[etn_coop] dev-barricade host no FieldModRoot")
+		return
+	var scene := load("res://scenes/field_mods/barricade.tscn") as PackedScene
+	var chip := load("res://resources/game_mode/chip_barricade.tres") as GameMode
+	if scene == null or chip == null:
+		print("[etn_coop] dev-barricade host scene/chip missing")
+		return
+	var effect = scene.instantiate()
+	root.add_child(effect)
+	await effect.start(chip)
+	_coop.call("_attach_barricade_effect", effect)
+	var data: Dictionary = effect.get_wall_data()
+	print("[etn_coop] dev-barricade host cells=%d" % (data.get("cells", PackedVector2Array()) as PackedVector2Array).size())
+
+func _dev_wait_barricade_mirror() -> void:
+	for i in 20:
+		await get_tree().create_timer(0.5).timeout
+		var mirror = _coop.get("_barricade_mirror")
+		if mirror != null and is_instance_valid(mirror):
+			var data: Dictionary = mirror.get_wall_data()
+			print("[etn_coop] dev-barricade client cells=%d" % (data.get("cells", PackedVector2Array()) as PackedVector2Array).size())
+			return
+	print("[etn_coop] dev-barricade client mirror=null")

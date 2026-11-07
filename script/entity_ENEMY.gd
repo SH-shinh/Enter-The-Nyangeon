@@ -1,5 +1,6 @@
 extends CharacterBody2D
 class_name Enemy
+# parse-check ok
 
 const DEATH_ANIM_SCRIPT = preload("res://script/death_anim.gd")
 
@@ -82,6 +83,15 @@ enum AIMode { ADVANCE, HOLD, RETREAT }
 enum AIIntent { NONE, CHASE, RING, CUTOFF, RUSH, KITE, HOLD, REPOS, UNSTUCK }
 
 const AI_LOOKAHEAD := 28.0
+const AI_BODY_RADIUS := 14.0
+const AI_BODY_CLEAR_STEP := 7.0
+const AI_ATTACK_REACH := 30.0
+## 场进度比较的前探距离 / 侧步滞后时间
+const AI_FIELD_STEP := 32.0
+const AI_SIDE_COMMIT_MS := 180
+## 决策超过这个时间还没更新，且敌人已到旧锚点/槽位，就退回简单追踪，避免原地停住。
+const AI_DECISION_STALE_MS := 2000
+const AI_HOLD_RADIUS := 14.0
 const AI_LOS_SKIP := 40.0
 const AI_LOS_STEP := 24.0
 
@@ -94,6 +104,8 @@ var _ai_queue_pressure: float = 0.0
 var _ai_density_push: Vector2 = Vector2.ZERO
 var _ai_density_level: float = 0.0
 var _ai_wall_push: Vector2 = Vector2.ZERO
+var _ai_side_dir: Vector2 = Vector2.ZERO
+var _ai_side_until: int = 0
 # 以下由 EnemyAI 每 5Hz 求解后写入（意图 + 目标点极坐标）
 var _ai_intent: int = AIIntent.NONE
 var _ai_anchor: Vector2 = Vector2.ZERO # 极坐标原点（压迫=玩家锚点，前插=预判落点）
@@ -103,17 +115,36 @@ var _ai_target_radius: float = 0.0
 var _ai_dist_rank: int = 0
 var _ai_role_score: float = 0.0 # 最近一次角色适配分（调试用）
 var _ai_attack_slot: bool = false
+## 调试用：RING 层号（0/1/2，-1=溢出内圈，-2=前排，-3=前插，-4=未分配）
+var _ai_ring_index: int = -4
 var _ai_has_los: bool = true
 var _ai_flow_direct: bool = false # 求解器下发：直线到锚点可走 → 不用场流
+## 最近一次槽位/攻击锚点决策下发时间（用于过期后退回简单追踪）。
+var _ai_decision_ms: int = 0
+## 本敌最近一次 world_to_cell 缓存：同一位置/目标格在 body-clear/blend/side-step 里复用。
+var _cell_cache_pos: Vector2 = Vector2(INF, INF)
+var _cell_cache_cell: Vector2i = Vector2i(2147483647, 2147483647)
+var _ai_attack_unreachable: bool = false # 玩家不可达/安全孤岛：到攻击点后驻留，不绕外围
+var _ai_hold_pos: Vector2 = Vector2.ZERO
 var _ai_stuck_anchor: Vector2 = Vector2.ZERO
 # 视线缓存：地形不动，双方位移 <24px 时沿用上次判定（视线是全链路最贵的一项之一）
 var _ai_los_pos: Vector2 = Vector2.ZERO
 var _ai_los_anchor: Vector2 = Vector2.ZERO
+var _ai_los_target: Vector2 = Vector2.ZERO
 # 场流缓存：场是「按格分段常量」，同一格内重复采样纯浪费（ai_steer 每 tick 要采 2 次）
 var _ai_flow_cell: Vector2i = Vector2i(2147483647, 2147483647)
 var _ai_flow_epoch: int = -1
 var _ai_flow_target_id: int = 0
 var _ai_flow_vec: Vector2 = Vector2.ZERO
+var _ai_route_smooth: Vector2 = Vector2.ZERO
+var _ai_route_target_id: int = 0
+var _ai_route_locked: bool = false
+var _ai_route_lock_target_id: int = 0
+var _ai_route_lane: int = -1
+var _ai_route_lane_ms: int = 0
+var _ai_route_dir_epoch: int = -1
+var _ai_route_dir_cell: Vector2i = Vector2i(2147483647, 2147483647)
+var _ai_route_dir_vec: Vector2 = Vector2.ZERO
 # 是否在"战术分层"人数上限内（false = 只走纯场流，不占前排/环带/前插名额）
 var _ai_tactical: bool = true
 var _ai_stuck_count: int = 0
@@ -170,13 +201,19 @@ func _reset_ai_runtime() -> void:
 	_ai_dist_rank = 0
 	_ai_role_score = 0.0
 	_ai_attack_slot = false
+	_ai_ring_index = -4
 	_ai_has_los = true
 	_ai_flow_direct = false
+	_ai_decision_ms = 0
+	_ai_attack_unreachable = false
+	_ai_hold_pos = Vector2.ZERO
 	_ai_density_push = Vector2.ZERO
 	_ai_density_level = 0.0
 	_ai_queue_push = Vector2.ZERO
 	_ai_queue_pressure = 0.0
 	_ai_wall_push = Vector2.ZERO
+	_ai_side_dir = Vector2.ZERO
+	_ai_side_until = 0
 	_ai_stuck_count = 0
 	_ai_stuck_anchor = Vector2.ZERO
 	_ai_unstuck_ticks = 0
@@ -186,6 +223,15 @@ func _reset_ai_runtime() -> void:
 	_ai_flow_epoch = -1
 	_ai_flow_target_id = 0
 	_ai_flow_vec = Vector2.ZERO
+	_ai_route_smooth = Vector2.ZERO
+	_ai_route_target_id = 0
+	_ai_route_locked = false
+	_ai_route_lock_target_id = 0
+	_ai_route_lane = -1
+	_ai_route_lane_ms = 0
+	_ai_route_dir_epoch = -1
+	_ai_route_dir_cell = Vector2i(2147483647, 2147483647)
+	_ai_route_dir_vec = Vector2.ZERO
 	_ai_tactical = true
 
 func idle_state():
@@ -432,10 +478,46 @@ func ai_strafe_sign() -> float:
 	_ai_ensure_side()
 	return _ai_strafe_sign
 
+# 本敌最近一次 world_to_cell；同位置/同目标格在 body-clear/blend/side-step 里复用。
+func _cell_at(pos: Vector2) -> Vector2i:
+	if _cell_cache_pos.distance_squared_to(pos) < 4.0:
+		return _cell_cache_cell
+	_cell_cache_pos = pos
+	_cell_cache_cell = MapChunks.world_to_cell(pos)
+	return _cell_cache_cell
+
+# 身体宽度判定：前方中心 + 两侧都必须可过，避免侧身擦墙/斜缝。
+func _ai_dir_body_clear(position: Vector2, dir: Vector2) -> bool:
+	if dir.length_squared() < 0.0001:
+		return false
+	var probe := position + dir * AI_LOOKAHEAD
+	# 整段采样：只查终点时，薄墙后面正好是目标格/攻击距离会被豁免骗过，
+	# 结果就是黄色离墙力指向空地、品红最终转向却一头扎进墙里。
+	var steps := maxi(1, ceili(AI_LOOKAHEAD / maxf(1.0, AI_BODY_CLEAR_STEP)))
+	for i in range(1, steps + 1):
+		if EnemyNavField.is_solid(position + dir * (AI_LOOKAHEAD * float(i) / float(steps))):
+			return false
+	if EnemyNavField.is_solid(probe):
+		return false
+	# 玩家/目标所在格是 goal：贴墙时也允许敌人靠近到攻击距离，身体碰撞会阻止真正穿墙。
+	var target := get_target()
+	if target is Node2D:
+		var target_node := target as Node2D
+		var target_anchor := EnemyNavField.target_anchor(target_node)
+		var target_cell := _cell_at(target_anchor)
+		var probe_cell := _cell_at(probe)
+		if probe.distance_to(target_anchor) <= AI_ATTACK_REACH \
+				or probe_cell == target_cell:
+			return true
+	if not EnemyNavField.is_body_safe(probe, 1):
+		return false
+	var side := dir.orthogonal() * AI_BODY_RADIUS
+	return not EnemyNavField.is_solid(probe + side) and not EnemyNavField.is_solid(probe - side)
+
 # 前方探针被挡时按「尽量保持原意」的顺序找替代方向：
 # 先沿本体方向的左右，再沿流向的左右，最后才反向朝玩家走（避免远程后撤顶墙时反向扑人）。
 func _ai_avoid_blocked_ahead(position: Vector2, dir: Vector2, grad: Vector2) -> Vector2:
-	if not EnemyNavField.is_solid(position + dir * AI_LOOKAHEAD):
+	if _ai_dir_body_clear(position, dir):
 		return dir
 	var candidates: Array[Vector2] = []
 	if dir.length_squared() > 0.0001:
@@ -449,8 +531,23 @@ func _ai_avoid_blocked_ahead(position: Vector2, dir: Vector2, grad: Vector2) -> 
 		if candidate == Vector2.ZERO:
 			continue
 		var probe := candidate.normalized()
-		if not EnemyNavField.is_solid(position + probe * AI_LOOKAHEAD):
+		if _ai_dir_body_clear(position, probe):
 			return probe
+	# 所有有序候选都不行：扫一圈找身体可过且尽量保持原方向的方向。
+	var best := Vector2.ZERO
+	var best_score := -2.0
+	for i in 16:
+		var candidate := Vector2.from_angle(TAU * float(i) / 16.0)
+		if not _ai_dir_body_clear(position, candidate):
+			continue
+		var score := candidate.dot(dir)
+		if grad != Vector2.ZERO:
+			score += candidate.dot(grad) * 0.5
+		if score > best_score:
+			best_score = score
+			best = candidate
+	if best != Vector2.ZERO:
+		return best
 	return dir
 
 # ---------------- 意图 → 方向 ----------------
@@ -481,13 +578,23 @@ func _intent_weight(profile: EnemyAIProfile, intent: int, distance: float, radiu
 
 # 脱困：横向脱离（不改变径向意图，只保证离开卡住的位置）
 func _unstuck_steer(flow: Vector2) -> Vector2:
-	var dir := flow.orthogonal() * _ai_fan_side + flow * 0.2
-	if dir == Vector2.ZERO:
+	var left := flow.orthogonal() * _ai_fan_side
+	var right := -left
+	if _ai_dir_body_clear(global_position, left):
+		return (left + flow * 0.2).normalized()
+	if _ai_dir_body_clear(global_position, right):
+		return (right + flow * 0.2).normalized()
+	var safe := EnemyNavField.nearest_body_safe_point(global_position, 1)
+	var to_safe := safe - global_position
+	if to_safe.length_squared() > 0.0001:
+		return to_safe.normalized()
+	if flow == Vector2.ZERO:
 		return flow
-	return dir.normalized()
+	return flow
 
 # 统一合成：径向（靠近/驻留/后撤）+ 切向（归位到分配方位）+ 密度散开 + 反排队
-func _steer_intent(profile: EnemyAIProfile, target: Node2D, grad: Vector2, toward: Vector2, _mode: int, _standoff: float) -> Vector2:
+# project_strategy=true：只保留横向的垂直分量，墙推只保留不反向的安全分量（FIELD_STRATEGY 用）。
+func _steer_intent(profile: EnemyAIProfile, target: Node2D, grad: Vector2, toward: Vector2, _mode: int, _standoff: float, project_strategy: bool = false) -> Vector2:
 	var flow := grad if grad != Vector2.ZERO else toward
 	if flow == Vector2.ZERO:
 		return flow
@@ -556,15 +663,58 @@ func _steer_intent(profile: EnemyAIProfile, target: Node2D, grad: Vector2, towar
 			lateral += _ai_queue_push * profile.separation_strength
 	if lateral.length() > EnemyAI.LATERAL_CAP:
 		lateral = lateral.normalized() * EnemyAI.LATERAL_CAP
+	if project_strategy:
+		lateral = _project_perp(lateral, flow)
 	var dir: Vector2 = flow * radial + lateral
 	# 离墙力必须在「驻留判零」之前：贴墙敌人不能因为 radial≈0 就停在墙上（安全项，不参与横向预算）
 	if ai_formation_allowed() and _ai_wall_push != Vector2.ZERO:
-		dir += _ai_wall_push * EnemyAI.WALL_PUSH_WEIGHT
+		var wall_push := _ai_wall_push * EnemyAI.WALL_PUSH_WEIGHT
+		if project_strategy:
+			# 不允许离墙力把场方向反推回去；只保留垂直/同向分量。
+			wall_push = _wall_safe_push(wall_push, flow)
+		dir += wall_push
 	# 已经停在目标半径且方位对齐 → 驻留（返回零向量让 move() 减速停下）。
 	# 不能返回 flow，否则会继续贴上去；也不能让近零向量进归一化，否则方向会被放大成噪声。
 	if dir.length_squared() < 0.0004:
 		return Vector2.ZERO
 	return dir
+
+# 把策略横向修正投影到场方向的垂直平面：只改变“贴哪边”，不改变“往哪走”。
+static func _project_perp(value: Vector2, forward: Vector2) -> Vector2:
+	if forward.length_squared() < 0.000001:
+		return value
+	var f := forward.normalized()
+	return value - f * value.dot(f)
+
+# 离墙力只保留不反向的分量：垂直分量让身体滑开，沿场的正向分量可保留，反向分量丢弃。
+static func _wall_safe_push(value: Vector2, forward: Vector2) -> Vector2:
+	if forward.length_squared() < 0.000001:
+		return value
+	var f := forward.normalized()
+	var along := value.dot(f)
+	if along < 0.0:
+		value -= f * along
+	return value
+
+func _update_route_lock(target: Node2D, toward: Vector2, distance: float) -> bool:
+	var target_id := target.get_instance_id() if is_instance_valid(target) else 0
+	if _ai_route_lock_target_id != target_id:
+		_ai_route_lock_target_id = target_id
+		_ai_route_locked = false
+	if _ai_route_locked:
+		if distance > EnemyAI.PLAYER_UNLOCK_RANGE:
+			_ai_route_locked = false
+	elif distance <= EnemyAI.PLAYER_LOCK_RANGE or _ai_dir_body_clear(global_position, toward):
+		_ai_route_locked = true
+	return _ai_route_locked
+
+func _at_decision_anchor(position: Vector2) -> bool:
+	var anchor := _ai_anchor
+	if anchor == Vector2.ZERO:
+		anchor = _ai_hold_pos
+	if anchor == Vector2.ZERO:
+		return false
+	return position.distance_to(anchor) <= maxf(_ai_target_radius, 0.0) + AI_ATTACK_REACH
 
 func ai_steer(base_dir: Vector2, _mode: int, _standoff: float = -1.0) -> Vector2:
 	if base_dir == Vector2.ZERO:
@@ -586,18 +736,86 @@ func ai_steer(base_dir: Vector2, _mode: int, _standoff: float = -1.0) -> Vector2
 	EnemyAI.ensure_solved(target, lead)
 	var has_field := EnemyNavField.is_ready(target)
 	var position := global_position
-	var to_target := target.global_position - position
+	var target_anchor := EnemyNavField.target_anchor(target)
+	var to_target := target_anchor - position
 	var distance := to_target.length()
 	if distance < 0.001:
 		return base_dir
 	var toward := to_target / distance
-	var grad := Vector2.ZERO
+	# 决策过期且已到旧锚点/槽位：不要原地驻留，退回简单追踪（直连/场 sample）。
+	if _ai_slot_valid and _ai_decision_ms > 0 \
+			and Time.get_ticks_msec() - _ai_decision_ms > AI_DECISION_STALE_MS \
+			and _at_decision_anchor(position):
+		var simple := base_dir
+		if has_field:
+			var field_simple := EnemyAI._smooth_field_flow(position, target, toward)
+			if field_simple != Vector2.ZERO:
+				simple = field_simple
+		return simple if simple != Vector2.ZERO else toward
+	# 只对压到 attack 点附近的压制/前插单位驻留；RING/queue 不触发，
+	# 否则环带槽位到 hold 点的距离≈target_radius，会把整圈 RING 冻住。
+	if _ai_attack_unreachable and _ai_hold_pos != Vector2.ZERO:
+		var pressing := _ai_attack_slot \
+			or _ai_intent == AIIntent.CHASE \
+			or _ai_intent == AIIntent.CUTOFF \
+			or _ai_intent == AIIntent.RUSH
+		if pressing and position.distance_to(_ai_hold_pos) <= AI_ATTACK_REACH + 8.0:
+			return Vector2.ZERO
+	if EnemyNavField.simple_field_mode:
+		# 极简：只沿 field 走，不做局部避障；碰撞负责挡墙。
+		var simple_grad := EnemyNavField.sample(position, target)
+		return simple_grad if simple_grad != Vector2.ZERO else toward
+	# 场是主方向；FIELD_STRATEGY 只在场的约束下叠加阵型/密度/队列/墙推。
+	var field_dir := Vector2.ZERO
 	if has_field:
+		field_dir = EnemyAI._smooth_field_flow(position, target, toward)
+		if field_dir == Vector2.ZERO:
+			field_dir = toward
+	if EnemyNavField.move_mode == EnemyNavField.MoveMode.PURE_FIELD:
+		return field_dir if field_dir != Vector2.ZERO else toward
+	if EnemyNavField.move_mode == EnemyNavField.MoveMode.FIELD_STRATEGY \
+			and has_field and ai_profile != null:
+		# 战术层外（TACTICAL_LIMIT 排序之外）的敌人只走纯场，不再跑阵型/槽位/避障校验。
+		if not _ai_tactical:
+			return field_dir if field_dir != Vector2.ZERO else toward
+		return _ai_steer_field_strategy(base_dir, target, position, toward, field_dir, _mode, _standoff)
+	# 以下为 LEGACY：flow + 阵型 + 密度 + 墙推 + 局部避障；无 profile 的单位也保持旧行为。
+	var grad := Vector2.ZERO
+	if EnemyAI.local_route_mode:
+		# 路线平滑：方向按 route_epoch + 格缓存，避免每帧遍历整条 route。
+		var route_dir := Vector2.ZERO
+		var route_cell := _cell_at(position)
+		if _ai_route_dir_epoch == EnemyAI.route_epoch \
+				and _ai_route_dir_cell == route_cell \
+				and _ai_route_dir_vec != Vector2.ZERO:
+			route_dir = _ai_route_dir_vec
+		else:
+			route_dir = EnemyAI.route_direction(target, position)
+			_ai_route_dir_epoch = EnemyAI.route_epoch
+			_ai_route_dir_cell = route_cell
+			_ai_route_dir_vec = route_dir
+		var locked := _update_route_lock(target, toward, distance)
+		var desired := toward if locked or route_dir == Vector2.ZERO else route_dir
+		if _ai_route_smooth.length_squared() > 0.0001 and desired.length_squared() > 0.0001:
+			if absf(_ai_route_smooth.angle_to(desired)) < deg_to_rad(EnemyAI.ROUTE_DEADBAND_DEG):
+				desired = _ai_route_smooth.normalized()
+		var route_target_id := target.get_instance_id()
+		if _ai_route_target_id != route_target_id:
+			_ai_route_target_id = route_target_id
+			_ai_route_smooth = desired
+		else:
+			var blend := 1.0 - exp(-EnemyAI.ROUTE_SMOOTH_RATE * get_process_delta_time())
+			_ai_route_smooth = _ai_route_smooth.lerp(desired, blend)
+		grad = _ai_route_smooth.normalized() if _ai_route_smooth.length_squared() > 0.0001 else toward
+	elif has_field:
 		if _ai_flow_direct:
-			grad = toward  # 直线可走：不走格子流，避免等距格的对角锯齿
+			# 直线可走：走求解器下发的阵型/攻击锚点，而不是无条件朝玩家（安全孤岛时锚点在外围）
+			var direct_target: Vector2 = _ai_anchor if _ai_anchor != Vector2.ZERO else target.global_position
+			var direct_vec := direct_target - position
+			grad = direct_vec.normalized() if direct_vec.length_squared() > 0.0001 else toward
 		else:
 			# 场是「按格分段常量」：同一格 + 同一场版本 + 同一目标时直接复用上次结果
-			var flow_cell := MapChunks.world_to_cell(position)
+			var flow_cell := _cell_at(position)
 			var target_id := target.get_instance_id()
 			if _ai_flow_epoch == EnemyNavField.epoch and _ai_flow_cell == flow_cell \
 					and _ai_flow_target_id == target_id:
@@ -632,6 +850,109 @@ func ai_steer(base_dir: Vector2, _mode: int, _standoff: float = -1.0) -> Vector2
 	if not (is_finite(dir.x) and is_finite(dir.y)):
 		return base_dir
 	return dir
+
+# ---------------- FIELD_STRATEGY：场负责路径，策略只做受约束的横向/安全修正 ----------------
+
+func _ai_steer_field_strategy(base_dir: Vector2, target: Node2D, position: Vector2,
+		toward: Vector2, field_dir: Vector2, mode: int, standoff: float) -> Vector2:
+	if field_dir.length_squared() < 0.000001:
+		return toward
+	if ai_profile == null:
+		return base_dir
+	var dir: Vector2 = _steer_intent(ai_profile, target, field_dir, toward, mode, standoff, true)
+	if dir.length_squared() < 0.000001:
+		return Vector2.ZERO  # 驻留
+	dir = dir.normalized()
+	dir = _field_blend_direct(dir, position, target, field_dir, toward)
+	# 正上/正下等直线可走、场在等距格上斜走的场景：直接按“朝玩家”修正，不再用场进度拉回斜向。
+	var direct_mode := field_dir.dot(toward) < 0.5 and _ai_dir_body_clear(position, toward)
+	# 最终方向必须身体可过；身体能过场方向就退回场，否则用场的相邻格侧步。
+	if not _ai_dir_body_clear(position, dir):
+		if _ai_dir_body_clear(position, field_dir):
+			dir = field_dir
+		else:
+			var side := _field_side_step(position, target)
+			dir = side if side != Vector2.ZERO else field_dir
+	elif not direct_mode and _field_progress_worse(position, target, dir, field_dir) \
+			and _ai_dir_body_clear(position, field_dir):
+		# 策略合成的方向让 dist 明显变高：以场为准，避免“避障去高格、场拉回低格”。
+		dir = field_dir
+	if dir.length_squared() < 0.000001:
+		return field_dir
+	if not (is_finite(dir.x) and is_finite(dir.y)):
+		return field_dir
+	return dir
+
+
+func _field_blend_direct(dir: Vector2, position: Vector2, target: Node2D,
+		field_dir: Vector2, toward: Vector2) -> Vector2:
+	if target == null or toward.length_squared() < 0.000001:
+		return dir
+	# 直线的“目标方向”就是玩家方向；不能用 attack anchor，否则锚点偏到槽位时会把敌人带进墙。
+	var direct := toward
+	if not _ai_dir_body_clear(position, direct):
+		return dir
+	var far_direct := field_dir.dot(direct) < 0.5
+	var ahead_direct := _field_dist_ahead(position, target, direct)
+	var ahead_field := _field_dist_ahead(position, target, field_dir)
+	if not far_direct and ahead_direct > ahead_field + 0.6:
+		return dir
+	# 场方向与直线目标差很多（正上/正下/正左/正右的等距格流会斜着走）时，直线修正权重加大；
+	# 否则只做轻微混合，保持场绕墙的路径。far_direct 时直线已通过身体判定的整段采样。
+	var w := 0.95 if far_direct else 0.35
+	var blended := dir * (1.0 - w) + direct * w
+	return blended.normalized() if blended.length_squared() > 0.0001 else dir
+
+
+func _field_dist_ahead(position: Vector2, target: Node2D, dir: Vector2) -> float:
+	if dir.length_squared() < 0.000001:
+		return INF
+	return EnemyNavField.dist(position + dir.normalized() * AI_FIELD_STEP, target)
+
+
+## 只在接近类意图（CHASE/CUTOFF/RUSH）上要求 dist 单调下降；RING/HOLD/KITE/REPOS 允许驻留/绕圈/后退。
+func _field_progress_worse(position: Vector2, target: Node2D, dir: Vector2, field_dir: Vector2) -> bool:
+	if _ai_intent != AIIntent.CHASE and _ai_intent != AIIntent.CUTOFF and _ai_intent != AIIntent.RUSH:
+		return false
+	var ahead_dir := _field_dist_ahead(position, target, dir)
+	var ahead_field := _field_dist_ahead(position, target, field_dir)
+	if ahead_field >= INF:
+		return false
+	if ahead_dir >= INF:
+		return true
+	return ahead_dir > ahead_field + 0.6
+
+
+## 场侧步：只在场的相邻格里选身体可过、dist 更低/不升高的方向；带 180ms 滞后，避免 7/8/10/11 两格翻转。
+func _field_side_step(position: Vector2, target: Node2D) -> Vector2:
+	var now := Time.get_ticks_msec()
+	if _ai_side_dir != Vector2.ZERO and now < _ai_side_until \
+			and _ai_dir_body_clear(position, _ai_side_dir):
+		return _ai_side_dir
+	var current := EnemyNavField.dist(position, target)
+	var cell := _cell_at(position)
+	var best := Vector2.ZERO
+	var best_dist := current + 0.1
+	for off in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1),
+			Vector2i(1, 1), Vector2i(1, -1), Vector2i(-1, 1), Vector2i(-1, -1)]:
+		var neighbor: Vector2i = cell + off
+		var world: Vector2 = MapChunks.get_cell_world(neighbor)
+		var dir := world - position
+		if dir.length_squared() < 0.0001:
+			continue
+		dir = dir.normalized()
+		if not _ai_dir_body_clear(position, dir):
+			continue
+		var d := EnemyNavField.dist(world, target)
+		if d < best_dist:
+			best_dist = d
+			best = dir
+	if best == Vector2.ZERO:
+		_ai_side_dir = Vector2.ZERO
+		return Vector2.ZERO
+	_ai_side_dir = best
+	_ai_side_until = now + AI_SIDE_COMMIT_MS
+	return best
 
 # 冲撞发起前的一次性通路判定：无场 / 非玩家目标 / 极近距离一律放行（旧行为）。
 func ai_charge_path_clear(target: Node2D) -> bool:

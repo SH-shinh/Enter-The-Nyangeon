@@ -133,7 +133,7 @@ func boss_spawn():
 func enemy_spawn():
 	var ran = RandomNumberGenerator.new()
 	var cells: Array = tilemap.get_used_cells(0)
-	var cell_count: int = cells.size()
+	var nav_ready := EnemyNavField.ensure_topology()
 	for i in enemy.size():
 		if enemy_spawn_time_copy[i] <= 0:
 			for n in floor(enemy_spawn_num[i] + (time_mult * time_mult * num_mult)) * round_mult:
@@ -146,27 +146,46 @@ func enemy_spawn():
 				if not PoolManager.try_claim_spawn(enemy_temp.id):
 					break
 				
-				var rand_position_num = ran.randi_range(0, cell_count) - 1
-				var rand_position = tilemap.map_to_local(cells[rand_position_num])
-				
 				var p := _ensure_player()
-				if p != null:
-					while rand_position.distance_to(p.position) < 170:
-						rand_position_num = ran.randi_range(0, cell_count) - 1
-						rand_position = tilemap.map_to_local(cells[rand_position_num])
+				var spawn_position := _pick_safe_spawn_position(ran, p, cells, nav_ready)
+				if not spawn_position.is_finite():
+					# 找不到不与障碍冲突的位置：释放预占，等下一次生成时机，绝不塞进墙里。
+					PoolManager.release_spawn_claim(enemy_temp.id)
+					break
 				
 				var spawn_anim = PoolManager.get_pool("spawn_anim")
 				if spawn_anim == null or spawn_anim.is_idle == 0:
 					spawn_anim = enemy_spawn_anim.instantiate()
 					get_tree().get_first_node_in_group("EnemiesRoot").add_child(spawn_anim)
 				
-				spawn_anim.position = rand_position
+				spawn_anim.position = spawn_position
 				spawn_anim.hp_mult = hp_mult
 				spawn_anim.damage_mult = damage_mult
 				spawn_anim.active_state()
 				spawn_anim.enemy_spawn_anim(enemy_temp)
 				GameEvents.emit_enemy_spawn()
 			enemy_spawn_time_copy[i] = enemy_spawn_time[i] * mode_mult
+
+
+func _pick_safe_spawn_position(ran: RandomNumberGenerator, p: Node, cells: Array, nav_ready: bool) -> Vector2:
+	var cell_count := cells.size()
+	if cell_count <= 0:
+		return Vector2(INF, INF)
+	var last := Vector2.ZERO
+	for attempt in 16:
+		var idx := ran.randi_range(0, cell_count - 1)
+		var pos: Vector2 = tilemap.map_to_local(cells[idx])
+		last = pos
+		if p != null and pos.distance_to(p.position) < 170.0:
+			continue
+		if nav_ready and not EnemyNavField.is_body_safe(pos, 1):
+			continue
+		return pos
+	if nav_ready:
+		var safe := EnemyNavField.nearest_body_safe_point(last, 1)
+		if safe.is_finite() and (p == null or safe.distance_to(p.position) >= 170.0):
+			return safe
+	return Vector2(INF, INF)
 
 func _on_enemy_spawn_cd_time_timeout():
 	if can_spawn == false:

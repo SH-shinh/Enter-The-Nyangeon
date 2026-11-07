@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="GameMode" load_steps=4 format=3]
+
+[ext_resource type="Texture2D" path="res://sprites/buff_icon/barricade.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/game_mode/game_mode.gd" id="2_script"]
+[ext_resource type="PackedScene" path="res://scenes/field_mods/barricade.tscn" id="3_scene"]
+
+[resource]
+script = ExtResource("2_script")
+game_mode_name = "chip_barricade"
+game_mode_id = "chip_barricade"
+game_mode_icon = ExtResource("1_icon")
+chip_enabled = true
+chip_kind = 1
+chip_weight = 1.0
+chip_include_boss = false
+chip_field_scene = ExtResource("3_scene")

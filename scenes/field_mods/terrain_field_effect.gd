@@ -25,6 +25,9 @@ extends FieldModEffect
 @export_group("Movement blocking")
 ## 勾选后这些格子会注册进 EnemyNavField，敌人 AI 会绕行（默认关闭 → 现有词条零变化）。
 @export var blocks_movement: bool = false
+## true = 阻挡格由场景里的 NavObstacle TileMapLayer 直接生成，不再走 add_block。
+## 适用于壁垒这种“视觉/碰撞都是 TileMapLayer”的场地；tilemap cells 变化后由 on_start/on_stop invalidate。
+@export var nav_use_obstacle_tilemap: bool = false
 ## 只对 blocks_movement 生效：避开场地中央的 Boss 刷新锚点（塔/Goliath 没有寻路，不能被围死）。
 @export var avoid_center_radius: float = 240.0
 
@@ -56,7 +59,7 @@ func on_start() -> void:
 	chunks = _pick_terrain_chunks()
 	if blocks_movement and not chunks.is_empty():
 		# 阻挡类词条必须保证不会把可行走区域封死（Boss / 刷怪 portal 都要留着通路）。
-		chunks = _filter_connected_chunks(chunks)
+		chunks.assign(_filter_connected_chunks(chunks))
 	if chunks.is_empty():
 		push_warning("TerrainFieldEffect: no eligible chunks")
 		finish()
@@ -66,19 +69,28 @@ func on_start() -> void:
 	for chunk in chunks:
 		for cell in chunk.cells:
 			_cells[cell] = true
-	if blocks_movement:
+	if blocks_movement and not nav_use_obstacle_tilemap:
 		EnemyNavField.add_block(_reserved_source_id, get_terrain_cells())
 	_build_overlay()
+	# tilemap 模式：cells 刚由 _build_overlay() 填好，失效一次让下次查询重新扫描 NavObstacle。
+	if blocks_movement and nav_use_obstacle_tilemap:
+		EnemyNavField.invalidate()
 	_tick_count = 0
 	on_terrain_start()
 
 func on_stop() -> void:
 	on_terrain_stop()
-	if _reserved_source_id != "":
+	if _reserved_source_id != "" and not nav_use_obstacle_tilemap:
 		EnemyNavField.remove_block(_reserved_source_id)
 	if _overlay != null and is_instance_valid(_overlay):
+		# 先脱离 NavObstacle 组，避免 queue_free 延迟期间场重建仍扫到旧墙。
+		if blocks_movement and nav_use_obstacle_tilemap:
+			_overlay.remove_from_group(EnemyNavField.OBSTACLE_GROUP)
 		_overlay.queue_free()
 	_overlay = null
+	if blocks_movement and nav_use_obstacle_tilemap:
+		# 层释放后再失效，下一次查询不会把已删除的障碍 tilemap 算进去。
+		EnemyNavField.invalidate()
 	if _reserved_source_id != "" and not allow_overlap:
 		MapChunks.release_cells(_reserved_source_id)
 	_reserved_source_id = ""

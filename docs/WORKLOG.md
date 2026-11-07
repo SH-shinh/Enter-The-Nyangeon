@@ -386,3 +386,8 @@
 - Systems / 影响系统: 渲染（2D 屏幕叠加）、设置菜单 GAME 页、`user://config.ini`、本地化。
 - Docs synced / 文档同步: `docs/ARCHITECTURE.md` §1（autoload #16 / config / 移动端隐藏）、`docs/CONVENTIONS.md` §7（着色器计数与屏幕纹理约定）、`docs/PROJECT_MAP.md`（CRT 条目）、`docs/LEARNINGS.md`（两条）。
 - Verified / 验证: 开关切换即时生效并写入 `config.ini`；重启后自动恢复；滤镜开启前后平均亮度比 ≈1.009；`python tests/check_localization.py` 5/5 PASS；`python tests/run_ui_ux_checks.py --godot <Godot路径> --settings-only` 23 项 0 失败。
+## Correction: Random 独立层/第三模式 → Core/Optional 随机贴图标记（2026-11-06）
+- 原结论: 壁垒模板工具把 Random 作为第三种放置层/模式，独立 `RandomEdit` 与模板 `Random` 层，Random 格必放、运行时随机外观。
+- 新结论: 用户澄清“随机”是让墙体贴图随机，本质仍是 Core 一类；放置仍只由 Core（必放）/Optional（按概率保留）决定，随机是 Core/Optional 内的 `source_id=1` 随机贴图标记（第一墙体绿色纹理），运行时才随机取 0~3 变体。
+- 原因: 用户 2026-11-06 明确 Random 不是独立放置类型，而是贴图随机；旧独立 Random 层仅兼容/迁移。
+- 影响: `barricade_tileset.tres` 新增 source 1 + `tile_wall_random.png`；模板工具去掉 Random 模式/层，调色板改为 4 变体 + 随机贴图；`barricade.gd` 读取 source 1 标记并随机外观；旧 Random 层兼容迁移。

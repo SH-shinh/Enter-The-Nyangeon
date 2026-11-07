@@ -197,3 +197,5 @@ chip_sonic_id,索尼克,SONIC,SONIC,SONIC
 chip_sonic_description,"受到伤害会丢失部分金币，失去的金币会爆出并重新掉落在场上。","Taking damage makes you lose some coins. The lost coins burst out and drop back onto the field.","Ao sofrer dano, você perde algumas moedas. As moedas perdidas explodem e caem novamente no campo.","Khi bị đánh trúng, bạn mất một phần xu. Số xu đã mất sẽ văng ra và rơi trở lại chiến trường."
 chip_easy_fall_id,易跌倒,EASY FALL,QUEDA FÁCIL,DỄ VẤP NGÃ
 chip_easy_fall_description,"受到伤害后不再有无敌时间。","No invulnerability time after taking damage.","Sem tempo de invulnerabilidade após sofrer dano.","Không còn thời gian bất tử sau khi bị đánh."
+chip_barricade_id,壁垒,BARRICADE,BARRICADA,LŨY CHẮN
+chip_barricade_description,"场地中随机出现墙体障碍，阻挡移动与子弹；障碍按墙体计算。","Wall obstacles appear randomly across the field, blocking movement and bullets; they count as walls.","Obstáculos de parede aparecem aleatoriamente pelo campo, bloqueando movimento e balas; contam como paredes.","Chướng ngại vật bằng tường xuất hiện ngẫu nhiên trên chiến trường, chặn di chuyển và đạn; được tính là tường."

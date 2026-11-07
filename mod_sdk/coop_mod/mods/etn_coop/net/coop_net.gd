@@ -714,6 +714,10 @@ var _field_effect: Node = null
 var _field_client_effect: Node = null
 var _orbital_effect: Node = null
 var _orbital_client_effect: Node = null
+## 壁垒：host 侧效果 + 客机镜像；walls_built 变更时全量重发，保证拆墙/清墙一致。
+var _barricade_effect: Node = null
+var _barricade_mirror: Node = null
+var _barricade_walls_cache: Dictionary = {}
 
 # ---------------- 网络诊断（HUD 用，对齐联机版） ----------------
 const NET_DIAG_INTERVAL: float = 0.5
@@ -896,6 +900,9 @@ func _ready() -> void:
 	multiplayer.connected_to_server.connect(_on_connected_to_server)
 	multiplayer.connection_failed.connect(_on_connection_failed)
 	multiplayer.server_disconnected.connect(_on_server_disconnected)
+	# 壁垒客机拦截必须在 FieldModManager 启动词条之前就位；_gate_field_spawn 自己判 host/client。
+	if not ExtensionHooks.field_mod_spawn_gate.is_valid():
+		ExtensionHooks.field_mod_spawn_gate = Callable(self, "_gate_field_spawn")
 
 
 # 退出/关窗/被释放时确保关闭 ENet/中继，尽量释放端口
@@ -1363,6 +1370,7 @@ func _accept_peer(id: int) -> void:
 		_send_chip_state_to_peer(id)
 		_send_field_state_to_peer(id)
 		_send_orbital_state_to_peer(id)
+		_send_barricade_state_to_peer(id)
 
 
 @rpc("authority", "call_remote", "reliable")
@@ -1849,6 +1857,8 @@ func _finish_reconnect() -> void:
 	_show_reconnect_overlay(false)
 	_freeze_local_player_for_reconnect(false)
 	_refresh_local_peer_identity()
+	# 重连握手可能发生在旧场景或旧墙集上；先清 mirror，等 host 的快照/stop 重建。
+	_clear_barricade_mirror()
 	_last_sent_coin_multiplier = -1.0
 	if _round_upgrade_hold and _round_upgrade_cover_ready:
 		_report_round_upgrade_ready()
@@ -2503,6 +2513,9 @@ func _bind_field_sync() -> void:
 			call_deferred("_bind_field_sync")
 		return
 	_field_bind_retries = 0
+	# 客机不本地生成壁垒：由 host 的 RPC 下发墙格/变体，避免两端各掷一套随机墙。
+	if not ExtensionHooks.field_mod_spawn_gate.is_valid():
+		ExtensionHooks.field_mod_spawn_gate = Callable(self, "_gate_field_spawn")
 	if _field_manager.has_signal("field_mod_started"):
 		var started_cb := Callable(self, "_on_field_mod_started")
 		if not _field_manager.field_mod_started.is_connected(started_cb):
@@ -2514,6 +2527,7 @@ func _bind_field_sync() -> void:
 	if _field_manager.has_method("get_active_effects"):
 		for effect in _field_manager.call("get_active_effects"):
 			_attach_field_effect(effect)
+			_attach_barricade_effect(effect)
 	if FIELD_NET_DEBUG:
 		print("[etn_coop][field] bind manager=%s" % str(_field_manager.name))
 
@@ -2522,6 +2536,18 @@ func _on_field_mod_started(_chip, effect) -> void:
 		return
 	_attach_field_effect(effect)
 	_attach_orbital_effect(effect)
+	_attach_barricade_effect(effect)
+
+## 客机本地拦截壁垒场：host 才是唯一生成源，客机等 _remote_barricade_walls。
+func _gate_field_spawn(chip) -> bool:
+	if not is_lan_game or multiplayer.is_server():
+		return false
+	if chip == null:
+		return false
+	var scene: PackedScene = chip.chip_field_scene
+	if scene == null:
+		return false
+	return String(scene.resource_path).contains("barricade")
 
 func _attach_field_effect(effect) -> void:
 	if effect == null or not is_instance_valid(effect) or not effect.has_signal("wave_started"):
@@ -2562,23 +2588,112 @@ func _attach_orbital_effect(effect) -> void:
 	if effect.has_signal("strike_wave_ended") and not effect.strike_wave_ended.is_connected(ended_cb):
 		effect.strike_wave_ended.connect(ended_cb)
 
+func _attach_barricade_effect(effect) -> void:
+	if effect == null or not is_instance_valid(effect):
+		return
+	if not (effect is BarricadeEffect):
+		return
+	if FIELD_NET_DEBUG:
+		print("[etn_coop][barricade] attach lan=%s server=%s" % [str(is_lan_game), str(multiplayer.is_server())])
+	_barricade_effect = effect
+	var built_cb := Callable(self, "_on_host_barricade_walls")
+	if effect.has_signal("walls_built") and not effect.walls_built.is_connected(built_cb):
+		effect.walls_built.connect(built_cb)
+	# on_start() 在 field_mod_started 之前就建完墙，signal 已经错过；这里补发首帧全量。
+	if is_lan_game and multiplayer.is_server():
+		var data: Dictionary = effect.get_wall_data()
+		_on_host_barricade_walls(data.get("cells", PackedVector2Array()), data.get("variants", PackedByteArray()))
+
+func _on_host_barricade_walls(cells: PackedVector2Array, variants: PackedByteArray) -> void:
+	if not is_lan_game or not multiplayer.is_server():
+		return
+	if _barricade_effect == null or not is_instance_valid(_barricade_effect):
+		return
+	_barricade_walls_cache = {"cells": cells, "variants": variants}
+	# Boss 清墙会再次 emit walls_built；全量重发让客机直接替换，不做增量对齐。
+	if FIELD_NET_DEBUG:
+		print("[etn_coop][barricade] host send cells=%d peers=%s" % [cells.size(), str(multiplayer.get_peers())])
+	rpc("_remote_barricade_walls", cells, variants)
+
+@rpc("authority", "call_remote", "reliable")
+func _remote_barricade_walls(cells: PackedVector2Array, variants: PackedByteArray) -> void:
+	if multiplayer.is_server():
+		return
+	if FIELD_NET_DEBUG:
+		print("[etn_coop][barricade] client recv cells=%d" % cells.size())
+	_ensure_barricade_mirror()
+	if _barricade_mirror != null and is_instance_valid(_barricade_mirror):
+		_barricade_mirror.apply_network_walls(cells, variants)
+
+func _clear_barricade_mirror(fade_out: bool = false) -> void:
+	if _barricade_mirror != null and is_instance_valid(_barricade_mirror):
+		# 只有 host 主动 stop 才走淡出；重连/回合边界直接释放，避免旧墙残影压在新快照上。
+		if fade_out and _barricade_mirror.has_method("stop"):
+			_barricade_mirror.stop()
+		_barricade_mirror.queue_free()
+	_barricade_mirror = null
+
+@rpc("authority", "call_remote", "reliable")
+func _remote_barricade_stop() -> void:
+	if multiplayer.is_server():
+		return
+	_clear_barricade_mirror(true)
+
+func _ensure_barricade_mirror() -> void:
+	if _barricade_mirror != null and is_instance_valid(_barricade_mirror):
+		return
+	# 兜底：若客机在 gate 就位前已本地生成过壁垒，先停掉，避免 host 镜像 + 本地墙两套。
+	var manager = _field_manager
+	if manager == null or not is_instance_valid(manager):
+		manager = get_tree().get_first_node_in_group("FieldModManager")
+	if manager != null and manager.has_method("get_active_effects"):
+		for e in manager.call("get_active_effects"):
+			if e is BarricadeEffect:
+				if e.has_method("stop"):
+					e.call("stop")
+				e.queue_free()
+	var scene := load("res://scenes/field_mods/barricade.tscn") as PackedScene
+	if scene == null:
+		push_warning("[etn_coop][field] barricade scene missing")
+		return
+	_barricade_mirror = scene.instantiate()
+	if _barricade_mirror == null:
+		return
+	_barricade_mirror.name = "FieldMod_BarricadeRemote"
+	var root := get_tree().get_first_node_in_group("FieldModRoot")
+	if root == null:
+		root = get_tree().current_scene
+	if root == null:
+		_barricade_mirror.queue_free()
+		_barricade_mirror = null
+		return
+	root.add_child(_barricade_mirror)
+	if FIELD_NET_DEBUG:
+		print("[etn_coop][barricade] client mirror root=%s" % str(root.name))
+
 func _on_field_mod_stopped(_chip, effect) -> void:
 	var was_field: bool = effect != null and effect == _field_effect
 	var was_orbital: bool = effect != null and effect == _orbital_effect
-	if not was_field and not was_orbital:
+	var was_barricade: bool = effect != null and effect == _barricade_effect
+	if not was_field and not was_orbital and not was_barricade:
 		return
 	if was_field:
 		_field_effect = null
 	if was_orbital:
 		_orbital_effect = null
+	if was_barricade:
+		_barricade_effect = null
 	if FIELD_NET_DEBUG:
-		print("[etn_coop][field] detach effect=%s orbital=%s" % [str(effect), was_orbital])
+		print("[etn_coop][field] detach effect=%s orbital=%s barricade=%s" % [str(effect), was_orbital, was_barricade])
 	if not is_lan_game or not multiplayer.is_server():
 		return
 	if was_field:
 		rpc("_remote_field_stop")
 	if was_orbital:
 		rpc("_remote_orbital_clear")
+	if was_barricade:
+		_barricade_walls_cache.clear()
+		rpc("_remote_barricade_stop")
 
 func _on_host_field_wave(cells: PackedVector2Array, fog_points: PackedVector2Array) -> void:
 	if not is_lan_game or not multiplayer.is_server():
@@ -2777,6 +2892,25 @@ func _send_field_state_to_peer(peer_id: int) -> void:
 	if FIELD_NET_DEBUG:
 		print("[etn_coop][field] send state peer=%d phase=%d" % [peer_id, int(state["phase"])])
 	rpc_id(peer_id, "_remote_field_wave", state["cells"], state["points"], int(state["phase"]), int(state["phase_ticks"]))
+
+func _send_barricade_state_to_peer(peer_id: int) -> void:
+	if not is_lan_game or not multiplayer.is_server():
+		return
+	if not _peer_online(peer_id):
+		return
+	var data: Dictionary = _barricade_walls_cache
+	# 重连可能发生在首帧 walls_built 之前，或 cache 已被回合边界清掉；此时读现场。
+	if data.is_empty() and _barricade_effect != null and is_instance_valid(_barricade_effect):
+		if _barricade_effect.has_method("get_wall_data"):
+			var live: Variant = _barricade_effect.call("get_wall_data")
+			if live is Dictionary:
+				data = live
+	var cells: PackedVector2Array = data.get("cells", PackedVector2Array())
+	if cells.is_empty():
+		# 客机断线期间壁垒已结束：必须显式 stop，否则客机会一直留着旧 mirror。
+		rpc_id(peer_id, "_remote_barricade_stop")
+		return
+	rpc_id(peer_id, "_remote_barricade_walls", cells, data.get("variants", PackedByteArray()))
 
 @rpc("authority", "call_remote", "reliable")
 func _remote_field_wave(cells: PackedVector2Array, fog_points: PackedVector2Array, phase: int, phase_ticks: int) -> void:
@@ -3251,6 +3385,8 @@ func _clear_round_visuals() -> void:
 				c.queue_free()
 	medkit_by_net_id.clear()
 	_medkit_consumed.clear()
+	_clear_barricade_mirror()
+	_barricade_walls_cache.clear()
 	# 本体回合边界已 queue_free 敌人，这里只剔除已失效的镜像引用
 	for k in enemy_by_net_id.keys():
 		var e = enemy_by_net_id[k]
@@ -8185,6 +8321,10 @@ func _gate_medkit_spawn(manager, spawn_position: Vector2) -> bool:
 func _spawn_medkit_networked(pos: Vector2) -> void:
 	if not multiplayer.is_server():
 		return
+	# 支援“落在玩家脚下”可能正踩在壁垒格；host 先修正再登记/广播。
+	pos = EnemyNavField.safe_pickup_point(pos)
+	if not pos.is_finite():
+		return
 	var root := get_tree().get_first_node_in_group("CoinRoot")
 	if root == null:
 		return
@@ -9254,6 +9394,8 @@ func _client_scene_ready() -> void:
 		_send_chip_state_to_peer(sender)
 		_send_field_state_to_peer(sender)
 		_send_orbital_state_to_peer(sender)
+		# handshake 时客机场景可能还没就绪（或仍是旧场景），这里再补一次壁垒快照/清空。
+		_send_barricade_state_to_peer(sender)
 		# host 自己也补远端镜像（覆盖被 reset_clear_unit 清掉的场景）
 		_respawn_remote_players()
 

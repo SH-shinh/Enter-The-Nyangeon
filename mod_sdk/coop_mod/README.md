@@ -136,6 +136,21 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\mod_sdk\build_coop_mod.ps1
 
 中继服务端随 SDK 附带：`server/relay_server.py`（纯 Python 3.10+ asyncio 实现 WebSocket 握手/分帧，无第三方依赖；`PORT` 环境变量改端口，默认 `0.0.0.0:7716`；`RELAY_DEBUG=1` 输出协议日志）。启动：`python mod_sdk/coop_mod/server/relay_server.py`。协议对接点见 `coop_relay_peer.gd`。默认地址 `127.0.0.1:7716`。
 
+- **建房 / 入房超时（2026-11-05）**：一次 Relay 建房/入房要过四段独立时钟，服务端侧全部可用环境变量覆盖（改完重启进程生效，不设即用默认），客户端侧是 GDScript 常量（改需重打包 mod）。
+
+  | 阶段 | 计时方 | 默认 | 可调 |
+  |---|---|---|---|
+  | DNS + TCP + WS 握手 | 客户端 | 30 s | `coop_relay_peer.gd:12` `CONNECT_TIMEOUT_MSEC`（常量） |
+  | 读 HTTP Upgrade 头 | 服务端 | **30 s** | `HTTP_HANDSHAKE_TIMEOUT_SEC`（2026-11-05 由 10 s 放宽） |
+  | WS 建好 → `join_room` 被接受 | 服务端 | 35 s | `JOIN_TIMEOUT_SEC` |
+  | 发出建房/入房帧 → `room_created`/`join_admitted` | 客户端 | 30 s | `coop_relay_peer.gd:11` `JOIN_HANDSHAKE_TIMEOUT_MSEC`（常量） |
+  | `join_room` 已接受 → `client_ready` | 服务端 | 30 s | `ADMIT_TIMEOUT_SEC` |
+  | 全程无数据兜底 | 服务端 | 20 s | `PEER_TIMEOUT_MSEC` |
+  | 准备房 RPC hello | 客户端 / 房主 | 30 s / 30 s | `coop_net.gd:40` / `:38`（常量） |
+
+  **约束：服务端窗口必须 ≥ 客户端窗口**。服务端先断时，客机只能看到 `STATE_CLOSED` → `Relay connection failed`（`coop_relay_peer.gd:84-91`），拿不到任何原因。弱网要再放宽就成对改，例如「客户端 60 s + 服务端 `HTTP_HANDSHAKE_TIMEOUT_SEC=60`、`JOIN_TIMEOUT_SEC=90`」。
+  其它可调环境变量：`RELAY_BIND_ADDRESS`、`ROOM_TIMEOUT_MS`、`HEARTBEAT_INTERVAL_SEC`、`MAX_ROOMS`、`MAX_TOTAL_CLIENTS`、`MAX_CLIENTS_PER_ROOM`、`RELAY_WRITE_HARD_WATER`、`RELAY_WRITE_GRACE_SEC`、`JOIN_FAIL_WINDOW_SEC`、`MAX_JOIN_FAILS_PER_PEER`、`MAX_JOIN_FAILS_PER_IP`、`JOIN_BLOCK_SEC`。
+
 - 游戏内：`COOP` 面板 → “Relay” 区填服务器地址与房间号 → `Relay Host` / `Relay Join`；状态栏显示连接与房间号（host 创建后打印 `RELAY_ROOM_CODE=<4位码>`）。
 - 中继页「**服务器列表**」按钮 → 打开**子菜单**（触摸可上下拖拽滚动）：内置 MC 式「已保存的服务器」（名称+地址），默认含 Saki 服务器（`mc.yqst.top:32085`）。子菜单内填 名称+地址 → 「保存」加入（同地址则更新名称）；点条目**仅填入主面板地址并关闭子菜单**，`删除` **二次确认**后移除；`关闭` 按钮 / 点背板 / Esc 退出。持久化于 `coop_settings.relay_servers`（`user://etn_coop_settings.cfg`），首次运行注入默认项。
 - 无头自测：
