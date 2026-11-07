@@ -27,6 +27,21 @@ func dead_health():
 		})
 		player.health_component.take_damage(player.health_component.heal_data)
 		health_cd = 1
+		_play_range_fx()
+
+
+# 范围提示（纯视觉）：环重新滚一次 + 在原地冒大号/小号 "+"。
+# 联机镜像的根脚本被 set_script(null)，不会走到这里；环与常态小号仍会自播。
+func _play_range_fx() -> void:
+	var ring := get_node_or_null("Node2D/HealRing")
+	if not is_instance_valid(ring):
+		return
+	if ring.has_method("play"):
+		ring.call("play")
+	var spawner := ring.get_node_or_null("PlusSpawner")
+	if is_instance_valid(spawner) and spawner.has_method("burst"):
+		spawner.call("burst")
+
 
 func _on_area_2d_body_entered(body):
 	if body == null or not is_instance_valid(body):

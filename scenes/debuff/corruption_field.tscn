@@ -2,12 +2,20 @@
 
 [ext_resource type="Script" uid="uid://b0tqilcvvl0jp" path="res://scenes/debuff/corruption_field.gd" id="1_field"]
 [ext_resource type="Resource" path="res://resources/buff/player_buff/corruption_field_slow.tres" id="2_slow"]
-[ext_resource type="Texture2D" uid="uid://b5nbmcnfshgb8" path="res://sprites/particle/circular_1.png" id="3_bubble"]
 [ext_resource type="Texture2D" uid="uid://bmo6xygwo4im6" path="res://sprites/particle/circular_2.png" id="4_puddle"]
-[ext_resource type="Shader" path="res://shaders/corruption_field_pulse.gdshader" id="5_pulse"]
+[ext_resource type="Shader" uid="uid://cbvjs0oxx5dih" path="res://shaders/corruption_field_pulse.gdshader" id="5_pulse"]
+[ext_resource type="SpriteFrames" path="res://scenes/effects/corruption_bubbles_frames.res" id="6_bubbles"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_field"]
 radius = 44.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_paint_pulse"]
+shader = ExtResource("5_pulse")
+shader_parameter/pulse_speed = 3.927
+shader_parameter/saturation_boost = 1.4
+shader_parameter/brightness_boost = 1.3
+shader_parameter/glow_strength = 0.5
+shader_parameter/glow_tint = Color(1, 0.35, 0.8, 1)
 
 [sub_resource type="Curve" id="Curve_paint_alpha"]
 _data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.02, 1), 0.0, 0.0, 0, 0, Vector2(0.85, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -2.0, 0.0, 0, 0]
@@ -30,14 +38,6 @@ point_count = 3
 [sub_resource type="CurveTexture" id="CurveTexture_paint_scale"]
 curve = SubResource("Curve_paint_scale")
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_paint_pulse"]
-shader = ExtResource("5_pulse")
-shader_parameter/pulse_speed = 3.927
-shader_parameter/saturation_boost = 1.4
-shader_parameter/brightness_boost = 1.3
-shader_parameter/glow_strength = 0.5
-shader_parameter/glow_tint = Color(1, 0.35, 0.8, 1)
-
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_paint_base"]
 particle_flag_disable_z = true
 emission_shape_offset = Vector3(0, 2, 0)
@@ -47,38 +47,11 @@ angle_min = -180.0
 angle_max = 180.0
 gravity = Vector3(0, 0, 0)
 scale_min = 0.5
-scale_max = 3.5
+scale_max = 2.2
 scale_curve = SubResource("CurveTexture_paint_scale")
 color = Color(0.4846074, 0.09023877, 0.9295919, 0.9019608)
 color_initial_ramp = SubResource("GradientTexture1D_met8m")
 alpha_curve = SubResource("CurveTexture_paint_alpha")
-
-[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_bubble"]
-blend_mode = 1
-
-[sub_resource type="Curve" id="Curve_bubble_scale"]
-_data = [Vector2(0, 0.2), 0.0, 0.0, 0, 0, Vector2(0.12, 1), 0.0, 0.0, 0, 0, Vector2(0.82, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -2.0, 0.0, 0, 0]
-point_count = 4
-
-[sub_resource type="CurveTexture" id="CurveTexture_bubble_scale"]
-curve = SubResource("Curve_bubble_scale")
-
-[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_bubble"]
-particle_flag_disable_z = true
-emission_shape_offset = Vector3(0, 4, 0)
-emission_shape = 3
-emission_box_extents = Vector3(38, 38, 1)
-direction = Vector3(0, -1, 0)
-spread = 18.0
-initial_velocity_min = 5.0
-initial_velocity_max = 12.0
-gravity = Vector3(0, -2, 0)
-damping_min = 0.8
-damping_max = 2.0
-scale_min = 0.45
-scale_max = 0.95
-scale_curve = SubResource("CurveTexture_bubble_scale")
-color = Color(0.14806059, 0.5796992, 0.6010117, 0.7019608)
 
 [node name="CorruptionField" type="Area2D" unique_id=1677208929]
 z_index = -1
@@ -92,19 +65,18 @@ slow_buff = ExtResource("2_slow")
 shape = SubResource("CircleShape2D_field")
 
 [node name="PaintBase" type="GPUParticles2D" parent="." unique_id=1491120144]
+z_index = -1
 material = SubResource("ShaderMaterial_paint_pulse")
 emitting = false
-amount = 12
+amount = 8
 texture = ExtResource("4_puddle")
 lifetime = 8.0
 one_shot = true
 explosiveness = 1.0
 process_material = SubResource("ParticleProcessMaterial_paint_base")
 
-[node name="Bubbles" type="GPUParticles2D" parent="." unique_id=1237195146]
-material = SubResource("CanvasItemMaterial_bubble")
-emitting = false
-texture = ExtResource("3_bubble")
-lifetime = 2.0
-preprocess = 0.35
-process_material = SubResource("ParticleProcessMaterial_bubble")
+[node name="Bubbles" type="AnimatedSprite2D" parent="." unique_id=1237195146]
+modulate = Color(1, 1, 1, 0.65)
+sprite_frames = ExtResource("6_bubbles")
+centered = false
+offset = Vector2(-58, -58)

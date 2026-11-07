@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/debuff/corruption_aura.gd" id="1_aura"]
+
+[node name="CorruptionAura" type="Node2D"]
+z_index = 1
+script = ExtResource("1_aura")
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]

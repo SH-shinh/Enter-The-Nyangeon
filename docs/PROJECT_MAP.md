@@ -31,10 +31,12 @@
 | `fonts/` | 位图字体 + `theme.tres`（全局 UI 主题）。 |
 | `assets/` | 空（未使用）。 |
 | `addons/` | `godot-rapier2d`（物理）、`godot_ai`（编辑器 MCP 插件，非游戏运行时）。 |
+| `third_party/` | **第三方参考源码，不参与构建**：整目录带 `.gdignore`，编辑器不导入、不进导包。当前只有 `pixelfx-godot/`（244 个纯 GDScript 像素特效快照，MIT，见 `SNAPSHOT.md`），只作离线查阅与二次创作蓝本，用法与尺度对齐见 `REFERENCE_PIXELFX.md`。 |
 | `android/` | Android 导出配置与资源；`icons/` 存放启动器主图标、自适应前景/背景及主题单色 SVG，`build/` 为忽略的生成目录。 |
 | `mod_sdk/` | **Mod 开发套件**（含 `.gdignore`，不进本体包）：包契约、示例模组、`_mod_template`（可复制角色骨架）、`build_mod.ps1` / `build_coop_mod.ps1` / `build_local_mod.ps1`（项目根 `mods/` 本地打包）、官方联机源码 `coop_mod/`；通用隔离打包 `pack_mod_source.ps1`。详见 `mod_sdk/README.md`、`CONVENTIONS.md` §10。 |
 | `tests/` | MCP 测试套件（`test_*.gd`，`extends McpTestSuite`），由编辑器内 `test_run` 运行（`addons/godot_ai`）；另有独立 UI 回归入口 `run_ui_ux_checks.py` + `test_ui_ux_regressions.gd`，不依赖插件，隔离用户目录运行，`--screenshots` 可输出局部场景渲染。 |
 | `docs/` | **本知识库**（本项目新增）。 |
+| `.agents/skills/` | **DSH skill**（跨会话的特效制作手册，非游戏运行时）：`pixelfx-effect-authoring`（参考库→烘焙→接入管线）、`pixelfx-catalog`（选型目录）、`godot-baked-vfx`（SpriteFrames 运行时）。与 `docs/` 分工：skill 讲"怎么干"，docs 讲"是什么/为什么"。 |
 
 - **设置布局（2026-10-16）**：`ui/option.tscn` 保持通用菜单与扩展页容器职责，左栏采用顶部标题 / 像素 × 关闭按钮、独立纵向滚动页签和底部 Esc 提示；共享页签沿用像素字体、原版行高/间距与 `on_select`/`selected` 金色反馈，长标题按原版裁切、不提供 tooltip，溢出显示滚动条。首次自动显示 GAME，再次打开恢复当前页焦点。主菜单和暂停页共用；设置专项入口为 `python tests/run_ui_ux_checks.py --godot <Godot路径> --settings-only`，可追加 `--screenshots` / `--installed-mods`；长标题及再次打开回归见 `_check_settings_navigation_states` 和 `_check_settings`。
 - **统一悬浮提示（2026-10-18）**：`ui/hover_tooltip.tscn` / `hover_tooltip.gd`（每 CanvasLayer 复用一个宿主，全视口唯一的可见浮层）+ `ui/hover_tooltip_binding.gd`（`class_name HoverTooltipBinding`，目标绑定）。已迁移：`upgrade_item_card`、`gamemode_card`、`gamemode_type`、`test_item_card`、`test_enemy_card`、`test_character_card`、`ability_shop_item_card`、`ability_shop_ps_card` 及难度页支援主卡/候选、测试房支援池；卡片原有的 `Node2D/Text` 提示树与 `support_details` 专用浮层均已删除。约定见 `CONVENTIONS.md` §5.1，宿主为何不是 autoload 见 `ARCHITECTURE.md` §6。

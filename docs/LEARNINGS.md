@@ -4065,6 +4065,7 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - Notes / 说明: 想给 buff 条目带标记（如「该来源的异常 DOT 可暴击」）时**不要**塞 `value[3+]`：客机 `apply_buff` 会被 `enemy_buff_apply_gate` 转发到 host，而 host 侧 `_sanitize_buff_value` 只保留前 3 项 → 单机正常、联机静默失效。`source_id` 不在消毒范围内（恶寒按来源计层本就依赖它），故标记放在 `entry["source_id"]` 上。`entry["can_crit"]` 采用粘滞语义（被白名单来源施加过即保持到条目销毁），避免被其它道具的后续施加覆盖成时有时无。headless 探针 `tests/maki_passive_probe.gd` 覆盖（maki_ps 可暴击 / 其它来源不可）。
 - Source / 来源: code + test
 - Date / 日期: 2026-11-06
+- SUPERSEDED: 2026-11-07 机制已改为「HealthComponent 统一异常暴击口 + 本机玩家被动 meta」（见下文「异常伤害暴击统一到结算口」）；`entry["source_id"]` / `entry["can_crit"]` 已移除，不再需要 per-entry 白名单。
 
 ### [Coop] 镜像玩家 PS 的 `_ready` 早于 mod 断开全局信号 → 新 PS 必须自带本地守卫
 - Evidence / 证据: `mod_sdk/coop_mod/mods/etn_coop/net/coop_net.gd:spawn_remote_player`（先 `remove_from_group("Player")` 再 `add_child`，随后 `_attach_player_proxy` → `setup` → `_disconnect_remote_global_signals`）；`scenes/player/maki/maki_ps.gd:_is_local_player`。
@@ -4100,4 +4101,71 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - Evidence / 证据: `scenes/manager/pick_item_manager.gd:51-70`（旧随机 `tilemap.get_used_cells(0)` 无墙检查，`randi_range(0, cells.size()) - 1` 还会取到 `-1`）；`script/enemy_nav_field.gd:1450-1479`（`is_solid`/`nearest_body_safe_point`）；`scenes/field_mods/barricade.gd:714-730`（客机镜像只重建 overlay）。
 - Notes / 说明: 医疗包刷新取的是 `SpawnMap` 地面格，壁垒/地形词条可以在同一格放墙；`MapBounds.nearest_inside()` 只按外边界内缩，不能把内部墙格拉出来。修法：`EnemyNavField.safe_pickup_point()` 用 `is_solid()` 判墙并回退 `nearest_body_safe_point()`；`PickItemManager` 随机/玩家脚下、联机 host `_spawn_medkit_networked()` 都走它，找不到安全点就跳过生成。另加 `MapBounds` 1s 卡墙兜底：`HealthItem`/玩家/敌人/召唤物/Boss 中心格 solid 时复用 `_pull_lock` 拉到最近 body-safe 点；只认 `is_solid`，贴墙不误拉。客户端镜像 `apply_network_walls()` 后必须 `EnemyNavField.invalidate()`，否则仍用旧阻挡集。实测 `[MEDKIT_WALL_CHECK] ok=1 fail=0`（墙格生成被挪出、假 `HealthItem` 一次拉出、第二次不回弹）。
 - Source / 来源: code + test
+- Date / 日期: 2026-11-07
+
+### [Tooling] `res://` 下的第三方参考源码必须带 `.gdignore`，否则会被导入
+- Evidence / 证据: `third_party/.gdignore`（空文件）；同惯例 `mod_sdk/.gdignore`、`android/build/.gdignore`；`third_party/pixelfx-godot/godot/addons/pixelfx` 含 581 个脚本。
+- Notes / 说明: Godot 扫描 `res://` 下所有目录，第三方源码会被导入并注册其 `class_name`（如 `PixelFx2D`/`PixelFxAct2D`），与本体命名空间冲突且拖慢首启。空文件 `.gdignore` 要放在**目标目录本身**（不是子目录）才能整棵跳过；校验方式是编辑器里搜 `res://third_party` 应返回空。被跳过的目录也不进导包。
+- Source / 来源: code
+- Date / 日期: 2026-11-07
+
+### [Tooling] pixelfx 按 id 播放时路径硬编码为 `res://addons/pixelfx/...`
+- Evidence / 证据: `third_party/pixelfx-godot/godot/addons/pixelfx/nodes/pixel_fx_2d.gd:25,148-156`（`REGISTRY_PATH`、`_resolve()`）；`pixel_fx_act_2d.gd:16,58-59,81`。
+- Notes / 说明: 放在别的目录不报错，只会静默不播（`_mod == null` 直接返回），排查很费时。要么保持 `addons/pixelfx` 目录名，要么用 `effect_script`（脚本优先于 id），要么只拷 `core`/`nodes`/`bake` 自建。详见 `docs/REFERENCE_PIXELFX.md` §9。
+- Source / 来源: code
+- Date / 日期: 2026-11-07
+
+### [FX] pixelfx 的美术基准是 24×38 角色，ENN 是 64×64，照抄像素会偏小偏密
+- Evidence / 证据: `third_party/pixelfx-godot/godot/docs/AUTHORING.md:76`（"The stock character is 24 x 38 px"）；`scenes/player/kotori/kotori.tscn` 帧 `region = Rect2(x,y,64,64)`；`sprites/tile_map/tile_map.png` 64×64；`sprites/enemies/droid_helmet.png` 512×192 + `hframes = 8`（Camera2D 无 zoom，640×360 下世界像素 = 屏幕像素）。
+- Notes / 说明: 库里为 1px 细节、24×38 角色画的配方，贴到 64px 角色旁会读成噪点。复用时应按其相位/光逻辑**按 ENN 尺度重画**（线宽、光半径约 2–3 px）；要整包套用只能整数缩放 `PixelFx2D.scale = 2`（角色约 48×76，仍略小），非整数缩放会破坏像素锐利。全屏类（`transitions`/`weather`，320×180）在 640×360 下是半屏。
+- Source / 来源: code
+- Date / 日期: 2026-11-07
+
+### [FX] pixelfx BAKED 帧缓存吃内存，单个大特效可达数十 MB
+- Evidence / 证据: `third_party/pixelfx-godot/godot/addons/pixelfx/bake/baker.gd`（`Track.frames` 每帧 3 张 `Image`，`Track.textures` 每帧最多 3 张 `ImageTexture`）；`nodes/pixel_fx_2d.gd` 的 `static var _cache`（仅 `tree_exiting` 时清空）。
+- Notes / 说明: 288×192 画布 ≈ 221 KB/张 → 约 1.3 MB/帧，`ice/frost-nova`（103 帧）跑一轮 ≈ 66 MB，且不会自动回收。移动端优先烘焙成 `SpriteFrames`（落磁盘），或在切场景/回合结束时调 `PixelFx2D.clear_cache()`；LIVE 则是每帧 CPU 成本（README 口径 0.2–20 ms，需 `pfx bench` 实测）。
+- Source / 来源: code
+- Date / 日期: 2026-11-07
+
+### [FX] 范围提示的三条硬约束：半径=判定、形状=判定、层级在地面
+- Evidence / 证据: `scenes/update_item/cathedral_candle.tscn`（`Area2D` + `CircleShape2D.radius = 85`）与 `scenes/effects/cathedral_candle_aura.tscn`（`z_index = 1`、shader `radius_px = 85.0`）；Y 排序见 `scenes/main/main.tscn:241-247`（`FloorLayer`/`YSort` 同级、`PlayerRoot` 在 `YSort` 下），玩家精灵 `z_index = 20`（`scenes/player/kotori/kotori.tscn:449`），子弹 `z_index = 2/3`。
+- Notes / 说明: ①**半径要对齐**：旧蜡烛的可视光斑只有 ~32px 与 103px 两个，和 85 的判定半径都不一致，玩家读不出"近身"边界；②**形状要对齐**：判定是 `CircleShape2D`，视觉必须各向同性正圆，用像素空间 `length()` 而不是侧视库的 `SY` 椭圆压扁；③**层级要在地面**：`z_index = -1` 会被 `FloorLayer`（z 0）盖住而完全看不见，应该取 1——高于地面、低于玩家(20)与子弹(2,3)。判定与视觉的半径/形状/层级三者任一错位，"范围提示"就失效。
+- Source / 来源: code
+- Date / 日期: 2026-11-07
+
+- Follow-up / 后续（2026-11-07，来源：code）：观感最终按原版 `holy/heal-aoe` 重做，但**没有引入 pixelfx 运行时**——环走 shader（`shaders/cathedral_candle_aura.gdshader`：颗粒环 + 光刃 + 8 向光晕 + 呼吸，几何仍是 `length()` 正圆），"+" 用预渲染 glyph + 加法材质的 `_draw`（`scenes/effects/cathedral_candle_aura.gd`）。原版的中心光柱与"种子→滚出"一次性相位按要求去掉，环改为常驻呼吸，符号分「常态 5px 小号 / 治疗 5·7·9px 成簇」两档。原因：`core/` 是逐像素 CPU 绘制，常驻光环跑 LIVE 太重、BAKED 又要 ~36MB 帧缓存。对照工程在 `third_party/_heal_aoe_demo`（独立项目，ENN 不扫描）。
+- SUPERSEDED: 2026-11-07 上面这条"不引入 pixelfx 运行时"的决定已被推翻——按用户要求直接搬原版。最终形态：`addons/pixelfx/{core,nodes,bake,fx/holy/_lib.gd}` 进项目，`scenes/effects/pixelfx_heal_ring.gd` 是 `holy/heal-aoe` 的 fork（只改 ①`SY 0.2→1.0` ②画布 256×264/origin[128,128] ③删中心光柱）。实测 LIVE `update+draw` = **58.6ms/帧**（256×264 逐像素 wash），常驻光环不可用，于是**烘焙成 SpriteFrames**：`scenes/effects/heal_ring_frames.res`（88 帧 / 30fps / 1.1MB，`combined` 模式，光烘进 alpha），运行时由 `AnimatedSprite2D` 播放（`pixel_fx_sheet.gd`，0.4s 后循环、回血时 `play()` 重播），CPU 成本≈0。**注意**：`light` 缓冲单独成图集没有意义（实测 alpha≈84/255 而 rgb≈6/255，加法混合几乎不可见），只能用 `combined`；代价是辉光比 LIVE 略柔。旧 shader 版 `cathedral_candle_aura.*` 当时保留未删；2026-11-07 清理时已确认无引用并删除（历史见本节与 git）。来源：code。
+- Follow-up / 后续（2026-11-07，来源：code）：按观感反馈又改一版——**环与"+"拆成两套烘焙**：`pixelfx_heal_ring.gd`（只画环，GOLD 调色，208×208，2.0s@45fps=90 帧（loop=true））与 `pixelfx_heal_plus.gd`（单符号 0.6s@45fps=28 帧）。环用**两个** `AnimatedSprite2D` 错相 1.0s 循环（恒有 2 环交叠，第二个环在第一个淡完前滚出）；"+" 由 `heal_plus_spawner.gd` 在**世界坐标**生成（`top_level = true`），常态只冒小号、回血 `burst()` 才冒大号——因此符号不再跟随玩家。显存：90×208×208×4 ≈ **15.6MB**（此前的 30fps/256×264 是 23.8MB）。实测 LIVE `update+draw` 仍是 58.6ms/帧，所以运行时只播帧、不跑效果代码。后续清理：删掉旧 shader 版与未使用的 `addons/pixelfx/nodes/`；符号改**对象池**（预热 18 个，播完归还、正常流程零分配零释放）；烘焙脚本入库为 `script/bake_pixelfx_fx.gd`（后续又扩成通用入口）；环的循环标志改由 `meta.loop=true` 落进 `.res`，运行时不再改资源。
+- Follow-up / 后续（2026-11-07，来源：code）：按"中毒"的观感补**腐化**视觉。①敌人：`scenes/effects/pixelfx_corruption_aura.gd` 只取 `status/poisoned` 的毒汗/气泡/光晕（去掉 0.8s 地面脉冲环，也不重绘身体——身体已有 tint），45fps/72 帧，由 `scenes/debuff/corruption_aura.tscn` 跟随目标播放，`corruption_field_component.gd` 在 `_apply_tint()` 后生成、`deactivate()/_on_dead()` 释放（远端镜像 `_remote_visual_only` 跳过）。②残留地坑：新增 `pixelfx_corruption_bubbles.gd`（45fps/108 帧/116×116），每个泡泡在自己的循环开始时按**圆盘均匀采样**取点（`r = min(R_MAX*sqrt(rand), R_MAX-rmax-2)`，R_MAX=36），替换原来那路 GPU `Bubbles` 粒子；烘焙脚本对两份资源做**逐帧不透明包围盒断言**（aura ≤70、bubbles ≤112），保证不裁切。显存 +≈7.3MB，运行时仍零 CPU。
+- Follow-up / 后续（2026-11-07，来源：user + code）：实机发现光环整体沉在敌人脚下——ENN 的敌人 body 原点**就是脚底**（如 `droid_helmet_smg.tscn`：sprite 在 `(0,-24)`、capsule 在 `(0,-27)`），而代码里写了固定的 `FEET_OFFSET (0,20)`。修法：改用 `HurtBoxMeasure.measure(body, 48)` 取 hurtbox 的本地 `center/size`，脚底 = `center + (0, size.y/2)`，`global_position = body.to_global(feet)`；缩放 = `clamp(size.y/36, 0.9, 1.8)`（36 是效果虚拟身体高）。同时把躯干那层不透明 `glow` 去掉，只留脚边地面光晕，避免烘焙后的 combined alpha 盖住敌人贴图。地坑气泡按用户要求：半径 6–8 → 3–4、数量 8 → 14、整体 `modulate.a = 0.65`。 另外发现多池叠加时后画的池面会盖住先前池的气泡：把 `corruption_field.tscn` 根节点 z 从 -1 改为 0（参与 Y 排序），`PaintBase` 单独设 -1（池面观感不变），`Bubbles` 为 0 —— 所有气泡统一在池面之上、按池的 y 与敌人排序，多池时气泡自然累积。
+
+### [PS] 一次性 proc 的子弹：先校验后记账 + meta 字典按目标去重（Maki 异常附带次数）
+- Evidence / 证据: `scenes/player/maki/maki_ps.gd`（`_on_player_shot` 的 `_clear_anomaly_marks` 与 `maki_anomaly_limit`；`_on_bullet_hit_enemy` 的校验顺序、`maki_anomaly_hits` 字典、`ANOMALY_TRIGGERS = [1,4,7,10]`）；`script/player_bullet.gd:83-101`（`player_bullet_hit_enemy` 由 `on_damage_dealt` 发射，自管理命中按 0.1s 重击）。
+- Notes / 说明: 一次性 proc（子弹附带元素/印记）**不要在回调入口就消费标记**：`on_damage_dealt` 在扣血之后回调，`victim` 可能已被子弹自身打死、或不在 `Enemy` 组、或缺 `enemy_buff_manager`/`health_component`，先消费会把这一发的 proc 白白吞掉（后续穿透目标也拿不到）；应「先校验、全部通过后记账并结算」。同一发子弹想对多个目标各生效一次时，不能只看「有没有标记」——`HitBox.rehit_interval_seconds=0.1` 会对同一目标反复回调，必须用 `instance_id` 字典去重；次数上限在**开火时**按等级快照写进 meta（升级只影响之后发射的子弹），无效目标不消耗次数、同一敌人不重复消耗。探针 `tests/maki_passive_probe.gd` 覆盖：上限 3 时 3 个不同沙袋各触发一次、第 4 个不触发、同一目标重复命中不重复结算、无效目标不消耗次数。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-07
+
+### [Tooling] MCP `filesystem_manage(reimport)` 对 CSV 本地化可能不生效，要再 `scan`
+- Evidence / 证据: 改 `ETN_player_localization.csv` 后 `filesystem_manage(op="reimport", paths=["res://ETN_player_localization.csv"])` 回包 `reimported`，但 `ETN_player_localization.*.translation` 与 `.godot/imported/ETN_player_localization.csv-*.md5` 的 mtime/体积均未变化（游戏内 `tr()` 仍是旧文案）；补一次 `filesystem_manage(op="scan")` 后 4 个 `.translation` 立即按新 CSV 重新生成（mtime 更新、体积变大）。
+- Notes / 说明: 改本地化 CSV 后判定「真的生效」要看两处时间戳/体积：`ETN_*localization.<locale>.translation` 与 `.godot/imported/<csv>-<hash>.md5`；只看 MCP 的 reimport 回包会误判。稳妥流程：`reimport` → `scan` → 核对 `.translation` 已更新 → 需要时 headless 起一次游戏用 `tr()` 抽查。`tests/check_localization.py` 只校验源 CSV 格式（BOM/CRLF/列宽/key 唯一），**不检查是否已重新导入**。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-07
+- Follow-up / 后续（2026-11-07，来源：user + code）：狂怒词条（`chip_frenzy`）的敌人特效从"地面光环 shader + 两路 GPU 粒子"换成参考库 `status/rage` 的身体特效：怒气符号（7/9px 两档随心跳切换）、头部蒸汽、拍点应力线、常驻余烬、头部红光；按需求**去掉**地面热光与裂纹，也不重绘身体（无 actor）。图集 1.2s/45fps/80×80 单层烘焙（`frenzy_aura_frames.res`），运行时 `AnimatedSprite2D` 循环播放。锚点沿用 `HurtBoxMeasure`：脚底 = center + size.y/2，缩放 = size.y/36（夹 0.8–2.0）。烘焙脚本新增**空白帧断言**（每帧必须有像素）。`BurnBar` 与濒死延迟接口（`fit_to_enemy/begin_burn/set_burn_progress/flash_blocked/finish_burn`）未改。
+
+### [Combat] 异常伤害暴击统一到 `HealthComponent._resolve_damage`（被动 meta 门控 + 排除复合标签）
+- Evidence / 证据: `script/anomaly_damage.gd`（`META_PASSIVE`/`is_anomaly_damage`/`can_roll`/`roll_crit`）；`script/health_component.gd::_resolve_damage` 末尾调用 `_apply_anomaly_crit`；`scenes/player/maki/maki_ps.gd:_ready`（本地写 meta）与 `_on_bullet_hit_enemy`（不再自行掷暴击）；`script/fire_field_base.gd`、`script/fire_damage.gd`、`scenes/update_item/kikyou_doll.gd` 的纯元素伤害均走同一结算口。
+- Notes / 说明: 「所有异常类伤害可暴击」逐个来源改会漏掉火场/火伤圈/毒环，且共享 `DamageData` 的复位要各写一遍；集中到 `_resolve_damage` 的最终数值口一处即可。关键点：① 用「排除 BULLET/MELEE/EXPLOSION/CRIT 复合标签」判定纯异常，避免子弹/近战/爆炸/策反（它们会带元素标签且已各自掷骰）被二次掷骰；② 门控用「本机玩家节点 meta」而不是 buff 白名单，才能覆盖所有来源、天然不跨端/不误伤其它角色（MakiPS 在本地 `_ready` 置位，镜像 PS 被本地守卫挡住）；③ 火场/毒环的 `hit_box.damage_data` 会跨目标、跨 tick 复用，`is_crit` 会残留——每次结算先复位再掷，否则会出现「显示暴击色但没乘倍率」或一次暴击后整场都暴击；④ 真伤（火场 `TRUE_DAMAGE`）同样经过该口，暴击乘在最终 result 上；⑤ 被动关（其它角色/镜像）时 `can_roll` 直接 false，零行为变化。联机：客机预测在本地掷、host 收 `resolved_damage` 不重复掷；host 为客机 Maki 结算 DOT 时用 host 本机玩家数据（已知限制）。探针 `tests/maki_passive_probe.gd` 覆盖：非 `maki_ps` 来源 DOT 可暴击、移除 meta 后不暴击、纯火直伤可暴击、子弹复合伤害不重复掷、恶寒反击可暴击。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-07
+- 2026-11-07（来源：code）：把 pixelfx 制作管线沉淀成 3 个 DSH skill，放在工作区 `.agents/skills/`（DSH 会扫 `<cwd>/.agents/skills` 与全局 `~/.agents/skills`，加完即时出现在 skill 目录，无需改 `skills-lock.json`——那个只登记 GitHub 来源）。分工：`pixelfx-effect-authoring` = 怎么干（fork→适配→烘焙→接入→验证 + 坑表 + 5 个配方），`pixelfx-catalog` = 挑蓝本（244 效果分类/标签/27 调色板/许可/质量条），`godot-baked-vfx` = 运行时通用（SpriteFrames 契约、池化、跟随、`HurtBoxMeasure` 锚点、z 分层、显存预算）。原则：`docs/` 讲"是什么/为什么"，skill 讲"怎么干"，改管线时两边同步；244 个效果不拆成一效一 skill（描述常驻上下文，会污染选型）。
+### [FX] 烘焙特效实测：50 敌人双光环 < 0.2ms，瓶颈不在特效本身
+- Evidence / 证据: 临时探针 `tests/_tmp_perf_probe.gd`（不进库）在 640×360、vsync 关闭、`Engine.max_fps=0` 下采样 2s：空场景基线 2673–2805fps（≈0.36ms/帧）。`corruption_aura` 50 个 → 2612fps（0.383ms，增量≈0.005ms）；`frenzy_effect` 50 个，改前 1315fps（0.760ms，增量 0.403ms）→ 改成"每帧只跟随位置、0.25s 或缩放变化才 measure"后 2245fps（0.445ms，增量 0.088ms，−78%）；`corruption_field` 50 个 → 1718fps（+0.206ms，含旧 `PaintBase` 粒子）；治疗环 40 个 `AnimatedSprite2D`（20 组）→ 2460fps（+0.048ms）。锚点缓存与现场 `HurtBoxMeasure` 结果完全一致（`pos`/`scale` 全等）。
+- Notes / 说明: 烘焙特效运行时是纯播帧，成本 = draw call + 填充率，不是脚本；`frenzy_effect` 原来每帧每敌人一次 measure + 两次 `set_shader_parameter`（`bar_size_px` 每帧写）是纯浪费，现已缓存，`_sync_bar_shader_size` 只在 `resized` 信号里调。`Performance.RENDER_VIDEO_MEM_USED` 对 `PortableCompressedTexture2D` 不精确（加载五个资源只 +4MB），VRAM 以 RGBA8 上界估：治疗环 90×208²×4≈15.6MB、腐化冒泡 108×116²×4≈5.8MB、其余 ≈3MB，合计 ≈24.9MB（共享资源，一次占用）。60fps（16.7ms）预算下最坏场景（50 敌人双光环 + 10 池 + 2 环）合计 <0.3ms，**结论：当前不需要为特效做额外优化**。尚未做的可选项：治疗环画布 208→196（省约 1MB，同时要改 `pixel_fx_sheet.gd` 的 `RING_ORIGIN`）、>60 敌人时再考虑把帧打包成图集合批。旧 `PaintBase` 池面（每池 12 粒子 × 最大 3.5² 缩放）是填充率最大项，属既有实现，未在本次范围。
+- Source / 来源: test
+- Date / 日期: 2026-11-07
+
+### [Chip/Perf] 「亚子策反敌人进腐化池卡顿」：不是状态冲突死循环，成本在池数量×填充率与逐感染节点
+- Evidence / 证据: 引擎内实测（Godot 4.7 + `test_room` + `game_eval`，桌面）：池子单 tick 3–5µs；一次 tick 感染 30 个敌人 506µs（节点每感染约 +7：buff 卡 + 光环）；**策反单位站进活跃池 `infected.size()==0`、`converted_infected==0`**（`scenes/debuff/corruption_field.gd:_infect_enemies()` 的 `Faction.of_entity != ENEMY_SIDE` 过滤生效）；单次策反约 516µs；30 个感染光环 + 61 个活跃池 + 30 敌人仍 60fps / 16.4ms（draw call 213→340）。回合清场走 `scenes/main/main.gd:enemy_clear_unit()` 的 `queue_free()`，不触发组件 `deactivate()`。
+- Notes / 说明: **结论**：不存在「策反 × 腐化池」的逻辑级热点或死循环，池子连 Buff 都不会给策反单位，所以玩家侧「状态冲突」的直觉在逻辑层不成立；真正会随「腐化残留 + 亚子」放大的是 ①池子数量（感染→死亡→再留池，旧上限 100，同一点可叠十几个重叠池）、②单池填充率（`PaintBase` 12 粒子 × 最大 3.5² 缩放，文档已记为最大填充率项）、③每次感染的节点/材质开销。桌面有富余，风险面在中低端 Android/iOS，所以修复方向是**削峰**而不是找循环。本次落地：池并发上限 100→24；同点 24px 内只 `refresh_field()` 续命（不新开池、不重播整池）；感染窗口 10→12 tick 且**每 tick 最多新感染 6 个**（把 32 连击的 ~12ms 尖峰摊到多帧）；生命末 15 tick 淡出；`_infect_enemies()` 每 tick 剪掉失效节点并把**策反中的目标从 `infected` 剔除**（旧实现会让「已感染」永久留在表里，解除策反后再也不上 Buff——这是真实的跨状态不同步）；组件 `_exit_tree()` 兜底释放光环、光环发现 `target` 失效即 `queue_free()`（旧实现只隐藏，孤儿节点跨回合累积）；染色材质 `duplicate(true)`→`duplicate(false)`（深拷贝会连 `Shader` 一起复制）；`_clear_tint()` 先复位 `corruption_tint/corruption_amount` 再换回原材质（策反描边写同一材质，旧顺序会把残留染色压在描边上）。**故意外光环跟随仍按物理帧、不做 10Hz 节流**：敌人 60fps 移动，10Hz 跟随会肉眼脱节；改为「位置每帧写、scale 仅变化时写」即可。验证用本地探针 `tests/_tmp_corruption_pool_check.gd`（不入库，14 项全 PASS，含单 tick 感染=6、24 池上限、合并续命、淡出复位、策反剔除/解除后重感染、光环随 queue_free 释放）。
+- Source / 来源: user + code + test
 - Date / 日期: 2026-11-07

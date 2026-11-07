@@ -3,7 +3,13 @@ extends Area2D
 const PLAYER_HURTBOX_LAYER: int = 2048
 const ENEMY_HURTBOX_LAYER: int = 16384
 const QUERY_MAX_RESULTS: int = 32
-const INFECT_TICKS: int = 10
+## 感染窗口：12 tick（1.2s）。配合 MAX_INFECT_PER_TICK，把原来"一 tick 灌 32 个"的
+## 尖峰摊到多帧（每个感染约 0.4ms 的染色/光环/卡片开销，一帧 32 个就是 12ms 级顿挫）。
+const INFECT_TICKS: int = 12
+## 每 tick 最多新感染几个敌人（同 tick 内排队等下一 tick，总感染量不变）
+const MAX_INFECT_PER_TICK: int = 6
+## 生命末尾淡出 tick 数（避免多个池叠加/消失时的硬切换观感）
+const FADE_TICKS: int = 15
 
 @export var pool_id: String = "corruption_field"
 @export var self_life: int = 80
@@ -45,12 +51,12 @@ func idle_state() -> void:
 	player_only = false
 	infected.clear()
 	visible = false
+	modulate.a = 1.0
 	global_position = Vector2.ZERO
 	_set_particles_emitting(false)
 	if collision_shape_2d != null:
 		collision_shape_2d.set_deferred("disabled", true)
 	set_deferred("monitoring", false)
-	set_physics_process(false)
 
 func active_state() -> void:
 	reset_physics_interpolation()
@@ -62,13 +68,32 @@ func active_state() -> void:
 	affected.clear()
 	infected.clear()
 	visible = true
+	modulate.a = 1.0
 	if collision_shape_2d != null:
 		collision_shape_2d.set_deferred("disabled", false)
 	set_deferred("monitoring", true)
 	_set_particles_emitting(true)
 	if not GameEvents.global_time_count.is_connected(time_count):
 		GameEvents.global_time_count.connect(time_count)
-	set_physics_process(true)
+
+## 同点位合并：延长寿命、重新开启感染窗口，且不重播一次性的颜料滩粒子。
+## 由 corruption_field_component 在"附近已有活跃池"时调用，避免同一点叠 5~10 个池。
+func refresh_field() -> void:
+	if is_idle == 1:
+		active_state()
+		return
+	life_time = self_life
+	tick_count = 0
+	modulate.a = 1.0
+	visible = true
+	# 续命后池面粒子可能已经耗尽，重播一次（比新开一个池便宜得多）
+	_set_particles_emitting(true)
+	if collision_shape_2d != null:
+		collision_shape_2d.set_deferred("disabled", false)
+	set_deferred("monitoring", true)
+	if not GameEvents.global_time_count.is_connected(time_count):
+		GameEvents.global_time_count.connect(time_count)
+
 
 func time_count() -> void:
 	if is_idle == 1:
@@ -83,6 +108,8 @@ func time_count() -> void:
 	life_time -= 1
 	if life_time <= 0:
 		idle_state()
+	elif life_time <= FADE_TICKS:
+		modulate.a = clampf(float(life_time) / float(FADE_TICKS), 0.0, 1.0)
 
 func round_clear() -> void:
 	_clear_all_slow()
@@ -141,23 +168,33 @@ func _query_hurtboxes(layer: int) -> Array:
 func _infect_enemies() -> void:
 	if carrier_buff == null:
 		return
+	# 池化敌人回池 / 被释放后，infected 里会留下无效项；不剪掉会让"已感染"永远为真。
+	for tracked in infected.keys():
+		if tracked == null or not is_instance_valid(tracked) or tracked.is_queued_for_deletion():
+			infected.erase(tracked)
+	var applied: int = 0
 	for hurt_box in _query_hurtboxes(ENEMY_HURTBOX_LAYER):
+		if applied >= MAX_INFECT_PER_TICK:
+			break
 		if hurt_box.is_player or not hurt_box.monitorable:
 			continue
 		var body: Node = hurt_box.body
 		if body == null or not is_instance_valid(body) or body.is_queued_for_deletion():
 			continue
-		if infected.has(body):
-			continue
 		if body.get("is_idle") == 1:
 			continue
 		if Faction.of_entity(body) != Faction.ENEMY_SIDE:
+			# 策反中不进感染集合：一并把记录清掉，解除策反后池子存活期内可重新感染。
+			infected.erase(body)
+			continue
+		if infected.has(body):
 			continue
 		var stats := body.get("stats") as EnemyStats
 		if stats == null or stats.hp <= 0:
 			continue
 		BuffRouter.apply_buff(body, carrier_buff, carrier_value, "corruption_field_infect:%d" % get_instance_id())
 		infected[body] = true
+		applied += 1
 
 func _apply_corruption() -> void:
 	for body in affected.keys():
@@ -183,9 +220,15 @@ func _clear_all_slow() -> void:
 
 func _set_particles_emitting(value: bool) -> void:
 	for child in get_children():
-		var particles := child as GPUParticles2D
-		if particles == null:
-			continue
-		particles.emitting = value
-		if value:
-			particles.restart()
+		if child is GPUParticles2D:
+			var particles := child as GPUParticles2D
+			particles.emitting = value
+			if value:
+				particles.restart()
+		elif child is AnimatedSprite2D:
+			var sprite := child as AnimatedSprite2D
+			sprite.visible = value
+			if value:
+				sprite.play("default")
+			else:
+				sprite.stop()
