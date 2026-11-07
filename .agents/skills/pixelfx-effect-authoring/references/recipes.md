@@ -66,3 +66,22 @@
 
 新增效果时同步：① `load("res://scenes/effects/pixelfx_<name>.gd")`；② `Baker.bake(...)`
 + `save_sprite_frames(..., "combined")`；③ `BBOX_LIMIT` 里加画布 −2px 的上限；④ 打印行补一项。
+## 6. Serina EX（小光环 + 世界坐标光尘 + 入场光束 + 玩家身上的光点螺旋）
+
+| 资源 | 画布 / origin | 时长 / 帧 | 说明 |
+|---|---|---|---|
+| `pixelfx_serina_halo.gd` | `56×56` / `(28,28)` | `2.0s` / `90`（loop） | 正圆小环：半径按整数像素 **13↔17** 呼吸（2s 一次，像素跳变不缩放）+ 内环 + 扩张段回声环 + shimmer/glint/眨眼星 |
+| `pixelfx_serina_burst.gd` | `96×96` / `(48,48)` | `0.9s` / `32`（一次性，裁掉尾部空帧） | 脚下环 `r 4→40`（2px 粗）+ 延迟淡环 + 6 片光瓣；origin 居中避免底部裁切；**结束时倒放**（从最后有内容的第 31 帧起 `play_backwards`，播放前必须把 `global_position` 对齐到当前脚下） |
+| `pixelfx_serina_dust.gd` | `32×32` / `(16,24)` | `0.7s` / `32`（一次性） | 4 颗光点升起（池 8，每 0.12s 一团，世界坐标） |
+| `pixelfx_serina_beam_in.gd` | `44×240` / `(22,210)` | `0.55s` / `25`（一次性） | `p.beam` 光柱从脚底向上喷出 190px（heal-aoe 写法）+ 脚底 flare；**没有退场光束** |
+| `pixelfx_serina_heal.gd` | `48×72` / `(24,64)` | `1.6s` / `62`（一次性） | fork `holy/heal` 的 `riders` 光点螺旋（7 点拖尾 + 轨道 + 辉光）；**无光瓣/无光圈/无心形** |
+
+接线：`scenes/effects/serina_aura.gd`（`play/stop/spawn_heal`），场景 `serina_as.tscn` 的 `Aura`：
+`Halo`（跟人）、`Burst`（结束时倒放）、`BeamIn`（世界坐标，播一次）、`Dust`（`mote_spawner.gd`）、`HealFx`（`heal_spawner.gd`）。两个生成器都继承共用池 `pooled_sprite_spawner.gd`（`set_target()` 时整池一次性迁到玩家节点，`spawn()` 只改位置+播放）。
+`serina_as.gd::heal_tick()` 每次回血调一次 `spawn_heal`（挂在玩家身上的光点螺旋）。
+
+## 7. painter 的 alpha 抖动坑（1px 线）
+
+`Painter.put/dot` 在 `alpha < 1` 时会走 4×4 Bayer 抖动：**1px 细线/光柱用 `p.dot` 会碎成网点/棋盘**。
+正确做法：线状/柱状结构用 `p.px(x, y, color)` 画不透明像素，明暗用**调色板降级**（`C[6]→C[4]→C[2]`）而不是降 alpha；
+只有辉光/柔光用 `p.glow`（走 light 缓冲，不抖动）。环形采样密度取 `int(ceil(TAU * r)) * 2`（间距 ≤0.5px），否则会出现虚线。

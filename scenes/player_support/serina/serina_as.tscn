@@ -1,169 +1,14 @@
 [gd_scene format=3 uid="uid://cfk22a3gdp31j"]
 
 [ext_resource type="Script" uid="uid://dgoom5565yvq8" path="res://scenes/player_support/serina/serina_as.gd" id="1_serina_as"]
-[ext_resource type="Shader" uid="uid://dvycg6oyg2c0t" path="res://shaders/shock_wave_2.gdshader" id="2_shader"]
-[ext_resource type="Texture2D" uid="uid://c7vyq0e22y2jl" path="res://sprites/particle/point_5.png" id="3_point"]
 [ext_resource type="Resource" uid="uid://b4mxuyo18an6h" path="res://resources/buff/player_buff/serina_buff.tres" id="4_buff"]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_serina"]
-resource_local_to_scene = true
-shader = ExtResource("2_shader")
-shader_parameter/center = Vector2(0.5, 0.5)
-shader_parameter/size = 0.0
-shader_parameter/thickness = 0.0
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_serina2"]
-resource_local_to_scene = true
-shader = ExtResource("2_shader")
-shader_parameter/center = Vector2(0.5, 0.5)
-shader_parameter/size = 0.0
-shader_parameter/thickness = 0.0
-
-[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_serina"]
-particle_flag_disable_z = true
-emission_shape = 3
-emission_box_extents = Vector3(20, 15, 1)
-direction = Vector3(0, -1, 0)
-spread = 0.0
-initial_velocity_max = 20.0
-gravity = Vector3(0, -50, 0)
-scale_min = 0.19999999
-scale_max = 0.29999998
-color = Color(0.99999994, 0.68086195, 0.8347038, 1)
-
-[sub_resource type="Animation" id="Animation_serina_reset"]
-length = 0.001
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("ColorRect:material:shader_parameter/size")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [0.0]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("ColorRect:material:shader_parameter/thickness")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [0.0]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("ColorRect2:material:shader_parameter/size")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [0.0]
-}
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath("ColorRect2:material:shader_parameter/thickness")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [0.0]
-}
-tracks/4/type = "value"
-tracks/4/imported = false
-tracks/4/enabled = true
-tracks/4/path = NodePath("GPUParticles2D:emitting")
-tracks/4/interp = 1
-tracks/4/loop_wrap = true
-tracks/4/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [false]
-}
-
-[sub_resource type="Animation" id="Animation_serina_loop"]
-resource_name = "new_animation"
-length = 0.8
-loop_mode = 1
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("ColorRect:material:shader_parameter/size")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.8),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [0.0, 0.5]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("ColorRect:material:shader_parameter/thickness")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.8),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [0.1, 0.0]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("ColorRect2:material:shader_parameter/size")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"times": PackedFloat32Array(0, 0.3, 0.8),
-"transitions": PackedFloat32Array(1, 1, 1),
-"update": 0,
-"values": [0.0, 0.0, 0.5]
-}
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath("ColorRect2:material:shader_parameter/thickness")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/keys = {
-"times": PackedFloat32Array(0, 0.3, 0.8),
-"transitions": PackedFloat32Array(1, 1, 1),
-"update": 0,
-"values": [0.05, 0.05, 0.0]
-}
-tracks/4/type = "value"
-tracks/4/imported = false
-tracks/4/enabled = true
-tracks/4/path = NodePath("GPUParticles2D:emitting")
-tracks/4/interp = 1
-tracks/4/loop_wrap = true
-tracks/4/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [true]
-}
-
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_serina"]
-_data = {
-&"RESET": SubResource("Animation_serina_reset"),
-&"new_animation": SubResource("Animation_serina_loop")
-}
+[ext_resource type="Script" uid="uid://cuir6g5rknb26" path="res://scenes/effects/serina_aura.gd" id="5_aura"]
+[ext_resource type="Script" uid="uid://ufmmn2rdlkgh" path="res://scenes/effects/mote_spawner.gd" id="6_dust"]
+[ext_resource type="Script" uid="uid://dt20bdxqxlnjy" path="res://scenes/effects/heal_spawner.gd" id="7_heal"]
+[ext_resource type="SpriteFrames" path="res://scenes/effects/serina_halo_frames.res" id="8_halo"]
+[ext_resource type="AudioStream" uid="uid://c1mrruq075ll8" path="res://sounds/laser2.wav" id="9_7xmec"]
+[ext_resource type="SpriteFrames" path="res://scenes/effects/serina_burst_frames.res" id="9_burst"]
+[ext_resource type="SpriteFrames" path="res://scenes/effects/serina_beam_in_frames.res" id="10_beam_in"]
 
 [node name="serina_as" type="Node2D" unique_id=31013821]
 script = ExtResource("1_serina_as")
@@ -171,40 +16,44 @@ heal_buff = ExtResource("4_buff")
 
 [node name="Aura" type="Node2D" parent="." unique_id=830278574]
 top_level = true
+script = ExtResource("5_aura")
 
-[node name="ColorRect" type="ColorRect" parent="Aura" unique_id=1870971669]
+[node name="Halo" type="AnimatedSprite2D" parent="Aura" unique_id=1870971669]
+visible = false
 z_index = -1
-material = SubResource("ShaderMaterial_serina")
-offset_left = -35.0
-offset_top = -35.0
-offset_right = 35.0
-offset_bottom = 35.0
-mouse_filter = 2
-color = Color(1, 0.6, 0.8, 1)
+sprite_frames = ExtResource("8_halo")
+centered = false
+offset = Vector2(-28, -28)
 
-[node name="ColorRect2" type="ColorRect" parent="Aura" unique_id=748378313]
+[node name="Burst" type="AnimatedSprite2D" parent="Aura" unique_id=748378313]
+visible = false
+top_level = true
 z_index = -1
-material = SubResource("ShaderMaterial_serina2")
-offset_left = -35.0
-offset_top = -35.0
-offset_right = 35.0
-offset_bottom = 35.0
-mouse_filter = 2
-color = Color(1, 0.6, 0.8, 1)
+sprite_frames = ExtResource("9_burst")
+centered = false
+offset = Vector2(-48, -48)
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="Aura" unique_id=1547188733]
-modulate = Color(9, 3, 5, 0.02)
-z_index = 2
-position = Vector2(0, -7)
-emitting = false
-texture = ExtResource("3_point")
-process_material = SubResource("ParticleProcessMaterial_serina")
+[node name="BeamIn" type="AnimatedSprite2D" parent="Aura" unique_id=1547188733]
+visible = false
+top_level = true
+sprite_frames = ExtResource("10_beam_in")
+centered = false
+offset = Vector2(-22, -210)
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="Aura" unique_id=1896332818]
-libraries/ = SubResource("AnimationLibrary_serina")
+[node name="Dust" type="Node2D" parent="Aura" unique_id=1883917754]
+script = ExtResource("6_dust")
+
+[node name="HealFx" type="Node2D" parent="Aura" unique_id=1883917755]
+script = ExtResource("7_heal")
 
 [node name="SkillTimer" type="Timer" parent="." unique_id=905156879]
 wait_time = 8.0
 one_shot = true
 
 [node name="HealTimer" type="Timer" parent="." unique_id=2125922650]
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="." unique_id=482907673]
+stream = ExtResource("9_7xmec")
+volume_db = 4.0
+pitch_scale = 1.5
+bus = &"SFX"

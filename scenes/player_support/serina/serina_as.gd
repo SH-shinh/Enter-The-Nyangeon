@@ -13,7 +13,7 @@ extends SupportAS
 @onready var skill_timer: Timer = $SkillTimer
 @onready var heal_timer: Timer = $HealTimer
 @onready var aura: Node2D = $Aura
-@onready var aura_anim: AnimationPlayer = $Aura/AnimationPlayer
+@onready var audio_stream_player_2d = $AudioStreamPlayer2D
 
 var player: Node
 
@@ -31,7 +31,8 @@ func _on_skill_active() -> void:
 	player.stats.heal_overflow_to_t_hp = true
 	BuffRouter.apply_buff(player, heal_buff, [1, heal_buff_value, buff_erase_timer])
 	aura.global_position = player.global_position
-	aura_anim.play("new_animation")
+	aura.call("play")
+	audio_stream_player_2d.play()
 	skill_timer.start()
 	heal_timer.start()
 	set_process(true)
@@ -45,7 +46,7 @@ func _on_skill_end() -> void:
 	skill_timer.stop()
 	heal_timer.stop()
 	set_process(false)
-	aura_anim.play("RESET")
+	aura.call("stop")
 	if player != null and is_instance_valid(player):
 		player.stats.heal_overflow_to_t_hp = false
 		BuffRouter.remove_buff(player, heal_buff)
@@ -62,3 +63,4 @@ func heal_tick() -> void:
 		"ignore_heal_mult": true,
 	})
 	player.health_component.take_damage(player.health_component.heal_data)
+	aura.call("spawn_heal")

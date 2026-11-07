@@ -4,16 +4,21 @@ extends SceneTree
 ## 运行：godot --headless --path . -s res://script/bake_pixelfx_fx.gd
 ##
 ## 产物（都要一起提交）：
-##   scenes/effects/heal_ring_frames.res          环（2.0s / 45fps / 208×208）
-##   scenes/effects/heal_plus_small.res           小号 "+"（0.6s / 45fps）
-##   scenes/effects/heal_plus_big.res             大号 "+"（0.6s / 45fps）
-##   scenes/effects/corruption_aura_frames.res    腐化敌人光环（1.6s / 45fps / 72×72）
-##   scenes/effects/corruption_bubbles_frames.res 地坑冒泡（2.4s / 45fps / 116×116）
-##   scenes/effects/frenzy_aura_frames.res        狂怒敌人光环（1.2s / 45fps / 80×80）
+##   scenes/effects/heal_ring_frames.res            环（2.0s / 45fps / 208×208）
+##   scenes/effects/heal_plus_small.res             小号 "+"（0.6s / 45fps）
+##   scenes/effects/heal_plus_big.res               大号 "+"（0.6s / 45fps）
+##   scenes/effects/corruption_aura_frames.res      腐化敌人光环（1.6s / 45fps / 72×72）
+##   scenes/effects/corruption_bubbles_frames.res   地坑冒泡（2.4s / 45fps / 116×116）
+##   scenes/effects/frenzy_aura_frames.res          狂怒敌人光环（1.2s / 45fps / 80×80）
+##   scenes/effects/serina_halo_frames.res          Serina 小光环（2.0s / 45fps / 64×64）
+##   scenes/effects/serina_burst_frames.res         Serina 激活爆发（0.9s / 45fps / 96×96）
+##   scenes/effects/serina_dust_frames.res          Serina 光尘（0.7s / 45fps / 40×40）
+##   scenes/effects/serina_beam_in_frames.res       Serina 入场光束（0.55s / 45fps / 56×200）
+##   scenes/effects/serina_beam_out_frames.res      Serina 退场光束（0.45s / 45fps / 56×200）
 ##
-## 改完对应的 pixelfx_*.gd 之后重跑本脚本即可。除 heal 外都会做：
-##   ① 不透明包围盒断言（画布 - 2px 余量），超出直接失败；
-##   ② 空白帧断言（每帧必须至少有一个像素），有空白帧直接失败。
+## 断言：
+##   ① 不透明包围盒（画布 - 2px 余量）越界即失败；
+##   ② 循环效果每帧必须有像素；一次性效果允许"末尾空帧"，但非空帧比例须 ≥95%。
 
 const Baker := preload("res://addons/pixelfx/bake/baker.gd")
 
@@ -22,6 +27,21 @@ const BBOX_LIMIT := {
 	"corruption_aura_frames.res": 70,
 	"corruption_bubbles_frames.res": 112,
 	"frenzy_aura_frames.res": 78,
+	"serina_halo_frames.res": 54,
+	"serina_burst_frames.res": 94,
+	"serina_dust_frames.res": 30,
+	"serina_beam_in_frames.res": 238,
+	"serina_heal_frames.res": 70,
+	
+}
+
+## 一次性效果：允许末尾空帧（收尾淡出）
+const ONESHOT := {
+	"serina_burst_frames.res": true,
+	"serina_dust_frames.res": true,
+	"serina_beam_in_frames.res": true,
+	"serina_heal_frames.res": true,
+	
 }
 
 
@@ -32,6 +52,12 @@ func _initialize() -> void:
 	var aura: Script = load("res://scenes/effects/pixelfx_corruption_aura.gd")
 	var bubbles: Script = load("res://scenes/effects/pixelfx_corruption_bubbles.gd")
 	var frenzy: Script = load("res://scenes/effects/pixelfx_frenzy_aura.gd")
+	var halo: Script = load("res://scenes/effects/pixelfx_serina_halo.gd")
+	var burst: Script = load("res://scenes/effects/pixelfx_serina_burst.gd")
+	var dust: Script = load("res://scenes/effects/pixelfx_serina_dust.gd")
+	var beam_in: Script = load("res://scenes/effects/pixelfx_serina_beam_in.gd")
+	
+	var heal: Script = load("res://scenes/effects/pixelfx_serina_heal.gd")
 
 	var b1: Dictionary = Baker.bake(ring, {"reach": 85.0})
 	var e1 := Baker.save_sprite_frames(b1, "res://scenes/effects/heal_ring_frames.res", "combined")
@@ -51,42 +77,113 @@ func _initialize() -> void:
 	var b6: Dictionary = Baker.bake(frenzy, {"seed": 6.0})
 	var e6 := Baker.save_sprite_frames(b6, "res://scenes/effects/frenzy_aura_frames.res", "combined")
 
-	print("BAKE ring n=%d %s err=%d | plus_small n=%d err=%d | plus_big n=%d err=%d | aura n=%d %s err=%d | bubbles n=%d %s err=%d | frenzy n=%d %s err=%d | ms=%d" % [
-		b1.n, str(b1.size), e1, b2.n, e2, b3.n, e3, b4.n, str(b4.size), e4, b5.n, str(b5.size), e5,
-		b6.n, str(b6.size), e6, Time.get_ticks_msec() - t0])
+	var b7: Dictionary = Baker.bake(halo, {"seed": 4.0})
+	var e7 := Baker.save_sprite_frames(b7, "res://scenes/effects/serina_halo_frames.res", "combined")
+
+	var b8: Dictionary = Baker.bake(burst, {"seed": 6.0})
+	var t8 := _trim_tail(b8)
+	var e8 := Baker.save_sprite_frames(b8, "res://scenes/effects/serina_burst_frames.res", "combined")
+
+	var b9: Dictionary = Baker.bake(dust, {"seed": 9.0})
+	var t9 := _trim_tail(b9)
+	var e9 := Baker.save_sprite_frames(b9, "res://scenes/effects/serina_dust_frames.res", "combined")
+
+	var b10: Dictionary = Baker.bake(beam_in, {"seed": 3.0})
+	var t10 := _trim_tail(b10)
+	var e10 := Baker.save_sprite_frames(b10, "res://scenes/effects/serina_beam_in_frames.res", "combined")
+
+	var b11: Dictionary = Baker.bake(heal, {"seed": 5.0})
+	var t11 := _trim_tail(b11)
+	var e11 := Baker.save_sprite_frames(b11, "res://scenes/effects/serina_heal_frames.res", "combined")
+
+	print("BAKE ring=%d plus_small=%d plus_big=%d aura=%d bubbles=%d frenzy=%d | serina halo=%d burst=%d dust=%d beam_in=%d heal=%d (trim %d/%d/%d/%d) | errs=%s | ms=%d" % [
+		b1.n, b2.n, b3.n, b4.n, b5.n, b6.n, b7.n, b8.n, b9.n, b10.n, b11.n,
+		t8, t9, t10, t11,
+		str([e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11]), Time.get_ticks_msec() - t0])
 
 	var ok := true
-	ok = _check_frames(b4, "corruption_aura_frames.res") and ok
-	ok = _check_frames(b5, "corruption_bubbles_frames.res") and ok
-	ok = _check_frames(b6, "frenzy_aura_frames.res") and ok
+	for pair in [
+		[b4, "corruption_aura_frames.res"], [b5, "corruption_bubbles_frames.res"],
+		[b6, "frenzy_aura_frames.res"], [b7, "serina_halo_frames.res"],
+		[b8, "serina_burst_frames.res"], [b9, "serina_dust_frames.res"],
+		[b10, "serina_beam_in_frames.res"], [b11, "serina_heal_frames.res"],
+	]:
+		ok = _check_frames(pair[0], pair[1]) and ok
 	quit(0 if ok else 1)
 
 
-## 逐帧统计 combined 的非透明包围盒；越界或有空白帧就报错。
+## 裁掉一次性效果末尾的全空帧（倒放时从最后一帧开始才有内容）。
+func _trim_tail(baked: Dictionary) -> int:
+	var frames: Array = baked["combined"]
+	var colors: Array = baked["color"]
+	var lights: Array = baked["light"]
+	var removed := 0
+	while frames.size() > 1:
+		var img: Image = frames[frames.size() - 1]
+		var used := img.get_used_rect() if img != null else Rect2i()
+		if img != null and used.size.x > 0 and used.size.y > 0:
+			break
+		frames.pop_back()
+		if colors.size() > 1:
+			colors.pop_back()
+		if lights.size() > 1:
+			lights.pop_back()
+		removed += 1
+	baked["n"] = frames.size()
+	return removed
+
+
+## 逐帧统计 combined 的非透明包围盒；越界或有不该出现的空帧就报错。
 func _check_frames(baked: Dictionary, name: String) -> bool:
 	var limit: int = int(BBOX_LIMIT.get(name, 0))
 	var worst := 0
 	var worst_frame := -1
-	var empty := 0
-	for i in baked["combined"].size():
-		var img: Image = baked["combined"][i]
-		if img == null:
-			empty += 1
-			continue
-		var used: Rect2i = img.get_used_rect()
-		if used.size.x <= 0 or used.size.y <= 0:
-			empty += 1
+	var frames: Array = baked["combined"]
+	var blank: Array[bool] = []
+	for i in frames.size():
+		var img: Image = frames[i]
+		var used := Rect2i()
+		if img != null:
+			used = img.get_used_rect()
+		var is_blank := img == null or used.size.x <= 0 or used.size.y <= 0
+		blank.append(is_blank)
+		if is_blank:
 			continue
 		var side: int = maxi(used.size.x, used.size.y)
 		if side > worst:
 			worst = side
 			worst_frame = i
-	print("FRAMES %s worst=%d (frame %d) limit=%d empty=%d" % [name, worst, worst_frame, limit, empty])
+
+	var total := blank.size()
+	var blanks := 0
+	for b in blank:
+		if b:
+			blanks += 1
+	var leading := 0
+	for i in total:
+		if blank[i]:
+			leading += 1
+		else:
+			break
+	var trailing := 0
+	for i in range(total - 1, -1, -1):
+		if blank[i]:
+			trailing += 1
+		else:
+			break
+
+	print("FRAMES %s worst=%d (frame %d) limit=%d empty=%d lead=%d tail=%d n=%d" % [name, worst, worst_frame, limit, blanks, leading, trailing, total])
+
 	var ok := true
 	if limit > 0 and worst > limit:
 		push_error("%s bbox %d exceeds %d" % [name, worst, limit])
 		ok = false
-	if empty > 0:
-		push_error("%s has %d empty frames" % [name, empty])
+	if ONESHOT.has(name):
+		# 一次性效果允许首尾为空（淡入/淡出），但中间不能断片
+		if blanks != leading + trailing:
+			push_error("%s has %d blank frames in the middle" % [name, blanks - leading - trailing])
+			ok = false
+	elif blanks > 0:
+		push_error("%s has %d empty frames (loop must be non-empty)" % [name, blanks])
 		ok = false
 	return ok
