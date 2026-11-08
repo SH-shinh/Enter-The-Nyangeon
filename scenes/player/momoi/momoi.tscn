@@ -38,12 +38,16 @@ shader = ExtResource("4_op6xi")
 shader_parameter/outline_width = 2.0
 shader_parameter/outline_color = Color(50, 1, 20, 1)
 shader_parameter/flash_opacity = 0.0
+shader_parameter/corruption_tint = Color(1, 1, 1, 1)
+shader_parameter/corruption_amount = 0.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_y8jd2"]
 shader = ExtResource("4_op6xi")
 shader_parameter/outline_width = 1.0
 shader_parameter/outline_color = Color(50, 1, 20, 1)
 shader_parameter/flash_opacity = 0.0
+shader_parameter/corruption_tint = Color(1, 1, 1, 1)
+shader_parameter/corruption_amount = 0.0
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_i7g3u"]
 atlas = ExtResource("9_by0lj")

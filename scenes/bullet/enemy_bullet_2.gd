@@ -11,11 +11,10 @@ var firest_speed: int = 0
 
 @onready var bullet_launcher = $BulletLauncher
 
-func bullet_kill():
-	if now_penetrate <= 0:
-		bullet_shoot()
-		bulletSmoke(global_position)
-		idle_state.call_deferred()
+func bullet_clear():
+	bullet_shoot()
+	bulletSmoke(global_position)
+	idle_state.call_deferred()
 
 func bullet_shoot():
 	bullet_launcher.source_faction = source_faction
@@ -43,6 +42,4 @@ func _on_bullet_kill_timer_timeout():
 	if kill_time > 0:
 		kill_time -= 1
 	else:
-		bullet_shoot()
-		bulletSmoke(global_position)
-		idle_state.call_deferred()
+		bullet_clear()

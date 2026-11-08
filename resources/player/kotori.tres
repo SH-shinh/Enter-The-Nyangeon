@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="PlayerCard" load_steps=3 format=3 uid="uid://c4mqf18a5qd3u"]
+[gd_resource type="Resource" script_class="PlayerCard" format=3 uid="uid://c4mqf18a5qd3u"]
 
 [ext_resource type="Texture2D" uid="uid://dmdrvb1nk6dgu" path="res://sprites/player/kotori/kotori_picture_halo.png" id="1_2yqxk"]
-[ext_resource type="Script" path="res://resources/player/player.gd" id="2_os2y6"]
+[ext_resource type="Script" uid="uid://mhculkp4opo6" path="res://resources/player/player.gd" id="2_os2y6"]
 
 [resource]
 script = ExtResource("2_os2y6")
@@ -11,7 +11,6 @@ weapon_type = "MG"
 sprite_path = "res://sprites/player/kotori/kotori_picture.png"
 halo = ExtResource("1_2yqxk")
 color = Color(0.980392, 0.917647, 0.568627, 1)
-description = ""
 voice_name = "kotori"
 id = "kotori"
-scene_path = "res://scenes/player/kotori/kotori.tscn"
+scene_path = "uid://citsf8wndb10m"

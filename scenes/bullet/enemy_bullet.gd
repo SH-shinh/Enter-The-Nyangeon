@@ -53,8 +53,7 @@ func _on_body_entered(body: Node) -> void:
 		return
 	if body == null or not body.is_in_group("BulletWall"):
 		return
-	bulletSmoke(global_position)
-	idle_state()
+	bullet_clear()
 
 func is_on_ready():
 	is_ready = true

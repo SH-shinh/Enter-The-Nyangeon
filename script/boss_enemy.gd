@@ -1,7 +1,7 @@
 class_name BossEnemy
 extends Enemy
 
-# Boss 实体基类：只负责自己的血量、阶段、动画和奖励内容。
+# Boss 实体基类：只负责自己的血量、阶段、动画和奖励内容。 parse-check
 # 镜头/暂停/回合结束由 BossRoundController + BossCinematic 负责，Boss 不直接写 paused。
 signal boss_enter_finished
 signal boss_death_finished

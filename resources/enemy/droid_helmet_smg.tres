@@ -10,4 +10,4 @@ id = "droid_helmet_smg"
 body = ExtResource("1_ei5kc")
 icon = ExtResource("2_t2joe")
 position_y = 62.0
-chip_tags = Array[String](["ranged", "elite"])
+chip_tags = Array[String](["melee", "elite"])
