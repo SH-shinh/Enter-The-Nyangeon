@@ -4174,3 +4174,69 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - 2026-11-08（来源：user）：Serina EX 三改——① 去掉退场光束（`BeamOut` 连同图集/脚本/烘焙项一并删除），改为**结束倒放 burst 环**；注意 burst 末尾 10 帧是淡出空帧，`play_backwards` 必须先从最后有内容的帧（第 31 帧）`set_frame` 再播，否则前 0.2s 什么也看不到。② 回血特效改为 `holy/heal` 的 `riders` 光点螺旋（7 点拖尾 + 轨道），按用户要求**去掉光瓣/光圈/心形**，只留螺旋；`pixelfx_serina_heal.gd` 80×104 / 1.6s / 73 帧。③ 回血特效不再世界坐标，`heal_spawner.spawn()` 直接 `reparent` 到 `group("Player")` 的玩家节点下（`top_level=false`），随玩家移动；池 3，`stop()` 清空。
 - 2026-11-08（来源：user）：① 结束倒放的环“不在脚下”：`Burst` 是 `top_level` 世界坐标精灵，位置只在激活时设过一次；8 秒里玩家会走开，`stop()` 必须先 `_burst.global_position = global_position`（Aura 每帧跟随玩家）再倒放。② 脚下光环加“扩散收缩呼吸”：半径 `roundf(15 + 2*sin(t/D*TAU))` → 在 13↔17 之间**按整数像素跳变**（不缩放、不插值），另加半径 `rr-3` 的内环与扩张段的 `rr+2` 稀疏回声环；这比节点缩放更有像素感。
 - 2026-11-08（来源：code）：Serina EX 显存/结构优化。① 画布按内容 bbox 收紧：halo 64²→56²、dust 40²→32²、beam 56×260→44×240、heal 80×104→48×72；烘焙新增 `_trim_tail()` 裁掉一次性效果末尾全空帧（burst 42→32、beam 26→25、heal 73→62、dust 不变）。5 张图集合计 7.16MB → **4.35MB（−39%）**，45fps 不变；`BBOX_LIMIT` 与场景/生成器 offset 同步，bbox 断言全过。② 结构：新增共用池 `scenes/effects/pooled_sprite_spawner.gd`（`frames/origin/scale/pool_cap/attach_to_target` + `spawn/clear/set_target`），`mote_spawner`/`heal_spawner` 变薄；`heal` 的整池在 `set_target()` 时一次性 `reparent` 到玩家（热路径不再做树操作）；`serina_aura` 去掉 `has_method` 鸭子调用与 `BURST_LAST_VISIBLE` 魔数（裁尾后倒放直接从头播）。
+
+### [Buff] `apply_buff` 只刷新时长、不更新已有条目的 `value` → 升级换每层值必须清标记重上
+- Evidence / 证据: `scenes/manager/buff_manager_base.gd:apply_buff`（已有条目：`entry["now_time"] = 0` 后若 `entry["layer"] >= entry["max_layer"]` 直接 return，不写 `entry["value"]`）；`scenes/player/maki/maki_ps.gd:_clear_paint_marks` 在 `ps_upgrade` 时对场上带标记敌人 `remove_buff`。
+- Notes / 说明: 标记类 buff 的每层数值随 PS 升级变化时（Maki 颜料标记 T1 10%/层 → T2 20%/层），**只靠再次 `apply_buff` 不会更新已存在条目的 `value`**，旧层会一直按旧值算；要么在升级时清掉重上（本项目选用，升级发生在轮间商店，清层可接受），要么直接改 `entry["value"]` 并手动补 `host` 属性差（不推荐，绕过 manager 封装）。
+- Source / 来源: code
+- Date / 日期: 2026-11-08
+
+### [Buff] `Buff.ability` 是宿主属性的直接字段名，不走 `BuffStatMap`
+- Evidence / 证据: `scenes/manager/buff_manager_base.gd:_apply_ability`（`host.set(resource.ability, host.get(resource.ability) + entry["value"] * layers)`）；`resources/buff/enemy_buff/maki_paint_mark.tres`（`ability = "anomaly_hurt_damage_mult"`）与 `script/EnemyStats.gd` 新字段；`_apply_modifiers` 才走 `BuffStatMap`。
+- Notes / 说明: 想给敌人加一个新的乘区（如「异常伤害易伤」），只要在 `EnemyStats` 加同名字段、buff 的 `ability` 填字段名即可，**不需要**改 `BuffStatMap`（那是 `modifiers` 的 key→字段映射）；读取点自行决定在 `update_body_ability`（折叠）还是结算时直接读（本项目异常易伤在 `HealthComponent._apply_anomaly_vulnerability` 直接读，避免影响真伤/护盾折叠）。
+- Source / 来源: code
+- Date / 日期: 2026-11-08
+
+### [PS] 充能统计挂 `enemy_damage_taken`：DOT 跳伤/火场/毒环都会计入
+- Evidence / 证据: `scenes/player/maki/maki_ps.gd:_on_enemy_damage_taken`（`AnomalyDamage.is_anomaly_damage(data)` + `Faction.of_source(source_type)==PLAYER_SIDE` → `_energy += 1`）；`script/health_component.gd:_resolve_damage` 的 `emit_enemy_damage_taken`。
+- Notes / 说明: Maki 彩弹按「每次玩家侧异常伤害 +1 能量」充能，因此燃烧/中毒 DOT 每跳、火场/毒环、自身异常直伤都会计入；若后续只想统计自身 proc，改过滤条件为 `source_type.has(GameTags.PS_DAMAGE)` 即可（一行）。**投掷不要放在该信号回调里**：它发生在 `take_damage` 结算内部，嵌套 `apply_buff` 容易在属性重算中途改敌人属性；本实现只累加能量，投掷统一放到 10Hz `global_time_count`。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-08
+
+### [Damage] 异常易伤在 `HealthComponent` 结算口读取，真伤也吃；常驻标记靠 `clear_all_buff` 回滚
+- Evidence / 证据: `script/health_component.gd:_apply_anomaly_vulnerability`（`AnomalyDamage.is_anomaly_damage` 才乘 `stats.anomaly_hurt_damage_mult`，位于 `_apply_anomaly_crit` 之前）；`script/entity_ENEMY.gd:idle_state`（`clear_all_buff()`）→ `BuffManagerBase._remove_ability` 回滚 `anomaly_hurt_damage_mult` / `global_hurt_damage_mult`。
+- Notes / 说明: 异常易伤乘区对 `TRUE_DAMAGE`（火场）也生效（因为不看 `is_true`），而 T3 的全局易伤走 `global_hurt_damage`，按既有语义**不作用于真伤**——两者语义不同，文档/卡面要写清。标记设计为常驻（`value[2]=9999.0`，每次投掷刷新）时，务必确认敌人回池走 `clear_all_buff()`，否则 999 层的属性会留在池化敌人身上泄漏到下一波。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-08
+
+### [Buff] 同 id 的多个 Buff 资源按 tier 切换：单一条目/单张卡承载两套效果
+- Evidence / 证据: `resources/buff/enemy_buff/maki_paint_mark.tres`（T1/T2，仅 `ability=anomaly_hurt_damage_mult`）与 `maki_paint_mark_t3.tres`（T3，**同 `id="maki_paint_mark"`**，额外 `modifiers=[{"key":"hurt_mult_mult","source":"const","amount":0.1}]`）；`scenes/player/maki/maki_ps.gd:_throw_paintball`（按 `_tier()` 选 `mark_res`）；`scenes/manager/buff_manager_base.gd:_apply_modifiers`（`source:"const"` → `amount × layers`，字段由 `BuffStatMap` 解析到 `global_hurt_damage_mult`）。
+- Notes / 说明: 想给同一个 debuff 在更高等级加「额外属性」又不想多一个 buff 图标时，可准备**同 id 的多个 Buff 资源**，由施加方按等级选择：`apply_buff` 用资源建条目、之后按 id 复用/移除，卡面与层数只有一份。三个前提：① `apply_buff` 在已有条目上**不会替换** `entry["resource"]`，升级时必须先清旧标记（`_clear_paint_marks`），否则会继续用旧档位资源；② `modifiers` 的 `source` 只有 `"value"` 取 `entry["value"]`，其余（如 `"const"`）按 `amount` 且会 `× layers`，正好表达「每层 X%」；③ 联机 `enemy_buff_apply_gate` 转发的是 `buff.resource_path`，host 会 `load` 到同档资源，变体不需要额外协议。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-08
+
+### [FX] 飞行类烘焙特效：单发蓝本 + 运行时旋转/位移，颜色用多套 palette 分别烘焙
+- Evidence / 证据: `scenes/effects/pixelfx_maki_paintball_bolt.gd` / `pixelfx_maki_paintball_pop.gd`（参考 `third_party/pixelfx-godot/godot/addons/pixelfx/fx/arcane/arcane-missiles.gd` 的单发弹头/尾带/爆点，MIT）；`scenes/effects/maki_paintball_fx.gd`（`active_state(from,to,color)`：`rotation=(to-from).angle()`、`offset=-origin`、tween 位置，到达后换 pop 帧再回池）；`script/bake_pixelfx_fx.gd` 的 `MAKI_PAINT_RAMPS` 三色循环 bake。
+- Notes / 说明: ① 参考库的整段 1.75s 五连发/锁定括号/施法者身体不适合本作短途投掷——**只取单发弹体**（弹头 + 扭尾 + pop），飞行/朝向/落点交给运行时节点，烘焙产物小、可复用。② AnimatedSprite2D 用 `centered=false` + `offset = -meta.origin`，把 **origin 对齐到节点位置**，再旋转节点，弹头就不会绕圈；飞行段与 pop 段 origin 不同，切换时同时改 `offset` + `sprite_frames`。③ 随机颜色不要用 `modulate` 染单套烘焙帧（白核会被一起染色、失去亮度层次）；本项目改为**同结构 3 套 palette 分别烘焙**，运行时按颜色索引选帧资源，且索引与 `floor_paint` 的 0=Pink/1=Blue/2=Yellow 对齐，落地颜料同色。④ 细长尾带用 `p.px` 实心绘制而不是带 alpha 的 `p.dot`（后者 4×4 Bayer 抖动会把细带打碎成网点）；尾带按 u 渐变色、避免逐列亮芯造成“梯子”分段。⑤ 一次性帧用 `_trim_tail` 裁尾，画布留 8px 边距避免 `edge_fade` 方框。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-08
+
+### [FX] 抛射弹道与发射音效：贝塞尔 + `tween_method` + `speed_scale`，PS 内挂 `AudioStreamPlayer2D`
+- Evidence / 证据: `scenes/effects/maki_paintball_fx.gd`（`active_state` 里 `fly_seconds=clampf(dist/900,0.32,0.55)`、`arc_height=clampf(dist*0.16,16,40)`、`mid=(from+to)/2+(0,-arc)`、`tween_method(_set_arc_t,0,1,fly)`、`rotation=tangent.angle()`、`sprite.speed_scale=(帧数/45)/fly_seconds`）；`scenes/player/maki/maki_ps.gd:_play_paintball_sound` 与 `_spawn_paint_splat`（落地 `SoundManager.play_sfx("ExplosionSounds")`）；`scenes/player/maki/maki_ps.tscn` 的 `PaintballSound`（`sounds/magic3.wav`，`process_mode=3`/`volume_db=6`/`bus=SFX`）。
+- Notes / 说明: ① 抛物线直接对**节点 `global_position`** 用 `tween_method` 驱动二次贝塞尔，`rotation` 取切线角即可让弹头沿弧线抬头/俯冲；不要用 `tween_property(global_position)` 走直线。② 烘焙帧是固定 one-shot 时长的，慢速飞行不要重烘焙：用 `sprite.speed_scale = 动画时长 / fly_seconds` 把动画拉到整段飞行，到达时复位为 1 再播 pop。③ 时长/弧高按距离缩放（`clampf(dist/900,0.32,0.55)`、`clampf(dist*0.16,16,40)`），贴脸和远距离都自然；落地颜料/爆炸音都由 FX 的 `arrive_cb` 触发，PS 不再自己计时。④ 武器/技能音效直接给 PS 挂 `AudioStreamPlayer2D`（照抄对应 gun 的 `FireSounds` 设置：`process_mode=3`、音量、SFX 总线），投掷时 `pitch_scale=randf_range(0.9,1.1)` 再 `play()`；音效不受 `fx_allowed` 门控，关特效时仍会响。⑤ 复用全局爆炸音用 `SoundManager.play_sfx("ExplosionSounds")`（与 `explosion_damage.gd` 同一个播放器）：简单可靠，但会重启正在播的爆炸音；要“绝不打断”可改 `play_sfx_once`（代价是撞上其它爆炸时可能不响）。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-08
+
+### [FX] 烘焙拖尾太死板 → 运行时像素飘带（轨迹点 + 1×1 `draw_rect` + `top_level`）
+- Evidence / 证据: `scenes/effects/maki_paintball_trail.gd`（`_pos`/`_age` 平行 Packed 数组、`begin/push/finish/clear/point_count`、`_draw` 沿相邻点法线画 1px 像素带、`top_level`）；`scenes/effects/maki_paintball_fx.gd` 在 `_set_arc_t` 里 `trail.push(global_position)`、`_on_arrive` 里 `finish`、`idle_state` 里 `clear`；`scenes/effects/pixelfx_maki_paintball_bolt.gd` 已去掉尾带、只留弹头（`BBOX_LIMIT` 94→62）。
+- Notes / 说明: 烘焙尾带随弹体刚性旋转，弧线飞行时不会弯曲，观感死板 → 拖尾改为运行时按**真实飞行轨迹**绘制：记录世界坐标点 + 年龄，`top_level` 脱离弹体变换；宽度 `4.6*k+1.0` 随年龄渐细、`sin(age*30+i*0.6)` 做横向扭转、三套 ramp 用亮色（`ramp[0]` 深色在深背景上会消失，尾端只用最暗一阶会断成虚线）；1×1 `draw_rect` 保持像素风，所有矩形在同一个 CanvasItem 内合批（实测整场 draw call 只 +1）；无点时 `set_process(false)`，空闲零开销。性能兜底顺序：2px 块绘制 → 缩短 `MAX_AGE`（0.24→0.18）→ 隔帧重绘（30Hz）→ 改成 `draw_colored_polygon` 单条网格飘带。**发光（2026-11-08）**：需要“微光”时给 Trail 挂 `CanvasItemMaterial`（`blend_mode=1`，ADD），颜色改半透明亮色（alpha 即强度：主体 0.38 / 外沿 0.22 / 头芯 0.80 / 尾端 0.26）；ADD 只做加法、永远不会把地面压暗，深色 `ramp[0]` 在 ADD 下等于无效而不是发黑——这同时解决了亮蓝地面上的“黑边/黑点”。亮背景要降 alpha（0.38/0.22 起步），否则泛白；暗背景预览会掩盖该问题，需用接近实机地面色验证。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-08
+
+### [Pool] Maki 特效链池化优化：prewarm + 固定环形缓冲 + 到达回调
+- Evidence / 证据: `scenes/manager/PoolManager.gd:prewarm`（`pool_total>0` 跳过、按 `layer_group` 挂载、`idle_state` 收尾）；`scenes/player/maki/maki_ps.gd:_ready` 三行预热（`maki_paintball` 2 / `anomaly_paint` 4 / `floor_paint` 2）；`scenes/effects/maki_paintball_trail.gd` 固定 `PackedVector2Array(64)`/`PackedFloat32Array(64)` + `_head/_count` 环形缓冲；`scenes/effects/maki_paintball_fx.gd:active_state(..., arrive_cb)` 与 `_on_arrive` 回调；`maki_ps._spawn_paintball_visual` 已删除延迟 Tween，改传 `_spawn_paint_splat.bind(center, color)`。
+- Notes / 说明: ① “有池”不等于“不卡”：首次 `instantiate()` + `_ready()` 仍在战斗中发生，用 `prewarm` 在玩家 `_ready` 提前垫 2/4/2，并做幂等（池里已有节点就跳过），避免换角色/重建时越垫越多。② 高频轨迹历史不要用 `append`/`remove_at(0)`（会扩容/搬移），改固定长度环形缓冲，`Packed*Array` 只 `resize` 一次。③ 跨系统计时收口到效果自身：FX 到达时回调铺地面颜料，比 PS 另建 Tween 少一次分配，也不会出现“弹体被池回收但颜料照铺”。④ 明确不池化：`DamageData`（`_pending_extra` 同帧引用，共享槽位有别名风险）、Tween（一次性对象）、飘带的 `draw_rect` 命令（不是节点）。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-08
+
+### [Shader] 竖向液体充能条：ColorRect + ShaderMaterial（方框 + 液面波动 + 三色循环）
+- Evidence / 证据: `shaders/maki_paint_charge_bar.gdshader`（`fill` / `size_px` / `border_px`、`paint_cycle(TIME)` 三色分段 `mix`、`wave_amp/freq/speed`）；`scenes/player/maki/maki_ps.tscn` 的 `PaintEnergy`（ColorRect 16×24 + `ShaderMaterial`，`resource_local_to_scene = true`）；`scenes/player/maki/maki_ps.gd:_update_energy_bar()`（写 `fill` uniform）；写法仿 `scenes/debuff/frenzy_effect.tscn` 的 `BurnBar`。
+- Notes / 说明: ① 竖向充能条不需要贴图：方框/内衬/液体全在 canvas_item shader 里按 `UV * size_px` 画，`fill` uniform 由脚本写；② 材质必须 `resource_local_to_scene = true`，否则联机镜像/多实例共享同一 ShaderMaterial，液面互相影响；③ 颜色周期用 `fract(TIME/period)*3` 分三段 `mix(a,b,c)`，`period` 做成 uniform；④ uniform 更新放在扣数值之后（`_tick_paintball` 先更新再扣会让条短暂停在满格）；⑤ **Godot shader 已内置 `TAU`**，不要再 `const float TAU = ...`，否则编译报 `Redefinition of 'TAU'`；⑥ 预览/截图是线性空间，颜色会比 sRGB 观感发暗，判断颜色时看渲染色相即可。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-08
+- 2026-11-08（来源：user + code）：恶寒（chill）buff 的 tick 视觉从 `chill_dot.tscn`（PooledFollowFx + 蓝色 GPUParticles2D）换成参考库 `ice/freeze` 的冰晶段：`pixelfx_chill_frost.gd`（48×64 / 0.65s / 30 帧，45fps）——6 根棱柱贴身体生长、扫光、2 条裂纹、降级淡出；按用户要求**去掉地面霜**（不用 `freeze.gd` 的 `floorFrost`），并按 `HurtBoxMeasure` 脚底锚定 + `size.y/36` 缩放适配体型（0.8–2.0，measure 0.25s 缓存）。跟随节点 `scenes/debuff/chill_freeze_fx.tscn/.gd` 保持 `PoolManager.spawn_fx` 的 `is_idle/follow_body/play_anim/idle_state` 契约与池 key `"chill"`；`enemy_buff_manager` 只换 preload 一行，1s tick/层数/伤害逻辑未动。旧 `chill_dot.tscn/.gd` 已删除（buff 资源 id `chill_dot` 不变）。
+- 2026-11-08（来源：user）：恶寒 tick 特效**重做 v2**——上一版用的是 `ice/freeze`（施法冰冻）做成了冰刺，与用户要的 `status/frozen`（状态冻结）完全不像。定稿方案：① 不画冰壳（bodyless 下任何实体壳都会盖住敌人贴图），改为在跟随节点里把敌人 `sprite_2d` 的 modulate 乘上 HDR `Color(1.9,2.15,2.6)` → 身体被“冻白/冻蓝”，`idle_state()` 时若 `enemy_buff_manager.current_buff` 里还有 `chill_dot` 就保留 tint（否则 1s tick 之间角色会闪回原色）；② 烘焙层只画**霜饰**：一圈向内爬的霜蕨（椭圆近似轮廓）、64 点稀疏霜斑、头顶积雪、下缘小冰锥（带滴水）、飘雪、1Hz 抖动，`56×80 / 0.95s / 43 帧`；③ 非等比缩放 `(size.x/24, size.y/36)` 适配宽体型。坑：`modulate` 是**乘算**，`<1` 的“冷色 tint”只会把贴图压暗（第一版就是这个问题），要提亮必须走 HDR `>1`；预览里的 mock 敌人需要真提供 `sprite_2d` 属性，否则 tint 静默不生效。
+- 2026-11-08（来源：user）：恶寒 tick v3（按“上面下雪 / 身上冰晶闪烁 / 粒子左右抖动下坠”收敛）：去掉霜蕨、霜斑、积雪、冰锥、实体冰壳，只保留 ① 落雪（14 片 1px + 柔光，y -46→+6，左右摆）② 身体 5 个固定点亮斑（最亮一瞬才出 4 向 1px 十字，`Px.sparkle` 尺寸别 >2px，否则像白花）③ 7 颗碎晶先 `sin(age*40)` 左右抖 0.12s 再 `g=320` 下坠淡出。身体冻白仍用跟随节点的 HDR `modulate`（`Color(1.55,1.7,1.95)`，`idle` 时按 `current_buff` 决定是否保留）。画布 56×80、43 帧、45fps。
+- 2026-11-08（来源：user）：恶寒 tick v4：① 左右抖落改成**一次向两侧爆开**再抛物线（`t0=0.14`、`vx=±(55..85)`、`g=300`），不再是持续 sin 抖；② 细雪向中间收窄（`x *= 1-0.55u`）；③ 底部另起一组垂直慢落粒子（`vy=25..45`，与左右爆开分开画）；④ 新增吐息白雾 `chill_mist`（48×48/0.8s/36 帧），由跟随节点放在 `top_level` 精灵上、播放瞬间定位到嘴部世界坐标 → **雾团留在世界坐标**，敌人走开不跟随。主效果画布加宽到 80×80 以容纳 ±38px 的侧向碎晶；身体冻白仍用 HDR modulate。
+- 2026-11-08（来源：user）：恶寒 v4.1：左右爆开的水平初速减半（`vx = ±(27..42)`，落点整体向身体收拢一半，bbox 78→52）；消散改为**像素化**——每颗 2×2 碎块在 0.22–0.42s 内按 `Px.rand(px_x*13+i, px_y*7+i, 71) < dissolve` 逐格剔除，同时颜色 `C[6]→C[5]→C[4]` 降级，拖尾与柔光在 `dissolve>0.6` 后一起消失。比整体 alpha 淡出更有像素碎屑感。
+- 2026-11-08（来源：user）：恶寒 v5 冗余清理。① 画布按内容 bbox 收紧：`chill_frozen` 80²→**64×72**（origin 40,68→32,64，bbox 52）、`chill_mist` 48²→**24×24**（origin 24,34→8,14，bbox 9），两套合计 1.43MB→**0.87MB（−39%）**；② 删掉 v4 我自行加的身体 tint（`ICE_TINT`/`_apply_tint`/`_chill_present` 等约 30 行）——不在需求内、且与腐化 `corruption_tint` 互斥；③ `chill_mist` 去掉与雾团重复的 2 条细丝；④ `chill_freeze_fx.tscn` 的 Mist offset 交给脚本统一设置；⑤ manager 常量 `CHILL_DOT`→`CHILL_FX`（只改名，`CHILL_DOT_ID` 仍指 buff id）。坑：收紧画布后必须同步 `meta.origin`、节点 `ORIGIN` 与场景 `offset` 三处，否则特效会整体偏移。

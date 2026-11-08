@@ -32,6 +32,14 @@ const BBOX_LIMIT := {
 	"serina_dust_frames.res": 30,
 	"serina_beam_in_frames.res": 238,
 	"serina_heal_frames.res": 70,
+	"chill_frozen_frames.res": 62,
+	"chill_mist_frames.res": 22,
+	"maki_paintball_bolt_0.res": 62,
+	"maki_paintball_bolt_1.res": 62,
+	"maki_paintball_bolt_2.res": 62,
+	"maki_paintball_pop_0.res": 70,
+	"maki_paintball_pop_1.res": 70,
+	"maki_paintball_pop_2.res": 70,
 	
 }
 
@@ -41,8 +49,23 @@ const ONESHOT := {
 	"serina_dust_frames.res": true,
 	"serina_beam_in_frames.res": true,
 	"serina_heal_frames.res": true,
+	"chill_frozen_frames.res": true,
+	"chill_mist_frames.res": true,
+	"maki_paintball_bolt_0.res": true,
+	"maki_paintball_bolt_1.res": true,
+	"maki_paintball_bolt_2.res": true,
+	"maki_paintball_pop_0.res": true,
+	"maki_paintball_pop_1.res": true,
+	"maki_paintball_pop_2.res": true,
 	
 }
+
+## Maki 彩弹三色 ramp：与 script/floor_paint.gd 的 0=Pink / 1=Blue / 2=Yellow 索引对齐。
+const MAKI_PAINT_RAMPS := [
+	["#2a0f1c", "#5c1f38", "#a83a63", "#e86a9a", "#ff9cc0", "#ffc4da", "#ffe0ee", "#ffffff"],
+	["#0b1e2a", "#16414d", "#217a8c", "#3fb3c4", "#7bd9e6", "#aeeaf2", "#d8f6fa", "#ffffff"],
+	["#2a230b", "#4d3f14", "#8c7420", "#c4a434", "#e6c74d", "#f2dd7b", "#faf0b8", "#ffffff"],
+]
 
 
 func _initialize() -> void:
@@ -58,6 +81,10 @@ func _initialize() -> void:
 	var beam_in: Script = load("res://scenes/effects/pixelfx_serina_beam_in.gd")
 	
 	var heal: Script = load("res://scenes/effects/pixelfx_serina_heal.gd")
+	var chill: Script = load("res://scenes/effects/pixelfx_chill_frozen.gd")
+	var mist: Script = load("res://scenes/effects/pixelfx_chill_mist.gd")
+	var maki_bolt: Script = load("res://scenes/effects/pixelfx_maki_paintball_bolt.gd")
+	var maki_pop: Script = load("res://scenes/effects/pixelfx_maki_paintball_pop.gd")
 
 	var b1: Dictionary = Baker.bake(ring, {"reach": 85.0})
 	var e1 := Baker.save_sprite_frames(b1, "res://scenes/effects/heal_ring_frames.res", "combined")
@@ -96,10 +123,32 @@ func _initialize() -> void:
 	var t11 := _trim_tail(b11)
 	var e11 := Baker.save_sprite_frames(b11, "res://scenes/effects/serina_heal_frames.res", "combined")
 
-	print("BAKE ring=%d plus_small=%d plus_big=%d aura=%d bubbles=%d frenzy=%d | serina halo=%d burst=%d dust=%d beam_in=%d heal=%d (trim %d/%d/%d/%d) | errs=%s | ms=%d" % [
+	var b12: Dictionary = Baker.bake(chill, {"seed": 5.0})
+	var t12 := _trim_tail(b12)
+	var e12 := Baker.save_sprite_frames(b12, "res://scenes/effects/chill_frozen_frames.res", "combined")
+
+	var b13: Dictionary = Baker.bake(mist, {"seed": 7.0})
+	var t13 := _trim_tail(b13)
+	var e13 := Baker.save_sprite_frames(b13, "res://scenes/effects/chill_mist_frames.res", "combined")
+
+	# Maki 彩弹：3 色 × (弹体 / 爆点)，与 floor_paint 的 0/1/2 索引对齐
+	var maki_checks: Array = []
+	for i in MAKI_PAINT_RAMPS.size():
+		var bb: Dictionary = Baker.bake(maki_bolt, {"palette": MAKI_PAINT_RAMPS[i], "seed": 6.0})
+		var tb := _trim_tail(bb)
+		var eb := Baker.save_sprite_frames(bb, "res://scenes/effects/maki_paintball_bolt_%d.res" % i, "combined")
+		var bp: Dictionary = Baker.bake(maki_pop, {"palette": MAKI_PAINT_RAMPS[i], "seed": 11.0})
+		var tp := _trim_tail(bp)
+		var ep := Baker.save_sprite_frames(bp, "res://scenes/effects/maki_paintball_pop_%d.res" % i, "combined")
+		maki_checks.append([bb, "maki_paintball_bolt_%d.res" % i])
+		maki_checks.append([bp, "maki_paintball_pop_%d.res" % i])
+		print("BAKE maki[%d] bolt n=%d trim=%d err=%s | pop n=%d trim=%d err=%s" % [
+			i, bb.n, tb, str(eb), bp.n, tp, str(ep)])
+
+	print("BAKE ring=%d plus_small=%d plus_big=%d aura=%d bubbles=%d frenzy=%d | serina halo=%d burst=%d dust=%d beam_in=%d heal=%d (trim %d/%d/%d/%d) | chill=%d trim=%d | errs=%s | ms=%d" % [
 		b1.n, b2.n, b3.n, b4.n, b5.n, b6.n, b7.n, b8.n, b9.n, b10.n, b11.n,
-		t8, t9, t10, t11,
-		str([e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11]), Time.get_ticks_msec() - t0])
+		t8, t9, t10, t11, b12.n, t12,
+		str([e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12]), Time.get_ticks_msec() - t0])
 
 	var ok := true
 	for pair in [
@@ -107,7 +156,11 @@ func _initialize() -> void:
 		[b6, "frenzy_aura_frames.res"], [b7, "serina_halo_frames.res"],
 		[b8, "serina_burst_frames.res"], [b9, "serina_dust_frames.res"],
 		[b10, "serina_beam_in_frames.res"], [b11, "serina_heal_frames.res"],
+		[b12, "chill_frozen_frames.res"],
+		[b13, "chill_mist_frames.res"],
 	]:
+		ok = _check_frames(pair[0], pair[1]) and ok
+	for pair in maki_checks:
 		ok = _check_frames(pair[0], pair[1]) and ok
 	quit(0 if ok else 1)
 

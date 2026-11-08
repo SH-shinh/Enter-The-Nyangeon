@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/debuff/chill_freeze_fx.gd" id="1_fx"]
+[ext_resource type="SpriteFrames" path="res://scenes/effects/chill_frozen_frames.res" id="2_frames"]
+[ext_resource type="SpriteFrames" path="res://scenes/effects/chill_mist_frames.res" id="3_mist"]
+
+[node name="ChillFreezeFx" type="Node2D"]
+script = ExtResource("1_fx")
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+z_index = 1
+sprite_frames = ExtResource("2_frames")
+centered = false
+offset = Vector2(-32, -64)
+
+[node name="Mist" type="AnimatedSprite2D" parent="."]
+visible = false
+top_level = true
+z_index = 1
+sprite_frames = ExtResource("3_mist")
+centered = false

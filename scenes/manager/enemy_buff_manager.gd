@@ -5,7 +5,7 @@ signal enemy_buff_added(enemy_buff: Buff, current_buff: Dictionary)
 
 const FIRE_DOT: PackedScene = preload("res://scenes/debuff/fire_dot.tscn")
 const POISON_DOT: PackedScene = preload("res://scenes/debuff/poison_dot.tscn")
-const CHILL_DOT: PackedScene = preload("res://scenes/debuff/chill_dot.tscn")
+const CHILL_FX: PackedScene = preload("res://scenes/debuff/chill_freeze_fx.tscn")
 
 const FIRE_DOT_ID := "fire_dot"
 const POISON_DOT_ID := "poison_dot"
@@ -188,7 +188,7 @@ func _tick_chill_dot(entry: Dictionary):
 	entry["now_dot_time"] += 1
 	if entry["now_dot_time"] > entry["dot_time"]:
 		entry["now_dot_time"] = 0
-		PoolManager.spawn_fx("chill", CHILL_DOT, body)
+		PoolManager.spawn_fx("chill", CHILL_FX, body)
 
 func _connect_chill_counter():
 	if not body.health_component.damage_taken.is_connected(count_chill_damage):

@@ -85,3 +85,14 @@
 `Painter.put/dot` 在 `alpha < 1` 时会走 4×4 Bayer 抖动：**1px 细线/光柱用 `p.dot` 会碎成网点/棋盘**。
 正确做法：线状/柱状结构用 `p.px(x, y, color)` 画不透明像素，明暗用**调色板降级**（`C[6]→C[4]→C[2]`）而不是降 alpha；
 只有辉光/柔光用 `p.glow`（走 light 缓冲，不抖动）。环形采样密度取 `int(ceil(TAU * r)) * 2`（间距 ≤0.5px），否则会出现虚线。
+## 8. 恶寒 tick 冰霜 `pixelfx_chill_frozen.gd` + 吐息 `pixelfx_chill_mist.gd`（fork `status/frozen` 的非 actor 元素）
+
+| 资源 | 画布 / origin | 时长 / 帧 | 说明 |
+|---|---|---|---|
+| `pixelfx_chill_frozen.gd` | `64×72` / `(32,64)` | `0.95s` / `43` | ① 细雪 14 片（向中间收窄 `x *= 1-0.55u`）② 身上 5 点冰晶闪烁（最亮一瞬 4 向 1px 十字）③ **一次向左右爆开**（`t0=0.14`，`vx=±(27..42)`、`g=300` 抛物线，6 颗；末段 0.22–0.42s 按 `Px.rand` 哈希阈值逐像素剥落 + 调色板降级）④ 底部独立 5 颗垂直慢落（`vy=25..45`，无横向初速） |
+| `pixelfx_chill_mist.gd` | `24×24` / `(8,14)` | `0.8s` / `36` | 吐息：4 团白雾错开 0.05s 扩散上升；**世界坐标**播放 |
+| 身体冻白 | — | — | **不做**（v5 移除 tint：与腐化互斥、且不在需求内；观感全靠粒子） |
+| 体型适配 | — | — | `HurtBoxMeasure` 脚底锚定 + 非等比 `(size.x/24, size.y/36)`（0.9–2.2 / 0.8–2.0） |
+
+接入：`enemy_buff_manager` 每 1s 调 `spawn_fx("chill", chill_freeze_fx.tscn, body)`；`Mist` 是 `top_level` 精灵，`play_anim()` 时定位到 `global_position + (0, -size.y*0.55)`，播完隐藏——**雾团留在世界坐标**，敌人走开不跟随。
+坑：`modulate` 是乘算（`<1` 只会压暗）；sparkle 别超过 2px；左右爆开的碎晶要飞出 ±38px，画布至少 80 宽。
