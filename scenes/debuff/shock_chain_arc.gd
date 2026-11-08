@@ -95,6 +95,7 @@ func play(points: Array, power: int) -> void:
 		_nodes.append({
 			"flash_at": WIND + float(i) * LEAP,
 			"sparks": _make_sparks(i),
+			"arcs": _make_arcs(i),
 		})
 	_rebuild()
 	_update_glow()
@@ -127,10 +128,12 @@ func _hold_end() -> float:
 
 
 # 已落地跳的链段交给 ADD 发光子节点；未落地的跳由根节点的亮头表现。
+# 光晕只给已落地节点（含链头），避免电光还没到时末端先亮。
 func _update_glow() -> void:
 	if _glow == null:
 		return
 	var segments: Array = []
+	var nodes: Array = []
 	for h in _paths.size():
 		var land := WIND + float(h) * LEAP + LEAP
 		if _age < land:
@@ -138,8 +141,11 @@ func _update_glow() -> void:
 		for q in _paths[h]:
 			if float(q["w"]) < 1.0:
 				continue
-			segments.append(_to_packed(q["pts"]))
-	_glow.sync(segments, _points, _power)
+			segments.append(q["packed"])
+		nodes.append(_points[h + 1])
+	if _age >= WIND:
+		nodes.append(_points[0])
+	_glow.sync(segments, nodes, _power)
 
 
 func _play_sfx() -> void:
@@ -170,6 +176,10 @@ func _rebuild() -> void:
 		var forks := FORKS if length >= MIN_FORK_LEN else 0.0
 		var bolt := _bowed(_rng, a.x, a.y, b.x, b.y, bow, JAG, forks)
 		_paths.append(bolt["paths"])
+	# 每个 path 的取整折线只在这里转一次；_draw 与 Glow 共用，避免 30Hz 重复转换。
+	for paths in _paths:
+		for q in paths:
+			q["packed"] = _to_packed(q["pts"])
 
 
 func _zigzag(rng: RandomNumberGenerator, x0: float, y0: float, x1: float, y1: float, jag: float, forks: float, w: float = 1.0, depth: int = 0) -> Dictionary:
@@ -259,7 +269,7 @@ func _draw_paths(paths: Array, up_to: float, k: float, leap: bool) -> void:
 		var trunk := w >= 1.0
 		if not trunk and k < 0.5:
 			continue
-		var pts := _to_packed(q["pts"])
+		var pts: PackedVector2Array = q["packed"]
 		if leap and trunk:
 			var count := maxi(2, int(ceil(float(pts.size()) * up_to)))
 			pts = pts.slice(0, count)
@@ -287,15 +297,8 @@ func _draw_node(i: int, q: float) -> void:
 	var p := _points[i]
 	draw_circle(p, 1.0 + 4.0 * k, _with_alpha(WHITE, 0.9 * k))
 	draw_arc(p, 2.0 + 9.0 * q, 0.0, TAU, 20, _with_alpha(BODY, 0.7 * k), 1.0)
-	var rng := RandomNumberGenerator.new()
-	rng.seed = _play_id * 53 + i * 29 + 7
-	for a in 2:
-		var ang := rng.randf_range(0.0, TAU)
-		var dir := Vector2(cos(ang), sin(ang))
-		var side := dir.orthogonal()
-		var p0 := p + dir * 2.0
-		var p1 := p + dir * rng.randf_range(6.0, 10.0) + side * rng.randf_range(-3.0, 3.0)
-		draw_line(p0, p1, _with_alpha(BODY, 0.6 * k), 1.0)
+	for arc in _nodes[i]["arcs"]:
+		draw_line(p + arc["p0"], p + arc["p1"], _with_alpha(BODY, 0.6 * k), 1.0)
 	var t := q * FLASH
 	var sparks: Array = _nodes[i]["sparks"]
 	for s in sparks:
@@ -323,4 +326,18 @@ func _make_sparks(i: int) -> Array:
 		var ang := rng.randf_range(0.0, TAU)
 		var speed := rng.randf_range(40.0, 120.0)
 		out.append({"v": Vector2(cos(ang), sin(ang)) * speed})
+	return out
+
+
+func _make_arcs(i: int) -> Array:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = _play_id * 53 + i * 29 + 7
+	var out: Array = []
+	for a in 2:
+		var ang := rng.randf_range(0.0, TAU)
+		var dir := Vector2(cos(ang), sin(ang))
+		var side := dir.orthogonal()
+		var p0 := dir * 2.0
+		var p1 := dir * rng.randf_range(6.0, 10.0) + side * rng.randf_range(-3.0, 3.0)
+		out.append({"p0": p0, "p1": p1})
 	return out
