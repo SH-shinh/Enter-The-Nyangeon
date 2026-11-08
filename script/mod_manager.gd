@@ -50,6 +50,7 @@ const BASE_SOCIETIES: Array[Dictionary] = [
 	{"id": "FTF", "scene": "res://ui/FTF_card.tscn"},
 	{"id": "JTF", "scene": "res://ui/JTF_card.tscn"},
 	{"id": "DC", "scene": "res://ui/DC_card.tscn"},
+	{"id": "VRT", "scene": "res://ui/VRT_card.tscn"},
 ]
 
 # 本体语言注册表（单一来源）：语言选择器从这里生成；mod 可 register_language 追加或覆盖。

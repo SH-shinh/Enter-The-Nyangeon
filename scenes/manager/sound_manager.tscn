@@ -214,6 +214,12 @@
 [ext_resource type="AudioStream" uid="uid://dwywku5g3oll8" path="res://sounds/voice/chinatsu/CH0163_Tactic_Defeat_1.ogg" id="172_1lc1w"]
 [ext_resource type="AudioStream" uid="uid://dyfien3qmac4r" path="res://sounds/voice/chinatsu/CH0163_Tactic_Defeat_2.ogg" id="173_sans8"]
 [ext_resource type="AudioStream" uid="uid://4mqp0sj78r8c" path="res://sounds/corruption_spread_sounds.wav" id="174_corrsp"]
+[ext_resource type="AudioStream" uid="uid://h7wp5luvcj1x" path="res://sounds/voice/maki/Maki_Formation_In_1.ogg" id="178_n3ooq"]
+[ext_resource type="AudioStream" uid="uid://b4d01lb4md1jd" path="res://sounds/voice/maki/Maki_Formation_In_2.ogg" id="179_xto0y"]
+[ext_resource type="AudioStream" uid="uid://bcjfiga267g3m" path="res://sounds/voice/maki/Maki_Tactic_Victory_1.ogg" id="180_mp3m2"]
+[ext_resource type="AudioStream" uid="uid://4dune4borbt6" path="res://sounds/voice/maki/Maki_Tactic_Victory_2.ogg" id="181_5d1g4"]
+[ext_resource type="AudioStream" uid="uid://da2nfuex7b7px" path="res://sounds/voice/maki/Maki_Tactic_Defeat_1.ogg" id="182_qqs1v"]
+[ext_resource type="AudioStream" uid="uid://b356e6pcfrhy7" path="res://sounds/voice/maki/Maki_Tactic_Defeat_2.ogg" id="183_014vp"]
 
 [sub_resource type="Animation" id="Animation_4rqlr"]
 resource_name = "1s"
@@ -1090,6 +1096,32 @@ bus = &"VOICE"
 
 [node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/chinatsu" unique_id=1538713763]
 stream = ExtResource("173_sans8")
+bus = &"VOICE"
+
+[node name="maki" type="Node" parent="VOICE" unique_id=1114046778]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/maki" unique_id=568080288]
+stream = ExtResource("178_n3ooq")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/maki" unique_id=1219402163]
+stream = ExtResource("179_xto0y")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/maki" unique_id=1640615580]
+stream = ExtResource("180_mp3m2")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/maki" unique_id=380856128]
+stream = ExtResource("181_5d1g4")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/maki" unique_id=1010320686]
+stream = ExtResource("182_qqs1v")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/maki" unique_id=741860838]
+stream = ExtResource("183_014vp")
 bus = &"VOICE"
 
 [node name="Talk" type="Node" parent="." unique_id=313735976]
