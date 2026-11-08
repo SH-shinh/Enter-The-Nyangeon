@@ -59,6 +59,7 @@
 [ext_resource type="Theme" uid="uid://bxrwumqxp32a3" path="res://rounded_corner_theme.tres" id="35_jofky"]
 [ext_resource type="Texture2D" uid="uid://dnpwbduwig0ak" path="res://ui/support_text.png" id="35_w2w4j"]
 [ext_resource type="Texture2D" uid="uid://cj8og3c8hrv1j" path="res://sprites/player_support/kei/luminous_nova.png" id="36_gdyli"]
+[ext_resource type="Resource" path="res://resources/shop/character/maki.tres" id="37_maki"]
 [ext_resource type="PackedScene" uid="uid://baierg5jhv2n3" path="res://ui/support_ui/upgrade_button.tscn" id="41_xiemr"]
 [ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="43_4eamn"]
 
@@ -2398,7 +2399,7 @@ _data = {
 
 [node name="ShopMenu" type="Node2D" unique_id=1899480662]
 script = ExtResource("1_d2ib0")
-shop_card_group = Array[ExtResource("2_h024o")]([ExtResource("11_ysb2t"), ExtResource("12_uw1ws"), ExtResource("13_10tbx"), ExtResource("14_imcjv"), ExtResource("15_2jkwd"), ExtResource("8_dla8c"), ExtResource("9_8k4v4"), ExtResource("10_hay7x"), ExtResource("11_k6nqj"), ExtResource("12_6le7t"), ExtResource("13_smosc"), ExtResource("14_f4laa"), ExtResource("15_0mvhp"), ExtResource("16_vpr4p"), ExtResource("17_a4d41"), ExtResource("18_6jag8"), ExtResource("19_cpg42"), ExtResource("18_5itsc")])
+shop_card_group = Array[ExtResource("2_h024o")]([ExtResource("11_ysb2t"), ExtResource("12_uw1ws"), ExtResource("13_10tbx"), ExtResource("14_imcjv"), ExtResource("15_2jkwd"), ExtResource("8_dla8c"), ExtResource("9_8k4v4"), ExtResource("10_hay7x"), ExtResource("11_k6nqj"), ExtResource("12_6le7t"), ExtResource("13_smosc"), ExtResource("14_f4laa"), ExtResource("15_0mvhp"), ExtResource("16_vpr4p"), ExtResource("17_a4d41"), ExtResource("18_6jag8"), ExtResource("19_cpg42"), ExtResource("18_5itsc"), ExtResource("37_maki")])
 shop_item_group = Array[ExtResource("8_8bwha")]([ExtResource("9_3er8o"), ExtResource("10_et1q5"), ExtResource("11_b54nf"), ExtResource("13_kxh12"), ExtResource("14_61471"), ExtResource("15_vp58u"), ExtResource("23_tqe4p"), ExtResource("24_mcwt0"), ExtResource("25_dn1mp"), ExtResource("26_ehjgb"), ExtResource("12_rth1c"), ExtResource("16_af6j8")])
 
 [node name="ColorRect" type="ColorRect" parent="." unique_id=1323578705]

@@ -56,6 +56,8 @@ const FX_BASE_MS := {
 	&"bullet_smoke": 50,
 	&"explosion": 50,
 	&"floor_paint": 80,
+	&"anomaly_paint": 60,
+	&"maki_paintball": 80,
 }
 var _fx_last_ms: Dictionary = {}
 var _fx_body_last_ms: Dictionary = {}
@@ -95,8 +97,10 @@ const IDLE_LIMITS := {
 	"summoned_flash_1": 5,
 	"summon_level_display": 16,
 	"floor_paint": 20,
+	"anomaly_paint": 24,
+	"maki_paintball": 4,
 	"enemy_fire_field": 100,
-	"corruption_field": 100,
+	"corruption_field": 24,
 	"support_bullet": 60,
 	"stone_bullet": 40,
 	"cannon_bullet_1": 20,
@@ -445,6 +449,24 @@ func add_pool(body_name: String, body: Node):
 		if body.get("is_idle") == 1:
 			_entry_idle(entry).push_back(body)
 	_register_node_pool(body, body_name)
+
+## 预热：把 scene 实例化 count 个挂到 layer_group 并置为空闲；池里已有节点则跳过（幂等）。
+## 用于战斗前提前承担 instantiate()/_ready()，避免首次命中/首次投掷时掉帧。
+func prewarm(body_name: String, scene: PackedScene, count: int, layer_group: String = "FloorLayer") -> void:
+	if scene == null or count <= 0:
+		return
+	if pool_total(body_name) > 0:
+		return
+	var layer := get_tree().get_first_node_in_group(layer_group)
+	if layer == null:
+		return
+	for i in count:
+		var node := scene.instantiate()
+		if node == null:
+			continue
+		layer.add_child(node)
+		if node.has_method("idle_state"):
+			node.call("idle_state")
 
 func get_buff_pool():
 	while not _idle_buff_cards.is_empty():

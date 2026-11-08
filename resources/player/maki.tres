@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PlayerCard" format=3 uid="uid://cbwx1rap2vuu7"]
+
+[ext_resource type="Script" uid="uid://mhculkp4opo6" path="res://resources/player/player.gd" id="1_xbmxg"]
+[ext_resource type="Texture2D" uid="uid://dk6hocj80vs0e" path="res://sprites/player/maki/maki_picture_halo.png" id="2_etbvc"]
+
+[resource]
+script = ExtResource("1_xbmxg")
+name = "KONURI MAKI"
+weapon = "AUTO LACQUER"
+weapon_type = "MG"
+sprite_path = "uid://c84bqopvx40ah"
+halo = ExtResource("2_etbvc")
+color = Color(1, 0.32156864, 0.3647059, 1)
+voice_name = "maki"
+id = "maki"
+scene_path = "uid://bxraxwl5mmfmg"

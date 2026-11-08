@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://dy5xm7grxs5rh"]
+
+[ext_resource type="Script" uid="uid://bdtcllmuvj5pb" path="res://scenes/effects/maki_paintball_fx.gd" id="1_fx"]
+[ext_resource type="Script" uid="uid://lbjhvmbiyv6e" path="res://scenes/effects/maki_paintball_trail.gd" id="2_trail"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_trail"]
+blend_mode = 1
+
+[node name="MakiPaintballFx" type="Node2D" unique_id=2030300056]
+visible = false
+z_index = 2
+script = ExtResource("1_fx")
+
+[node name="Trail" type="Node2D" parent="." unique_id=2070849676]
+material = SubResource("CanvasItemMaterial_trail")
+top_level = true
+script = ExtResource("2_trail")
+
+[node name="Sprite" type="AnimatedSprite2D" parent="." unique_id=2144330774]
+centered = false

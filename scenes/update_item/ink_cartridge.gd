@@ -7,6 +7,7 @@ extends EquipItem
 @onready var explosion_interval_timer = $ExplosionIntervalTimer
 
 var color_num: int
+var _last_floor_paint_broadcast_ms: int = 0
 
 var equip_luck: int = 0
 var equip_damage: int = 0
@@ -39,7 +40,13 @@ func explosion(body: Node):
 			get_tree().get_first_node_in_group("FloorLayer").add_child(ins_2)
 		
 		ins_2.global_position = body.global_position
-		ins_2.active_state()
+		var paint_color := randi_range(0, 2)
+		ins_2.active_state(paint_color)
+		# 联机：同色广播给其他端（纯表现）；广播节流 120ms，本地表现不受影响。
+		var now := Time.get_ticks_msec()
+		if now - _last_floor_paint_broadcast_ms >= 120:
+			_last_floor_paint_broadcast_ms = now
+			ExtensionHooks.notify_named("on_visual_activated", [ins_2, {"color": paint_color}])
 
 func _configure_explosion(node: Node) -> void:
 	node.damage_data = DamageData.fill(node.damage_data, {

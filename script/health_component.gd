@@ -265,7 +265,41 @@ func _resolve_damage(data: HealthChangeData, raw: int, emit_proc: bool, apply_mo
 		for modifier in data.damage_modifier:
 			result = modifier.call(owner, result)
 		result = int(result * damage_multiplier)
+	# Maki 被动「异常伤害可暴击」：纯元素/DOT 伤害统一在最终数值口掷暴击（真伤同样适用）。
+	result = _apply_anomaly_vulnerability(data, result)
+	result = _apply_anomaly_crit(data, result)
 	# 订阅者临时追加的修饰只属于当前命中，不能累积到穿透弹的下个目标。
 	data.damage_modifier.assign(original_modifiers)
 	damage_multiplier = 1.0
 	return result
+
+# 异常伤害易伤（Maki 颜料标记）：只作用于纯异常类伤害；对真伤（火场）同样生效。
+# T3 的全局易伤走 global_hurt_damage_mult（既有语义，不作用于真伤），两者在同一结算里相乘。
+func _apply_anomaly_vulnerability(data: HealthChangeData, result: int) -> int:
+	var dmg := data as DamageData
+	if dmg == null:
+		return result
+	if not AnomalyDamage.is_anomaly_damage(dmg):
+		return result
+	var mult: float = float(stats.anomaly_hurt_damage_mult)
+	if mult <= 1.0:
+		return result
+	return maxi(1, int(round(float(result) * mult)))
+
+# 统一异常伤害暴击口：被动开（本机玩家 meta）+ 玩家侧来源 + 纯异常类才掷。
+# 子弹/近战/爆炸/策反会与元素标签并存且已在各自流程掷骰，这里靠「排除复合标签」避免双重暴击。
+# 共享 DamageData（火场/毒环一次激活多目标、跨 tick 复用）会残留 is_crit：
+# 每次结算先复位、再为本次目标独立掷，避免「显示暴击色但没乘倍率」或一次暴击后整场都暴击。
+func _apply_anomaly_crit(data: HealthChangeData, result: int) -> int:
+	var dmg := data as DamageData
+	if dmg == null:
+		return result
+	var player := PlayerRef.resolve(self)
+	if not AnomalyDamage.can_roll(player, dmg):
+		return result
+	dmg.is_crit = false
+	var mult: float = AnomalyDamage.roll_crit(player)
+	if mult <= 1.0:
+		return result
+	dmg.is_crit = true
+	return maxi(1, int(round(float(result) * mult)))

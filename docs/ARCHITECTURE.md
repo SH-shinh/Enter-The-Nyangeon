@@ -231,9 +231,13 @@ deactivate_silent()
 
 # 剥离（纯表现副本不再回玩法池）
 PoolManager.detach(node)
+
+# 预热（幂等：池里已有节点则跳过；把首次 instantiate/_ready 挪到加载期）
+PoolManager.prewarm(pool_id, scene, count, "FloorLayer")
 ```
 
 - `IDLE_LIMITS`（`PoolManager.gd`）兼作**并发上限**：池内节点数 `< limit` 且无空闲时 `get_pool` 返回 `null`（调用方新建）；`>= limit` 时才回收一个轮转槽位。未列出的池 `limit = -1` 不设限。
+- `prewarm` 按 `layer_group` 找层节点，逐个 `instantiate()` + `add_child()`，再调 `idle_state()`（节点自己的 `_ready` 会 `add_pool` 注册）；层组不存在或池已有节点时静默跳过，可安全地在玩家/场景 `_ready` 里重复调用。
 - 满额回收优先 `deactivate_silent()`，避免触发 `idle_state()` 的玩法副作用。
 - `clear_pool`/`erase_pool` 不释放节点；节点 `queue_free` 时靠 `tree_exiting` 自注销。
 

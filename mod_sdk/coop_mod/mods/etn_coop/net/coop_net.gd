@@ -33,8 +33,8 @@ const LOBBY_SCENE: String = "res://scenes/main/test_room.tscn"
 const DEFAULT_BATTLE_SCENE: String = "res://scenes/main/main.tscn"
 const MENU_SCENE: String = "res://scenes/main/menu_screen.tscn"
 # 协议/版本握手：不一致直接拒绝。RPC 契约变更时必须递增 PROTOCOL_VERSION。
-const PROTOCOL_VERSION: int = 7
-const MOD_VERSION: String = "0.1.16"
+const PROTOCOL_VERSION: int = 9
+const MOD_VERSION: String = "0.1.18"
 const HELLO_TIMEOUT_MSEC: int = 30000
 # 客机：发出 _client_hello 后等待 _hello_accept 的上限；超时视为握手失败（旧房主/版本不匹配）
 const HELLO_ACCEPT_TIMEOUT_MSEC: int = 30000
@@ -122,8 +122,8 @@ const SAFE_PLAYER_PREFIX: String = "res://scenes/player/"
 # 视觉通道（客机→host）专用场景白名单：只允许纯表现类场景，排除 enemies/player/manager/main 等 gameplay 场景
 const SAFE_VISUAL_SCENE_PREFIXES: Array[String] = [
 	"res://scenes/bullet/", "res://scenes/debuff/", "res://scenes/update_item/",
-	"res://scenes/item/", "res://script/explosion", "res://script/small_explosion",
-	"res://script/spawn_anim.tscn", "res://mods/",
+	"res://scenes/item/", "res://scenes/effects/", "res://script/explosion", "res://script/small_explosion",
+	"res://script/floor_paint.tscn", "res://script/spawn_anim.tscn", "res://mods/",
 	# 少数不在上述目录的合法视觉源（精确路径）
 	"res://scenes/player/mashiro/cross_bullet.tscn", "res://scenes/player/smoke.tscn",
 	"res://script/bullet_launcher.tscn", "res://script/bullet_launcher_2.tscn",
@@ -133,7 +133,7 @@ const SAFE_VISUAL_GROUPS: Array[String] = [
 	"SELayer", "ForegroundLayer", "BulletRoot", "EquipLayer", "FloorLayer", "CoinRoot",
 ]
 # 视觉节点允许调用的方法（发送侧实际只用到这些）
-const SAFE_VISUAL_METHODS: Array[String] = ["", "active_state", "smoke_anim"]
+const SAFE_VISUAL_METHODS: Array[String] = ["", "active_state", "smoke_anim", "network_apply_visual"]
 # 召唤通道（客机→host）专用场景白名单：只允许真正的召唤物/持久身体场景，排除 enemies/player/manager 等 gameplay 场景
 const SAFE_SUMMON_SCENE_PREFIXES: Array[String] = [
 	"res://scenes/summoned/",
@@ -2035,6 +2035,7 @@ func install_hooks() -> void:
 	ExtensionHooks.on_explosion_effect = Callable(self, "_on_explosion_effect")
 	ExtensionHooks.on_hit_sfx = Callable(self, "_on_hit_sfx")
 	ExtensionHooks.on_summoned_action = Callable(self, "_on_summoned_action")
+	ExtensionHooks.on_support_heal = Callable(self, "_on_support_heal")
 	ExtensionHooks.on_visual_activated = Callable(self, "_on_visual_activated")
 	ExtensionHooks.on_pickup_spawned = Callable(self, "_on_pickup_spawned")
 	ExtensionHooks.on_character_event = Callable(self, "_on_character_event")
@@ -4295,8 +4296,9 @@ func _remote_sfx_allowed(sfx_key: String) -> bool:
 # ---------------- 池化视觉节点「每次激活」广播 ----------------
 
 # 节点建一次后靠 active_state 复用的道具特效（镰刀/火场/毒环/冰环）：child_entered_tree 只首次触发，
-# 故在激活点显式广播（走 _remote_visual_node，接收端 spawn_visual_effect 纯视觉）
-func _on_visual_activated(node: Node) -> void:
+# 故在激活点显式广播（走 _remote_visual_node，接收端 spawn_visual_effect 纯视觉）。
+# params 为通用视觉参数（需可序列化）；实现 network_apply_visual 的节点会用它重放参数化表现。
+func _on_visual_activated(node: Node, params: Dictionary = {}) -> void:
 	if not is_lan_game or node == null or not is_instance_valid(node):
 		return
 	if node.has_meta("remote_visual") or node.has_meta("net_visual_id") or node.has_meta("coop_action_flash"):
@@ -4320,15 +4322,40 @@ func _on_visual_activated(node: Node) -> void:
 		rot = (node as Node2D).global_rotation
 		sc = (node as Node2D).scale
 	var method: String = "active_state" if node.has_method("active_state") else ""
+	if node.has_method("network_apply_visual"):
+		method = "network_apply_visual"
 	var effect_id: String = _assign_effect_broadcast_id(node)
+	var safe_params: Dictionary = _sanitize_visual_params(params)
 	# 外部驱动的持续视觉（如 murky_hand_scythe 回程归位）登记进持续状态通道，
 	# 否则远端克隆会按本机玩家本地驱动、表现错位。
 	if effect_id != "" and (node.has_method("network_get_visual_state") or node.has_method("network_get_beam_state")):
 		_follow_nodes[effect_id] = node
 	if multiplayer.is_server():
-		rpc("_remote_visual_node", scene_path, pos, rot, sc, grp, method, effect_id)
+		rpc("_remote_visual_node", scene_path, pos, rot, sc, grp, method, effect_id, false, safe_params)
 	else:
-		rpc_id(1, "_server_visual_node", scene_path, pos, rot, sc, grp, method, effect_id)
+		rpc_id(1, "_server_visual_node", scene_path, pos, rot, sc, grp, method, effect_id, safe_params)
+
+
+## 视觉参数白名单：只接受可序列化、有限大小的值，避免恶意包/异常类型。
+func _sanitize_visual_params(p) -> Dictionary:
+	var out: Dictionary = {}
+	if not (p is Dictionary):
+		return out
+	for k in (p as Dictionary).keys():
+		if out.size() >= 8:
+			break
+		var key := str(k)
+		if key == "" or key.length() > 24:
+			continue
+		var v = (p as Dictionary)[k]
+		if v is Vector2 or v is Vector2i or v is Color or v is bool or v is int:
+			out[key] = v
+		elif v is float:
+			if is_finite(float(v)):
+				out[key] = v
+		elif v is String and str(v).length() <= 120:
+			out[key] = str(v)
+	return out
 
 
 # 通用视觉通道：为节点分配一次性 net_effect_id 并连 tree_exiting，真正释放时广播 despawn。
@@ -5399,6 +5426,9 @@ func _maybe_broadcast_visual_node(child: Node) -> void:
 	# 召唤物开火闪光由 _on_summoned_action 统一广播，跳过 SELayer 通用广播避免重复
 	if child.has_meta("coop_action_flash"):
 		return
+	# 参数化视觉（network_apply_visual）必须显式带参数广播；child_entered_tree 的无参通道会漏参数
+	if child.has_method("network_apply_visual"):
+		return
 	var scene_path: String = str(child.scene_file_path)
 	if scene_path == "":
 		return
@@ -5435,9 +5465,9 @@ func _maybe_broadcast_visual_node(child: Node) -> void:
 	var method: String = "active_state" if child.has_method("active_state") else ""
 	var effect_id: String = _assign_effect_broadcast_id(child)
 	if multiplayer.is_server():
-		rpc("_remote_visual_node", scene_path, pos, rot, sc, grp, method, effect_id)
+		rpc("_remote_visual_node", scene_path, pos, rot, sc, grp, method, effect_id, false, {})
 	else:
-		rpc_id(1, "_server_visual_node", scene_path, pos, rot, sc, grp, method, effect_id)
+		rpc_id(1, "_server_visual_node", scene_path, pos, rot, sc, grp, method, effect_id, {})
 
 
 # 把非 Summoned 的持久身体接入现有召唤同步（仅视觉镜像 + 变换同步）
@@ -5454,7 +5484,7 @@ func _register_persistent_body(child: Node, scene_path: String) -> void:
 
 
 @rpc("any_peer", "call_remote", "reliable")
-func _server_visual_node(scene_path: String, pos: Vector2, rot: float, sc: Vector2, grp: String, method: String, effect_id: String = "") -> void:
+func _server_visual_node(scene_path: String, pos: Vector2, rot: float, sc: Vector2, grp: String, method: String, effect_id: String = "", params: Dictionary = {}) -> void:
 	if not multiplayer.is_server():
 		return
 	if not _server_sender_ok():
@@ -5467,18 +5497,19 @@ func _server_visual_node(scene_path: String, pos: Vector2, rot: float, sc: Vecto
 		return
 	var g: String = grp if SAFE_VISUAL_GROUPS.has(grp) else "SELayer"
 	var m: String = method if SAFE_VISUAL_METHODS.has(method) else "active_state"
+	var safe_params: Dictionary = _sanitize_visual_params(params)
 	# 客机来源：no_hole=true，禁止开"伤害洞"；转发给其余端同样带 no_hole
-	_remote_visual_node(scene_path, pos, rot, sc, g, m, effect_id, true)
+	_remote_visual_node(scene_path, pos, rot, sc, g, m, effect_id, true, safe_params)
 	for peer in multiplayer.get_peers():
 		if peer != sender:
-			rpc_id(peer, "_remote_visual_node", scene_path, pos, rot, sc, g, m, effect_id, true)
+			rpc_id(peer, "_remote_visual_node", scene_path, pos, rot, sc, g, m, effect_id, true, safe_params)
 
 
 @rpc("authority", "call_remote", "reliable")
-func _remote_visual_node(scene_path: String, pos: Vector2, rot: float, sc: Vector2, grp: String, method: String, effect_id: String = "", no_hole: bool = false) -> void:
+func _remote_visual_node(scene_path: String, pos: Vector2, rot: float, sc: Vector2, grp: String, method: String, effect_id: String = "", no_hole: bool = false, params: Dictionary = {}) -> void:
 	if scene_path == "":
 		return
-	_visual.spawn_visual_effect(get_tree(), scene_path, pos, rot, sc, grp, method, {}, effect_id, not no_hole)
+	_visual.spawn_visual_effect(get_tree(), scene_path, pos, rot, sc, grp, method, params, effect_id, not no_hole)
 
 
 # ---------------- 玩家同步 ----------------
@@ -9770,6 +9801,12 @@ func _apply_support_aura_visual(owner: int, support_id: String, active: bool) ->
 				aura.top_level = false
 		target.add_child(inst)
 		_support_auras[owner] = inst
+		# 重做后的 Serina AS 用 Aura 脚本编排（场景已无 AnimationPlayer）：显式 play(target)，
+		# 远端回血光点才会挂到镜像玩家身上；旧场景仍走下面的 AnimationPlayer 兼容分支。
+		if support_id == "serina":
+			var aura_play = inst.get_node_or_null("Aura")
+			if aura_play != null and aura_play.has_method("play"):
+				aura_play.call("play", target)
 		var ap = inst.get_node_or_null("AnimationPlayer")
 		if ap == null and support_id == "serina":
 			ap = inst.get_node_or_null("Aura/AnimationPlayer")
@@ -9778,8 +9815,57 @@ func _apply_support_aura_visual(owner: int, support_id: String, active: bool) ->
 	else:
 		var n = _support_auras.get(owner)
 		if n != null and is_instance_valid(n):
-			n.queue_free()
+			var aura_stop = n.get_node_or_null("Aura")
+			if aura_stop != null and aura_stop.has_method("stop"):
+				aura_stop.call("stop")
+				# 延迟释放，保留环倒放收拢的表现
+				get_tree().create_timer(0.35).timeout.connect(_queue_free_if_valid.bind(n))
+			else:
+				n.queue_free()
 		_support_auras.erase(owner)
+
+
+func _queue_free_if_valid(n: Node) -> void:
+	if n != null and is_instance_valid(n):
+		n.queue_free()
+
+
+# 支援治疗 tick（Serina 每秒回血）：owner 的支援光环克隆在远端补播 Aura.spawn_heal()。
+func _on_support_heal(owner: Node) -> void:
+	if not is_lan_game or owner == null or not is_instance_valid(owner):
+		return
+	var pid := multiplayer.get_unique_id()
+	if multiplayer.is_server():
+		rpc("_remote_support_heal", pid)
+	else:
+		rpc_id(1, "_server_support_heal")
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _server_support_heal() -> void:
+	if not multiplayer.is_server() or not _server_sender_ok():
+		return
+	var sender: int = multiplayer.get_remote_sender_id()
+	_apply_support_heal(sender)
+	for peer in multiplayer.get_peers():
+		if peer != sender:
+			rpc_id(peer, "_remote_support_heal", sender)
+
+
+@rpc("authority", "call_remote", "reliable")
+func _remote_support_heal(owner: int) -> void:
+	if multiplayer.is_server():
+		return
+	_apply_support_heal(owner)
+
+
+func _apply_support_heal(owner: int) -> void:
+	var inst = _support_auras.get(owner)
+	if inst == null or not is_instance_valid(inst):
+		return
+	var aura = inst.get_node_or_null("Aura")
+	if aura != null and aura.has_method("spawn_heal"):
+		aura.call("spawn_heal")
 
 
 func _find_owner_kei_summon(owner: int) -> Node:

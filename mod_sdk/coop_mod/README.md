@@ -451,6 +451,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\mod_sdk\build_coop_mod.ps1
 - **敌人**：镜像不再本地跑 AI/开火（`active_state()` 后显式停 root 物理 + StateMachine）；快照带 `state` 位，代理端 `transition_state` 驱动镜像动画。
 - **玩家镜像**：状态包带 `max_hp`（血条正确）；身体瞄准旋转；`player_gun_shoot` → 镜像重放开火后坐。
 - **池化道具特效**：新增 `ExtensionHooks.on_visual_activated`，镰刀/火场/毒环/冰环在每次激活时广播（不再只首次）。
+- **参数化视觉（2026-11-08，颜料弹首个接入）**：`on_visual_activated` 支持第二参数 `params: Dictionary`；节点实现 `network_apply_visual(params)` 时 mod 会带上参数广播（`_sanitize_visual_params` 白名单），接收端 `spawn_visual_effect` 调 `network_apply_visual`；`SAFE_VISUAL_SCENE_PREFIXES` 增 `res://scenes/effects/`、`SAFE_VISUAL_METHODS` 增 `network_apply_visual`；实现该方法的节点跳过 child_entered_tree 的无参广播。颜料弹远端到达后在本地铺同色 `floor_paint`（纯表现）。
+- **异常颜料/地面颜料/Serina 回血（2026-11-08）**：`anomaly_paint`/`floor_paint` 接 `network_apply_visual`（element/color，广播节流 100/120ms）；Serina 每秒回血用 `on_support_heal` 在远端 `Aura` 克隆补播（host 转发、发送端不回显）；协议 v9、`MOD_VERSION` 0.1.18。
+- **Serina 重做后 EX 视觉（2026-11-08）**：远端支援光环克隆显式调 `Aura.play(镜像玩家)`（场景已无 AnimationPlayer，旧 `new_animation` 分支失效），结束 `Aura.stop()` 后延迟 0.35s 释放保留收拢；旧分支保留兼容。
 - **召唤**：炮台装弹动画走 `on_summoned_action("reload")`；扫地机补 `get/apply_network_visual_rotation`。
 - **敌人部件**：镜像生成后激活 `body_part`。
 - **Boss**：`goliath`/`erosion_tower_group` 镜像端跳过相机/暂停演出（避免镜像本地 pause），只播动画。

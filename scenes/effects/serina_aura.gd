@@ -23,9 +23,11 @@ func _ready() -> void:
 	_hide_all()
 
 
-func play() -> void:
-	var player := get_tree().get_first_node_in_group("Player") as Node2D
-	_heal.set_target(player)
+func play(target: Node = null) -> void:
+	var t: Node = target
+	if t == null or not is_instance_valid(t):
+		t = get_tree().get_first_node_in_group("Player")
+	_heal.set_target(t)
 	_halo.sprite_frames = HALO_FRAMES
 	_halo.visible = true
 	_halo.play("default")

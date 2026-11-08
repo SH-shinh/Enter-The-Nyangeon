@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" uid="uid://p35o845eoipc" path="res://sprites/buff_icon/mark_buff_icon.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://dhb70b327wxvy" path="res://resources/buff/buff.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = "maki_paint_mark"
+icon = ExtResource("1_icon")
+name = "颜料标记"
+ability = "anomaly_hurt_damage_mult"
+remove_by_layer = false
+description = "异常伤害易伤 + 全局易伤（Maki 彩弹 T3）"
+modifiers = Array[Dictionary]([{"key": "hurt_mult_mult", "mode": "add", "source": "const", "amount": 0.1}])

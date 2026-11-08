@@ -231,11 +231,14 @@ func spawn_visual_effect(tree: SceneTree, scene_path: String, position: Vector2,
 		(effect as Node2D).global_rotation = rotation
 		(effect as Node2D).reset_physics_interpolation()
 	effect.scale = effect_scale
-	for k in properties.keys():
-		effect.set(str(k), properties[k])
 	_remove_effect_from_gameplay_pools(effect)
 	_disable_damage(effect)
-	if method_name != "" and effect.has_method(method_name):
+	if effect.has_method("network_apply_visual"):
+		# 参数化视觉（颜料弹等）：由节点自己解释 params，不走逐属性 set。
+		effect.call("network_apply_visual", properties)
+	elif method_name != "" and effect.has_method(method_name):
+		for k in properties.keys():
+			effect.set(str(k), properties[k])
 		effect.call(method_name)
 	# 敌方激光等：对本地玩家开放"伤害洞"（仅表现端、只命中玩家）。allow_hole=false（客机来源）时禁用。
 	if allow_hole and effect.has_method("open_network_player_damage_hole"):

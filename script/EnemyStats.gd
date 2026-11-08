@@ -51,6 +51,8 @@ var knockback_resis_mult: float = 1
 var penetrate_resis_add: int = 0
 var hurt_resis_add: int = 0
 var global_hurt_damage_mult: float = 1
+## 异常伤害易伤乘区（Maki 颜料标记）：只作用于纯异常类伤害，由 HealthComponent 结算时直接读取。
+var anomaly_hurt_damage_mult: float = 1
 var Enemy_Knockback_mult: float = 1
 var Enemy_damage_mult: float = 1
 var Enemy_bullet_damage_mult: float = 1

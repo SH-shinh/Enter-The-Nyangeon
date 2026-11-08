@@ -1,0 +1,51 @@
+[gd_scene format=3 uid="uid://ccl3sklx8ekbr"]
+
+[ext_resource type="Script" uid="uid://wpicvaylc7rx" path="res://scenes/player/maki/maki_ps.gd" id="1_makips"]
+[ext_resource type="Resource" uid="uid://ddlwsbdn8hn6j" path="res://resources/buff/enemy_buff/fire_dot.tres" id="2_fire"]
+[ext_resource type="Resource" uid="uid://dsblwps2uxvdu" path="res://resources/buff/enemy_buff/poison_dot.tres" id="3_poison"]
+[ext_resource type="Resource" uid="uid://lmang0jl8vw2" path="res://resources/buff/enemy_buff/chill_dot.tres" id="4_chill"]
+[ext_resource type="Resource" path="res://resources/buff/enemy_buff/maki_paint_mark.tres" id="5_paint"]
+[ext_resource type="Resource" path="res://resources/buff/enemy_buff/maki_paint_mark_t3.tres" id="6_paint_t3"]
+[ext_resource type="AudioStream" uid="uid://c01aancfk3jra" path="res://sounds/magic3.wav" id="7_paintsfx"]
+[ext_resource type="Shader" uid="uid://cu25jaim3jw4p" path="res://shaders/maki_paint_charge_bar.gdshader" id="8_bar_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_paint_bar"]
+resource_local_to_scene = true
+shader = ExtResource("8_bar_shader")
+shader_parameter/fill = 0.0
+shader_parameter/size_px = Vector2(10, 20)
+shader_parameter/border_px = 2.000000095
+shader_parameter/frame_color = Color(0.97039443, 0.0687917, 0.36453325, 0.9019608)
+shader_parameter/inner_color = Color(0.05, 0.05, 0.08, 0.75)
+shader_parameter/paint_a = Color(0.99999636, 0.35974517, 0.6376932, 1)
+shader_parameter/paint_b = Color(0.1327005, 0.691375, 0.7414049, 1)
+shader_parameter/paint_c = Color(0.8609645, 0.7622081, 0.095189296, 1)
+shader_parameter/cycle_period = 6.0
+shader_parameter/wave_amp = 0.05
+shader_parameter/wave_freq = 1.0000000475
+shader_parameter/wave_speed = 2.5
+shader_parameter/crest_color = Color(0.9822418, 0, 0.051826283, 0.8509804)
+
+[node name="MakiPS" type="Node2D" unique_id=881872440]
+script = ExtResource("1_makips")
+fire_buff = ExtResource("2_fire")
+poison_buff = ExtResource("3_poison")
+chill_buff = ExtResource("4_chill")
+paint_mark_buff = ExtResource("5_paint")
+paint_mark_buff_t3 = ExtResource("6_paint_t3")
+
+[node name="PaintEnergy" type="ColorRect" parent="." unique_id=116536867]
+visible = false
+z_index = 20
+material = SubResource("ShaderMaterial_paint_bar")
+offset_left = -25.0
+offset_top = -49.0
+offset_right = -19.0
+offset_bottom = -37.0
+mouse_filter = 2
+
+[node name="PaintballSound" type="AudioStreamPlayer2D" parent="." unique_id=1390640285]
+process_mode = 3
+stream = ExtResource("7_paintsfx")
+volume_db = 6.0
+bus = &"SFX"

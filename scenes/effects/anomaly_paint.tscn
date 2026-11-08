@@ -1,0 +1,95 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://scenes/effects/anomaly_paint.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://b5nbmcnfshgb8" path="res://sprites/particle/circular_1.png" id="2_texture"]
+
+[sub_resource type="Gradient" id="Gradient_fire"]
+colors = PackedColorArray(0.85, 0.42, 0.25, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_fire"]
+gradient = SubResource("Gradient_fire")
+
+[sub_resource type="Curve" id="Curve_scale"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.02, 1), 0.0, 0.0, 0, 0, Vector2(0.34, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -4.34566, 0.0, 0, 0]
+point_count = 4
+
+[sub_resource type="CurveTexture" id="CurveTexture_scale"]
+curve = SubResource("Curve_scale")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_fire"]
+lifetime_randomness = 0.5
+particle_flag_disable_z = true
+emission_shape = 3
+emission_box_extents = Vector3(20, 12.5, 1)
+gravity = Vector3(0, 0, 0)
+scale_min = 0.5
+scale_max = 1.5
+scale_curve = SubResource("CurveTexture_scale")
+color = Color(1, 0.367, 0.178, 1)
+color_initial_ramp = SubResource("GradientTexture1D_fire")
+
+[sub_resource type="Gradient" id="Gradient_poison"]
+colors = PackedColorArray(0.32, 0.85, 0.55, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_poison"]
+gradient = SubResource("Gradient_poison")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_poison"]
+lifetime_randomness = 0.5
+particle_flag_disable_z = true
+emission_shape = 3
+emission_box_extents = Vector3(20, 12.5, 1)
+gravity = Vector3(0, 0, 0)
+scale_min = 0.5
+scale_max = 1.5
+scale_curve = SubResource("CurveTexture_scale")
+color = Color(0.063, 0.54, 0.342, 1)
+color_initial_ramp = SubResource("GradientTexture1D_poison")
+
+[sub_resource type="Gradient" id="Gradient_chill"]
+colors = PackedColorArray(0.6, 0.82, 1, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_chill"]
+gradient = SubResource("Gradient_chill")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_chill"]
+lifetime_randomness = 0.5
+particle_flag_disable_z = true
+emission_shape = 3
+emission_box_extents = Vector3(20, 12.5, 1)
+gravity = Vector3(0, 0, 0)
+scale_min = 0.5
+scale_max = 1.5
+scale_curve = SubResource("CurveTexture_scale")
+color = Color(0.323, 0.68, 0.942, 1)
+color_initial_ramp = SubResource("GradientTexture1D_chill")
+
+[node name="AnomalyPaint" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Fire" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 16
+process_material = SubResource("ParticleProcessMaterial_fire")
+texture = ExtResource("2_texture")
+lifetime = 3.0
+one_shot = true
+explosiveness = 1.0
+
+[node name="Poison" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 16
+process_material = SubResource("ParticleProcessMaterial_poison")
+texture = ExtResource("2_texture")
+lifetime = 3.0
+one_shot = true
+explosiveness = 1.0
+
+[node name="Chill" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 16
+process_material = SubResource("ParticleProcessMaterial_chill")
+texture = ExtResource("2_texture")
+lifetime = 3.0
+one_shot = true
+explosiveness = 1.0

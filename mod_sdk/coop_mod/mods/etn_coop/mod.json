@@ -1,7 +1,7 @@
 {
   "id": "etn_coop",
   "name": "ETN Coop 联机",
-  "version": "0.1.16",
+  "version": "0.1.18",
   "author": "荻某人、SH",
   "description": "由荻某人的ETN联机版移植，SH移植并添加部分内容。",
   "api_version": 1,

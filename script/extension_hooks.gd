@@ -117,6 +117,8 @@ var on_hit_sfx: Callable = Callable()
 # 召唤物/道具动作（通知，参数 [summoned, action, sfx_key, fx_scene, fx_pos, fx_rot, dur]）：
 # 如炮台开火（dur=后坐时长，供远端回放时长与拥有者一致），供 mod 广播表现
 var on_summoned_action: Callable = Callable()
+# 支援角色治疗 tick（通知，参数 [player]）：供 mod 在远端支援光环克隆上补播回血表现
+var on_support_heal: Callable = Callable()
 # 池化视觉节点被重新激活（通知，参数 [node]）：节点建一次后靠 active_state 复用的道具特效，
 # 供 mod 在每次激活时广播（child_entered_tree 只会在首次触发）
 var on_visual_activated: Callable = Callable()

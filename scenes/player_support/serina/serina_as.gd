@@ -64,3 +64,4 @@ func heal_tick() -> void:
 	})
 	player.health_component.take_damage(player.health_component.heal_data)
 	aura.call("spawn_heal")
+	ExtensionHooks.notify_named("on_support_heal", [player])
