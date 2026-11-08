@@ -1,10 +1,19 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scenes/debuff/shock_chain_arc.gd" id="1_arc"]
-[ext_resource type="AudioStream" uid="uid://cfick73t3w2wv" path="res://sounds/ELECArc_Gauss Cannon Electric Arc_01.wav" id="2_sfx"]
+[ext_resource type="AudioStream" uid="uid://bpm65fg4g7ue8" path="res://sounds/elliottklein__spark.wav" id="2_sfx"]
+[ext_resource type="Script" path="res://scenes/debuff/shock_chain_arc_glow.gd" id="3_glow"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_glow"]
+blend_mode = 1
 
 [node name="ShockChainArc" type="Node2D"]
 script = ExtResource("1_arc")
+
+[node name="Glow" type="Node2D" parent="."]
+show_behind_parent = true
+material = SubResource("CanvasItemMaterial_glow")
+script = ExtResource("3_glow")
 
 [node name="Sfx" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_sfx")

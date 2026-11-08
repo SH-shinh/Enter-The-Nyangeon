@@ -12,9 +12,9 @@ extends Node2D
 const POOL_ID := "shock_chain"
 
 # ---- 调色（蓝紫，与 DamageData.COLOR_SHOCK #7B8CFF 同源） ----
-const HALO := Color(0.10, 0.08, 0.32, 0.65)
-const BODY := Color(0.30, 0.34, 1.0)
-const CORE := Color(0.86, 0.85, 1.0)
+const HALO := Color(0.07, 0.05, 0.20, 0.72)
+const BODY := Color(0.46, 0.30, 1.0)
+const CORE := Color(0.95, 0.93, 1.0)
 const SPARK := Color(0.70, 0.62, 1.0)
 const WHITE := Color(1, 1, 1, 1)
 
@@ -48,6 +48,7 @@ var _play_id: int = 0
 var _rng := RandomNumberGenerator.new()
 
 @onready var _sfx: AudioStreamPlayer = $Sfx
+@onready var _glow: Node2D = $Glow
 
 static var _last_sfx_ms: int = -1000000
 
@@ -69,6 +70,8 @@ func idle_state() -> void:
 	_age = 0.0
 	_redraw_accum = 0.0
 	set_process(false)
+	if _glow != null:
+		_glow.sync([], [], 0)
 	queue_redraw()
 
 
@@ -94,6 +97,7 @@ func play(points: Array, power: int) -> void:
 			"sparks": _make_sparks(i),
 		})
 	_rebuild()
+	_update_glow()
 	set_process(true)
 	queue_redraw()
 	_play_sfx()
@@ -106,6 +110,7 @@ func _process(delta: float) -> void:
 	if _redraw_accum >= REDRAW and _age < hold_end:
 		_redraw_accum = 0.0
 		_rebuild()
+		_update_glow()
 		queue_redraw()
 	if _age > hold_end:
 		modulate.a = clampf((_life() - _age) / FADE, 0.0, 1.0)
@@ -119,6 +124,22 @@ func _life() -> float:
 
 func _hold_end() -> float:
 	return WIND + float(_points.size() - 1) * LEAP + HOLD
+
+
+# 已落地跳的链段交给 ADD 发光子节点；未落地的跳由根节点的亮头表现。
+func _update_glow() -> void:
+	if _glow == null:
+		return
+	var segments: Array = []
+	for h in _paths.size():
+		var land := WIND + float(h) * LEAP + LEAP
+		if _age < land:
+			continue
+		for q in _paths[h]:
+			if float(q["w"]) < 1.0:
+				continue
+			segments.append(_to_packed(q["pts"]))
+	_glow.sync(segments, _points, _power)
 
 
 func _play_sfx() -> void:
@@ -246,9 +267,8 @@ func _draw_paths(paths: Array, up_to: float, k: float, leap: bool) -> void:
 				_draw_head(pts[pts.size() - 1])
 		if pts.size() < 2:
 			continue
-		var hw := 4.0 if trunk else 2.0
+		var hw := 5.0 if trunk else 2.0
 		var bw := 2.0 if trunk else 1.0
-		draw_polyline(pts, _with_alpha(BODY, 0.08 * k), 7.0 if trunk else 4.0)
 		draw_polyline(pts, _with_alpha(HALO, HALO.a * k), hw)
 		draw_polyline(pts, _with_alpha(BODY, k), bw)
 		draw_polyline(pts, _with_alpha(CORE, k), 1.0)
@@ -265,8 +285,6 @@ func _draw_node(i: int, q: float) -> void:
 		return
 	var k := 1.0 - q
 	var p := _points[i]
-	var gr := 7.0 + float(_power)
-	draw_texture_rect(GLOW_TEX, Rect2(p - Vector2(gr, gr), Vector2(gr * 2, gr * 2)), false, _with_alpha(BODY, 0.30 * k))
 	draw_circle(p, 1.0 + 4.0 * k, _with_alpha(WHITE, 0.9 * k))
 	draw_arc(p, 2.0 + 9.0 * q, 0.0, TAU, 20, _with_alpha(BODY, 0.7 * k), 1.0)
 	var rng := RandomNumberGenerator.new()
