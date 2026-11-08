@@ -219,6 +219,9 @@ func _disconnect_chill_counter(id: String):
 # 单链跳转、易伤叠层与结算都集中在 ShockChain；这里只维护条目节奏与数值。
 
 func _tick_shock_dot(entry: Dictionary) -> void:
+	# 联机客机镜像由 host 的链事件驱动，本地不再建链（否则两端链/层数分叉）。
+	if _is_remote_mirror():
+		return
 	ShockChain.tick(self, body, entry)
 
 # 感电层上限走施加者的 shock_layer（燃烧同机制），时长恒定 SHOCK_DURATION_TICKS/层。
@@ -268,6 +271,23 @@ func add_shock_vuln() -> void:
 	var st = body.get("stats")
 	if st != null:
 		st.anomaly_hurt_damage_mult = float(st.anomaly_hurt_damage_mult) + SHOCK_VULN_PER_STACK
+
+
+# 联机：客机镜像按 host 的链结果设置精确层数（只调差值，保留颜料标记的份额）。
+func network_set_shock_vuln(stacks: int) -> void:
+	if not current_buff.has(SHOCK_DOT_ID):
+		return
+	var entry: Dictionary = current_buff[SHOCK_DOT_ID]
+	if entry["stop"]:
+		return
+	var target: int = clampi(stacks, 0, SHOCK_VULN_MAX_STACKS)
+	var old: int = int(entry.get("vuln_stacks", 0))
+	if target == old:
+		return
+	entry["vuln_stacks"] = target
+	var st = body.get("stats")
+	if st != null:
+		st.anomaly_hurt_damage_mult = maxf(1.0, float(st.anomaly_hurt_damage_mult) + SHOCK_VULN_PER_STACK * float(target - old))
 
 # 整条链走完后，各节点按自身层数重新计时。
 func reset_shock_cd() -> void:

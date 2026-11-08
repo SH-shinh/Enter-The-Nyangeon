@@ -65,6 +65,27 @@ static func tick(manager: Node, body: Node, entry: Dictionary) -> void:
 		path[i]["manager"].shock_chain_hit(pow(HOP_DECAY, float(i)))
 	for p in path:
 		p["manager"].add_shock_vuln()
+	# host 链已结算完（伤害 + 层数），交给 mod 广播 net_id 序列与每节点 vuln_stacks。
+	ExtensionHooks.notify_named("on_shock_chain", [path, int(entry["layer"])])
+
+
+## 客机回放 host 的链：重置节拍、同步易伤层数并出同一条 VFX，不结算伤害。
+static func replay_remote(bodies: Array, power: int, stacks: Array) -> void:
+	if bodies.size() < 2:
+		return
+	var path: Array = []
+	for i in bodies.size():
+		var b: Node = bodies[i]
+		if b == null or not is_instance_valid(b):
+			continue
+		var m = b.get("enemy_buff_manager")
+		if m == null:
+			continue
+		m.reset_shock_cd()
+		m.network_set_shock_vuln(int(stacks[i]) if i < stacks.size() else 0)
+		path.append({"body": b, "manager": m})
+	if path.size() >= 2:
+		_spawn_arc(path, power)
 
 
 # 从链头贪心走链：每跳取最近的、未被访问过的感电目标，跳距受当前节点层数限制。

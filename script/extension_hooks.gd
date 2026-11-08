@@ -108,6 +108,9 @@ var on_enemy_buff_removed: Callable = Callable()
 # 敌人 buff 应用成功（通知，参数 [manager, buff, value, source_id, applier_stats, applier_peer]）
 # 供 mod 在 host 侧把 host 发起的敌人 buff 广播给客机（客机镜像应用）
 var on_enemy_buff_applied: Callable = Callable()
+# 感电链（通知，参数 [path: Array, power: int]，path 元素为 {body, manager, entry}）：
+# host 侧链走完（伤害/易伤已结算）后，供 mod 广播 net_id 序列与每节点 vuln_stacks。
+var on_shock_chain: Callable = Callable()
 var on_field_mod_started: Callable = Callable()
 var on_field_mod_stopped: Callable = Callable()
 # 爆炸视觉/音效触发（通知，参数 [position: Vector2, is_big: bool]）：供 mod 广播大/小爆炸表现

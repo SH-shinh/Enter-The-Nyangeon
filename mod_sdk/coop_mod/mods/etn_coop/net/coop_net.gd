@@ -33,8 +33,8 @@ const LOBBY_SCENE: String = "res://scenes/main/test_room.tscn"
 const DEFAULT_BATTLE_SCENE: String = "res://scenes/main/main.tscn"
 const MENU_SCENE: String = "res://scenes/main/menu_screen.tscn"
 # 协议/版本握手：不一致直接拒绝。RPC 契约变更时必须递增 PROTOCOL_VERSION。
-const PROTOCOL_VERSION: int = 9
-const MOD_VERSION: String = "0.1.18"
+const PROTOCOL_VERSION: int = 10
+const MOD_VERSION: String = "0.1.19"
 const HELLO_TIMEOUT_MSEC: int = 30000
 # 客机：发出 _client_hello 后等待 _hello_accept 的上限；超时视为握手失败（旧房主/版本不匹配）
 const HELLO_ACCEPT_TIMEOUT_MSEC: int = 30000
@@ -2032,6 +2032,7 @@ func install_hooks() -> void:
 	ExtensionHooks.on_pyroxenes_gain = Callable(self, "_on_pyroxenes_gain")
 	ExtensionHooks.on_enemy_buff_removed = Callable(self, "_on_enemy_buff_removed")
 	ExtensionHooks.on_enemy_buff_applied = Callable(self, "_on_enemy_buff_applied")
+	ExtensionHooks.on_shock_chain = Callable(self, "_on_shock_chain")
 	ExtensionHooks.on_explosion_effect = Callable(self, "_on_explosion_effect")
 	ExtensionHooks.on_hit_sfx = Callable(self, "_on_hit_sfx")
 	ExtensionHooks.on_summoned_action = Callable(self, "_on_summoned_action")
@@ -2379,6 +2380,29 @@ func _on_enemy_buff_applied(manager, buff, value, source_id, applier_stats, appl
 		return
 	_broadcast_host_enemy_buff(body, buff, value, source_id, applier_stats, applier_peer)
 
+
+# host 链结算完 → 广播 net_id 序列 + 每节点易伤层数，客机回放同一链并精确同步 stacks。
+func _on_shock_chain(path: Array, power: int) -> void:
+	if not is_lan_game or not multiplayer.is_server():
+		return
+	if path.size() < 2:
+		return
+	var ids: Array = []
+	var stacks: Array = []
+	for p in path:
+		if not (p is Dictionary):
+			continue
+		var nid := _live_enemy_net_id(p.get("body"))
+		if nid < 0:
+			continue
+		ids.append(nid)
+		var entry = p.get("entry")
+		stacks.append(int(entry.get("vuln_stacks", 0)) if entry is Dictionary else 0)
+	if ids.size() < 2:
+		return
+	rpc("_remote_shock_chain", ids, power, stacks)
+
+
 func _queue_pending_enemy_buff(body: Node, buff: Buff, value: Array, source_id: String, applier_stats: Dictionary, applier_peer: int) -> void:
 	var id := body.get_instance_id()
 	if not _pending_enemy_buff_events.has(id):
@@ -2430,6 +2454,12 @@ func _broadcast_host_enemy_buff(body: Node, buff: Buff, value: Array, source_id:
 			if resolved_peer == multiplayer.get_unique_id():
 				entry["applier_stats"] = {}
 	rpc("_remote_enemy_buff", net_id, str(buff.resource_path), value, source_id, applier_stats)
+	if str(buff.id) == "shock_dot":
+		var cbs2 = manager.get("current_buff")
+		if cbs2 is Dictionary:
+			var e2 = cbs2.get(buff.id)
+			if e2 is Dictionary:
+				rpc("_remote_shock_vuln", net_id, int(e2.get("vuln_stacks", 0)))
 
 
 # 客机镜像上应用 buff（仅表现 card；DOT 由本体 _is_remote_mirror 跳过，不结算）
@@ -2452,6 +2482,38 @@ func _remote_enemy_buff(net_id: int, buff_path: String, value: Array, source_id:
 	_applying_remote_buff = true
 	manager.call("apply_buff", buff, value, source_id, stats)
 	_applying_remote_buff = false
+
+
+# host 链事件：客机回放同一链（VFX + 精确 vuln_stacks），不结算伤害。
+@rpc("authority", "call_remote", "reliable")
+func _remote_shock_chain(ids: Array, power: int, stacks: Array) -> void:
+	if multiplayer.is_server():
+		return
+	var bodies: Array = []
+	var vals: Array = []
+	for i in ids.size():
+		var e = enemy_by_net_id.get(int(ids[i]))
+		if e == null or not is_instance_valid(e):
+			continue
+		bodies.append(e)
+		vals.append(int(stacks[i]) if i < stacks.size() else 0)
+	if bodies.size() >= 2:
+		ShockChain.replay_remote(bodies, power, vals)
+
+
+# host buff apply/刷新时补一次易伤层数同步（中途加入/重连起步一致）。
+@rpc("authority", "call_remote", "reliable")
+func _remote_shock_vuln(net_id: int, stacks: int) -> void:
+	if multiplayer.is_server():
+		return
+	var enemy = enemy_by_net_id.get(net_id)
+	if enemy == null or not is_instance_valid(enemy):
+		return
+	var manager = enemy.get("enemy_buff_manager")
+	if manager == null:
+		return
+	if manager.has_method("network_set_shock_vuln"):
+		manager.call("network_set_shock_vuln", stacks)
 
 
 # host buff 到期/移除 → 广播客机镜像同步移除
