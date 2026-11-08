@@ -3,8 +3,8 @@ extends RefCounted
 
 # Maki 被动「异常伤害可暴击」的统一判定与掷骰。
 #
-# 生效范围是「本机玩家带 Maki 被动」时的所有异常类伤害：燃烧/中毒/恶寒的 DOT 跳伤、
-# 恶寒反击、火场/火伤圈/毒环等纯元素直伤。子弹/近战/爆炸/策反已在各自流程掷暴击
+# 生效范围是「本机玩家带 Maki 被动」时的所有异常类伤害：燃烧/中毒/恶寒/感电的 DOT 跳伤、
+# 恶寒反击、感电链、火场/火伤圈/毒环等纯元素直伤。子弹/近战/爆炸/策反已在各自流程掷暴击
 # （且会与元素标签并存），因此这里用「排除复合标签」避免双重暴击。
 #
 # 判定放在 HealthComponent._resolve_damage() 的最终数值口，调用方无需逐个改脚本；
@@ -33,6 +33,7 @@ static func is_anomaly_damage(data: DamageData) -> bool:
 	return data.damage_type.has(GameTags.FIRE_DAMAGE) \
 			or data.damage_type.has(GameTags.POISON_DAMAGE) \
 			or data.damage_type.has(GameTags.CHILL_DAMAGE) \
+			or data.damage_type.has(GameTags.SHOCK_DAMAGE) \
 			or data.damage_type.has(GameTags.DOT_DAMAGE)
 
 

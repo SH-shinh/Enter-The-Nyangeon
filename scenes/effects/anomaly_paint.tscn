@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://scenes/effects/anomaly_paint.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://b5nbmcnfshgb8" path="res://sprites/particle/circular_1.png" id="2_texture"]
@@ -64,6 +64,24 @@ scale_curve = SubResource("CurveTexture_scale")
 color = Color(0.323, 0.68, 0.942, 1)
 color_initial_ramp = SubResource("GradientTexture1D_chill")
 
+[sub_resource type="Gradient" id="Gradient_shock"]
+colors = PackedColorArray(0.55, 0.6, 1, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_shock"]
+gradient = SubResource("Gradient_shock")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_shock"]
+lifetime_randomness = 0.5
+particle_flag_disable_z = true
+emission_shape = 3
+emission_box_extents = Vector3(20, 12.5, 1)
+gravity = Vector3(0, 0, 0)
+scale_min = 0.5
+scale_max = 1.5
+scale_curve = SubResource("CurveTexture_scale")
+color = Color(0.482, 0.549, 1, 1)
+color_initial_ramp = SubResource("GradientTexture1D_shock")
+
 [node name="AnomalyPaint" type="Node2D"]
 script = ExtResource("1_script")
 
@@ -89,6 +107,15 @@ explosiveness = 1.0
 emitting = false
 amount = 16
 process_material = SubResource("ParticleProcessMaterial_chill")
+texture = ExtResource("2_texture")
+lifetime = 3.0
+one_shot = true
+explosiveness = 1.0
+
+[node name="Shock" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 16
+process_material = SubResource("ParticleProcessMaterial_shock")
 texture = ExtResource("2_texture")
 lifetime = 3.0
 one_shot = true

@@ -58,6 +58,7 @@ const FX_BASE_MS := {
 	&"floor_paint": 80,
 	&"anomaly_paint": 60,
 	&"maki_paintball": 80,
+	&"shock_chain": 80,
 }
 var _fx_last_ms: Dictionary = {}
 var _fx_body_last_ms: Dictionary = {}
@@ -99,6 +100,7 @@ const IDLE_LIMITS := {
 	"floor_paint": 20,
 	"anomaly_paint": 24,
 	"maki_paintball": 4,
+	"shock_chain": 24,
 	"enemy_fire_field": 100,
 	"corruption_field": 24,
 	"support_bullet": 60,

@@ -24,6 +24,7 @@ const EXPLOSION_DAMAGE: String = "explosion_damage"
 const FIRE_DAMAGE: String = "fire_damage"
 const POISON_DAMAGE: String = "poison_damage"
 const CHILL_DAMAGE: String = "chill_damage"
+const SHOCK_DAMAGE: String = "shock_damage"
 
 const EQUIP_DAMAGE: String = "equip_damage"
 

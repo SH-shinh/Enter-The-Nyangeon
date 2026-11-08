@@ -1,6 +1,6 @@
 extends Node2D
-## Maki 被动「异常伤害」的地板颜料粒子：沿用 floor_paint 的三色发射器方案，
-## 按异常类型（燃烧/中毒/恶寒）播放对应颜色的颜料，尺寸与铺开范围约为 floor_paint 的 50%。
+## Maki 被动「异常伤害」的地板颜料粒子：沿用 floor_paint 的发射器方案，
+## 按异常类型（燃烧/中毒/恶寒/感电）播放对应颜色的颜料，尺寸与铺开范围约为 floor_paint 的 50%。
 
 const POOL_ID := "anomaly_paint"
 ## 10Hz tick 下 30 次 = 3s，与粒子 lifetime 对齐，避免连射时堆满长驻颜料
@@ -9,6 +9,7 @@ const ACTIVE_TICKS: int = 30
 @onready var fire_particles: GPUParticles2D = $Fire
 @onready var poison_particles: GPUParticles2D = $Poison
 @onready var chill_particles: GPUParticles2D = $Chill
+@onready var shock_particles: GPUParticles2D = $Shock
 
 var is_idle: int = 1
 var idle_time: int = ACTIVE_TICKS
@@ -33,7 +34,7 @@ func clear_pool() -> void:
 	PoolManager.erase_pool(POOL_ID)
 
 
-## element 取 GameTags.FIRE_DAMAGE / POISON_DAMAGE / CHILL_DAMAGE；未知元素回落燃烧色。
+## element 取 GameTags.FIRE_DAMAGE / POISON_DAMAGE / CHILL_DAMAGE / SHOCK_DAMAGE；未知元素回落燃烧色。
 func active_state(element: String = GameTags.FIRE_DAMAGE) -> void:
 	reset_physics_interpolation()
 	is_idle = 0
@@ -63,10 +64,12 @@ func _emitter_for(element: String) -> GPUParticles2D:
 		return poison_particles
 	if element == GameTags.CHILL_DAMAGE:
 		return chill_particles
+	if element == GameTags.SHOCK_DAMAGE:
+		return shock_particles
 	return fire_particles
 
 
 func _stop_particles() -> void:
-	for p in [fire_particles, poison_particles, chill_particles]:
+	for p in [fire_particles, poison_particles, chill_particles, shock_particles]:
 		if p != null:
 			p.emitting = false

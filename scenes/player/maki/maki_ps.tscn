@@ -4,6 +4,7 @@
 [ext_resource type="Resource" uid="uid://ddlwsbdn8hn6j" path="res://resources/buff/enemy_buff/fire_dot.tres" id="2_fire"]
 [ext_resource type="Resource" uid="uid://dsblwps2uxvdu" path="res://resources/buff/enemy_buff/poison_dot.tres" id="3_poison"]
 [ext_resource type="Resource" uid="uid://lmang0jl8vw2" path="res://resources/buff/enemy_buff/chill_dot.tres" id="4_chill"]
+[ext_resource type="Resource" path="res://resources/buff/enemy_buff/shock_dot.tres" id="9_shock"]
 [ext_resource type="Resource" path="res://resources/buff/enemy_buff/maki_paint_mark.tres" id="5_paint"]
 [ext_resource type="Resource" path="res://resources/buff/enemy_buff/maki_paint_mark_t3.tres" id="6_paint_t3"]
 [ext_resource type="AudioStream" uid="uid://c01aancfk3jra" path="res://sounds/magic3.wav" id="7_paintsfx"]
@@ -31,6 +32,7 @@ script = ExtResource("1_makips")
 fire_buff = ExtResource("2_fire")
 poison_buff = ExtResource("3_poison")
 chill_buff = ExtResource("4_chill")
+shock_buff = ExtResource("9_shock")
 paint_mark_buff = ExtResource("5_paint")
 paint_mark_buff_t3 = ExtResource("6_paint_t3")
 

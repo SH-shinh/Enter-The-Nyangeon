@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://sprites/buff_icon/shock_dot.png" id="1_shock"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_buff"]
+
+[resource]
+script = ExtResource("2_buff")
+id = "shock_dot"
+icon = ExtResource("1_shock")
+name = "感电"
+ability = ""
+remove_by_layer = true
+description = "两个感电目标之间会发射闪电链；链上每命中一个目标叠加5%异常易伤"

@@ -4,13 +4,13 @@ extends PlayerPS
 ##
 ## 结算时序：开火时掷「附带」→ 子弹带 meta → 命中首个敌人时消费 meta →
 ## 子弹自身伤害结算完成后，用 request_extra_damage 在同一帧补一段异常伤害，
-## 并施加对应异常 buff（燃烧/中毒/恶寒）。
+## 并施加对应异常 buff（燃烧/中毒/恶寒/感电）。
 ## 注意：异常伤害必须在 take_damage 内部投递（此时 _hit_depth>0 会进 _pending_extra），
 ## 不能直接递归 take_damage，也不能提前结算（提前打死目标会让子弹不回收）。
 
-enum Element { FIRE, POISON, CHILL }
+enum Element { FIRE, POISON, CHILL, SHOCK }
 
-const ELEMENT_COUNT: int = 3
+const ELEMENT_COUNT: int = 4
 const META_ELEMENT: String = "maki_anomaly_element"
 ## 异常来源标识：EnemyBuffManager 据此判定「异常伤害可暴击」与恶寒的来源独立层上限。
 const SOURCE_ID: String = "maki_ps"
@@ -37,6 +37,8 @@ const POISON_DAMAGE_RATIO: float = 0.5
 const CHILL_DURATION: float = 3.0
 ## 恶寒按来源独立叠层，本来源自己的上限是 5 层（与 chill_ring/nagusa_doll 口径一致）
 const CHILL_LAYER_BASE: int = 5
+## 感电：层数上限走 Stats.shock_layer；时长按「恒定 4s/层」由 EnemyBuffManager 覆写。
+const SHOCK_DURATION: float = 4.0
 
 # ---------------- 彩弹：异常伤害充能 → 最近敌人 AoE 标记 ----------------
 ## 每次玩家侧异常伤害 +1 能量；满 50 向最近敌人投掷彩弹（80px 小范围）。
@@ -63,6 +65,7 @@ const PAINT_FX_POOL: String = "floor_paint"
 @export var fire_buff: Buff
 @export var poison_buff: Buff
 @export var chill_buff: Buff
+@export var shock_buff: Buff
 @export var paint_mark_buff: Buff
 ## T3 变体：与 paint_mark_buff 同 id/图标/ability，额外带「每层 10% 全局易伤」的 modifier。
 @export var paint_mark_buff_t3: Buff
@@ -256,6 +259,8 @@ func _element_buff(element: int) -> Buff:
 			return poison_buff
 		Element.CHILL:
 			return chill_buff
+		Element.SHOCK:
+			return shock_buff
 	return null
 
 
@@ -267,6 +272,8 @@ func _element_tag(element: int) -> String:
 			return GameTags.POISON_DAMAGE
 		Element.CHILL:
 			return GameTags.CHILL_DAMAGE
+		Element.SHOCK:
+			return GameTags.SHOCK_DAMAGE
 	return GameTags.DOT_DAMAGE
 
 
@@ -281,6 +288,8 @@ func _element_value(element: int, anomaly_damage: int) -> Array:
 		Element.CHILL:
 			var cap: int = maxi(1, int(round(float(CHILL_LAYER_BASE) * float(stats.chill_layer_mult))))
 			return [cap, 0.0, CHILL_DURATION]
+		Element.SHOCK:
+			return [int(stats.shock_layer), 0.0, SHOCK_DURATION]
 	return []
 
 

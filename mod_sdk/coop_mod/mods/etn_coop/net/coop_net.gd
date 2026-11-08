@@ -318,7 +318,7 @@ func _sanitize_buff_value(value) -> Array:
 func _sanitize_applier_stats(stats) -> Dictionary:
 	var out: Dictionary = {}
 	if stats is Dictionary:
-		for k in ["dot_damage", "dot_time", "global_damage", "fire_dot_layer"]:
+		for k in ["dot_damage", "dot_time", "global_damage", "fire_dot_layer", "shock_layer"]:
 			var v = stats.get(k)
 			if v is int or v is float:
 				out[k] = clampf(float(v), 0.0, float(MAX_NET_STAT))
@@ -2320,6 +2320,8 @@ func _applier_stats() -> Dictionary:
 		out["global_damage"] = float(st.get("global_damage"))
 	if st.get("fire_dot_layer") != null:
 		out["fire_dot_layer"] = int(st.get("fire_dot_layer"))
+	if st.get("shock_layer") != null:
+		out["shock_layer"] = int(st.get("shock_layer"))
 	return out
 
 

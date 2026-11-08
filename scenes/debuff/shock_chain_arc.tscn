@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/debuff/shock_chain_arc.gd" id="1_arc"]
+
+[node name="ShockChainArc" type="Node2D"]
+script = ExtResource("1_arc")

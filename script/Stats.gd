@@ -94,6 +94,7 @@ signal hurt_invalid_changed
 @export var dot_time: float = 1 #dot伤害持续时间加成
 @export var dot_damage: float = 1 #dot伤害加成
 @export var fire_dot_layer: int = 5 #火dot最大层数
+@export var shock_layer: int = 5 #感电最大层数
 @export var converted_cap: int = 10 #策反数量上限
 @export var convert_power: int = 30 #策反伤害
 @export var convert_time: float = 5.0 #策反持续时间（秒）

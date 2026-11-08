@@ -8,6 +8,7 @@ const COLOR_MAGENTA := Color(0.817, 0.046, 0.631)
 const COLOR_FIRE    := Color(1, 0.367, 0.178)
 const COLOR_POISON  := Color(0.063, 0.54, 0.342)
 const COLOR_CHILL   := Color(0.323, 0.68, 0.942)
+const COLOR_SHOCK   := Color(0.482, 0.549, 1.0)
 
 # 各伤害类型的基础显示颜色
 const TYPE_COLORS := {
@@ -19,6 +20,7 @@ const TYPE_COLORS := {
 	GameTags.FIRE_DAMAGE: COLOR_FIRE,
 	GameTags.POISON_DAMAGE: COLOR_POISON,
 	GameTags.CHILL_DAMAGE: COLOR_CHILL,
+	GameTags.SHOCK_DAMAGE: COLOR_SHOCK,
 	}
 
 # 暴击颜色：由基础色统一换算（色相向暖偏移 + 满饱和 + 提亮）；
