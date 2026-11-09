@@ -7,10 +7,10 @@ extends Node2D
 
 const GLOW_TEX := preload("res://sprites/particle/circular_1.png")
 
-const GLOW_WIDE := Color(0.42, 0.40, 0.95, 0.06)
-const GLOW_MID := Color(0.55, 0.55, 1.0, 0.10)
-const GLOW_TIGHT := Color(0.85, 0.88, 1.0, 0.28)
-const NODE_GLOW := Color(0.80, 0.85, 1.0, 0.40)
+const GLOW_WIDE := Color(0.42, 0.40, 0.95, 0.16)
+const GLOW_MID := Color(0.55, 0.55, 1.0, 0.20)
+const GLOW_TIGHT := Color(0.85, 0.88, 1.0, 0.48)
+const NODE_GLOW := Color(0.80, 0.85, 1.0, 0.80)
 
 var _segments: Array = []
 var _points: Array = []
