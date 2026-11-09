@@ -15,6 +15,7 @@ extends SceneTree
 ##   scenes/effects/serina_dust_frames.res          Serina 光尘（0.7s / 45fps / 40×40）
 ##   scenes/effects/serina_beam_in_frames.res       Serina 入场光束（0.55s / 45fps / 56×200）
 ##   scenes/effects/serina_beam_out_frames.res      Serina 退场光束（0.45s / 45fps / 56×200）
+##   scenes/effects/bullet_smoke_frames.res         子弹命中烟（0.2s / 30fps / 48×48 / 6 帧，1:1 像素）
 ##
 ## 断言：
 ##   ① 不透明包围盒（画布 - 2px 余量）越界即失败；
@@ -40,6 +41,7 @@ const BBOX_LIMIT := {
 	"maki_paintball_pop_0.res": 70,
 	"maki_paintball_pop_1.res": 70,
 	"maki_paintball_pop_2.res": 70,
+	"bullet_smoke_frames.res": 44,
 	
 }
 
@@ -57,6 +59,7 @@ const ONESHOT := {
 	"maki_paintball_pop_0.res": true,
 	"maki_paintball_pop_1.res": true,
 	"maki_paintball_pop_2.res": true,
+	"bullet_smoke_frames.res": true,
 	
 }
 
@@ -85,6 +88,7 @@ func _initialize() -> void:
 	var mist: Script = load("res://scenes/effects/pixelfx_chill_mist.gd")
 	var maki_bolt: Script = load("res://scenes/effects/pixelfx_maki_paintball_bolt.gd")
 	var maki_pop: Script = load("res://scenes/effects/pixelfx_maki_paintball_pop.gd")
+	var smoke: Script = load("res://scenes/effects/pixelfx_bullet_smoke.gd")
 
 	var b1: Dictionary = Baker.bake(ring, {"reach": 85.0})
 	var e1 := Baker.save_sprite_frames(b1, "res://scenes/effects/heal_ring_frames.res", "combined")
@@ -145,6 +149,12 @@ func _initialize() -> void:
 		print("BAKE maki[%d] bolt n=%d trim=%d err=%s | pop n=%d trim=%d err=%s" % [
 			i, bb.n, tb, str(eb), bp.n, tp, str(ep)])
 
+	# 子弹命中烟：6 帧 / 30fps / 0.2s（1:1 像素，淡出烘进抖动）
+	var bs: Dictionary = Baker.bake(smoke, {"seed": 13.0})
+	var ts := _trim_tail(bs)
+	var es := Baker.save_sprite_frames(bs, "res://scenes/effects/bullet_smoke_frames.res", "combined")
+	print("BAKE bullet_smoke n=%d trim=%d err=%s" % [bs.n, ts, str(es)])
+
 	print("BAKE ring=%d plus_small=%d plus_big=%d aura=%d bubbles=%d frenzy=%d | serina halo=%d burst=%d dust=%d beam_in=%d heal=%d (trim %d/%d/%d/%d) | chill=%d trim=%d | errs=%s | ms=%d" % [
 		b1.n, b2.n, b3.n, b4.n, b5.n, b6.n, b7.n, b8.n, b9.n, b10.n, b11.n,
 		t8, t9, t10, t11, b12.n, t12,
@@ -158,6 +168,7 @@ func _initialize() -> void:
 		[b10, "serina_beam_in_frames.res"], [b11, "serina_heal_frames.res"],
 		[b12, "chill_frozen_frames.res"],
 		[b13, "chill_mist_frames.res"],
+		[bs, "bullet_smoke_frames.res"],
 	]:
 		ok = _check_frames(pair[0], pair[1]) and ok
 	for pair in maki_checks:

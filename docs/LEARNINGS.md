@@ -3159,6 +3159,13 @@
 - Notes / 说明: 双方 Kei 自动射击时，同一命中点会高频产生 `bullet_smoke_2`，远端正则还会走可复用特效池。若只依赖 0.2s 的 AnimationPlayer method track 调 `idle_state()`，快速重触发/池复用可能让 method track 没机会执行，表现为同一个烟节点常驻命中点、每次命中又播一次。`smoke_anim()` 必须用代次保护并在动画时长后兜底 `idle_state()`；远端 smoke 再加 1s 存活兜底。移除 autoplay，生命周期由调用方显式控制。
 - Source / 来源: code + test
 - Date / 日期: 2026-10-22
+- SUPERSEDED: 2026-11-09 该方案已整体替换——`bullet_smoke_2` 改为烘焙帧 + `AnimatedSprite2D.animation_finished` 回池，不再有 method track / 0.25s 兜底 / 代次校验（见下方 2026-11-09 条目）。
+
+### [VFX/Pool] GradientTexture2D 子资源不是实例私有的；命中烟改烘焙帧
+- Evidence / 证据: 旧 `scenes/bullet/bullet_smoke_2.tscn`（`CanvasGroup + TextureRect(GradientTexture2D) + AnimationPlayer`，11 个 Gradient 各带 `resource_local_to_scene = true`）；运行时实测两次 `PackedScene.instantiate()` 的 `TextureRect.texture` 是**同一对象**（`same_texture = true`、`same_gradient_slot = true`）；动画轨道写的是 `CanvasGroup/Node2D/TextureRect:texture:gradient`。新实现：`scenes/effects/pixelfx_bullet_smoke.gd`（pure 效果）→ `script/bake_pixelfx_fx.gd` → `scenes/effects/bullet_smoke_frames.res`；运行时代码 `scenes/bullet/bullet_smoke_2.gd`。
+- Notes / 说明: `resource_local_to_scene` 只在**节点属性赋值**时复制；`GradientTexture2D` 本身不是 local_to_scene，随 PackedScene 共享 ⇒ 每个实例都往同一张贴图上写 gradient，多实例并发时互相覆盖成"最后一次写入"的环（外观闪、且不会各自扩散）。改烘焙帧后运行时不改任何纹理；顺带去掉每播 10 次纹理重生成、`CanvasGroup` 离屏缓冲、每实例 `AnimationPlayer`/计时器/lambda，场景 5 节点 → 2 节点。实测（headless，k=8 并发）：`instantiate` 15.8→4.3µs、`instantiate+add_child` 70→27µs、单次播放 5.1→2.7µs、绘制调用 15.5→1.0、视频内存 −10.1MB、每帧 process 3.57→1.75ms（每活跃实例 0.150→0.066ms）。`is_idle` 初值改 1 且 `_ready` 即 `idle_state()`；被节流拦截时仍调 `idle_state()` 守住池槽不变式。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-09
 
 ### [Mod/Hooks] `intercept_named` / `notify_named` 的槽名必须在 extension_hooks.gd 显式声明
 - Evidence / 证据: `script/extension_hooks.gd:_slot_of()`；`scenes/manager/field_mod_manager.gd`（`field_mod_spawn_gate` / `on_field_mod_started` / `on_field_mod_stopped`）
