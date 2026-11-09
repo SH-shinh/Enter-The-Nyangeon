@@ -8,6 +8,8 @@ extends HitBox
 @export var buff_value: float
 @export var buff_erase_timer: float
 @export var field_damage: int = 0
+## 仅给可受伤且 max_hp>0 的目标上 buff（玩家侧感电场开启；火场默认 false，行为不变）。
+@export var only_hurtable: bool = false
 
 @onready var collision_shape_2d = $CollisionShape2D
 @onready var gpu_particles_2d: GPUParticles2D = $GPUParticles2D
@@ -81,6 +83,13 @@ func add_fire_dot():
 		var body = i.owner
 		if body == null or not is_instance_valid(body):
 			continue
+		if only_hurtable:
+			var hc = body.get("health_component")
+			if hc != null and hc.get("can_hurt") == false:
+				continue
+			var st = body.get("stats")
+			if st != null and int(st.get("max_hp")) <= 0:
+				continue
 		var buff: Buff = enemy_buff if source_faction == Faction.PLAYER_SIDE else player_buff
 		if buff != null:
 			BuffRouter.apply_buff(body, buff, value)

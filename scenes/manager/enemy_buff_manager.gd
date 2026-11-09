@@ -251,6 +251,8 @@ func shock_chain_hit(decay_mult: float) -> void:
 	var st = body.get("stats")
 	if st != null and st.hp <= 0 and not bool(st.is_test_target):
 		return
+	if ShockChain.is_immune(body):
+		return
 	var layer: int = int(entry["layer"])
 	var base: float = SHOCK_BASE_DAMAGE * (1.0 + SHOCK_LAYER_DAMAGE_STEP * float(layer - 1))
 	base *= float(_estat(entry, "dot_damage", 1.0)) * float(_estat(entry, "global_damage", 1.0))

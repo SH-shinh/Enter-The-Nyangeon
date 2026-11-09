@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=4 format=3]
+
+[ext_resource type="Texture2D" path="res://sprites/buff_icon/shock_dot.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_buff"]
+[ext_resource type="PackedScene" path="res://resources/buff/components/player_shock_component.tscn" id="3_comp"]
+
+[resource]
+script = ExtResource("2_buff")
+id = "player_shock"
+icon = ExtResource("1_icon")
+name = "感电"
+ability = ""
+remove_by_layer = true
+description = "被电击：与其他感电目标之间放电，每跳损失 2% 最大生命；层数越高放电越频繁。"
+is_debuff = true
+component_scene = ExtResource("3_comp")

@@ -105,6 +105,8 @@ signal hurt_invalid_changed
 
 @export var hurt_resis: int = 0 #减伤值
 @export var hurt_mult: float = 1 #承伤率
+## 感电伤害免疫：置 true 后 ShockChain 的感电伤害跳过本目标（仍可被链选中/传导）。
+@export var shock_immune: bool = false
 
 
 @export_category("屏幕震动相关")

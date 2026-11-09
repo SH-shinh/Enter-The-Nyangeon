@@ -1,0 +1,51 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://sprites/particle/circular_1.png" id="1_tex"]
+[ext_resource type="Script" path="res://scenes/enemies/enemy_fire_field.gd" id="2_script"]
+[ext_resource type="Resource" path="res://resources/buff/player_buff/player_shock.tres" id="3_buff"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_shock"]
+radius = 18.0
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_shock"]
+blend_mode = 1
+
+[sub_resource type="Gradient" id="Gradient_shock"]
+colors = PackedColorArray(0.482, 0.549, 1, 1, 0.1, 0.15, 0.6, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_shock"]
+gradient = SubResource("Gradient_shock")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_shock"]
+lifetime_randomness = 0.3
+particle_flag_disable_z = true
+emission_shape_offset = Vector3(0, -5, 0)
+emission_shape = 1
+emission_sphere_radius = 20.0
+gravity = Vector3(0, 0, 0)
+scale_max = 1.2
+color = Color(0.482, 0.549, 1, 0.55)
+color_initial_ramp = SubResource("GradientTexture1D_shock")
+
+[node name="enemy_shock_field" type="Area2D"]
+collision_layer = 0
+collision_mask = 2048
+monitorable = false
+script = ExtResource("2_script")
+pool_id = "enemy_shock_field"
+self_life = 10
+player_buff = ExtResource("3_buff")
+buff_layer = 3
+buff_value = 0.0
+buff_erase_timer = 4.0
+only_hurtable = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_shock")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+material = SubResource("CanvasItemMaterial_shock")
+amount = 16
+texture = ExtResource("1_tex")
+lifetime = 0.5
+process_material = SubResource("ParticleProcessMaterial_shock")

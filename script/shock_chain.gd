@@ -37,6 +37,19 @@ static func hop_limit_for(layer: int) -> int:
 	return mini(HOP_MAX, 1 + maxi(layer, 1))
 
 
+## 感电伤害免疫：目标实现 is_shock_immune()，或在其 stats 上置 shock_immune，即跳过伤害（仍可被链选中/传导）。
+static func is_immune(body: Node) -> bool:
+	if body == null or not is_instance_valid(body):
+		return true
+	if body.has_method("is_shock_immune") and bool(body.call("is_shock_immune")):
+		return true
+	var st = body.get("stats")
+	if st == null:
+		return false
+	var v = st.get("shock_immune")
+	return v != null and bool(v)
+
+
 ## 由 EnemyBuffManager._tick_shock_dot 调用：倒计时到点则尝试整条链。
 static func tick(manager: Node, body: Node, entry: Dictionary) -> void:
 	if body == null or not is_instance_valid(body):
@@ -128,6 +141,32 @@ static func _candidate_pool(head: Node) -> Array:
 		if entry.is_empty():
 			continue
 		pool.append({"body": e, "manager": m, "entry": entry})
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree != null:
+		for comp in tree.get_nodes_in_group("ShockCarrier"):
+			if comp == null or not is_instance_valid(comp):
+				continue
+			var b: Node = comp.get("body")
+			if b == null or not is_instance_valid(b) or b == head:
+				continue
+			if b.get("is_idle") == 1 or b.get("is_downed") == true:
+				continue
+			var bst = b.get("stats")
+			if bst == null:
+				continue
+			var bmax = bst.get("max_hp")
+			var bhp = bst.get("hp")
+			if bmax == null or int(bmax) <= 0 or bhp == null or int(bhp) <= 0:
+				continue
+			var bhc = b.get("health_component")
+			if bhc != null and bhc.get("can_hurt") == false:
+				continue
+			var centry = comp.call("get_shock_entry")
+			if not (centry is Dictionary) or centry.is_empty():
+				continue
+			if bool(centry.get("stop", false)) or int(centry.get("layer", 0)) <= 0:
+				continue
+			pool.append({"body": b, "manager": comp, "entry": centry})
 	return pool
 
 

@@ -17,6 +17,8 @@ signal is_dead
 @export var summoned_knockback_resis: int = 0 #召唤物击退抗性（百分比，0-100）
 @export var summoned_penetrate_resis: int = 1 #召唤物穿透抗性
 @export var global_hurt_damage: float = 1.0 #召唤物伤害抗性
+## 感电伤害免疫：置 true 后 ShockChain 的感电伤害跳过本召唤物。
+@export var shock_immune: bool = false
 
 # ---------------- 固有等级系统配置 ----------------
 # 等级/经验属于召唤物自身；任何来源（utaha 近战 / 未来道具等）都经 Summoned.add_summon_exp 喂经验。

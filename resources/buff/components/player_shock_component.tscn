@@ -1,0 +1,40 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://resources/buff/components/player_shock_component.gd" id="1_psc"]
+[ext_resource type="Texture2D" path="res://sprites/particle/circular_1.png" id="2_tex"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
+
+[sub_resource type="Gradient" id="Gradient_ps"]
+colors = PackedColorArray(0.482, 0.549, 1, 1, 0.9, 0.85, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_ps"]
+gradient = SubResource("Gradient_ps")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ps"]
+lifetime_randomness = 0.3
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 9.0
+direction = Vector3(0, -1, 0)
+spread = 180.0
+initial_velocity_min = 8.0
+initial_velocity_max = 28.0
+gravity = Vector3(0, -20, 0)
+scale_min = 0.4
+scale_max = 0.9
+color = Color(0.482, 0.549, 1, 0.7)
+color_ramp = SubResource("GradientTexture1D_ps")
+
+[node name="PlayerShockComponent" type="Node2D"]
+script = ExtResource("1_psc")
+
+[node name="Aura" type="GPUParticles2D" parent="."]
+position = Vector2(0, -14)
+material = SubResource("CanvasItemMaterial_add")
+amount = 12
+texture = ExtResource("2_tex")
+lifetime = 0.45
+emitting = false
+process_material = SubResource("ParticleProcessMaterial_ps")
