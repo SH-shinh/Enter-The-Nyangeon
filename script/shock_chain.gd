@@ -71,11 +71,14 @@ static func tick(manager: Node, body: Node, entry: Dictionary) -> void:
 	_last_chain_ms = now
 	# 先重置整条链的节拍并出表现；再按跳序结算；最后给仍存活的节点叠易伤
 	# （本次命中不吃自己这层 5%，下一次链才吃）。
+	var chain_dir := Vector2.ZERO
+	if path.size() >= 2:
+		chain_dir = (path[path.size() - 1]["body"].global_position - path[0]["body"].global_position).normalized()
 	for p in path:
 		p["manager"].reset_shock_cd()
 	_spawn_arc(path, int(entry["layer"]))
 	for i in path.size():
-		path[i]["manager"].shock_chain_hit(pow(HOP_DECAY, float(i)))
+		path[i]["manager"].shock_chain_hit(pow(HOP_DECAY, float(i)), chain_dir)
 	for p in path:
 		p["manager"].add_shock_vuln()
 	# host 链已结算完（伤害 + 层数），交给 mod 广播 net_id 序列与每节点 vuln_stacks。

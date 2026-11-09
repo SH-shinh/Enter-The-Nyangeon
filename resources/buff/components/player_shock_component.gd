@@ -5,6 +5,7 @@ extends BuffComponent
 ## - 与敌人侧 shock_dot 共用 ShockChain；免疫由 ShockChain.is_immune() 判定。
 
 const PLAYER_SHOCK_HP_RATIO := 0.02
+const SHOCK_KNOCKBACK_FORCE := 140
 
 var _id: String = ""
 var _active: bool = false
@@ -78,7 +79,7 @@ func add_shock_vuln() -> void:
 	pass
 
 
-func shock_chain_hit(_decay: float) -> void:
+func shock_chain_hit(_decay: float, knockback_dir: Vector2 = Vector2.ZERO) -> void:
 	if body == null or not is_instance_valid(body):
 		return
 	if ShockChain.is_immune(body):
@@ -97,6 +98,12 @@ func shock_chain_hit(_decay: float) -> void:
 		max_hp = int(st.get_effective_max_hp())
 	var hit := maxi(1, int(round(float(max_hp) * PLAYER_SHOCK_HP_RATIO)))
 	var ddata := DamageData.dot(hit, GameTags.SHOCK_DAMAGE, DamageRouter.source_tag(Faction.ENEMY_SIDE))
+	# 沿闪电链方向击退；链方向为零（头尾同点）时随机兜底。
+	var dir := knockback_dir
+	if dir == Vector2.ZERO:
+		dir = Vector2.RIGHT.rotated(randf() * TAU)
+	ddata.knockback_force = SHOCK_KNOCKBACK_FORCE
+	ddata.knockback_direction = dir.normalized()
 	hc.take_damage(ddata)
 
 

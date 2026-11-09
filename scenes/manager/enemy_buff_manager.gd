@@ -238,7 +238,8 @@ func _update_shock_timing(entry: Dictionary) -> void:
 		entry["shock_cd"] = mini(int(entry["shock_cd"]), cd)
 
 # 链上每个节点各结算一次；伤害按自身层数成长、再乘逐跳衰减。
-func shock_chain_hit(decay_mult: float) -> void:
+# knockback_dir 仅玩家/召唤侧组件使用；敌人侧不击退，参数保留以统一调用。
+func shock_chain_hit(decay_mult: float, _knockback_dir: Vector2 = Vector2.ZERO) -> void:
 	if _is_remote_mirror():
 		return
 	if not current_buff.has(SHOCK_DOT_ID):
