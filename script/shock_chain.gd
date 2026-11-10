@@ -81,12 +81,14 @@ static func tick(manager: Node, body: Node, entry: Dictionary) -> void:
 		path[i]["manager"].shock_chain_hit(pow(HOP_DECAY, float(i)), chain_dir)
 	for p in path:
 		p["manager"].add_shock_vuln()
-	# host 链已结算完（伤害 + 层数），交给 mod 广播 net_id 序列与每节点 vuln_stacks。
-	ExtensionHooks.notify_named("on_shock_chain", [path, int(entry["layer"])])
+	# host 链已结算完（伤害 + 层数），交给 mod 广播节点 ref、每节点 vuln_stacks 与链方向。
+	ExtensionHooks.notify_named("on_shock_chain", [path, int(entry["layer"]), chain_dir])
 
 
-## 客机回放 host 的链：重置节拍、同步易伤层数并出同一条 VFX，不结算伤害。
-static func replay_remote(bodies: Array, power: int, stacks: Array) -> void:
+## 客机回放 host 的链：重置节拍、同步易伤层数并出同一条 VFX；
+## 只有 local_mask[i] 为真的本机玩家/召唤物节点才结算 2% + 击退（伤害归属 owner），
+## host 的远端镜像只当链节点，不重复扣血/推人。
+static func replay_remote(bodies: Array, power: int, stacks: Array, dir: Vector2 = Vector2.ZERO, local_mask: Array = []) -> void:
 	if bodies.size() < 2:
 		return
 	var path: Array = []
@@ -94,14 +96,34 @@ static func replay_remote(bodies: Array, power: int, stacks: Array) -> void:
 		var b: Node = bodies[i]
 		if b == null or not is_instance_valid(b):
 			continue
-		var m = b.get("enemy_buff_manager")
+		var m := _manager_for(b)
 		if m == null:
 			continue
 		m.reset_shock_cd()
-		m.network_set_shock_vuln(int(stacks[i]) if i < stacks.size() else 0)
+		if m.has_method("network_set_shock_vuln"):
+			m.network_set_shock_vuln(int(stacks[i]) if i < stacks.size() else 0)
+		if i < local_mask.size() and bool(local_mask[i]):
+			if m.has_method("replay_shock_hit"):
+				m.call("replay_shock_hit", dir)
+			elif m.has_method("shock_chain_hit"):
+				m.call("shock_chain_hit", 1.0, dir)
 		path.append({"body": b, "manager": m})
 	if path.size() >= 2:
 		_spawn_arc(path, power)
+
+
+## 链节点的结算入口：敌人用 EnemyBuffManager，玩家/召唤物用 ShockCarrier 组件。
+static func _manager_for(body: Node) -> Node:
+	var m = body.get("enemy_buff_manager")
+	if m != null:
+		return m
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null:
+		return null
+	for comp in tree.get_nodes_in_group("ShockCarrier"):
+		if comp != null and is_instance_valid(comp) and comp.get("body") == body:
+			return comp
+	return null
 
 
 # 从链头贪心走链：每跳取最近的、未被访问过的感电目标，跳距受当前节点层数限制。

@@ -79,13 +79,41 @@ func add_shock_vuln() -> void:
 	pass
 
 
+# 玩家/召唤物镜像不结算：真正的 2%/击退由所属端在 replay 时执行。
+func _is_remote_mirror() -> bool:
+	if body == null or not is_instance_valid(body):
+		return false
+	if body.has_meta("peer_id"):
+		return int(body.get_meta("peer_id")) != multiplayer.get_unique_id()
+	if body.has_meta("owner_peer_id"):
+		return int(body.get_meta("owner_peer_id")) != multiplayer.get_unique_id()
+	return false
+
+
 func shock_chain_hit(_decay: float, knockback_dir: Vector2 = Vector2.ZERO) -> void:
 	if body == null or not is_instance_valid(body):
+		return
+	if _is_remote_mirror():
 		return
 	if ShockChain.is_immune(body):
 		return
 	var e := get_shock_entry()
 	if e.is_empty():
+		return
+	_apply_shock_hit(knockback_dir)
+
+
+# 客机回放本机节点时用：不依赖本地条目（buff 转交可能稍晚到），仍按 2% + 击退结算。
+func replay_shock_hit(knockback_dir: Vector2 = Vector2.ZERO) -> void:
+	if body == null or not is_instance_valid(body):
+		return
+	if _is_remote_mirror():
+		return
+	_apply_shock_hit(knockback_dir)
+
+
+func _apply_shock_hit(knockback_dir: Vector2) -> void:
+	if ShockChain.is_immune(body):
 		return
 	var st = body.get("stats")
 	var hc = body.get("health_component")

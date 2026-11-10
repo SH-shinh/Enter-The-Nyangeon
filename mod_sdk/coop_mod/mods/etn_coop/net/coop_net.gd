@@ -33,8 +33,8 @@ const LOBBY_SCENE: String = "res://scenes/main/test_room.tscn"
 const DEFAULT_BATTLE_SCENE: String = "res://scenes/main/main.tscn"
 const MENU_SCENE: String = "res://scenes/main/menu_screen.tscn"
 # 协议/版本握手：不一致直接拒绝。RPC 契约变更时必须递增 PROTOCOL_VERSION。
-const PROTOCOL_VERSION: int = 10
-const MOD_VERSION: String = "0.1.19"
+const PROTOCOL_VERSION: int = 11
+const MOD_VERSION: String = "0.1.20"
 const HELLO_TIMEOUT_MSEC: int = 30000
 # 客机：发出 _client_hello 后等待 _hello_accept 的上限；超时视为握手失败（旧房主/版本不匹配）
 const HELLO_ACCEPT_TIMEOUT_MSEC: int = 30000
@@ -2382,25 +2382,52 @@ func _on_enemy_buff_applied(manager, buff, value, source_id, applier_stats, appl
 
 
 # host 链结算完 → 广播 net_id 序列 + 每节点易伤层数，客机回放同一链并精确同步 stacks。
-func _on_shock_chain(path: Array, power: int) -> void:
+func _on_shock_chain(path: Array, power: int, dir: Vector2 = Vector2.ZERO) -> void:
 	if not is_lan_game or not multiplayer.is_server():
 		return
 	if path.size() < 2:
 		return
-	var ids: Array = []
+	var refs: Array = []
 	var stacks: Array = []
 	for p in path:
 		if not (p is Dictionary):
 			continue
-		var nid := _live_enemy_net_id(p.get("body"))
-		if nid < 0:
+		var ref := _chain_node_ref(p.get("body"))
+		if ref.is_empty():
 			continue
-		ids.append(nid)
+		refs.append(ref)
 		var entry = p.get("entry")
 		stacks.append(int(entry.get("vuln_stacks", 0)) if entry is Dictionary else 0)
-	if ids.size() < 2:
+	if refs.size() < 2:
 		return
-	rpc("_remote_shock_chain", ids, power, stacks)
+	rpc("_remote_shock_chain", refs, power, stacks, dir)
+
+
+# 链节点编码：敌人 ["e", net_id] / 玩家 ["p", peer] / 召唤物 ["s", net_id]。
+func _chain_node_ref(body: Node) -> Array:
+	if body == null or not is_instance_valid(body):
+		return []
+	var eid := _live_enemy_net_id(body)
+	if eid >= 0:
+		return ["e", eid]
+	var local := get_local_player()
+	if local != null and body == local:
+		return ["p", multiplayer.get_unique_id()]
+	if body.has_meta("peer_id"):
+		return ["p", int(body.get_meta("peer_id"))]
+	var sid := _live_summoned_net_id(body)
+	if sid >= 0:
+		return ["s", sid]
+	return []
+
+
+func _live_summoned_net_id(body: Node) -> int:
+	if body == null or not is_instance_valid(body) or not body.has_meta("summoned_net_id"):
+		return -1
+	var sid := int(body.get_meta("summoned_net_id"))
+	if summoned_by_net_id.get(sid) != body:
+		return -1
+	return sid
 
 
 func _queue_pending_enemy_buff(body: Node, buff: Buff, value: Array, source_id: String, applier_stats: Dictionary, applier_peer: int) -> void:
@@ -2484,21 +2511,43 @@ func _remote_enemy_buff(net_id: int, buff_path: String, value: Array, source_id:
 	_applying_remote_buff = false
 
 
-# host 链事件：客机回放同一链（VFX + 精确 vuln_stacks），不结算伤害。
+# host 链事件：客机回放同一链（VFX + 精确 vuln_stacks）；本机玩家/召唤物节点额外结算 2% + 击退。
 @rpc("authority", "call_remote", "reliable")
-func _remote_shock_chain(ids: Array, power: int, stacks: Array) -> void:
+func _remote_shock_chain(refs: Array, power: int, stacks: Array, dir: Vector2 = Vector2.ZERO) -> void:
 	if multiplayer.is_server():
 		return
 	var bodies: Array = []
 	var vals: Array = []
-	for i in ids.size():
-		var e = enemy_by_net_id.get(int(ids[i]))
-		if e == null or not is_instance_valid(e):
+	var local_mask: Array = []
+	var local_id := multiplayer.get_unique_id()
+	for i in refs.size():
+		var ref = refs[i]
+		if not (ref is Array) or ref.size() < 2:
 			continue
-		bodies.append(e)
+		var kind := str(ref[0])
+		var rid := int(ref[1])
+		var body = null
+		if kind == "e":
+			body = enemy_by_net_id.get(rid)
+		elif kind == "p":
+			if rid == local_id:
+				body = get_local_player()
+			else:
+				body = player_by_peer_id.get(rid)
+		elif kind == "s":
+			body = summoned_by_net_id.get(rid)
+		if body == null or not is_instance_valid(body):
+			continue
+		bodies.append(body)
 		vals.append(int(stacks[i]) if i < stacks.size() else 0)
+		if kind == "p":
+			local_mask.append(rid == local_id)
+		elif kind == "s":
+			local_mask.append(int(summoned_owner_by_net_id.get(rid, -1)) == local_id)
+		else:
+			local_mask.append(false)
 	if bodies.size() >= 2:
-		ShockChain.replay_remote(bodies, power, vals)
+		ShockChain.replay_remote(bodies, power, vals, dir, local_mask)
 
 
 # host buff apply/刷新时补一次易伤层数同步（中途加入/重连起步一致）。
@@ -9683,13 +9732,27 @@ func _local_support_modifiers() -> Dictionary:
 func _gate_player_buff_apply(target, buff, value) -> bool:
 	if not is_lan_game or target == null or buff == null:
 		return false
-	if not target.has_meta("peer_id"):
+	var path: String = str(buff.resource_path)
+	if path == "":
+		return false
+	var is_player: bool = target.get("player_buff_manager") != null
+	var is_summon: bool = target.get("summoned_buff_manager") != null
+	# 召唤物镜像：只给玩家侧感电做归属性转交（其余召唤物 buff 走 _tick_summon_auras）。
+	if is_summon and target.has_meta("owner_peer_id") and target.has_meta("summoned_net_id"):
+		var owner: int = int(target.get_meta("owner_peer_id"))
+		if owner == multiplayer.get_unique_id():
+			return false
+		if str(buff.id) == "player_shock":
+			_send_summoned_buff(owner, int(target.get_meta("summoned_net_id")), true, path, value, _local_buff_source_id())
+		return false
+	if not is_player or not target.has_meta("peer_id"):
 		return false
 	var peer: int = int(target.get_meta("peer_id"))
 	if peer == multiplayer.get_unique_id():
 		return false
-	var path: String = str(buff.resource_path)
-	if path == "":
+	if str(buff.id) == "player_shock":
+		# 镜像也要挂（host 侧链节点）；本人端拿卡面/真实结算载体。不写 _support_buffed_peers。
+		_send_player_buff(peer, true, path, value, _local_buff_source_id())
 		return false
 	_send_player_buff(peer, true, path, value, _local_buff_source_id())
 	_support_buffed_peers[peer] = path
@@ -9700,13 +9763,25 @@ func _gate_player_buff_apply(target, buff, value) -> bool:
 func _gate_player_buff_remove(target, buff) -> bool:
 	if not is_lan_game or target == null or buff == null:
 		return false
-	if not target.has_meta("peer_id"):
+	var path: String = str(buff.resource_path)
+	if path == "":
+		return false
+	var is_player: bool = target.get("player_buff_manager") != null
+	var is_summon: bool = target.get("summoned_buff_manager") != null
+	if is_summon and target.has_meta("owner_peer_id") and target.has_meta("summoned_net_id"):
+		var owner: int = int(target.get_meta("owner_peer_id"))
+		if owner == multiplayer.get_unique_id():
+			return false
+		if str(buff.id) == "player_shock":
+			_send_summoned_buff(owner, int(target.get_meta("summoned_net_id")), false, path, [], _local_buff_source_id())
+		return false
+	if not is_player or not target.has_meta("peer_id"):
 		return false
 	var peer: int = int(target.get_meta("peer_id"))
 	if peer == multiplayer.get_unique_id():
 		return false
-	var path: String = str(buff.resource_path)
-	if path == "":
+	if str(buff.id) == "player_shock":
+		_send_player_buff(peer, false, path, [], _local_buff_source_id())
 		return false
 	_send_player_buff(peer, false, path, [], _local_buff_source_id())
 	_support_buffed_peers.erase(peer)
