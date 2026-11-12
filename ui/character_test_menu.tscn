@@ -32,6 +32,7 @@
 [ext_resource type="Resource" uid="uid://clgkxf2xbetma" path="res://resources/player/aris_armed.tres" id="23_7lkns"]
 [ext_resource type="Resource" uid="uid://bmjwea0iigo2u" path="res://resources/player/chinatsu.tres" id="23_dd48m"]
 [ext_resource type="Resource" uid="uid://cbwx1rap2vuu7" path="res://resources/player/maki.tres" id="25_2vorl"]
+[ext_resource type="Resource" path="res://resources/player/chihiro.tres" id="26_cdmc8"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_th1hw"]
 blend_mode = 3
@@ -196,7 +197,7 @@ _data = {
 
 [node name="CharacterTestMenu" type="CanvasLayer" unique_id=748112920]
 script = ExtResource("1_66oiq")
-player_group = Array[ExtResource("2_fkcsb")]([ExtResource("3_wifu7"), ExtResource("4_v2tkt"), ExtResource("5_5jixr"), ExtResource("6_vpyvc"), ExtResource("7_a3k1r"), ExtResource("8_aqdid"), ExtResource("9_ufldb"), ExtResource("10_0sp1o"), ExtResource("11_t5beg"), ExtResource("12_u6ki5"), ExtResource("13_lqmwu"), ExtResource("14_rmwxu"), ExtResource("15_f3e4h"), ExtResource("16_nfyhj"), ExtResource("17_agvp1"), ExtResource("18_2dicx"), ExtResource("19_jbfyf"), ExtResource("20_c5dy3"), ExtResource("21_8wjoo"), ExtResource("22_hl2cf"), ExtResource("23_dd48m"), ExtResource("23_7lkns"), ExtResource("25_2vorl")])
+player_group = Array[ExtResource("2_fkcsb")]([ExtResource("3_wifu7"), ExtResource("4_v2tkt"), ExtResource("5_5jixr"), ExtResource("6_vpyvc"), ExtResource("7_a3k1r"), ExtResource("8_aqdid"), ExtResource("9_ufldb"), ExtResource("10_0sp1o"), ExtResource("11_t5beg"), ExtResource("12_u6ki5"), ExtResource("13_lqmwu"), ExtResource("14_rmwxu"), ExtResource("15_f3e4h"), ExtResource("16_nfyhj"), ExtResource("17_agvp1"), ExtResource("18_2dicx"), ExtResource("19_jbfyf"), ExtResource("20_c5dy3"), ExtResource("21_8wjoo"), ExtResource("22_hl2cf"), ExtResource("23_dd48m"), ExtResource("23_7lkns"), ExtResource("25_2vorl"), ExtResource("26_cdmc8")])
 
 [node name="Node2D" type="Node2D" parent="." unique_id=1360076815]
 

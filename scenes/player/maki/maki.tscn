@@ -27,7 +27,7 @@
 [ext_resource type="PackedScene" uid="uid://voxip8vojin" path="res://scenes/manager/player_buff_manager.tscn" id="26_t4t2c"]
 [ext_resource type="PackedScene" uid="uid://c620jv6qq2f8w" path="res://scenes/player/t_hp_count.tscn" id="27_wx1uh"]
 [ext_resource type="Script" uid="uid://crtabh2xwunne" path="res://script/player_health_component.gd" id="28_1dtcq"]
-[ext_resource type="PackedScene" path="res://scenes/player/maki/maki_ps.tscn" id="29_makips"]
+[ext_resource type="PackedScene" uid="uid://ccl3sklx8ekbr" path="res://scenes/player/maki/maki_ps.tscn" id="29_makips"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_l238d"]
 radius = 7.0
@@ -70,7 +70,7 @@ void fragment() {
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_6mfpp"]
 shader = SubResource("Shader_dfim5")
-shader_parameter/outline_width = 2.0
+shader_parameter/outline_width = 1.0
 shader_parameter/outline_color = Color(50, 7.254, 13.545, 1)
 shader_parameter/flash_opacity = 0.0
 shader_parameter/corruption_tint = Color(1, 1, 1, 1)
@@ -435,6 +435,8 @@ script = ExtResource("14_ghuw7")
 [node name="Stats" type="Node" parent="." unique_id=2122875524]
 script = ExtResource("15_7p1jd")
 max_hp = 68
+critical_luck = 10
+critical_damage = 2.0
 MAX_SPEED = 130
 max_ammo = 45
 bullet_damage = 10
@@ -444,8 +446,6 @@ bullet_recoil = 50
 bullet_knockback = 100
 reload_timer = 2.0
 shake_mult = 0.8
-critical_luck = 10
-critical_damage = 2.0
 
 [node name="RunSounds" type="AudioStreamPlayer2D" parent="." unique_id=302917896]
 process_mode = 3
@@ -509,7 +509,7 @@ libraries/ = SubResource("AnimationLibrary_y8tsq")
 
 [node name="PlayerBuffManager" parent="." unique_id=1313312428 instance=ExtResource("26_t4t2c")]
 
-[node name="MakiPS" parent="." node_paths=PackedStringArray("stats", "player", "gun") instance=ExtResource("29_makips")]
+[node name="MakiPS" parent="." unique_id=842396232 node_paths=PackedStringArray("stats", "player", "gun") instance=ExtResource("29_makips")]
 stats = NodePath("../Stats")
 player = NodePath("..")
 gun = NodePath("../Graphics/Gun")
