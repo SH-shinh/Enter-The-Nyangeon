@@ -184,6 +184,24 @@ func remove_buff(buff: Buff):
 	if current_buff.has(buff.id):
 		_remove_buff_entry(buff.id)
 
+
+## 按层数扣除（释放消耗等）：不足则整条移除。
+func remove_layers(buff: Buff, count: int) -> void:
+	if buff == null or not current_buff.has(buff.id) or count <= 0:
+		return
+	var entry: Dictionary = current_buff[buff.id]
+	var n: int = mini(count, int(entry["layer"]))
+	if n <= 0:
+		return
+	entry["layer"] -= n
+	_remove_ability(entry, n)
+	if int(entry["layer"]) <= 0:
+		_remove_buff_entry(buff.id)
+	else:
+		_sync_card_layer(entry)
+		_update_card(entry)
+		buff_layer_changed.emit(buff, entry)
+
 # 按来源移除：source_refcount 清该来源 1 层；per_source_layers 移除该来源全部层数。
 func remove_source(buff: Buff, source_id: String):
 	if not current_buff.has(buff.id):

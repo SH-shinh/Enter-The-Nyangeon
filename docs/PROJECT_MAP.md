@@ -64,7 +64,7 @@
 
 ## 4. Key subfolder patterns / 关键子目录模式
 
-- `scenes/player/<char>/`：每角色一个目录，含 `<char>.tscn`（根节点脚本统一引用 `script/player.gd`）+ PS 卡 + 头发/技能辅助脚本（`aris/`, `momoi/`, `ako/`, …, 23 个）。仅 `hina`/`aris_armed` 用各自 `<char>.gd`。2026-11-06 新增 `maki/`（`maki.tscn` + `maki_ps.gd/.tscn` + `maki_card.tscn`），配套 `resources/player/maki.tres`、`resources/player/PS/maki_ps.tres`、`resources/shop/character/maki.tres`、新社团 `ui/VRT_card.tscn`（group `VRT`，注册在 `script/mod_manager.gd:BASE_SOCIETIES`）；被动见 `SYSTEMS.md` §5.1。
+- `scenes/player/<char>/`：每角色一个目录，含 `<char>.tscn`（根节点脚本统一引用 `script/player.gd`）+ PS 卡 + 头发/技能辅助脚本（`aris/`, `momoi/`, `ako/`, …, 24 个）。仅 `hina`/`aris_armed` 用各自 `<char>.gd`。2026-11-06 新增 `maki/`（`maki.tscn` + `maki_ps.gd/.tscn` + `maki_card.tscn`），配套 `resources/player/maki.tres`、`resources/player/PS/maki_ps.tres`、`resources/shop/character/maki.tres`、新社团 `ui/VRT_card.tscn`（group `VRT`，注册在 `script/mod_manager.gd:BASE_SOCIETIES`）；被动见 `SYSTEMS.md` §5.1。2026-11-10 新增 `chihiro/`（`chihiro.tscn` + `chihiro_ps.gd/.tscn` + `chihiro_card.tscn` + `chihiro_drone_body.gd/.tscn` + `chihiro_drone_shock.gd` + `chihiro_melee.gd` + `chihiro_controller.gd/.tscn`），配套 `resources/player/chihiro.tres`、`resources/player/PS/chihiro_ps.tres`、`resources/shop/character/chihiro.tres`、`resources/buff/player_buff/chihiro_static_buff.tres`（VRT / 6 费）、`scenes/update_item/chihiro_drone.gd/.tscn`（专属无人机装备），VRT 卡第 2 槽；专武 backdoor（`scenes/weapon/backdoor/`）；被动为环绕无人机（感电导管）+ 静电 + 近战释放（`SYSTEMS.md` §5.1）。
 - `scenes/weapon/<WeaponName>/`：每武器一个目录（23 个）+ 共享 `BaseWeapon.gd` 与枪口闪光场景（2026-11-06 新增 `auto_lacquer/`，Maki 的 MG）。
 - `scenes/enemies/`：敌人场景/脚本 + `boss/`（14）+ `enemies_spawn/`（55，波次生成器）。
 - `scenes/update_item/`：**最大子目录（约 396 文件）**，一件道具一个脚本，多为 `EquipItem` 子类。

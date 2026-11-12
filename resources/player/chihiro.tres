@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PlayerCard" format=3]
+
+[ext_resource type="Script" path="res://resources/player/player.gd" id="1_player"]
+[ext_resource type="Texture2D" path="res://sprites/player/chihiro/chihiro_picture_halo.png" id="2_halo"]
+
+[resource]
+script = ExtResource("1_player")
+name = "KAGAMI CHIHIRO"
+weapon = "BACKDOOR"
+weapon_type = "AR"
+sprite_path = "res://sprites/player/chihiro/chihiro_picture.png"
+halo = ExtResource("2_halo")
+color = Color(0.413294, 0.611324, 1, 1)
+voice_name = "chihiro"
+id = "chihiro"
+scene_path = "res://scenes/player/chihiro/chihiro.tscn"

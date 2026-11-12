@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://dn34iscvcl2rp"]
+
+[ext_resource type="Script" uid="uid://krv4bl7hhydg" path="res://scenes/player/chihiro/chihiro_drone_body.gd" id="1_body"]
+[ext_resource type="Texture2D" uid="uid://ciqjgh51sqw81" path="res://sprites/player/chihiro/chihiro_drone_body.png" id="2_texture"]
+[ext_resource type="Texture2D" uid="uid://ca1d0dukwcc4b" path="res://sprites/player/chihiro/chihiro_drone_propeller.png" id="3_prop"]
+[ext_resource type="Script" uid="uid://ppi1b03csm8e" path="res://scenes/player/chihiro/chihiro_drone_shock.gd" id="4_shock"]
+
+[node name="ChihiroDroneBody" type="Node2D" unique_id=865604541]
+script = ExtResource("1_body")
+
+[node name="Visual" type="Node2D" parent="." unique_id=961002187]
+
+[node name="Body" type="Sprite2D" parent="Visual" unique_id=969614953]
+texture = ExtResource("2_texture")
+
+[node name="Propeller" type="Sprite2D" parent="Visual/Body" unique_id=880666058]
+position = Vector2(0.5, -4)
+texture = ExtResource("3_prop")
+
+[node name="ZapTimer" type="Timer" parent="." unique_id=333469771]
+wait_time = 0.9
+
+[node name="ShockComponent" type="Node" parent="." unique_id=1576281310]
+script = ExtResource("4_shock")

@@ -220,6 +220,13 @@
 [ext_resource type="AudioStream" uid="uid://4dune4borbt6" path="res://sounds/voice/maki/Maki_Tactic_Victory_2.ogg" id="181_5d1g4"]
 [ext_resource type="AudioStream" uid="uid://da2nfuex7b7px" path="res://sounds/voice/maki/Maki_Tactic_Defeat_1.ogg" id="182_qqs1v"]
 [ext_resource type="AudioStream" uid="uid://b356e6pcfrhy7" path="res://sounds/voice/maki/Maki_Tactic_Defeat_2.ogg" id="183_014vp"]
+[ext_resource type="AudioStream" uid="uid://b1inyye4hjytl" path="res://sounds/EMP_blast.wav" id="184_emp"]
+[ext_resource type="AudioStream" uid="uid://f5rwk8jyjgat" path="res://sounds/voice/chihiro/CH0160_Formation_In_1.ogg" id="185_7hxjp"]
+[ext_resource type="AudioStream" uid="uid://ceju0xgmsonud" path="res://sounds/voice/chihiro/CH0160_Formation_In_2.ogg" id="186_fexne"]
+[ext_resource type="AudioStream" uid="uid://cy1x471486d3k" path="res://sounds/voice/chihiro/CH0160_CommonSkill.ogg" id="187_gfo1e"]
+[ext_resource type="AudioStream" uid="uid://cslaxhxb4sgbx" path="res://sounds/voice/chihiro/CH0160_MemorialLobby_1.ogg" id="188_oi1kr"]
+[ext_resource type="AudioStream" uid="uid://bsbf17v5k6c4a" path="res://sounds/voice/chihiro/CH0160_Cafe_monolog_2.ogg" id="189_ahekd"]
+[ext_resource type="AudioStream" uid="uid://62r2a7x2m55h" path="res://sounds/voice/chihiro/CH0160_Cafe_monolog_3.ogg" id="190_48n30"]
 
 [sub_resource type="Animation" id="Animation_4rqlr"]
 resource_name = "1s"
@@ -279,6 +286,11 @@ process_mode = 3
 script = ExtResource("1_fvbol")
 
 [node name="SFX" type="Node" parent="." unique_id=672496890]
+
+[node name="EMP_blast" type="AudioStreamPlayer" parent="SFX" unique_id=535393]
+stream = ExtResource("184_emp")
+volume_db = -3.0
+bus = &"SFX"
 
 [node name="HurtSounds" type="AudioStreamPlayer" parent="SFX" unique_id=605111533]
 stream = ExtResource("2_d30cq")
@@ -1122,6 +1134,32 @@ bus = &"VOICE"
 
 [node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/maki" unique_id=741860838]
 stream = ExtResource("183_014vp")
+bus = &"VOICE"
+
+[node name="chihiro" type="Node" parent="VOICE" unique_id=1826821876]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/chihiro" unique_id=1030232507]
+stream = ExtResource("185_7hxjp")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/chihiro" unique_id=1123815496]
+stream = ExtResource("186_fexne")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/chihiro" unique_id=254336775]
+stream = ExtResource("187_gfo1e")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/chihiro" unique_id=1902951534]
+stream = ExtResource("188_oi1kr")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/chihiro" unique_id=1397670762]
+stream = ExtResource("189_ahekd")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/chihiro" unique_id=2100655685]
+stream = ExtResource("190_48n30")
 bus = &"VOICE"
 
 [node name="Talk" type="Node" parent="." unique_id=313735976]

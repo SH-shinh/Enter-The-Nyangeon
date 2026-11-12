@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/player/chihiro/chihiro_controller.gd" id="1_controller"]
+[ext_resource type="Texture2D" path="res://sprites/player/chihiro/chihiro_controller.png" id="2_texture"]
+
+[node name="ChihiroController" type="Node2D"]
+script = ExtResource("1_controller")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_texture")

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PSCard" format=3 uid="uid://b0ghlsh0yeyk1"]
+
+[ext_resource type="Script" uid="uid://vole8yfgj5cu" path="res://resources/player/PS/ps_card.gd" id="1_chihiro_ps"]
+[ext_resource type="Texture2D" uid="uid://cn4lphix188gd" path="res://sprites/weapon/backdoor.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_chihiro_ps")
+weapon_icon = ExtResource("2_icon")
+t_level = Array[String](["初始拥有1架感电无人机，子弹命中感电敌人叠加1层静电（每层1%异常伤害），使用近战消耗所有静电对大范围敌人施加感电。", "+5最大感电层数，额外获得1架感电无人机，静电最大层数提高，释放消耗的静电层数减少为90%。", "+5最大感电层数，感电无人机额外施加1层感电，静电最大层数提高，释放消耗的静电层数减少为75%。", "+5最大感电层数，额外获得1架感电无人机，静电最大层数提高，释放消耗的静电层数减少为50%。"])

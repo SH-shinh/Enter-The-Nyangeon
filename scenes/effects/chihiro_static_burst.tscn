@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/effects/chihiro_static_burst.gd" id="1_script"]
+[ext_resource type="SpriteFrames" path="res://scenes/effects/chihiro_static_burst_frames.res" id="2_frames"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
+
+[node name="ChihiroStaticBurst" type="Node2D"]
+z_index = 1
+script = ExtResource("1_script")
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+modulate = Color(1, 1, 1, 0.92)
+material = SubResource("CanvasItemMaterial_add")
+sprite_frames = ExtResource("2_frames")

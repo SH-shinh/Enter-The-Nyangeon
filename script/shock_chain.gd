@@ -176,16 +176,20 @@ static func _candidate_pool(head: Node) -> Array:
 				continue
 			if b.get("is_idle") == 1 or b.get("is_downed") == true:
 				continue
-			var bst = b.get("stats")
-			if bst == null:
-				continue
-			var bmax = bst.get("max_hp")
-			var bhp = bst.get("hp")
-			if bmax == null or int(bmax) <= 0 or bhp == null or int(bhp) <= 0:
-				continue
-			var bhc = b.get("health_component")
-			if bhc != null and bhc.get("can_hurt") == false:
-				continue
+			# 感电导管（如 Chihiro 无人机）：没有 stats/health_component 也允许进链；
+			# 链命中时由导管组件自行忽略伤害（shock_chain_hit 空实现）。
+			var conduit := bool(comp.get("shock_conduit"))
+			if not conduit:
+				var bst = b.get("stats")
+				if bst == null:
+					continue
+				var bmax = bst.get("max_hp")
+				var bhp = bst.get("hp")
+				if bmax == null or int(bmax) <= 0 or bhp == null or int(bhp) <= 0:
+					continue
+				var bhc = b.get("health_component")
+				if bhc != null and bhc.get("can_hurt") == false:
+					continue
 			var centry = comp.call("get_shock_entry")
 			if not (centry is Dictionary) or centry.is_empty():
 				continue

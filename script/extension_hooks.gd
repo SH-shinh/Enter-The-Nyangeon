@@ -111,6 +111,12 @@ var on_enemy_buff_applied: Callable = Callable()
 # 感电链（通知，参数 [path: Array, power: int]，path 元素为 {body, manager, entry}）：
 # host 侧链走完（伤害/易伤已结算）后，供 mod 广播 net_id 序列与每节点 vuln_stacks。
 var on_shock_chain: Callable = Callable()
+# Chihiro 无人机放电伤害（拦截型，参数 [target, dmg, applier]）：
+# 返回 true 表示 mod 已接管（host 结算 / 客机转发 host），PS 跳过本地 request_extra_damage。
+var on_chihiro_drone_damage: Callable = Callable()
+# Chihiro 满层刷新感电持续时间（拦截型，参数 [target]）：
+# 返回 true 表示 mod 已接管（host 刷新并广播 / 客机转发 host）。
+var on_chihiro_refresh_shock: Callable = Callable()
 var on_field_mod_started: Callable = Callable()
 var on_field_mod_stopped: Callable = Callable()
 # 爆炸视觉/音效触发（通知，参数 [position: Vector2, is_big: bool]）：供 mod 广播大/小爆炸表现

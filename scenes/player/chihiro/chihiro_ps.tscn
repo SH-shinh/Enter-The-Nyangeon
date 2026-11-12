@@ -1,0 +1,10 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/player/chihiro/chihiro_ps.gd" id="1_chihiro_ps"]
+[ext_resource type="Resource" path="res://resources/buff/player_buff/chihiro_static_buff.tres" id="2_static"]
+[ext_resource type="Resource" path="res://resources/buff/enemy_buff/shock_dot.tres" id="3_shock"]
+
+[node name="ChihiroPS" type="Node"]
+script = ExtResource("1_chihiro_ps")
+static_buff = ExtResource("2_static")
+shock_buff = ExtResource("3_shock")

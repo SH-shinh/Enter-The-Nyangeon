@@ -107,6 +107,7 @@ const MAX_NET_STAT: int = 1000000000
 const MAX_NET_ID_LEN: int = 64
 const MAX_SUPPORT_ID_LEN: int = 32
 const MAX_NET_SOURCE_ID_LEN: int = 64
+const MAX_CHIHIRO_DRONE_DAMAGE: int = 99999
 # 反滥用：每 peer 同屏召唤物上限 / 每 peer RPC 频率窗口
 const MAX_SUMMONS_PER_PEER: int = 32
 const MAX_SUMMON_UPGRADE_AMOUNT: int = 32   # 单次升级喂经验上限（sanitize）
@@ -2033,6 +2034,8 @@ func install_hooks() -> void:
 	ExtensionHooks.on_enemy_buff_removed = Callable(self, "_on_enemy_buff_removed")
 	ExtensionHooks.on_enemy_buff_applied = Callable(self, "_on_enemy_buff_applied")
 	ExtensionHooks.on_shock_chain = Callable(self, "_on_shock_chain")
+	ExtensionHooks.on_chihiro_drone_damage = Callable(self, "_on_chihiro_drone_damage")
+	ExtensionHooks.on_chihiro_refresh_shock = Callable(self, "_on_chihiro_refresh_shock")
 	ExtensionHooks.on_explosion_effect = Callable(self, "_on_explosion_effect")
 	ExtensionHooks.on_hit_sfx = Callable(self, "_on_hit_sfx")
 	ExtensionHooks.on_summoned_action = Callable(self, "_on_summoned_action")
@@ -2346,6 +2349,100 @@ func _server_apply_enemy_buff(net_id: int, buff_path: String, value: Array, sour
 	# 应用即会触发 _on_enemy_buff_applied（host）→ 统一广播，无需在此再 rpc（避免双播）
 	# applier_peer 用服务端可信 sender（不采信包内自报）：供 DOT"最后施加者持有"归属
 	manager.call("apply_buff", buff, _sanitize_buff_value(value), source_id.substr(0, MAX_NET_SOURCE_ID_LEN), _sanitize_applier_stats(stats), multiplayer.get_remote_sender_id())
+
+
+# Chihiro 无人机放电：host 权威结算；客机转发 host（目标必须带 net_id）。
+func _on_chihiro_drone_damage(target: Node, dmg: int, _applier: Dictionary) -> bool:
+	if not is_lan_game:
+		return false
+	if multiplayer.is_server():
+		_apply_chihiro_drone_damage(target, dmg)
+		return true
+	var net_id := _live_enemy_net_id(target)
+	if net_id < 0:
+		return false
+	rpc_id(1, "_server_chihiro_drone_damage", net_id, clampi(dmg, 0, MAX_CHIHIRO_DRONE_DAMAGE))
+	return true
+
+
+func _apply_chihiro_drone_damage(enemy: Node, dmg: int) -> void:
+	if enemy == null or not is_instance_valid(enemy):
+		return
+	var health = enemy.get("health_component")
+	if health == null or not health.has_method("request_extra_damage"):
+		return
+	var data := DamageData.make({
+		"damage": clampi(dmg, 1, MAX_CHIHIRO_DRONE_DAMAGE),
+		"type": [GameTags.SHOCK_DAMAGE, GameTags.DOT_DAMAGE],
+		"source": GameTags.PS_DAMAGE,
+		"node": enemy,
+	})
+	health.call("request_extra_damage", data)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _server_chihiro_drone_damage(net_id: int, dmg: int) -> void:
+	if not multiplayer.is_server():
+		return
+	if not _server_sender_ok():
+		return
+	var enemy = enemy_by_net_id.get(net_id)
+	if enemy == null or not is_instance_valid(enemy):
+		return
+	_apply_chihiro_drone_damage(enemy, dmg)
+
+
+# Chihiro 满层刷新：host 刷新并广播；客机转发 host。
+func _on_chihiro_refresh_shock(target: Node) -> bool:
+	if not is_lan_game:
+		return false
+	var net_id := _live_enemy_net_id(target)
+	if multiplayer.is_server():
+		_refresh_chihiro_shock(target)
+		if net_id >= 0:
+			rpc("_remote_chihiro_refresh_shock", net_id)
+		return true
+	if net_id < 0:
+		return false
+	rpc_id(1, "_server_chihiro_refresh_shock", net_id)
+	return true
+
+
+func _refresh_chihiro_shock(enemy: Node) -> void:
+	if enemy == null or not is_instance_valid(enemy):
+		return
+	var manager = enemy.get("enemy_buff_manager")
+	if manager == null:
+		return
+	var entry = manager.current_buff.get("shock_dot")
+	if entry == null:
+		return
+	entry["now_time"] = 0
+	if manager.has_method("_update_card"):
+		manager.call("_update_card", entry)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _server_chihiro_refresh_shock(net_id: int) -> void:
+	if not multiplayer.is_server():
+		return
+	if not _server_sender_ok():
+		return
+	var enemy = enemy_by_net_id.get(net_id)
+	if enemy == null or not is_instance_valid(enemy):
+		return
+	_refresh_chihiro_shock(enemy)
+	rpc("_remote_chihiro_refresh_shock", net_id)
+
+
+@rpc("authority", "call_remote", "reliable")
+func _remote_chihiro_refresh_shock(net_id: int) -> void:
+	if multiplayer.is_server():
+		return
+	var enemy = enemy_by_net_id.get(net_id)
+	if enemy == null or not is_instance_valid(enemy):
+		return
+	_refresh_chihiro_shock(enemy)
 
 
 # host 发起的敌人 buff（自然或客机转发）→ 广播客机镜像应用
@@ -3593,6 +3690,11 @@ func _remote_character_event(peer_id: int, event_name: String, event_data: Dicti
 func _apply_character_event(peer_id: int, event_name: String, event_data: Dictionary) -> void:
 	var p = player_by_peer_id.get(peer_id)
 	if p == null or not is_instance_valid(p):
+		return
+	if event_name == "chihiro_ps_tier":
+		var ps = p.get_node_or_null("ChihiroPS")
+		if ps != null and ps.has_method("network_set_tier"):
+			ps.call("network_set_tier", int(event_data.get("tier", 0)))
 		return
 	if p.has_method("apply_network_character_event"):
 		p.call("apply_network_character_event", StringName(event_name), event_data)
