@@ -112,7 +112,15 @@ func add_paint(pos: Vector2, color: int, radius: float, angle: float = NAN, pain
 	var flip: float = -1.0 if randf() < 0.5 else 1.0
 	var size: float = maxf(1.0, radius) * 2.0 * maxf(0.1, paint_scale)
 	mm.set_instance_transform_2d(idx, Transform2D(a, Vector2(size * flip, size), 0.0, pos))
-	var c: Color = PAINT_COLORS[clampi(color, 0, PAINT_COLORS.size() - 1)]
+	var base: Color = PAINT_COLORS[clampi(color, 0, PAINT_COLORS.size() - 1)]
+	# 每块颜料 ±10% 明度抖动（保持色相）；alpha 仍存出生时间，不能被抖动覆盖。
+	var k := randf_range(0.9, 1.1)
+	var c := Color(
+		clampf(base.r * k, 0.0, 1.0),
+		clampf(base.g * k, 0.0, 1.0),
+		clampf(base.b * k, 0.0, 1.0),
+		1.0,
+	)
 	# alpha 存出生时间（相对 _t0），shader 用 now_sec - birth 做像素化展开。
 	mm.set_instance_color(idx, Color(c.r, c.g, c.b, maxf(_now(), 0.001)))
 	mm.visible_instance_count = _counts[s]
