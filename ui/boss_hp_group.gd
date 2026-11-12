@@ -20,6 +20,9 @@ var _single_mode: bool = false
 var _slots: Dictionary = {}          # boss instance_id -> BossHPSlot
 var _active: Array[BossEnemy] = []
 var _pending: Array[BossEnemy] = []
+# 全屏 HUD 的可见状态。由 ui_visible 事件维护；add_boss 时据此显式决定血条可见性，
+# 这样乱入（不运镜、不发 ui_visible）也能显示，不依赖 boss_hp_group.tscn 的默认 visible。
+var _hud_visible: bool = true
 
 func _ready() -> void:
 	layer = 1
@@ -27,10 +30,17 @@ func _ready() -> void:
 	_current_bars = _multi_bars
 	_single_root.visible = false
 	_multi_root.visible = false
+	# 显式初始隐藏，避免创建帧闪现；有槽位且 HUD 可见时再由 _refresh_visible 打开。
+	visible = false
 	GameEvents.ui_visible.connect(_on_ui_visible)
 
 func _on_ui_visible(now_visible: bool) -> void:
-	visible = now_visible
+	_hud_visible = now_visible
+	_refresh_visible()
+
+func _refresh_visible() -> void:
+	# 全屏 HUD 可见且有槽位时才画血条；乱入路径不发 ui_visible，也能按当前 HUD 状态显示。
+	visible = _hud_visible and not _active.is_empty()
 
 func get_visible_count() -> int:
 	return _active.size()
@@ -44,6 +54,7 @@ func get_visible_bosses() -> Array[BossEnemy]:
 func set_max_visible(value: int) -> void:
 	max_visible = maxi(1, value)
 	_rebalance()
+	_refresh_visible()
 
 func add_boss(boss: BossEnemy) -> void:
 	if boss == null or not is_instance_valid(boss):
@@ -56,18 +67,21 @@ func add_boss(boss: BossEnemy) -> void:
 	else:
 		_pending.append(boss)
 	_rebalance()
+	_refresh_visible()
 
 func remove_boss(boss: BossEnemy) -> void:
 	if boss == null:
 		return
 	if _pending.has(boss):
 		_pending.erase(boss)
+		_refresh_visible()
 		return
 	if not _active.has(boss):
 		return
 	_active.erase(boss)
 	_free_slot(boss)
 	_rebalance()
+	_refresh_visible()
 
 func clear_all() -> void:
 	for boss in _active:
@@ -77,6 +91,7 @@ func clear_all() -> void:
 	_slots.clear()
 	_single_root.visible = false
 	_multi_root.visible = false
+	_refresh_visible()
 
 func _promote_pending() -> void:
 	while _active.size() < max_visible and not _pending.is_empty():

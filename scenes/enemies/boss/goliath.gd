@@ -257,6 +257,9 @@ func boss_enter_anim():
 		health_component.is_invincible = true
 	# 乱入：不运镜、不暂停，入场动画结束后再解除免疫。
 	if has_meta("boss_intruder"):
+		# 乱入没有 ui_visible 事件（会连 HUD 一起藏），血条必须显式显示，
+		# 不能依赖场景默认 visible 值（goliath.tscn 的 BossHP 默认 false）。
+		boss_hp.game_ui_visible(true)
 		_clear_enter_invincible_when_anim_done()
 		return
 	GameEvents.emit_camera_move(camera_marker, true)
@@ -290,6 +293,8 @@ func boss_death_anim():
 		return
 	# 乱入：死亡动画照常播放，但不运镜、不暂停；死亡位置立即上报。
 	if has_meta("boss_intruder"):
+		# 乱入死亡无运镜，显式隐藏血条，避免空血条残留到 _coin_drops 释放节点。
+		boss_hp.game_ui_visible(false)
 		GameEvents.emit_enemy_dead_position(self.global_position)
 		return
 	GameEvents.emit_camera_move(camera_marker, true)

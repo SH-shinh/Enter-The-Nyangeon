@@ -318,6 +318,10 @@ func boss_death_anim(tower: Node = null) -> void:
 		return
 	# 乱入：死亡动画照常播放，但不运镜、不暂停；死亡位置立即上报。
 	if has_meta("boss_intruder"):
+		# 乱入死亡无运镜：显式隐藏血条。self.visible=false 隐藏不了 CanvasLayer。
+		var hp_ui := get_node_or_null("BossHP")
+		if hp_ui != null and hp_ui.has_method("game_ui_visible"):
+			hp_ui.game_ui_visible(false)
 		GameEvents.emit_enemy_dead_position(self.global_position)
 		await animation_player.animation_finished
 		self.visible = false
@@ -418,6 +422,11 @@ func boss_enter_anim():
 		return
 	# 乱入：不运镜、不暂停，但入场动画结束后仍要开始攻击。
 	var no_cinematic := has_meta("boss_intruder")
+	if no_cinematic and not has_meta("network_remote_enemy"):
+		# 乱入没有 ui_visible 事件：显式显示血条，别依赖场景默认可见。
+		var hp_ui := get_node_or_null("BossHP")
+		if hp_ui != null and hp_ui.has_method("game_ui_visible"):
+			hp_ui.game_ui_visible(true)
 	if not no_cinematic:
 		GameEvents.emit_camera_move(camera_marker, true)
 		GameEvents.emit_ui_visible(false)
