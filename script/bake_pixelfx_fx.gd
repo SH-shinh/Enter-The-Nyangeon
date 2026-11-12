@@ -16,6 +16,8 @@ extends SceneTree
 ##   scenes/effects/serina_beam_in_frames.res       Serina 入场光束（0.55s / 45fps / 56×200）
 ##   scenes/effects/serina_beam_out_frames.res      Serina 退场光束（0.45s / 45fps / 56×200）
 ##   scenes/effects/bullet_smoke_frames.res         子弹命中烟（0.2s / 30fps / 48×48 / 6 帧，1:1 像素）
+##   scenes/effects/explosion_small_frames.res      小爆炸（0.55s / 30fps / 160×160，俯视）
+##   scenes/effects/explosion_big_frames.res        大爆炸（0.85s / 30fps / 224×224，俯视）
 ##
 ## 断言：
 ##   ① 不透明包围盒（画布 - 2px 余量）越界即失败；
@@ -42,6 +44,13 @@ const BBOX_LIMIT := {
 	"maki_paintball_pop_1.res": 70,
 	"maki_paintball_pop_2.res": 70,
 	"bullet_smoke_frames.res": 44,
+	# 爆炸两档：画布 160/208，留 2px 余量
+	"explosion_small_frames.res": 156,
+	"explosion_big_frames.res": 220,
+	# 状态光环：画布 80，留 2px 余量；循环效果，每帧都必须有像素
+	"burning_aura_frames.res": 78,
+	"poison_aura_frames.res": 78,
+	"chihiro_static_burst_frames.res": 348,
 	
 }
 
@@ -60,6 +69,8 @@ const ONESHOT := {
 	"maki_paintball_pop_1.res": true,
 	"maki_paintball_pop_2.res": true,
 	"bullet_smoke_frames.res": true,
+	"explosion_small_frames.res": true,
+	"explosion_big_frames.res": true,
 	
 }
 
@@ -89,6 +100,7 @@ func _initialize() -> void:
 	var maki_bolt: Script = load("res://scenes/effects/pixelfx_maki_paintball_bolt.gd")
 	var maki_pop: Script = load("res://scenes/effects/pixelfx_maki_paintball_pop.gd")
 	var smoke: Script = load("res://scenes/effects/pixelfx_bullet_smoke.gd")
+	var static_burst: Script = load("res://scenes/effects/pixelfx_chihiro_static_burst_v3.gd")
 
 	var b1: Dictionary = Baker.bake(ring, {"reach": 85.0})
 	var e1 := Baker.save_sprite_frames(b1, "res://scenes/effects/heal_ring_frames.res", "combined")
@@ -135,6 +147,12 @@ func _initialize() -> void:
 	var t13 := _trim_tail(b13)
 	var e13 := Baker.save_sprite_frames(b13, "res://scenes/effects/chill_mist_frames.res", "combined")
 
+	# Chihiro 近战静电爆发：0.75s / 45fps / 480×270（运行时 scale 4/3 → 320 半径）
+	var sb: Dictionary = Baker.bake(static_burst, {"seed": 6.0})
+	var tsb := _trim_tail(sb)
+	var esb := Baker.save_sprite_frames(sb, "res://scenes/effects/chihiro_static_burst_frames.res", "combined")
+	print("BAKE chihiro_static_burst n=%d trim=%d err=%s" % [sb.n, tsb, str(esb)])
+
 	# Maki 彩弹：3 色 × (弹体 / 爆点)，与 floor_paint 的 0/1/2 索引对齐
 	var maki_checks: Array = []
 	for i in MAKI_PAINT_RAMPS.size():
@@ -155,6 +173,26 @@ func _initialize() -> void:
 	var es := Baker.save_sprite_frames(bs, "res://scenes/effects/bullet_smoke_frames.res", "combined")
 	print("BAKE bullet_smoke n=%d trim=%d err=%s" % [bs.n, ts, str(es)])
 
+	# 爆炸两档（俯视重写版）：小 0.55s / 160×160，大 0.85s / 208×208
+	var ex_small: Script = load("res://scenes/effects/pixelfx_explosion_small.gd")
+	var ex_big: Script = load("res://scenes/effects/pixelfx_explosion_big.gd")
+	var bx1: Dictionary = Baker.bake(ex_small, {})
+	var tx1 := _trim_tail(bx1)
+	var ex1 := Baker.save_sprite_frames(bx1, "res://scenes/effects/explosion_small_frames.res", "combined")
+	var bx2: Dictionary = Baker.bake(ex_big, {})
+	var tx2 := _trim_tail(bx2)
+	var ex2 := Baker.save_sprite_frames(bx2, "res://scenes/effects/explosion_big_frames.res", "combined")
+	print("BAKE explosion small n=%d trim=%d err=%s | big n=%d trim=%d err=%s" % [bx1.n, tx1, str(ex1), bx2.n, tx2, str(ex2)])
+
+	# 燃烧/中毒状态光环（俯视、无身体重绘、无地板元素）
+	var burn_aura: Script = load("res://scenes/effects/pixelfx_burning_aura.gd")
+	var poison_aura: Script = load("res://scenes/effects/pixelfx_poison_aura.gd")
+	var ba: Dictionary = Baker.bake(burn_aura, {})
+	var pa: Dictionary = Baker.bake(poison_aura, {})
+	var ea := Baker.save_sprite_frames(ba, "res://scenes/effects/burning_aura_frames.res", "combined")
+	var epa := Baker.save_sprite_frames(pa, "res://scenes/effects/poison_aura_frames.res", "combined")
+	print("BAKE dot_aura burning n=%d err=%s | poison n=%d err=%s" % [ba.n, str(ea), pa.n, str(epa)])
+
 	print("BAKE ring=%d plus_small=%d plus_big=%d aura=%d bubbles=%d frenzy=%d | serina halo=%d burst=%d dust=%d beam_in=%d heal=%d (trim %d/%d/%d/%d) | chill=%d trim=%d | errs=%s | ms=%d" % [
 		b1.n, b2.n, b3.n, b4.n, b5.n, b6.n, b7.n, b8.n, b9.n, b10.n, b11.n,
 		t8, t9, t10, t11, b12.n, t12,
@@ -168,7 +206,12 @@ func _initialize() -> void:
 		[b10, "serina_beam_in_frames.res"], [b11, "serina_heal_frames.res"],
 		[b12, "chill_frozen_frames.res"],
 		[b13, "chill_mist_frames.res"],
+		[sb, "chihiro_static_burst_frames.res"],
 		[bs, "bullet_smoke_frames.res"],
+		[bx1, "explosion_small_frames.res"],
+		[bx2, "explosion_big_frames.res"],
+		[ba, "burning_aura_frames.res"],
+		[pa, "poison_aura_frames.res"],
 	]:
 		ok = _check_frames(pair[0], pair[1]) and ok
 	for pair in maki_checks:

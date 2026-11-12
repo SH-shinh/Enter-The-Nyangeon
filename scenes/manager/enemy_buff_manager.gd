@@ -3,9 +3,10 @@ extends BuffManagerBase
 @warning_ignore("unused_signal")
 signal enemy_buff_added(enemy_buff: Buff, current_buff: Dictionary)
 
-const FIRE_DOT: PackedScene = preload("res://scenes/debuff/fire_dot.tscn")
-const POISON_DOT: PackedScene = preload("res://scenes/debuff/poison_dot.tscn")
 const CHILL_FX: PackedScene = preload("res://scenes/debuff/chill_freeze_fx.tscn")
+## 燃烧/中毒改成常驻光环（参考库 status/burning、status/poisoned 的俯视无身体版）
+const FIRE_AURA: PackedScene = preload("res://scenes/debuff/burning_aura.tscn")
+const POISON_AURA: PackedScene = preload("res://scenes/debuff/poison_aura.tscn")
 
 const FIRE_DOT_ID := "fire_dot"
 const POISON_DOT_ID := "poison_dot"
@@ -37,6 +38,9 @@ var player: Node
 # DOT 跳伤复用槽：DOT tick 的 DamageData 消费方均同步读取，可原地复用避免每跳新建
 var _fire_dot_ddata: DamageData
 var _poison_dot_ddata: DamageData
+
+# 常驻光环：buff id -> 光环节点（燃烧/中毒各一个，跟随敌人）
+var _dot_auras: Dictionary = {}
 
 func _host_kind() -> int:
 	return BuffStatMap.ENEMY
@@ -87,6 +91,7 @@ func _configure_entry(entry: Dictionary) -> void:
 func _on_buff_applied(entry: Dictionary) -> void:
 	_update_fire_dot_timing(entry)
 	_update_shock_timing(entry)
+	_ensure_dot_aura(entry)
 
 func _tick_entry(entry: Dictionary) -> void:
 	match entry["resource"].id:
@@ -103,6 +108,7 @@ func _on_layer_changed(entry: Dictionary) -> void:
 	if entry["resource"].id == FIRE_DOT_ID:
 		entry["dot_time"] = FIRE_DOT_INTERVAL / float(entry["layer"])
 		entry["erase_time"] = FIRE_DOT_DURATION / float(entry["layer"])  * float(_estat(entry, "dot_time", 1.0))
+		_apply_aura_strength(FIRE_DOT_ID, int(entry["layer"]))
 	elif entry["resource"].id == SHOCK_DOT_ID:
 		_update_shock_timing(entry)
 
@@ -110,6 +116,7 @@ func _on_entry_removed(id: String) -> void:
 	_disconnect_chill_counter(id)
 	if id == SHOCK_DOT_ID:
 		_rollback_shock_vuln()
+	_drop_dot_aura(id)
 
 # 恶寒按来源（道具）独立设上限：value[0] 为该来源上限，总层为各来源之和
 func _uses_source_caps(buff: Buff) -> bool:
@@ -179,7 +186,8 @@ func _tick_fire_dot(entry: Dictionary):
 	if entry["now_dot_time"] < entry["dot_time"]:
 		return
 	entry["now_dot_time"] = 0
-	PoolManager.spawn_fx("fire", FIRE_DOT, body)
+	_ensure_dot_aura(entry)
+	_flare_dot_aura(FIRE_DOT_ID)
 	var dot_damage: int = max(1, FIRE_DOT_BASE_DAMAGE * float(_estat(entry, "dot_damage", 1.0)) * float(_estat(entry, "global_damage", 1.0)) * entry["layer"] * _fire_layer_bonus(entry["layer"]))
 	add_damage_data(dot_damage, GameTags.FIRE_DAMAGE, false, _fire_dot_ddata, int(entry.get("applier_peer", 0)))
 
@@ -195,7 +203,8 @@ func _tick_poison_dot(entry: Dictionary):
 	entry["now_dot_time"] += 1
 	if entry["now_dot_time"] > entry["dot_time"]:
 		entry["now_dot_time"] = 0
-		PoolManager.spawn_fx("poison", POISON_DOT, body)
+		_ensure_dot_aura(entry)
+		_flare_dot_aura(POISON_DOT_ID)
 		var dot_damage: int = max(1, entry["value"] * float(_estat(entry, "dot_damage", 1.0)))
 		add_damage_data(dot_damage, GameTags.POISON_DAMAGE, false, _poison_dot_ddata, int(entry.get("applier_peer", 0)))
 
@@ -204,6 +213,81 @@ func _tick_chill_dot(entry: Dictionary):
 	if entry["now_dot_time"] > entry["dot_time"]:
 		entry["now_dot_time"] = 0
 		PoolManager.spawn_fx("chill", CHILL_FX, body)
+
+# ---------------- DOT 常驻光环（燃烧 / 中毒） ----------------
+# 世界层：优先 PlayerRoot 的父节点（YSort），退回 SELayer（同 corruption_field_component）。
+func _fx_layer() -> Node:
+	var player_root: Node = get_tree().get_first_node_in_group("PlayerRoot")
+	if player_root != null:
+		return player_root.get_parent()
+	return get_tree().get_first_node_in_group("SELayer")
+
+
+func _aura_scene_for(id: String) -> PackedScene:
+	if id == FIRE_DOT_ID:
+		return FIRE_AURA
+	if id == POISON_DOT_ID:
+		return POISON_AURA
+	return null
+
+
+## buff 生效时挂上光环（已存在就只刷新跟随与强度）。
+func _ensure_dot_aura(entry: Dictionary) -> void:
+	var id := str(entry["resource"].id)
+	var scene := _aura_scene_for(id)
+	if scene == null or body == null or not is_instance_valid(body):
+		return
+	var aura: Node = _dot_auras.get(id)
+	if aura != null and is_instance_valid(aura):
+		aura.call("follow_body", body)
+		aura.call("set_strength", int(entry["layer"]))
+		aura.call("play_anim")
+		return
+	var layer := _fx_layer()
+	if layer == null:
+		return
+	aura = scene.instantiate()
+	if aura == null:
+		return
+	layer.add_child(aura)
+	aura.call("follow_body", body)
+	aura.call("set_strength", int(entry["layer"]))
+	aura.call("play_anim")
+	_dot_auras[id] = aura
+
+
+func _apply_aura_strength(id: String, layer: int) -> void:
+	var aura: Node = _dot_auras.get(id)
+	if aura != null and is_instance_valid(aura):
+		aura.call("set_strength", layer)
+
+
+## DOT 跳伤时的反馈脉冲（光环在但不是每跳都重新创建）
+func _flare_dot_aura(id: String) -> void:
+	var aura: Node = _dot_auras.get(id)
+	if aura != null and is_instance_valid(aura):
+		aura.call("flare")
+
+
+func _drop_dot_aura(id: String) -> void:
+	if not _dot_auras.has(id):
+		return
+	var aura: Node = _dot_auras[id]
+	_dot_auras.erase(id)
+	if aura != null and is_instance_valid(aura):
+		aura.call("idle_state")
+		aura.queue_free()
+
+
+func _drop_all_dot_auras() -> void:
+	for id in _dot_auras.keys().duplicate():
+		_drop_dot_aura(str(id))
+
+
+## 敌人被 queue_free（回合清场）时不会走 _on_entry_removed：这里兜底，避免光环跨回合残留。
+func _exit_tree() -> void:
+	_drop_all_dot_auras()
+
 
 func _connect_chill_counter():
 	if not body.health_component.damage_taken.is_connected(count_chill_damage):

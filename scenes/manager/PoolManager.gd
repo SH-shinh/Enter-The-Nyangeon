@@ -50,15 +50,17 @@ const EFFECT_FPS_STEP4 := 18.0
 const FX_FOLLOW_BASE_MS := 200
 const HIT_FLASH_BASE_MS := 60
 # 各分类基准间隔（毫秒，= 最高档/默认；base_ms<0 时取此表）
+# 注：爆炸不再进这张表——`baked_explosion_fx.active_state()` 只查 `effect_freq_off()`，
+# 没有 `fx_allowed("explosion")` 调用点；要重新给爆炸加节流时，得同时加键和调用点。
 const FX_BASE_MS := {
 	&"muzzle_flash": 25,
 	&"hit_spark": 40,
 	&"bullet_smoke": 50,
-	&"explosion": 50,
 	&"floor_paint": 80,
 	&"anomaly_paint": 60,
 	&"maki_paintball": 80,
 	&"shock_chain": 80,
+	&"chihiro_static_burst": 0,
 }
 var _fx_last_ms: Dictionary = {}
 var _fx_body_last_ms: Dictionary = {}
@@ -75,8 +77,6 @@ const IDLE_LIMITS := {
 	"player_sniper_bullet": 80,
 	"player_laser_bullet": 1,
 	"shiro_missile": 60,
-	"explosion_particles": 30,
-	"explosion_smoke_particles": 30,
 	"normal_bullet": 150,
 	"player_explosion": 100,
 	"small_explosion": 15,
@@ -88,8 +88,6 @@ const IDLE_LIMITS := {
 	"bullet_smoke_1": 30,
 	"bullet_smoke_2": 30,
 	"floating_text": 100,
-	"fire": 30,
-	"poison": 30,
 	"chill": 30,
 	"convert": 30,
 	"sugar_cube_steam": 15,
@@ -100,7 +98,10 @@ const IDLE_LIMITS := {
 	"floor_paint": 20,
 	"anomaly_paint": 24,
 	"maki_paintball": 4,
-	"shock_chain": 24,
+	# 感电链真实并发 ≤5：_spawn_arc 受 fx_allowed("shock_chain", 80ms) 全局节流，
+	# 单链寿命仅 0.25–0.35s。12 仍有 2.4 倍余量，不会触发 get_pool 满额强收活跃链。
+	"shock_chain": 12,
+	"chihiro_static_burst": 2,
 	"enemy_fire_field": 100,
 	"corruption_field": 24,
 	"support_bullet": 60,

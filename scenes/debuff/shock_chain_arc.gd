@@ -12,7 +12,8 @@ extends Node2D
 const POOL_ID := "shock_chain"
 
 # ---- 调色（蓝紫，与 DamageData.COLOR_SHOCK #7B8CFF 同源） ----
-const HALO := Color(0.07, 0.05, 0.20, 0.72)
+# 描边两层：BODY（紫，宽度含原 HALO 的视觉重量）+ CORE（白芯）。
+# 原来的 5px 暗紫外晕层已删除——外扩辉光由 Glow 子节点的加法层负责，暗边缘叠了两遍。
 const BODY := Color(0.46, 0.30, 1.0)
 const CORE := Color(0.95, 0.93, 1.0)
 const SPARK := Color(0.70, 0.62, 1.0)
@@ -36,6 +37,10 @@ const SFX_MIN_MS := 90
 
 const GLOW_TEX := preload("res://sprites/particle/circular_1.png")
 
+# ---- 节点闪光合批 ----
+## 每个节点最多 (4+power) 个火花 + 2 段短弧；6 节点 × 12 = 72，留一倍余量。
+const MULTIMESH_CAP := 192
+
 var is_idle: int = 1
 
 var _points: Array[Vector2] = []
@@ -46,6 +51,8 @@ var _age: float = 0.0
 var _redraw_accum: float = 0.0
 var _play_id: int = 0
 var _rng := RandomNumberGenerator.new()
+var _mesh: MultiMesh
+var _mesh_used: int = 0
 
 @onready var _sfx: AudioStreamPlayer = $Sfx
 @onready var _glow: Node2D = $Glow
@@ -55,8 +62,44 @@ static var _last_sfx_ms: int = -1000000
 
 func _ready() -> void:
 	PoolManager.add_pool(POOL_ID, self)
+	_setup_mesh()
 	visible = false
 	set_process(false)
+
+
+## 火花与短弧段共用一个 MultiMesh：单位 quad 靠实例变换缩放/旋转，
+## 一条链的火花从 30–60 次 draw_rect / draw_line 降到 1 次 draw_multimesh。
+func _setup_mesh() -> void:
+	var quad := QuadMesh.new()
+	quad.size = Vector2.ONE
+	_mesh = MultiMesh.new()
+	_mesh.mesh = quad
+	_mesh.transform_format = MultiMesh.TRANSFORM_2D
+	_mesh.use_colors = true
+	_mesh.instance_count = MULTIMESH_CAP
+	_mesh.visible_instance_count = 0
+
+
+# 2×2 方块：等价于原 draw_rect(Rect2(p - Vector2(1,1), Vector2(2,2)))
+func _add_spark(p: Vector2, color: Color) -> void:
+	_add_quad(Transform2D(0.0, Vector2(2.0, 2.0), 0.0, p), color)
+
+
+# 1px 短线段：等价于原 draw_line(a, b, color, 1.0)（长度 × 1 的旋转 quad）
+func _add_segment(a: Vector2, b: Vector2, color: Color) -> void:
+	var d := b - a
+	var length := d.length()
+	if length < 0.01:
+		return
+	_add_quad(Transform2D(d.angle(), Vector2(length, 1.0), 0.0, (a + b) * 0.5), color)
+
+
+func _add_quad(xform: Transform2D, color: Color) -> void:
+	if _mesh == null or _mesh_used >= MULTIMESH_CAP:
+		return
+	_mesh.set_instance_transform_2d(_mesh_used, xform)
+	_mesh.set_instance_color(_mesh_used, color)
+	_mesh_used += 1
 
 
 func idle_state() -> void:
@@ -69,6 +112,9 @@ func idle_state() -> void:
 	_nodes.clear()
 	_age = 0.0
 	_redraw_accum = 0.0
+	_mesh_used = 0
+	if _mesh != null:
+		_mesh.visible_instance_count = 0
 	set_process(false)
 	if _glow != null:
 		_glow.sync([], [], 0)
@@ -115,6 +161,8 @@ func _process(delta: float) -> void:
 		queue_redraw()
 	if _age > hold_end:
 		modulate.a = clampf((_life() - _age) / FADE, 0.0, 1.0)
+		# 火花/短弧段的 alpha 烘在 MultiMesh 实例色里，淡出期必须重画才会跟着衰减。
+		queue_redraw()
 	if _age >= _life():
 		idle_state()
 
@@ -237,6 +285,7 @@ func _bowed(rng: RandomNumberGenerator, x0: float, y0: float, x1: float, y1: flo
 func _draw() -> void:
 	if _points.size() < 2:
 		return
+	_mesh_used = 0
 	for h in _paths.size():
 		var start := WIND + float(h) * LEAP
 		if _age < start:
@@ -254,6 +303,10 @@ func _draw() -> void:
 		var flash_at: float = _nodes[i]["flash_at"]
 		if _age >= flash_at:
 			_draw_node(i, (_age - flash_at) / FLASH)
+	# 所有节点的火花与短弧段一次性提交（1 次绘制替代原来的 30–60 次）
+	if _mesh_used > 0 and _mesh != null:
+		_mesh.visible_instance_count = _mesh_used
+		draw_multimesh(_mesh, null)
 
 
 func _link_level(h: int, land: float) -> float:
@@ -277,10 +330,8 @@ func _draw_paths(paths: Array, up_to: float, k: float, leap: bool) -> void:
 				_draw_head(pts[pts.size() - 1])
 		if pts.size() < 2:
 			continue
-		var hw := 5.0 if trunk else 2.0
-		var bw := 2.0 if trunk else 1.0
-		draw_polyline(pts, _with_alpha(HALO, HALO.a * k), hw)
-		draw_polyline(pts, _with_alpha(BODY, k), bw)
+		# 两层描边：BODY 加宽接管原本 5px 暗晕的视觉重量，外扩辉光交给 Glow 子节点。
+		draw_polyline(pts, _with_alpha(BODY, k), 2.5 if trunk else 1.5)
 		draw_polyline(pts, _with_alpha(CORE, k), 1.0)
 
 
@@ -297,13 +348,14 @@ func _draw_node(i: int, q: float) -> void:
 	var p := _points[i]
 	draw_circle(p, 1.0 + 4.0 * k, _with_alpha(WHITE, 0.9 * k))
 	draw_arc(p, 2.0 + 9.0 * q, 0.0, TAU, 20, _with_alpha(BODY, 0.7 * k), 1.0)
+	# 短弧段与火花进 MultiMesh：实例色自己乘一次 modulate.a，保证淡出期不残留。
+	var fade := modulate.a
 	for arc in _nodes[i]["arcs"]:
-		draw_line(p + arc["p0"], p + arc["p1"], _with_alpha(BODY, 0.6 * k), 1.0)
+		_add_segment(p + arc["p0"], p + arc["p1"], _with_alpha(BODY, 0.6 * k * fade))
 	var t := q * FLASH
-	var sparks: Array = _nodes[i]["sparks"]
-	for s in sparks:
+	for s in _nodes[i]["sparks"]:
 		var pos: Vector2 = p + s["v"] * t + Vector2(0, 150.0) * t * t
-		draw_rect(Rect2(Vector2(roundf(pos.x), roundf(pos.y)) - Vector2(1, 1), Vector2(2, 2)), _with_alpha(SPARK, 0.9 * k))
+		_add_spark(Vector2(roundf(pos.x), roundf(pos.y)), _with_alpha(SPARK, 0.9 * k * fade))
 
 
 func _to_packed(pts: Array) -> PackedVector2Array:

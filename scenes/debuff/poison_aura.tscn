@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://script/status_aura_fx.gd" id="1_aura"]
+[ext_resource type="SpriteFrames" path="res://scenes/effects/poison_aura_frames.res" id="2_frames"]
+
+[node name="PoisonAura" type="Node2D"]
+script = ExtResource("1_aura")
+frames = ExtResource("2_frames")
+origin = Vector2(40, 40)
+flare_time = 0.09
+flare_tint = Color(1.2, 1.9, 1.35, 1)
+z_index = 1
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
