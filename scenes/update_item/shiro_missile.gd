@@ -158,7 +158,7 @@ func _configure_explosion(node: Node) -> void:
 	node.explosion_range = explosion_range
 
 func _post_explosion(node: Node) -> void:
-	node.is_explosion()
+	node.is_small_explosion()
 
 func _on_track_box_body_entered(body):
 	if body.is_in_group("Enemy"):
