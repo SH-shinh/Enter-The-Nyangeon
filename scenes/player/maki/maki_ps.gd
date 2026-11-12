@@ -43,9 +43,8 @@ const SHOCK_DURATION: float = 4.0
 # ---------------- 彩弹：异常伤害充能 → 瞄准方向喷涂颜料区域 ----------------
 ## 每次玩家侧异常伤害 +1 能量；满 50 在瞄准方向前方喷涂一块颜料区域。
 const PAINT_ENERGY_MAX: int = 50
-## 喷涂层半径（像素）：以 Megu 火场为基准（碰撞 40、视觉约 128 直径）调大；
-## 视觉直径约 160（PAINT_VISUAL_RADIUS=80），逻辑标记范围再略大一圈。
-const PAINT_AOE_RADIUS: float = 96.0
+## 喷涂层半径（像素）：以 Megu 火场为基准后按反馈再缩 30%（逻辑 68 / 视觉半径 56）。
+const PAINT_AOE_RADIUS: float = 68.0
 const PAINT_THROW_DISTANCE: float = 90.0
 ## 敌人站在颜料上每 10 个 10Hz tick（1 秒）+1 层。
 const PAINT_MARK_TICK: int = 10
@@ -66,7 +65,7 @@ const PAINT_COLOR_COUNT: int = 3
 ## 地面颜料层：4 种喷溅形状各一个 MultiMesh（合计 1024 块、约 4 draw call），无粒子。
 const PAINT_GROUND_SCENE: PackedScene = preload("res://script/paint_ground.tscn")
 const PAINT_ZONE_MAX: int = 1024
-const PAINT_VISUAL_RADIUS: float = 80.0
+const PAINT_VISUAL_RADIUS: float = 56.0
 
 @export var fire_buff: Buff
 @export var poison_buff: Buff

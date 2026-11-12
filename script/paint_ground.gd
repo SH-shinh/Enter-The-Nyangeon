@@ -16,9 +16,9 @@ const SHAPE_COUNT := 4
 const CAP_PER_SHAPE := 256
 ## 与 script/floor_paint.tscn 的三色粒子对齐：0=Pink / 1=Blue / 2=Yellow。
 const PAINT_COLORS: Array[Color] = [
-	Color(0.894118, 0.384314, 0.588235, 1.0),
-	Color(0.219608, 0.654902, 0.698039, 1.0),
-	Color(0.899196, 0.741214, 0.224535, 1.0),
+	Color(0.78, 0.18, 0.44, 1.0),
+	Color(0.06, 0.48, 0.62, 1.0),
+	Color(0.86, 0.62, 0.04, 1.0),
 ]
 const PAINT_TEXTS: Array[Texture2D] = [
 	preload("res://sprites/effects/paint_splat_0.png"),
