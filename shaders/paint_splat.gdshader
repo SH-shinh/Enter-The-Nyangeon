@@ -5,8 +5,8 @@ shader_type canvas_item;
 // PaintGround 每帧把 now_sec 传进来，按 4px 块随机阈值逐块出现 / 反向消散。
 uniform sampler2D paint_tex : source_color, filter_nearest;
 uniform float now_sec = 0.0;
-uniform float appear_time = 0.22;
-uniform float disappear_time = 0.16;
+uniform float appear_time = 0.2;
+uniform float disappear_time = 0.2;
 uniform float cell_count = 32.0;
 
 float hash21(vec2 p) {
@@ -22,10 +22,11 @@ void fragment() {
 	float block = hash21(floor(UV * cell_count));
 	if (t > 0.0) {
 		float k = clamp((now_sec - t) / appear_time, 0.0, 1.0);
-		mask = step(block, k);
+		// 每块在自身随机起点后 0.3 的窗口内淡入：块内整体 alpha 渐变，形成网格化像素淡入
+		mask = clamp((k - block * 0.7) / 0.3, 0.0, 1.0);
 	} else if (t < 0.0) {
 		float k = clamp(1.0 - (now_sec + t) / disappear_time, 0.0, 1.0);
-		mask = step(block, k);
+		mask = clamp((k - block * 0.7) / 0.3, 0.0, 1.0);
 	}
 	// COLOR.rgb 是实例色（三色单色），alpha 由 mask 决定；时间码不再作为透明度输出。
 	COLOR = vec4(COLOR.rgb, tex.a * mask);
