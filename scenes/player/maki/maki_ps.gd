@@ -40,27 +40,33 @@ const CHILL_LAYER_BASE: int = 5
 ## 感电：层数上限走 Stats.shock_layer；时长按「恒定 4s/层」由 EnemyBuffManager 覆写。
 const SHOCK_DURATION: float = 4.0
 
-# ---------------- 彩弹：异常伤害充能 → 最近敌人 AoE 标记 ----------------
-## 每次玩家侧异常伤害 +1 能量；满 50 向最近敌人投掷彩弹（80px 小范围）。
+# ---------------- 彩弹：异常伤害充能 → 瞄准方向喷涂颜料区域 ----------------
+## 每次玩家侧异常伤害 +1 能量；满 50 在瞄准方向前方喷涂一块颜料区域。
 const PAINT_ENERGY_MAX: int = 50
-const PAINT_AOE_RADIUS: float = 80.0
-const PAINT_MAX_RANGE: float = 640.0
-## 标记层数上限与常驻时长（每次投掷刷新；敌人死亡/回池时 clear_all_buff 回滚属性）。
+## 喷涂层半径（像素）：以 Megu 火场为基准（碰撞 40、视觉约 128 直径）调大；
+## 视觉直径约 160（PAINT_VISUAL_RADIUS=80），逻辑标记范围再略大一圈。
+const PAINT_AOE_RADIUS: float = 96.0
+const PAINT_THROW_DISTANCE: float = 90.0
+## 敌人站在颜料上每 10 个 10Hz tick（1 秒）+1 层。
+const PAINT_MARK_TICK: int = 10
+## 标记层数上限与持续时间：常驻改为 2 秒；站在颜料上时每 10Hz `refresh_buff` 续时长（不加层），
+## 离开颜料 2 秒后 buff 自然过期（EnemyBuffManager.buff_count 的 erase_time 判定）。
 const PAINT_MARK_MAX_LAYER: int = 999
-const PAINT_MARK_SECONDS: float = 9999.0
+const PAINT_MARK_SECONDS: float = 2.0
 ## 每层异常伤害易伤：T0 未解锁 / T1 10% / T2 20% / T3 20%。
 ## T3 的「每层 10% 全局易伤」由同 id 的变体资源 maki_paint_mark_t3.tres 的 modifiers 承载，
 ## 两档共用同一个 buff 条目/图标，敌人 buff 条只显示一张卡。
 const PAINT_ANOMALY_RATE: Array[float] = [0.0, 0.10, 0.20, 0.20]
 
-## 彩弹特效：单发 pixelfx 颜料弹（pixelfx arcane/arcane-missiles 弹头/尾带 + pop），
-## 落地后再铺一块同色 floor_paint（三色索引与 floor_paint 的 Pink/Blue/Yellow 对齐）。
+## 彩弹特效：单发 pixelfx 颜料弹（pixelfx arcane/arcane-missiles 弹头/尾带 + pop）。
 const PAINTBALL_FX_SCENE: PackedScene = preload("res://scenes/effects/maki_paintball_fx.tscn")
 const PAINTBALL_POOL: String = "maki_paintball"
 const PAINTBALL_FX_CATEGORY: StringName = &"maki_paintball"
 const PAINT_COLOR_COUNT: int = 3
-const PAINT_FX_SCENE: PackedScene = preload("res://script/floor_paint.tscn")
-const PAINT_FX_POOL: String = "floor_paint"
+## 地面颜料层：4 种喷溅形状各一个 MultiMesh（合计 1024 块、约 4 draw call），无粒子。
+const PAINT_GROUND_SCENE: PackedScene = preload("res://script/paint_ground.tscn")
+const PAINT_ZONE_MAX: int = 1024
+const PAINT_VISUAL_RADIUS: float = 80.0
 
 @export var fire_buff: Buff
 @export var poison_buff: Buff
@@ -75,6 +81,10 @@ const PAINT_FX_POOL: String = "floor_paint"
 var _local: bool = false
 var _energy: int = 0
 var _last_anomaly_paint_broadcast_ms: int = 0
+## 已喷涂的颜料区域（center/radius 供标记刷新用；handle 指向 PaintGround 实例）。
+var _paint_zones: Array = []
+var _paint_ground: Node = null
+var _paint_ground_id: int = 0
 
 @onready var energy_bar: ColorRect = get_node_or_null("PaintEnergy")
 @onready var paintball_sound: AudioStreamPlayer2D = get_node_or_null("PaintballSound")
@@ -100,7 +110,6 @@ func _ready() -> void:
 	# 池预热：把首次命中/首次投掷的 instantiate()/_ready() 挪到玩家生成时（池已有节点则自动跳过）。
 	PoolManager.prewarm("maki_paintball", PAINTBALL_FX_SCENE, 2, "BulletRoot")
 	PoolManager.prewarm("anomaly_paint", ANOMALY_PAINT, 4, "FloorLayer")
-	PoolManager.prewarm("floor_paint", PAINT_FX_SCENE, 2, "FloorLayer")
 
 
 func _is_local_player() -> bool:
@@ -306,43 +315,98 @@ func _on_enemy_damage_taken(_final_damage: int, damage_data: DamageData, _body_p
 	_energy = mini(_energy + 1, PAINT_ENERGY_MAX)
 
 
-# 10Hz：满能量才投掷；无目标 / 超出射程时保留能量，下个 tick 重试（不空放）。
+# 10Hz：每 tick 先维护颜料区域（刷新/叠层），满能量时向瞄准方向喷涂。
 func _tick_paintball() -> void:
 	_update_energy_bar()
+	_tick_paint_zones()
 	if _tier() < 1 or _energy < PAINT_ENERGY_MAX:
 		return
 	if player == null or not is_instance_valid(player):
 		return
-	var target: Node = Targeting.nearest_enemy(player.global_position)
-	if target == null or not is_instance_valid(target):
-		return
-	if player.global_position.distance_to(target.global_position) > PAINT_MAX_RANGE:
-		return
-	_throw_paintball(target)
+	_spray_paint_zone()
 	_energy -= PAINT_ENERGY_MAX
 	_update_energy_bar()
 
 
-# 对落点 80px 内每个敌人各 +1 层；T3 改用同 id 变体资源（额外带每层全局易伤 modifier）。
-func _throw_paintball(target: Node) -> void:
-	if target == null or not is_instance_valid(target):
+## 区域 tick：脚下有颜料的敌人每停留 1 秒 +1 层；站区域内每 tick 刷新标记时长（不加层）。
+## 只对已落地的区域生效（handle >= 0），弹道飞行期间不提前叠层/刷新。
+func _tick_paint_zones() -> void:
+	if _paint_zones.is_empty():
 		return
-	if paint_mark_buff == null:
+	var landed: Array = []
+	for zone in _paint_zones:
+		if int(zone.get("handle", -1)) >= 0:
+			landed.append(zone)
+	if landed.is_empty():
 		return
-	_play_paintball_sound()
-	var center: Vector2 = target.global_position
-	var rate: float = PAINT_ANOMALY_RATE[_tier()]
 	var mark_res: Buff = paint_mark_buff_t3 if _tier() >= 3 and paint_mark_buff_t3 != null else paint_mark_buff
+	var rate: float = PAINT_ANOMALY_RATE[_tier()]
+	var valid_ids: Dictionary = {}
 	for enemy in Targeting.candidates():
 		if enemy == null or not is_instance_valid(enemy):
 			continue
-		if enemy.global_position.distance_to(center) > PAINT_AOE_RADIUS:
-			continue
+		var eid: int = enemy.get_instance_id()
+		valid_ids[eid] = true
 		var manager = enemy.get("enemy_buff_manager")
 		if manager == null:
 			continue
-		manager.apply_buff(mark_res, [PAINT_MARK_MAX_LAYER, rate, PAINT_MARK_SECONDS])
-	_spawn_paintball_visual(center)
+		var ep: Vector2 = enemy.global_position
+		var hit_zone: Dictionary = {}
+		for zone in landed:
+			var r: float = float(zone["radius"])
+			var c: Vector2 = zone["center"]
+			# AABB 快筛，避免大量区域时直接算距离
+			if absf(ep.x - c.x) > r or absf(ep.y - c.y) > r:
+				continue
+			if ep.distance_squared_to(c) > r * r:
+				continue
+			hit_zone = zone
+			break
+		if hit_zone.is_empty():
+			# 离开全部区域：停止累计（不保留半秒进度，避免进出蹭层）
+			for zone in landed:
+				zone["dwell"].erase(eid)
+			continue
+		manager.refresh_buff("maki_paint_mark")
+		var dwell: Dictionary = hit_zone["dwell"]
+		dwell[eid] = int(dwell.get(eid, 0)) + 1
+		if int(dwell[eid]) >= PAINT_MARK_TICK:
+			dwell[eid] = 0
+			manager.apply_buff(mark_res, [PAINT_MARK_MAX_LAYER, rate, PAINT_MARK_SECONDS])
+	# 清理已回池/失效敌人的停留计数
+	for zone in landed:
+		var dwell: Dictionary = zone["dwell"]
+		for eid in dwell.keys():
+			if not valid_ids.has(eid):
+				dwell.erase(eid)
+
+
+# 在玩家瞄准方向前方喷涂一块颜料区域；落点可预判（不再自动锁最近敌人）。
+# 叠层由 _tick_paint_zones 按停留时间驱动；视觉走 PaintGround 的 MultiMesh。
+func _spray_paint_zone() -> void:
+	if player == null or not is_instance_valid(player):
+		return
+	if paint_mark_buff == null:
+		return
+	var aim: Vector2 = player.crosshair_pos - player.global_position
+	var dir: Vector2 = aim.normalized() if aim.length_squared() > 64.0 else Vector2.RIGHT
+	var center: Vector2 = player.global_position + dir * PAINT_THROW_DISTANCE
+	center = MapBounds.nearest_inside(center, 0.0)
+	var zone := {
+		"center": center,
+		"radius": PAINT_AOE_RADIUS,
+		"visual_radius": PAINT_VISUAL_RADIUS,
+		"angle": randf_range(0.0, TAU),
+		"scale": randf_range(0.9, 1.3),
+		"shape": randi_range(0, 3),
+		"dwell": {},
+		"handle": -1,
+	}
+	_paint_zones.append(zone)
+	while _paint_zones.size() > PAINT_ZONE_MAX:
+		_discard_oldest_paint_zone()
+	_play_paintball_sound()
+	_spawn_paintball_visual(center, zone)
 
 
 # 升级时清掉场上标记：apply_buff 不会更新已存在条目的 value，也不会替换已有条目的 resource；
@@ -358,6 +422,9 @@ func _clear_paint_marks() -> void:
 		for buff in buffs:
 			if buff != null and manager.current_buff.has(buff.id):
 				manager.remove_buff(buff)
+	# 标记清空后停留进度也清零，避免升级后下一 tick 立刻补一层。
+	for zone in _paint_zones:
+		zone["dwell"].clear()
 
 
 func _update_energy_bar() -> void:
@@ -377,17 +444,21 @@ func _play_paintball_sound() -> void:
 	paintball_sound.play()
 
 
-# 单发颜料弹：从玩家手部飞向落点胸口高度（纯视觉），落地后再铺一块同色 floor_paint。
+# 单发颜料弹：从玩家手部飞向落点胸口高度（纯视觉），落地后写入 PaintGround 的地面颜料层。
 # 能量/标记/伤害仍在投掷瞬间结算，视觉晚 fly_seconds 到达。
-func _spawn_paintball_visual(center: Vector2) -> void:
+func _spawn_paintball_visual(center: Vector2, zone: Dictionary) -> void:
 	if not PoolManager.fx_allowed(PAINTBALL_FX_CATEGORY):
+		# 门控跳过弹道时也要落地：区域逻辑与视觉必须一致，避免「看不见的颜料仍在生效」。
+		_spawn_paint_splat(zone)
 		return
 	if player == null or not is_instance_valid(player):
+		_spawn_paint_splat(zone)
 		return
 	var layer: Node = get_tree().get_first_node_in_group("BulletRoot")
 	if layer == null:
 		layer = get_tree().get_first_node_in_group("FloorLayer")
 	if layer == null:
+		_spawn_paint_splat(zone)
 		return
 	var from: Vector2 = player.global_position + Vector2(0, -16)
 	var to: Vector2 = center + Vector2(0, -14)
@@ -396,25 +467,63 @@ func _spawn_paintball_visual(center: Vector2) -> void:
 	if fx == null or fx.is_idle == 0:
 		fx = PAINTBALL_FX_SCENE.instantiate()
 		layer.add_child(fx)
-	fx.active_state(from, to, color, _spawn_paint_splat.bind(center, color))
+	fx.active_state(from, to, color, _spawn_paint_splat.bind(zone, color))
 	# 通用视觉通道：联机时由 mod 按参数广播给其他端；单机/无 mod 时 no-op。
 	ExtensionHooks.notify_named("on_visual_activated", [fx, {
 		"from": from,
 		"to": to,
 		"color": color,
 		"splat_at": center,
+		"radius": float(zone["visual_radius"]),
+		"angle": float(zone["angle"]),
+		"scale": float(zone["scale"]),
+		"shape": int(zone["shape"]),
 	}])
 
 
-func _spawn_paint_splat(hit_position: Vector2, color: int = -1) -> void:
+func _spawn_paint_splat(zone: Dictionary, color: int = -1) -> void:
 	# 落地爆炸音：与 pop/地面颜料的到达瞬间同步（ExplosionSounds 与真实爆炸共用播放器）。
 	SoundManager.play_sfx("ExplosionSounds")
+	var ground := _get_paint_ground()
+	if ground == null:
+		return
+	zone["handle"] = ground.add_paint(
+		Vector2(zone["center"]),
+		color,
+		float(zone["visual_radius"]),
+		float(zone["angle"]),
+		float(zone["scale"]),
+		int(zone["shape"])
+	)
+
+
+# 懒创建地面颜料层：FloorLayer 清场会 queue_free 它，下次投掷自动重建。
+func _get_paint_ground() -> Node:
 	var layer: Node = get_tree().get_first_node_in_group("FloorLayer")
 	if layer == null:
+		return null
+	if _paint_ground != null and is_instance_valid(_paint_ground) and _paint_ground.get_parent() == layer:
+		return _paint_ground
+	var existing := layer.get_node_or_null("PaintGround")
+	if existing == null:
+		existing = PAINT_GROUND_SCENE.instantiate()
+		existing.name = "PaintGround"
+		layer.add_child(existing)
+	_paint_ground = existing
+	# FloorLayer 被清场重建：旧区域的 handle 全部失效，清空列表。
+	if existing.get_instance_id() != _paint_ground_id:
+		if _paint_ground_id != 0:
+			_paint_zones.clear()
+		_paint_ground_id = existing.get_instance_id()
+	return existing
+
+
+func _discard_oldest_paint_zone() -> void:
+	if _paint_zones.is_empty():
 		return
-	var fx = PoolManager.get_pool(PAINT_FX_POOL)
-	if fx == null or fx.is_idle == 0:
-		fx = PAINT_FX_SCENE.instantiate()
-		layer.add_child(fx)
-	fx.global_position = hit_position
-	fx.active_state(color)
+	var zone: Dictionary = _paint_zones.pop_front()
+	var handle := int(zone.get("handle", -1))
+	if handle >= 0:
+		var ground := _get_paint_ground()
+		if ground != null:
+			ground.remove_paint(handle)

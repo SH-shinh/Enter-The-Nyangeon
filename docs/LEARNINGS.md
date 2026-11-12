@@ -4362,3 +4362,24 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - Source / 来源: user + code
 - Date / 日期: 2026-11-11
 
+
+### [性能/渲染] 大量重复地面装饰用 MultiMesh 实例化，不要每块挂 GPUParticles2D
+- Evidence / 证据: `script/paint_ground.gd` / `script/paint_ground.tscn`（4 个 `MultiMeshInstance2D`，每形状 256 实例、合计 1024；`QuadMesh` + `TRANSFORM_2D` + `use_colors=true` + `shaders/paint_splat.gdshader`）；贴图 `sprites/effects/paint_splat_0..3.png`（128×128 灰阶+alpha，Pillow 程序化生成，形状语言参考 `third_party/pixelfx-godot` 的 `nature/acid-splash` / `critters/slime`）；原 `script/floor_paint.tscn`（每块 3 个 `GPUParticles2D`、各 16 粒、lifetime 10s）；同类先例 `scenes/debuff/shock_chain_arc.gd:70-80`。4 种形状各 1 个 MultiMesh，draw call 约 4，与颜料数量无关。
+- Notes / 说明: ① 地面颜料这类「大量、长期、纯装饰」的重复块，用 MultiMesh 承载实例，draw call 不随块数增长；每块只写实例变换 + 实例色。② 多形状不要依赖 2D 的 `INSTANCE_CUSTOM`（canvas_item 支持不稳），直接**每种形状一个 MultiMeshInstance2D**，各自挂不同 `paint_tex`，代价只是几个 draw call。③ 2D canvas shader 里 MultiMesh 的 `use_colors` 实例色可从顶点色 `COLOR` 读到，`COLOR = vec4(tex.rgb * COLOR.rgb, tex.a * COLOR.a)` 用灰阶喷溅图乘三色，无需多张彩色贴图或 custom data。④ 外部 handle 用「handle→{shape,index}」映射 + 按形状 swap-remove 压缩，删除任意块后其它 handle 不失效；每形状满额再环形覆盖最旧作为兜底。⑤ 不要给每块挂 `GPUParticles2D`（原 floor_paint 每块 3 个发射器 + 10s 粒子，20 块就上百 draw call，永久颜料会拖垮场景）。⑥ 清场沿用 `FloorLayer` 下 `Texture` 组 + `main.backlayer_clear_unit()`；节点重建后调用方要检测实例 id 变化并清掉旧的逻辑列表（否则 handle 指向已释放节点）。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-12
+
+
+### [Buff] 区域/光环类「待在范围内就保持」用 `refresh_buff` 续时长，不要重复 `apply_buff`
+- Evidence / 证据: `scenes/manager/buff_manager_base.gd:298-305`（`refresh_buff(id)` 只把 `now_time=0`，不动层数）；`scenes/manager/buff_manager_base.gd:321`（`now_time > erase_time` 才 `_expire_buff`）；`scenes/player/maki/maki_ps.gd` 的 `PAINT_MARK_SECONDS=2.0` 与 `_tick_paint_zones()`（10Hz：区域内每 10 tick `apply_buff` +1 层，其余 tick `refresh_buff` 续时）。
+- Notes / 说明: ① 「在范围内才保持、每 N 秒叠一层」要拆成两个动作：续时用 `refresh_buff(id)`（不加层），叠层用 `apply_buff(...)`（+1 层并刷新）。若用 `apply_buff` 每 tick 刷新，站得越久层数越高，与设计不符。② `erase_time = value[2] × 10 × duration_mult`，所以 2 秒传 `2.0`；过期由 10Hz `buff_count` 判定，离开后约 2 秒自动移除。③ 叠层/续时只对「已落地」的区域生效（本实现用 `handle >= 0` 过滤），否则弹道飞行期间会让敌人提前获得/保持标记。④ 离开区域要清掉 dwell 累计（不保留半秒进度），重叠区域只计一次。⑤ 联机：`refresh_buff` 不广播，客机镜像若按本地短时长会提前掉图标；做法见下一条「host 驱动过期」。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-12
+
+
+### [Coop] `refresh_buff` 不广播：镜像端用「host 驱动过期」而不是本地短时长
+- Evidence / 证据: `mod_sdk/coop_mod/mods/etn_coop/net/coop_net.gd` 与 `mods/etn_coop/net/coop_net.gd` 的 `_remote_enemy_buff()`（应用后对 `maki_paint_mark` 把镜像 `entry["erase_time"]` 置 `1 << 30`）；`scenes/manager/buff_manager_base.gd:_remove_buff_entry` → `on_enemy_buff_removed` → `coop_net._remote_enemy_buff_remove`。
+- Notes / 说明: host 在颜料上每 10Hz `refresh_buff` 不产生 RPC，客机镜像若按 value 里的 2 秒本地过期，会在 host 仍有效时提前掉图标。最小改动：镜像端对这类「host 会持续续时」的 buff 把 `erase_time` 置大（不本地过期），host 真正过期时走已有的 `on_enemy_buff_removed` 广播清除。代价是镜像 buff 卡不显示倒计时（可接受）；不改 RPC 契约/协议版本。两份 coop_net 必须逐字节同步。
+- Source / 来源: code
+- Date / 日期: 2026-11-12
+

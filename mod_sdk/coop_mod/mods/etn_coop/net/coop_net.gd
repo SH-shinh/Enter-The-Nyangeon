@@ -2606,6 +2606,13 @@ func _remote_enemy_buff(net_id: int, buff_path: String, value: Array, source_id:
 	_applying_remote_buff = true
 	manager.call("apply_buff", buff, value, source_id, stats)
 	_applying_remote_buff = false
+	# Maki 颜料标记由 host 驱动过期：host 在颜料上持续 refresh 不广播，
+	# 客机镜像若按本地 2 秒过期会比 host 提前掉图标；这里把镜像 erase_time 置大，
+	# host 真正过期时走 on_enemy_buff_removed → _remote_enemy_buff_remove 清除。
+	if str(buff.id) == "maki_paint_mark":
+		var entry = manager.get("current_buff").get("maki_paint_mark")
+		if entry != null:
+			entry["erase_time"] = 1 << 30
 
 
 # host 链事件：客机回放同一链（VFX + 精确 vuln_stacks）；本机玩家/召唤物节点额外结算 2% + 击退。

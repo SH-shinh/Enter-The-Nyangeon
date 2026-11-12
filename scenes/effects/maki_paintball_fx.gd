@@ -26,8 +26,7 @@ const ARC_RATIO := 0.16
 const ARC_MIN := 16.0
 const ARC_MAX := 40.0
 
-const PAINT_FX_SCENE: PackedScene = preload("res://script/floor_paint.tscn")
-const PAINT_FX_POOL := "floor_paint"
+const PAINT_GROUND_SCENE: PackedScene = preload("res://script/paint_ground.tscn")
 
 @export var fly_seconds: float = 0.32
 @export var pop_seconds: float = 0.38
@@ -43,6 +42,10 @@ var _arrive_cb := Callable()
 ## 远端纯表现克隆（mod 通用视觉通道调用 network_apply_visual 时置位）
 var _remote: bool = false
 var _splat_at := Vector2.ZERO
+var _splat_radius: float = 80.0
+var _splat_angle: float = NAN
+var _splat_scale: float = 1.0
+var _splat_shape: int = -1
 
 @onready var sprite: AnimatedSprite2D = $Sprite
 @onready var trail = $Trail
@@ -90,7 +93,15 @@ func network_apply_visual(params: Dictionary) -> void:
 	var to_v = params.get("to", Vector2.ZERO)
 	var splat_v = params.get("splat_at", Vector2.ZERO)
 	var color_v = params.get("color", 0)
+	var radius_v = params.get("radius", 80.0)
+	var angle_v = params.get("angle", NAN)
+	var scale_v = params.get("scale", 1.0)
+	var shape_v = params.get("shape", -1)
 	_splat_at = splat_v if splat_v is Vector2 else Vector2.ZERO
+	_splat_radius = float(radius_v) if (radius_v is int or radius_v is float) else 80.0
+	_splat_angle = float(angle_v) if (angle_v is int or angle_v is float) else NAN
+	_splat_scale = float(scale_v) if (scale_v is int or scale_v is float) else 1.0
+	_splat_shape = int(shape_v) if (shape_v is int or shape_v is float) else -1
 	var from: Vector2 = from_v if from_v is Vector2 else global_position
 	var to: Vector2 = to_v if to_v is Vector2 else from
 	var color: int = int(color_v) if (color_v is int or color_v is float) else 0
@@ -129,12 +140,12 @@ func _spawn_remote_splat() -> void:
 	var layer: Node = get_tree().get_first_node_in_group("FloorLayer")
 	if layer == null:
 		return
-	var fx = PoolManager.get_pool(PAINT_FX_POOL)
-	if fx == null or fx.is_idle == 0:
-		fx = PAINT_FX_SCENE.instantiate()
-		layer.add_child(fx)
-	fx.global_position = _splat_at
-	fx.active_state(color_index)
+	var ground := layer.get_node_or_null("PaintGround")
+	if ground == null:
+		ground = PAINT_GROUND_SCENE.instantiate()
+		ground.name = "PaintGround"
+		layer.add_child(ground)
+	ground.add_paint(_splat_at, color_index, _splat_radius, _splat_angle, _splat_scale, _splat_shape)
 
 
 func idle_state() -> void:
@@ -142,6 +153,10 @@ func idle_state() -> void:
 	_arrive_cb = Callable()
 	_remote = false
 	_splat_at = Vector2.ZERO
+	_splat_radius = 80.0
+	_splat_angle = NAN
+	_splat_scale = 1.0
+	_splat_shape = -1
 	trail.clear()
 	is_idle = 1
 	visible = false
