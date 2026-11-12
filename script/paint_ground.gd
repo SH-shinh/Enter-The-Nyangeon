@@ -113,8 +113,8 @@ func add_paint(pos: Vector2, color: int, radius: float, angle: float = NAN, pain
 	var size: float = maxf(1.0, radius) * 2.0 * maxf(0.1, paint_scale)
 	mm.set_instance_transform_2d(idx, Transform2D(a, Vector2(size * flip, size), 0.0, pos))
 	var base: Color = PAINT_COLORS[clampi(color, 0, PAINT_COLORS.size() - 1)]
-	# 每块颜料 ±10% 明度抖动（保持色相）；alpha 仍存出生时间，不能被抖动覆盖。
-	var k := randf_range(0.9, 1.1)
+	# 每块颜料 ±20% 明度抖动（保持色相）；alpha 仍存出生时间，不能被抖动覆盖。
+	var k := randf_range(0.8, 1.2)
 	var c := Color(
 		clampf(base.r * k, 0.0, 1.0),
 		clampf(base.g * k, 0.0, 1.0),
