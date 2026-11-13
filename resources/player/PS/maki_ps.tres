@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="PSCard" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="PSCard" format=3 uid="uid://nw4wn4jslqcj"]
 
-[ext_resource type="Script" path="res://resources/player/PS/ps_card.gd" id="1_makips"]
-[ext_resource type="Texture2D" uid="uid://cy186n7wbscq3" path="res://sprites/player/maki/auto_lacquer.png" id="2_icon"]
+[ext_resource type="Script" uid="uid://vole8yfgj5cu" path="res://resources/player/PS/ps_card.gd" id="1_makips"]
+[ext_resource type="Texture2D" uid="uid://cy186n7wbscq3" path="res://sprites/weapon/auto_lacquer.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_makips")

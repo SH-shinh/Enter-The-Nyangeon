@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cy186n7wbscq3"
-path="res://.godot/imported/auto_lacquer.png-e6ea4fad3b398e9ca2004d75c4ae42ef.ctex"
+path="res://.godot/imported/auto_lacquer.png-1f1eb6957140cceb88b22d1ed16bdd31.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://sprites/player/maki/auto_lacquer.png"
-dest_files=["res://.godot/imported/auto_lacquer.png-e6ea4fad3b398e9ca2004d75c4ae42ef.ctex"]
+source_file="res://sprites/weapon/auto_lacquer.png"
+dest_files=["res://.godot/imported/auto_lacquer.png-1f1eb6957140cceb88b22d1ed16bdd31.ctex"]
 
 [params]
 

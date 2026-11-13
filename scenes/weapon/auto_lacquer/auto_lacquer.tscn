@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://opfsjib8apqw"]
 
 [ext_resource type="Script" uid="uid://ll1l3uf862v7" path="res://script/player_gun.gd" id="1_fk37n"]
-[ext_resource type="Texture2D" uid="uid://cy186n7wbscq3" path="res://sprites/player/maki/auto_lacquer.png" id="2_fk37n"]
+[ext_resource type="Texture2D" uid="uid://cy186n7wbscq3" path="res://sprites/weapon/auto_lacquer.png" id="2_fk37n"]
 [ext_resource type="PackedScene" uid="uid://5xnka7kne7w" path="res://script/picatinny_rail.tscn" id="3_gnphl"]
 [ext_resource type="PackedScene" uid="uid://bjvr1nuwo7ish" path="res://script/muzzle.tscn" id="4_ogvfc"]
 [ext_resource type="AudioStream" uid="uid://dxrwufiyxixpe" path="res://sounds/GUNAuto_Assault Rifle A Fire_01.wav" id="5_fk37n"]
