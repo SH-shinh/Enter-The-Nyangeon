@@ -4384,11 +4384,157 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - Date / 日期: 2026-11-12
 
 
+### [Hare] 右键形态切换与 kick 冲突、锁定框坐标、护卫弹不能走玩家射击信号
+- Evidence / 证据: `project.godot`（`hare_aim` = 鼠标右键 + 手柄 R3）；`script/player.gd:282`（`allow_kick` 门）；`script/player.gd:178`（`crosshair_pos` 已把屏幕系准星转成世界坐标）；`script/player.gd:539`（`bullet_hit_damage` 覆盖 `knockback`）
+- Notes / 说明: ① `kick` 已绑定右键，hare 用右键切形态时必须 `allow_kick=false`（hare.tscn 根节点），否则同键触发踢击；② `Crosshair` 挂在 `CanvasLayer` 下发出屏幕系坐标，`player.crosshair_pos` 已转世界系，锁定框直接用它；③ 无人机护卫弹要独立构造 `DamageData`（近战级击退），不能 emit `player_shot_position`——`Player.bullet_hit_damage` 会把 `knockback` 覆盖成普通子弹击退。
+- Source / 来源: test
+- Date / 日期: 2026-11-13
+### [Hare] 跟随滞后的前提是世界坐标：玩家子节点会吞掉 lerp 拖尾
+- Evidence / 证据: `scenes/player/hare/hare_ps.gd`（`_squad.top_level = true`）；`scenes/player/hare/hare_drone.gd`（`lerp(desired, 1-exp(-smooth*delta))`）；对照 `scenes/player/chihiro/chihiro_drone_body.gd:16,91`
+- Notes / 说明: 无人机挂在玩家下时，父节点位移会 100% 带给子节点，`global_position.lerp` 只影响环绕相位，玩家移动时看不到拖尾。要 Chihiro 式跟随滞后，编队必须世界层化（`Node2D.top_level = true` 或挂 `EquipLayer`）；IDLE 平滑 4.0 与 Chihiro `FOLLOW_SMOOTH` 一致，稳态落后约 `v/smooth`。
+- Source / 来源: test
+- Date / 日期: 2026-11-13
+- SUPERSEDED: 2026-11-13 后续统一为玩家枪子弹（`gun.bullet`）。GUARD 弹改为 emit `player_shot_position` 后在 `pre_activate` 覆写 `damage_data.knockback_force = (bullet_knockback + 100) * 1.5`，不再需要独立 `hare_guard_bullet`；锁定弹用 `HitBox.required_target` 过滤（比较 `HurtBox.owner`）只命中锁定目标，并用 `homing_curve/homing_curve_time` 做“先弧线后收束”；无人机弹 `player_damage_mult` 额外乘 `stats.equip_damage`（无人机视为装备），锁定弹不乘。
+### [Hare] 锁定弹散射后要命中：降速 + 高 r_speed
+- Evidence / 证据: `scenes/weapon/auto_aimer/auto_aimer.gd`（`LOCKED_TURN_SPEED=6000`、`LOCKED_MAX_SPEED=900`、`LOCKED_MAX_SCATTER_DEG=90`）；`script/player_bullet.gd:249`（加速度式转向）
+- Notes / 说明: 子弹速度 1400 时一物理帧位移约 23px，大于 `nonomi_bullet` 碰撞圆直径（半径 7），散射/侧向切入会从 HurtBox 边缘穿过；把锁定弹速度压到 900（约 15px/帧）并提高 `r_speed` 后，`bullet_arc=60°` 三发仍能 3/3 命中。散射角按 `stats.bullet_arc` 均分（clamp 90°），槽数 1 或 arc=0 不散射。
+- Source / 来源: test
+- Date / 日期: 2026-11-13
+### [Combat] 属性易伤接口的位置与测试坑
+- Evidence / 证据: `script/EnemyStats.gd`（`*_hurt_damage_mult` + `get_hurt_damage_mult`）；`script/health_component.gd:264-274`（`_apply_type_vulnerability` 在 `enemy_damage_taken` emit 之后）
+- Notes / 说明: `enemy_damage_taken` 在最终易伤/暴击之前 emit，用该信号测伤害会读到易伤前的值；要测最终值用 `DamageData.on_damage_dealt`（扣血后回调）。属性易伤字段是加算（默认 1.0），buff 的 `ability` 可直接写字段名；`anomaly_hurt_damage_mult` 保持“纯异常类”语义，不并入按标签接口。Hare 无人机弹显式追加 `EQUIP_DAMAGE` 标签以吃 `equip_hurt_damage_mult`。
+- Source / 来源: test
+- Date / 日期: 2026-11-13
+### [VFX] pixelfx scanner 改造为 Hare 锁定扫描
+- Evidence / 证据: `scenes/effects/pixelfx_hare_lock_scan.gd`、`scenes/effects/hare_lock_scan_frames.res`、`script/bake_pixelfx_fx.gd`（BBOX 94）、`scenes/player/hare/hare_lock_manager.gd:188-236`（每槽 fx 池 + HurtBoxMeasure 定位）
+- Notes / 说明: `scifi/scanner` 依赖 `o.actor` 身体遮罩，敌人贴图各异必须 bodyless 化（只保留括号/扫描线/光点）。96×96 画布 + 扫描线 glow 容易把 bbox 顶到 94 上限，收敛半径/删外侧虚线臂后 worst=85。每槽一个 AnimatedSprite2D，`_rebuild_slots` 必须按 enemy 继承旧槽 fx，否则每秒重排会闪断；槽释放用 `_hide_fx` 回池。定位用 `HurtBoxMeasure.measure(enemy, 36.0)` 的 center，`FX_BASE_SIZE=36` 让 64px 敌人 scale≈1.0。
+- Source / 来源: test
+- Date / 日期: 2026-11-13
+### [VFX] 锁定框两段动画与方框/红框
+- Evidence / 证据: `scenes/effects/pixelfx_hare_lock_in.gd`（0.6s one-shot）、`scenes/effects/pixelfx_hare_lock_idle.gd`（1.6s loop）、`scenes/player/hare/hare_lock_manager.gd`（`animation_finished` 切帧集 + 缩放 Tween；`lock_half = lock_radius * 0.5`；标记敌人红框）
+- Notes / 说明: `save_sprite_frames` 一个资源只存一个动画，入场/呼吸要拆两个 `.res` 并在 `animation_finished` 里切 `sprite_frames`；切完做一次 scale Tween 做“发白/强调”。`_update_fx` 不要每帧写 `scale`，否则会覆盖 Tween。标记敌人隐藏黄绿 fx、由 `_draw` 红框显示；`draw_dashed_line` 边线要低 alpha 才不抢框。循环帧集不能有扫描线/残影，否则多槽叠加会像残留。
+- Source / 来源: test
+- Date / 日期: 2026-11-13
+### [VFX] 锁定槽重复目标导致扫描框残留
+- Evidence / 证据: `scenes/player/hare/hare_lock_manager.gd` 的 `_rebuild_slots`（旧实现只把每个 enemy 的第一个槽放进 `old_map`，重复槽 fx 未回收）；修复为收集所有旧槽 fx 后按差集回收 + `_all_fx` 每帧兜底隐藏。
+- Notes / 说明: 同一敌人可占多槽（`single_target_cap` 3–4），每秒重排时只按 enemy 建 map 会漏掉重复槽的 fx，表现为「移开准星后扫描框偶尔残留在屏幕上」。修复后：旧槽 fx 差集回收、`_all_fx` 兜底、`_exit_tree` 统一清理。准星框/标记红框也统一成帧集（`hare_lock_cursor_frames.res` / `hare_mark_idle_frames.res`），`_draw` 只保留动态进度弧。
+- Source / 来源: test
+- Date / 日期: 2026-11-13
+### [VFX] Hare 红框纯色化与框内显示
+- Evidence / 证据: `script/bake_pixelfx_fx.gd`（`HARE_MARK_RAMP` 去掉纯白角点）、`sprites/buff_icon/hare_mark_icon.png`、`resources/buff/enemy_buff/hare_mark.tres`（icon 换红）、`scenes/player/hare/hare_lock_manager.gd` 的 `_update_mark_fx`（改用 `_candidates()`）
+- Notes / 说明: `BuffCard.set_buff_card` 直接 `texture_progress = buff.icon`，不会按 buff 颜色染色，标记图标颜色只能由图标资源本身决定；红框 ramp 最后一色若用 `#ffffff`，角点会出现白点，改成浅红即可纯色。红框只对瞄准方框内标记敌人显示，框外只保留 buff 图标；`_candidates()` 已含 `_valid` 与方框判定。
+- Source / 来源: test
+- Date / 日期: 2026-11-13
+- SUPERSEDED: 2026-11-13 标记红框改为纯红系（`HARE_MARK_RAMP` 高光 `#ff8a7a`，去掉粉白 `#ffb0a0/#ffd0c8`）；`hare_mark` 的 buff 图标回退为原来的 `sprites/buff_icon/mark_buff_icon.png`，新增的 `sprites/buff_icon/hare_mark_icon.png` 已删除。
+### [VFX] Hare 锁定进度圈改像素点阵
+- Evidence / 证据: `scenes/player/hare/hare_lock_manager.gd`（`RING_SEGMENTS=24`、`RING_RADIUS=14`、`_draw` 用 `draw_rect` 2×2 像素块替代 `draw_arc`）
+- Notes / 说明: 帧集化的框面之外，只剩动态进度是矢量；把 `draw_arc` 换成按 24 段、整数坐标 `round` 的 2×2 像素点，未点亮段用同色 alpha≈0.18 作底，锁定完成后整圈亮起。这样进度圈与帧集像素落点一致，不再出现平滑矢量圆。
+- Source / 来源: test
+- Date / 日期: 2026-11-13
+### [Audio] SoundManager 新增 SFX 与倒放 wav
+- Evidence / 证据: `scenes/manager/sound_manager.tscn`（`SFX` 下按节点名播放）、`scenes/manager/SoundManager.gd:25-42`（`_get_sfx`/`play_sfx`）、`sounds/night_vision_reverse.wav`（按 16-bit 帧反转生成）、`hare_ps.gd`（进/出锁定）、`hare_lock_manager.gd`（槽锁定完成）
+- Notes / 说明: 新音效 = 在 `SFX` 下加 `AudioStreamPlayer`（节点名就是 `play_sfx` 的 key，`bus="SFX"`），并在 tscn 头部加 `ext_resource`（uid 从 `.import` 取）。Godot 不支持负 `pitch_scale` 倒放，倒放要预生成反向 wav（按 `sampwidth` 反转帧、保持 channels/framerate）。多槽同帧锁定用 `play_sfx_throttled("HareLockOn", 60)` 避免叠音。
+- Source / 来源: test
+- Date / 日期: 2026-11-13
+### [HUD] Hare 锁定态隐藏准星 + 瞄准框增强
+- Evidence / 证据: `scenes/crosshair/crosshair.gd`（`add_to_group("crosshair")`）、`scenes/player/hare/hare_ps.gd`（`_hide_crosshair`/`_show_crosshair`，记录进入前 `visible`）、`scenes/effects/pixelfx_hare_lock_cursor.gd`（3px 角 + 内圈角标 + 8px 短边）、`hare_lock_cursor_frames.res`（worst=124）
+- Notes / 说明: 锁定隐藏准星只改 `visible`，不动 `mouse_mode` 与 `crosshair_pos` 输入；退出/重置时恢复「进入锁定前」的状态，避免覆盖升级界面/回合切换自己的隐藏。瞄准框增强靠帧集加粗（3px）、内圈小 L、短边 6→8px/alpha 0.35→0.55，锁定判定不变。
+- Source / 来源: test
+- Date / 日期: 2026-11-13
+### [VFX] Hare 锁定态战术目镜滤镜
+- Evidence / 证据: `shaders/hare_optic.gdshader`（`edge_mask = smoothstep(inner, outer, d)` 中心 0→边缘 1；`rain_mask` 更窄）、`ui/hare_optic_overlay.tscn` + `ui/hare_optic_overlay.gd`（`CanvasLayer(layer=4)` + `BackBufferCopy` + 全屏 `ColorRect`）、`scenes/player/hare/hare_ps.gd`（`_deploy` 创建、进/出锁定 `set_active`）
+- Notes / 说明: 全屏滤镜用 `hint_screen_texture` + `filter_nearest`，逻辑像素吸附（`floor(uv*resolution)/resolution`）避免模糊；中心不覆盖用平滑 `edge_mask`，数字雨只乘更窄的 `rain_mask`，避免占用主视觉。开启动画用 `open` uniform + Tween（0.45s/0.28s），关闭后隐藏 `BackBufferCopy`/`Filter` 无开销；移动端禁用；CanvasLayer 放 HUD 之下（layer 4）保证血条/文字清晰。
+- Source / 来源: test
+- Date / 日期: 2026-11-13
+- 2026-11-13 锁定战术目镜边缘强度试调（约 ×1.8）：`tint_strength 0.35→0.63`、`scanline_strength 0.22→0.40`、`vignette_strength 0.35→0.63`、`rain_strength 0.7→1.0`、`edge_inner 0.30→0.26`、数字雨叠加系数 `0.55→0.80`。中心仍由 `edge_mask=0` 保持原画。
+### [Gameplay] Hare 电池条 / 锁定冷却 / 标记 10s / 无人机伤害
+- Evidence / 证据: `scenes/player/hare/hare_ps.gd`（`ENERGY_MAX/DRAIN/REGEN/HIT_REGEN`、`AIM_COOLDOWN`、`_apply_mark` duration 10.0）、`ui/hare_battery.gd`（`heat_bar.png` 旋转 2× + 10 格）、`scenes/player/hare/hare_drone.gd`（`_current_ratio` 0.24/0.40/0.64、`_pre_bullet` 的 `on_damage_dealt` 回电）
+- Notes / 说明: 电池条复用 Aris 的 `ui/heat_bar.png`，`draw_set_transform(0, PI/2, 2x)` 横躺、黄绿 modulate；内部 10 格按电量点亮（每格 10 电）。`hare_mark` duration 10s（`erase_time=100`，`TICKS_PER_SECOND=10`）。锁定开关冷却在 `_unhandled_input` 入口判断 `_aim_cd`，进入/退出后置 1s。无人机命中回电用子弹 `damage_data.on_damage_dealt` 回调（victim 带 `hare_mark` 时 `ps.add_energy`）。电量耗尽会强制 `_exit_locked`。
+- Source / 来源: test
+- Date / 日期: 2026-11-13
+- 2026-11-13 电池条缩到 Aris 尺寸：`ui/hare_battery.gd` 的 `FRAME_SCALE 2.0→1.0`（heat_bar 16×16），去掉 10 格分段，内部改为单条连续填充（`INNER_W=10`、`INNER_H=4`，黄绿），头顶偏移 `-30→-24`。
+### [Gameplay] Hare 叠层改 buff：命中不同目标 +1 / buff 与释放同持续时间 / 随时开关
+- Evidence / 证据: `resources/buff/player_buff/hare_aim_buff.tres`、`scenes/player/hare/hare_ps.gd`（`_on_bullet_hit` 按 `instance_id` 去重、`_refresh_aim_buff` duration=`RELEASE_TIME`、`_extend_aim_buff`、`_unhandled_input` 的 RELEASE 可进入）、`scenes/player/hare/hare_drone.gd`（`_current_ratio` 固定 0.64、`equip × (1 + release_level×0.03)`）、`ui/hare_hud.tscn`（左下角节点删除）
+- Notes / 说明: 玩家 Buff 栏显示 `hare_aim` 图标+层数；锁定期间 duration 9999，退出时 remove 后逐层 apply 刷新为 `release_total`（4/5s），T3 延长同步 `erase_time`（`TICKS_PER_SECOND=10`）。RELEASE 中可重新进入锁定（清释放计时、无人机回 GUARD），1s 冷却不变。左下角 AIM/Release 条已删，`hare_hud.gd:update_state` 置空保留接口。
+- Source / 来源: test
+- Date / 日期: 2026-11-13
+### [Gameplay] Hare 锁定槽 = 框内目标数 × 百分比；瞄准框随 T 放大
+- Evidence / 证据: `scenes/player/hare/hare_lock_manager.gd`（`slot_ratio`、`_effective_slots() = maxi(1, ceil(_candidates().size() * slot_ratio))`、`_fill_slots` 用该 cap、`_update_cursor_fx` 的 `scale = lock_half/58`）、`scenes/player/hare/hare_ps.gd`（`SLOT_RATIO [0.4,0.6,0.8,1.0]`、`LOCK_RADIUS [120,160,200,240]`、`_apply_tier` 调 `set_slot_ratio`）
+- Notes / 说明: 槽上限不再用固定 `SLOT_COUNT`；框内候选数变化时槽数动态（T0 ceil(N×0.4)、T3 N）。准星框帧集本体半宽 B=58，按 `lock_half/58` 缩放（T0≈1.03、T3≈2.07），最近邻放大保持像素感。T3 半径 240 = T0 120 的 200%。
+- Source / 来源: test
+- Date / 日期: 2026-11-13
+### [Gameplay] Hare 无人机独立基础伤害 + 装备击杀 + 玩家射速加成
+- Evidence / 证据: `scenes/player/hare/hare_drone.gd`（`DRONE_BASE_DAMAGE`、`_pre_bullet` 覆盖 `damage_data.base_damage`、`source_type.append(GameTags.EQUIP)`、`_player_rate_mult`、`_current_interval` 除倍率）
+- Notes / 说明: 无人机单发 = `DRONE_BASE_DAMAGE[T] × PlayerData.bullet_damage_mult × stats.global_damage × (暴击? critical_damage) × _current_ratio × equip`，不再乘 `stats.bullet_damage` 基础值；改 `bullet_damage` 不影响，改 `bullet_damage_mult` 生效。无人机击杀靠 `damage_data.source_type` 含 `EQUIP`（`a_pod_pro`/`shiroko_ps` 的装备击杀判定）。射速倍率 = `stats.bullet_shoot_time / PlayerData.base_bullet_shoot_time`（clamp 0.25–4），GUARD/IDLE/RELEASE 间隔都除该倍率。测试房若 `PlayerData.base_bullet_shoot_time=0` 会兜底 1.0。
+- Source / 来源: test
+- Date / 日期: 2026-11-13
+
+
 ### [UI] 长文本卡片不要靠 ScrollContainer 滚动，挂 auto_text 自动缩放并禁用滚动
 - Evidence / 证据: `ui/ability_upgrade_card.tscn` 的 `ContentScroll`（`ScrollContainer` + `script/ScrollBox.gd`，`vertical_scroll_mode` 默认 auto）与 `DescriptionLabel/Forward/Negative`（原 font_size 10、未挂 `auto_text.gd`）；`NameLabel` 已挂 `script/auto_text.gd`（`base_size_y=44`、`min_font_size=12`）；`tests/test_ui_ux_regressions.gd:_check_card_font`。
-- Notes / 说明: ① 用户要求「字数过多时不出现滚动条、自动缩放」：把 `ScrollContainer.vertical_scroll_mode` 设为 `3`（`SCROLL_MODE_SHOW_NEVER`，隐藏滚动条但保留滚动兜底），并给每个可能变长的 Label 挂 `script/auto_text.gd`；② 各 Label 的 `base_size_y` 预算总和要 ≤ 卡片高度（本卡 253：标题 44 + 图标 70 + 小字 7 + 正文 88 + Forward/Negative 各 20 ≈ 249）；③ 禁用滚动后极端超长文本会被 `ScrollContainer` 裁切，不再提供滚动——这是用户明确选择的取舍；④ `ScrollBox.gd` 只负责拖动，不会自动出现滚动条，滚动条来自 `ScrollContainer` 的 `vertical_scroll_mode` 默认 auto；⑤ 改完同步 `_check_card_font`：断言禁滚动 + 长描述字号缩小（<10、≥7），去掉「可滚动查看」。
+- Notes / 说明: ① 用户要求「字数过多时不出现滚动条、自动缩放」：把 `ScrollContainer.vertical_scroll_mode` 设为 `0`（`SCROLL_MODE_DISABLED`），并给每个可能变长的 Label 挂 `script/auto_text.gd`；② 各 Label 的 `base_size_y` 预算总和要 ≤ 卡片高度（本卡 253：标题 44 + 图标 70 + 小字 7 + 正文 88 + Forward/Negative 各 20 ≈ 249）；③ 禁用滚动后极端超长文本会被 `ScrollContainer` 裁切，不再提供滚动——这是用户明确选择的取舍；④ `ScrollBox.gd` 只负责拖动，不会自动出现滚动条，滚动条来自 `ScrollContainer` 的 `vertical_scroll_mode` 默认 auto；⑤ 改完同步 `_check_card_font`：断言禁滚动 + 长描述字号缩小（<10、≥7），去掉「可滚动查看」。
 - Source / 来源: user
 - Date / 日期: 2026-11-13
+### [Bug] 池复用残留 hare_locked_shot meta 导致无人机误标
+- Evidence / 证据: `scenes/weapon/auto_aimer/auto_aimer.gd`（常态 `_configure_bullet` 里 `remove_meta`）、`scenes/player/hare/hare_drone.gd`（`_configure_bullet` 里 `remove_meta`）、`scenes/player/hare/hare_ps.gd` 的 `_on_bullet_hit`
+- Notes / 说明: 锁定弹与无人机弹共用池（`nonomi_bullet` / `pool_id=player_bullet`）；锁定弹 `set_meta("hare_locked_shot", true)` 回池时不会清除，无人机弹复用同一对象后命中，会被 `_on_bullet_hit` 误判为锁定弹，先 `_apply_mark`（框外敌人也被标记），再因不在锁定目标里 return（不叠层）。修复：无人机/常态射击的配置入口都 `remove_meta("hare_locked_shot")`，锁定配置仍 `set_meta(true)`。
+- Source / 来源: user
+- Date / 日期: 2026-11-13
+### [Gameplay] Hare 叠层放宽：锁定弹命中即叠层
+- Evidence / 证据: `scenes/player/hare/hare_ps.gd:_on_bullet_hit`（删除 `_lock.is_locked_target(victim)` 检查，LOCKED 下按 `instance_id` 去重后叠层）
+- Notes / 说明: 瞄准框扫过去、敌人已出框或槽已释放后子弹才命中，仍会 +1 层 `hare_aim`；同一敌人只叠一次；无人机/普通射击弹靠 `hare_locked_shot` meta 不进入叠层；RELEASE 期仍只走 `_try_extend_release` 不叠层。
+- Source / 来源: user
+- Date / 日期: 2026-11-13
+### [Perf] Hare 锁定框内大量敌人优化（不设槽上限）
+- Evidence / 证据: `scenes/player/hare/hare_lock_manager.gd`（`_refresh_candidates`/`_cand_marked` 每帧一次、`_ordered_candidates` 一次排序补槽、`_refresh_slot_centers` 每帧一次 measure、`MAX_MARK_FX=32`、`RING_SEGMENTS=16`、`_prune_slots`/`_update_fx`/`_update_mark_fx` 用索引/字典去 O(n²)）、`scenes/weapon/auto_aimer/auto_aimer.gd`（`MAX_VOLLEY=8` 按槽轮转）、`scenes/player/hare/hare_drone.gd`（`_valid_target` 参数去类型，避免目标 freed 后类型检查崩溃）
+- Notes / 说明: 候选/标记每帧只刷新一次；补槽降频 0.1s、重排仍 1s；槽数不设硬上限（`ceil(候选×ratio)`）。测试 30 沙袋/25 框内、T3、开火：`slots=29`、`bullets=13`、`process avg≈13.7ms / peak≈20.9ms`（改动前 profiler 尖峰 142ms、`HareLockManager` 累计约 16ms/帧）。红框超过 32 个只显示最近 32 个。
+- Source / 来源: test
+- Date / 日期: 2026-11-14
+### [Perf] Hare 锁定专项优化第二轮
+- Evidence / 证据: `scenes/player/hare/hare_lock_manager.gd`（候选/补槽合并到 0.1s、槽中心 `measure` 0.1s、`RING_SEGMENTS 12`、锁定后不再画进度圈、`_mark_fx.has` 替代 `_is_marked` 反射）、`scenes/weapon/auto_aimer/auto_aimer.gd`（`MAX_VOLLEY 8→6`）
+- Notes / 说明: 候选全敌人遍历从 60 次/s 降到 6.7 次/s；槽中心测量从 50 次/帧降到约 3 次/s；进度圈从「槽数×16」降到「未锁定槽数×12」。测试 30 沙袋/14 框内、T3：`slots=14`、每发≤6 枚、`draws≈327`、`fps≈46`（测试场景整体负载，不是锁定管理器单独指标）。
+- Source / 来源: test
+- Date / 日期: 2026-11-14
+### [Gameplay] Hare T1/T3 重复命中已标记敌人可额外叠层
+- Evidence / 证据: `scenes/player/hare/hare_ps.gd`（`_enemy_stacks` 改为 int 计数、`_repeat_hits_needed()`：T1/T2=2、T3=1、T0=0、`_add_aim_stack()`）
+- Notes / 说明: 不同目标首次命中仍 +1 层；同一已命中目标按阈值重复 +1（T1/T2 每 2 次重复、T3 每次重复）；层数受 `_sync_cap()` 上限；首次命中记 0，达到阈值后清零重新计数；释放期不叠层。实机验证：T0 命中 3 次 sync=1、T1 命中 5 次 sync=3、T3 命中 3 次 sync=3。
+- Source / 来源: user
+- Date / 日期: 2026-11-14
+### [Cleanup] Hare 复审：清理死代码/空壳 HUD
+- Evidence / 证据: `scenes/player/hare/hare_ps.gd`（删 `HARE_HUD`/`_hud`/`_update_hud`/`SLOT_COUNT`/`_add_sync`、`_squad.set_tier` 调用、`set_params` 改新签名）、`scenes/player/hare/hare_lock_manager.gd`（删 `max_slots`/`FX_HALF`/`_time`/`_pick_best`/`is_locked_target`，`_assign_cd`→`_cand_cd`）、`scenes/player/hare/hare_drone_squad.gd`（删 `tier`/`set_tier`）、删除 `ui/hare_hud.tscn`/`.gd`/`.gd.uid`
+- Notes / 说明: 全项目 grep 确认无残留引用（`docs/LEARNINGS.md` 历史除外）；实机验证锁定→释放→RELEASE 中重进均正常，玩家下不再挂 `HareHUD` 节点，日志无错误。PSCard 文案（`hare_ps.tres`）按用户要求留到下一轮。
+- Source / 来源: user
+- Date / 日期: 2026-11-14
+### [Gameplay] Hare 取消锁定减速 + 目镜保底 + 无人机射击音效
+- Evidence / 证据: `scenes/player/hare/hare_ps.gd`（删 `_base_speed`/`_restore_speed`/减速两行；`_reset_state` 调 `force_off`；`_notification(PREDELETE)` 归位）、`ui/hare_optic_overlay.gd`（`force_off`）、`scenes/manager/sound_manager.tscn`（`SFX/Laser3` ← `laser3.wav`，-6dB）、`scenes/player/hare/hare_drone.gd`（`_shoot` 后 `play_sfx_throttled("Laser3", 60)`）
+- Notes / 说明: 锁定不再修改 `MAX_SPEED`（实测 150→150→150）。回合结束/`_reset_state`/节点释放时：`_phase=NORMAL`、锁槽关闭、无人机 IDLE、准星恢复、目镜 `Filter.visible=false`/`open=0`，不等 Tween。无人机开火 60ms 全局节流，6 台高射速不叠音。
+- Source / 来源: user
+- Date / 日期: 2026-11-14
+### [Localization] Hare PSCard 文案 + `hare_ps_0..3` 同步
+- Evidence / 证据: `resources/player/PS/hare_ps.tres`（`t_level` 4 条）、`ETN_player_localization.csv`（`hare_ps_0..3` 中/英）
+- Notes / 说明: 按图中文本逐字更新 T0–T3，英文列同步翻译，pt/vi 保持空；CSV 用 Python 单行 `csv.writer` 写回，保持 UTF-8 BOM + CRLF（校验 `bare_lf=0`），`filesystem_manage reimport` 成功；`git diff` 仅 4 行新增（旧 hare 行不在 HEAD 基线）。
+- Source / 来源: user
+- Date / 日期: 2026-11-14
+### [Multiplayer] Hare 镜像视觉无人机 + PS 等级同步
+- Evidence / 证据: `scenes/player/hare/hare_ps.gd`（`_deploy_mirror_drones`/`_sync_mirror_drones`/`network_set_tier`/`apply_network_character_event`、`ps_upgrade` 发 `hare_ps_tier`）、`scenes/player/hare/hare_drone_squad.gd`（`mirror_only`：不分配目标）、`scenes/player/hare/hare_drone.gd`（`visual_only`：只环绕/朝向，不开火）
+- Notes / 说明: 镜像端走 `player.broadcast_character_event` → `apply_network_character_event` 通用通道，**无需改 coop mod**；视觉无人台数 = `DRONE_COUNT[tier]`（实测 T0 3 / T1 4 / T3 6），镜像无人机 `visual_only=true` 不产生子弹/`Laser3` 音效。锁定框/目镜/电池/层数 HUD 仍不同步（按用户要求）。双进程 LAN 实机验证待补。
+- Source / 来源: user
+- Date / 日期: 2026-11-14
+### [Gameplay] Hare 无人机伤害改为「玩家子弹伤害按 30% 加成」
+- Evidence / 证据: `scenes/player/hare/hare_drone.gd`（`DRONE_BULLET_DAMAGE_RATIO=0.3`；`_pre_bullet` 改为 `base = DRONE_BASE_DAMAGE[t] + stats.bullet_damage × 0.3`，删除 `× PlayerData.bullet_damage_mult`）
+- Notes / 说明: 实测 T0 RELEASE（global=1/equip=1/无暴击）：`bullet_damage 16 → 18`、`32 → 22`；`PlayerData.bullet_damage_mult 1→2` 仍为 18（不再直接乘区）。`global_damage`/暴击/装备/模式倍率/标记易伤不变。比例常量可调，0 即只吃独立基础。
+- Source / 来源: user
+- Date / 日期: 2026-11-14
+### [Gameplay] shrapnel_bullet 分裂弹继承触发子弹的伤害快照
+- Evidence / 证据: `scenes/update_item/shrapnel_bullet.gd`（`launcher.set("damage_data", damage_data)` + `snapshot_damage=true`）、`scenes/update_item/player_bullet_launcher.gd`（`snapshot_damage`；`_configure_bullet_multi` 复制后清空 `on_damage_dealt`；`_post_bullet` 在 `emit_player_shot_position` 后覆盖 `base_damage`/`is_crit` 并合并 `damage_type`/`source_type`）
+- Notes / 说明: 之前分裂弹走 `player.bullet_hit_damage` 按玩家当前 stats 重算，无人机弹触发时只得到玩家子弹伤害。现在继承父子弹快照：实测父 `base_damage=100`/`is_crit=true`/`EQUIP_DAMAGE`+`EQUIP` → 4 枚子子弹全部 `100`/`true`/标签命中。不继承 `on_damage_dealt`，避免误改父子弹/重复触发；`pratt_helmet` 等其它 launcher 默认 `snapshot_damage=false` 不受影响。
+- Source / 来源: user
+- Date / 日期: 2026-11-14
+### [Gameplay] shrapnel_bullet 分裂弹继承父子弹场景/池
+- Evidence / 证据: `scenes/update_item/shrapnel_bullet.gd`（`damage_data.source_node` → `parent is PlayerBullet` → `launcher.bullet=load(parent.scene_file_path)`、`pool_id=parent.pool_id`；否则回退 `gun.bullet`）、`scenes/update_item/player_bullet_launcher.gd`（`_configure_bullet` 字段守卫，非标准 PlayerBullet 缺字段也不报错）
+- Notes / 说明: `shiro_missile` 继承 `HitBox`（无 `active_state`/`idle_state`），不能走 `ProjectileSpawner.spawn_core`，因此只继承 `PlayerBullet` 系场景，其它回退枪子弹。实测 launcher 以 `megu_bullet` 场景 + 独立池生成 4 枚 megu 子子弹（total 6 含场景原有 2 枚）。
+- Source / 来源: user
+- Date / 日期: 2026-11-14
 
 
 ### [UI] 升级卡多行词条不要用 max_lines_visible / 省略号截断
@@ -4396,4 +4542,3 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - Notes / 说明: `max_lines_visible` 按渲染行数截断，`text_overrun_behavior = 3` 会加省略号；词条常是「独特 + 说明」两行，设 1 行会把说明吃掉。处理换行词条时不要设行数上限/省略号，交给 `auto_text.gd` 按预算缩字号，超出卡片高度用 `SHOW_NEVER` 拖动兜底；`base_size_y` 预算要给足（描述 72、Forward/Negative 30）。
 - Source / 来源: user
 - Date / 日期: 2026-11-14
-

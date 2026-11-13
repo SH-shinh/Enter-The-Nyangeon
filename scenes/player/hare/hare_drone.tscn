@@ -1,0 +1,15 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/player/hare/hare_drone.gd" id="1_drone"]
+[ext_resource type="Texture2D" path="res://sprites/player/hare/hare_drone.png" id="2_tex"]
+
+[node name="HareDrone" type="Node2D"]
+script = ExtResource("1_drone")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_tex")
+flip_h = true
+scale = Vector2(1.4, 1.4)
+
+[node name="ShootPosition" type="Marker2D" parent="."]
+position = Vector2(1, 0)

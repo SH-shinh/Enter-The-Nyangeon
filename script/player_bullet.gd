@@ -37,6 +37,13 @@ var _shape_gen: int = 0
 var _homing_target: Node = null
 var _homing_scan_cd: int = 0
 
+## 指定追踪目标（优先级高于自动索敌）；由专武/无人机在 configure 阶段设置。
+var forced_target: Node = null
+## 追踪前段的侧向弧度（像素）与持续时间，用于“先弧线后收束”的智能弹道。
+var homing_curve: float = 0.0
+var homing_curve_time: float = 0.25
+var _curve_side: float = 1.0
+
 var player: Node
 
 @onready var line = get_node_or_null("Line")
@@ -116,6 +123,9 @@ func idle_state():
 	homing = false
 	_homing_target = null
 	_homing_scan_cd = 0
+	forced_target = null
+	required_target = null
+	homing_curve = 0.0
 	target_position = Vector2.ZERO
 	self.visible = false
 	self.global_position = Vector2.ZERO
@@ -194,6 +204,11 @@ func _physics_process(delta):
 		_refresh_homing_target()
 		if _homing_target != null and global_position.distance_to(_homing_target.global_position) <= homing_range:
 			target_position = _homing_target.global_position
+			if homing_curve > 0.0 and flight_time < homing_curve_time:
+				var to_target: Vector2 = target_position - global_position
+				var perp: Vector2 = to_target.orthogonal().normalized()
+				var k: float = sin(PI * clampf(flight_time / maxf(homing_curve_time, 0.01), 0.0, 1.0))
+				target_position += perp * homing_curve * k * _curve_side
 			r_move(delta)
 	elif can_r == true:
 		r_move(delta)
@@ -202,11 +217,31 @@ func _physics_process(delta):
 	flight_time += delta
 
 func _refresh_homing_target() -> void:
+	if forced_target != null:
+		if not is_instance_valid(forced_target) or forced_target.get("is_idle") == 1:
+			forced_target = null
+			required_target = null
+			homing = false
+			_homing_target = null
+			return
+		_homing_target = forced_target
+		return
 	if _homing_target != null and is_instance_valid(_homing_target) and _homing_scan_cd > 0:
 		_homing_scan_cd -= 1
 		return
 	_homing_target = Targeting.nearest_enemy(global_position)
 	_homing_scan_cd = homing_scan_interval
+
+
+## 绑定指定目标；only_target=true 时只对该目标结算（穿过其它敌人不命中）。
+func set_homing_target(target: Node, only_target: bool = false, curve_strength: float = 0.0, curve_time: float = 0.25) -> void:
+	forced_target = target
+	required_target = target if only_target else null
+	homing_curve = maxf(0.0, curve_strength)
+	homing_curve_time = maxf(0.01, curve_time)
+	_curve_side = -1.0 if randf() < 0.5 else 1.0
+	_homing_target = null
+	homing = target != null
 
 func r_move(delta: float):
 	# 保持 direction 为单位朝向：否则 slow_down 的 velocity = direction * v_value 会指数放大

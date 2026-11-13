@@ -22,8 +22,9 @@
 [ext_resource type="Resource" uid="uid://d0v0hye82slf3" path="res://resources/player/yuzu.tres" id="20_dk8eq"]
 [ext_resource type="Resource" path="res://resources/player/chihiro.tres" id="22_chihiro"]
 [ext_resource type="Resource" path="res://resources/player/maki.tres" id="23_maki"]
+[ext_resource type="Resource" path="res://resources/player/hare.tres" id="24_hare"]
 [ext_resource type="Script" uid="uid://ccuhhgtf330ql" path="res://resources/player/player_group.gd" id="21_n8j42"]
 
 [resource]
 script = ExtResource("21_n8j42")
-player_group = Array[ExtResource("1_s0ark")]([ExtResource("2_ldxw0"), ExtResource("3_0r27l"), ExtResource("4_euv0w"), ExtResource("5_urtcn"), ExtResource("6_cquh3"), ExtResource("7_83d1b"), ExtResource("8_ly4gv"), ExtResource("9_vx070"), ExtResource("10_b5362"), ExtResource("11_bj2hn"), ExtResource("12_g71l4"), ExtResource("13_ah25h"), ExtResource("14_6tsb2"), ExtResource("15_w706i"), ExtResource("16_x5cuw"), ExtResource("17_1ne4r"), ExtResource("18_roiik"), ExtResource("19_axjgj"), ExtResource("20_dk8eq"), ExtResource("22_chihiro"), ExtResource("23_maki")])
+player_group = Array[ExtResource("1_s0ark")]([ExtResource("2_ldxw0"), ExtResource("3_0r27l"), ExtResource("4_euv0w"), ExtResource("5_urtcn"), ExtResource("6_cquh3"), ExtResource("7_83d1b"), ExtResource("8_ly4gv"), ExtResource("9_vx070"), ExtResource("10_b5362"), ExtResource("11_bj2hn"), ExtResource("12_g71l4"), ExtResource("13_ah25h"), ExtResource("14_6tsb2"), ExtResource("15_w706i"), ExtResource("16_x5cuw"), ExtResource("17_1ne4r"), ExtResource("18_roiik"), ExtResource("19_axjgj"), ExtResource("20_dk8eq"), ExtResource("22_chihiro"), ExtResource("23_maki"), ExtResource("24_hare")])

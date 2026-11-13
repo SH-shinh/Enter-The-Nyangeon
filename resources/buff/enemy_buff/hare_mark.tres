@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://sprites/buff_icon/mark_buff_icon.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = "hare_mark"
+icon = ExtResource("1_icon")
+name = "智能标记"
+ability = "equip_hurt_damage_mult"
+remove_by_layer = false
+is_debuff = true
+description = "被 Hare 锁定弹命中；受到的装备伤害提高（随 PS 等级 20/30/50/80%）"

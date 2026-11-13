@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PlayerCard" format=3 uid="uid://mbcr2b2upe2e"]
+
+[ext_resource type="Script" uid="uid://mhculkp4opo6" path="res://resources/player/player.gd" id="1_player"]
+[ext_resource type="Texture2D" uid="uid://v5km2v2gxhjc" path="res://sprites/player/hare/hare_picture_halo.png" id="2_halo"]
+
+[resource]
+script = ExtResource("1_player")
+name = "HARE"
+weapon = "AUTO AIMER"
+weapon_type = "AR"
+sprite_path = "res://sprites/player/hare/hare_picture.png"
+halo = ExtResource("2_halo")
+color = Color(0.7954968, 0.9295426, 0.29906923, 1)
+description = "被动技能待设计。"
+voice_name = "hare"
+id = "hare"
+scene_path = "res://scenes/player/hare/hare.tscn"

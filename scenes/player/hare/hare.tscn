@@ -1,0 +1,525 @@
+[gd_scene format=3 uid="uid://cmgw22l5l227y"]
+
+[ext_resource type="Script" uid="uid://ci8narxcxkq0w" path="res://script/player.gd" id="1_yidy2"]
+[ext_resource type="Resource" uid="uid://mbcr2b2upe2e" path="res://resources/player/hare.tres" id="2_arl35"]
+[ext_resource type="Resource" path="res://resources/player/PS/hare_ps.tres" id="3_snt4d"]
+[ext_resource type="PackedScene" uid="uid://b78jo1set8q45" path="res://script/follow.tscn" id="4_6k815"]
+[ext_resource type="PackedScene" uid="uid://bdo12rjvieur7" path="res://scenes/shadow/shadow.tscn" id="5_mn0kt"]
+[ext_resource type="PackedScene" uid="uid://ceydnirh2w7yb" path="res://scenes/player/smoke.tscn" id="6_xrfe3"]
+[ext_resource type="Texture2D" uid="uid://by5uo5qley8rp" path="res://sprites/player/hare/hare_halo.png" id="7_ppu2u"]
+[ext_resource type="Texture2D" uid="uid://brn3e6kfoewgj" path="res://sprites/player/hare/hare.png" id="8_rq6hk"]
+[ext_resource type="PackedScene" uid="uid://wffnchsknkba" path="res://script/hat.tscn" id="10_paup8"]
+[ext_resource type="PackedScene" uid="uid://m3vpbkb1xyis" path="res://scenes/weapon/auto_aimer/auto_aimer.tscn" id="11_bhnrg"]
+[ext_resource type="PackedScene" uid="uid://byimyqyqflqma" path="res://scenes/bullet/nonomi_bullet.tscn" id="12_p60mh"]
+[ext_resource type="Script" uid="uid://cog8pvonoqtxu" path="res://script/hurt_box.gd" id="13_lbyav"]
+[ext_resource type="Script" uid="uid://e2gvf56eu6jb" path="res://scenes/player/StateMachine.gd" id="14_f5ol8"]
+[ext_resource type="Script" uid="uid://c5wxmcve7xpca" path="res://script/Stats.gd" id="15_jc1rc"]
+[ext_resource type="AudioStream" uid="uid://5rnyiqxeiusa" path="res://sounds/RunSounds.wav" id="16_2ft7p"]
+[ext_resource type="AudioStream" uid="uid://b6t6pjb3evtw4" path="res://sounds/jump.wav" id="17_y17eh"]
+[ext_resource type="AudioStream" uid="uid://bqqs4akeispjg" path="res://sounds/OnHit.wav" id="18_im8ph"]
+[ext_resource type="AudioStream" uid="uid://b5fdodmk5utji" path="res://sounds/coin.wav" id="19_1h51r"]
+[ext_resource type="PackedScene" uid="uid://1th2ey27vgac" path="res://ui/game_ui.tscn" id="20_du1sv"]
+[ext_resource type="PackedScene" uid="uid://cb5gh3hfe077g" path="res://ui/pause_screen.tscn" id="21_5j4yq"]
+[ext_resource type="Texture2D" uid="uid://nu6i7yovali6" path="res://ui/cd_bar.png" id="22_38jij"]
+[ext_resource type="Texture2D" uid="uid://ben34oyvgea61" path="res://ui/cd_bar_2.png" id="23_dq3lv"]
+[ext_resource type="PackedScene" uid="uid://d1gmjbadbxsjp" path="res://scenes/game_camera/gamecamera.tscn" id="24_v3lyi"]
+[ext_resource type="PackedScene" uid="uid://ccbfmsfn7ay8r" path="res://script/kick.tscn" id="25_i6sx7"]
+[ext_resource type="PackedScene" uid="uid://voxip8vojin" path="res://scenes/manager/player_buff_manager.tscn" id="26_x5uj0"]
+[ext_resource type="PackedScene" uid="uid://c620jv6qq2f8w" path="res://scenes/player/t_hp_count.tscn" id="27_qr5g1"]
+[ext_resource type="Script" uid="uid://crtabh2xwunne" path="res://script/player_health_component.gd" id="28_s7wd4"]
+[ext_resource type="PackedScene" path="res://scenes/player/hare/hare_ps.tscn" id="29_hareps"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_l238d"]
+radius = 7.0
+
+[sub_resource type="Shader" id="Shader_c1o8m"]
+code = "shader_type canvas_item;
+
+uniform float outline_width = 1.0;
+uniform vec4 outline_color : source_color = vec4(0.0, 0.0, 0.0, 1.0);
+uniform float flash_opacity : hint_range(0.0, 1.0, 0.1) = 0.0;
+uniform vec4 corruption_tint : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform float corruption_amount : hint_range(0.0, 1.0, 0.01) = 0.0;
+
+void fragment() {
+	vec2 uv = UV;
+
+	vec2 uv_up = uv + vec2(0.0, TEXTURE_PIXEL_SIZE.y) * outline_width;
+	vec2 uv_down = uv + vec2(0.0, -TEXTURE_PIXEL_SIZE.y) * outline_width;
+	vec2 uv_left = uv + vec2(TEXTURE_PIXEL_SIZE.x, 0.0) * outline_width;
+	vec2 uv_right = uv + vec2(-TEXTURE_PIXEL_SIZE.x, 0.0) * outline_width;
+
+	vec4 color_up = texture(TEXTURE, uv_up);
+	vec4 color_down = texture(TEXTURE, uv_down);
+	vec4 color_left = texture(TEXTURE, uv_left);
+	vec4 color_right = texture(TEXTURE, uv_right);
+
+	vec4 outline = color_up + color_down + color_left + color_right;
+
+	outline.rgb = outline_color.rgb;
+
+	outline.a = min(outline.a, 1.0);
+
+	vec4 orginal_color = texture(TEXTURE, UV);
+	orginal_color.rgb = mix(orginal_color.rgb, outline_color.rgb, flash_opacity);
+
+	COLOR = mix(outline, orginal_color, orginal_color.a);
+	COLOR.rgb = mix(COLOR.rgb, corruption_tint.rgb, corruption_amount);
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bopf6"]
+shader = SubResource("Shader_c1o8m")
+shader_parameter/outline_width = 1.0
+shader_parameter/outline_color = Color(36.111057, 35.33523, 8.349508, 1)
+shader_parameter/flash_opacity = 0.0
+shader_parameter/corruption_tint = Color(1, 1, 1, 1)
+shader_parameter/corruption_amount = 0.0
+
+[sub_resource type="Shader" id="Shader_jgba2"]
+code = "shader_type canvas_item;
+
+uniform float outline_width = 1.0;
+uniform vec4 outline_color : source_color = vec4(0.0, 0.0, 0.0, 1.0);
+uniform float flash_opacity : hint_range(0.0, 1.0, 0.1) = 0.0;
+uniform vec4 corruption_tint : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform float corruption_amount : hint_range(0.0, 1.0, 0.01) = 0.0;
+
+void fragment() {
+	vec2 uv = UV;
+
+	vec2 uv_up = uv + vec2(0.0, TEXTURE_PIXEL_SIZE.y) * outline_width;
+	vec2 uv_down = uv + vec2(0.0, -TEXTURE_PIXEL_SIZE.y) * outline_width;
+	vec2 uv_left = uv + vec2(TEXTURE_PIXEL_SIZE.x, 0.0) * outline_width;
+	vec2 uv_right = uv + vec2(-TEXTURE_PIXEL_SIZE.x, 0.0) * outline_width;
+
+	vec4 color_up = texture(TEXTURE, uv_up);
+	vec4 color_down = texture(TEXTURE, uv_down);
+	vec4 color_left = texture(TEXTURE, uv_left);
+	vec4 color_right = texture(TEXTURE, uv_right);
+
+	vec4 outline = color_up + color_down + color_left + color_right;
+
+	outline.rgb = outline_color.rgb;
+
+	outline.a = min(outline.a, 1.0);
+
+	vec4 orginal_color = texture(TEXTURE, UV);
+	orginal_color.rgb = mix(orginal_color.rgb, outline_color.rgb, flash_opacity);
+
+	COLOR = mix(outline, orginal_color, orginal_color.a);
+	COLOR.rgb = mix(COLOR.rgb, corruption_tint.rgb, corruption_amount);
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_g7sfc"]
+shader = SubResource("Shader_jgba2")
+shader_parameter/outline_width = 1.0
+shader_parameter/outline_color = Color(36.111, 35.335, 8.35, 1)
+shader_parameter/flash_opacity = 0.0
+shader_parameter/corruption_tint = Color(1, 1, 1, 1)
+shader_parameter/corruption_amount = 0.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qjn3o"]
+atlas = ExtResource("8_rq6hk")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dxvin"]
+atlas = ExtResource("8_rq6hk")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8jqoy"]
+atlas = ExtResource("8_rq6hk")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cf0hj"]
+atlas = ExtResource("8_rq6hk")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yidy2"]
+atlas = ExtResource("8_rq6hk")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_j8t7y"]
+atlas = ExtResource("8_rq6hk")
+region = Rect2(64, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gowgc"]
+atlas = ExtResource("8_rq6hk")
+region = Rect2(128, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_eysfa"]
+atlas = ExtResource("8_rq6hk")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2brsh"]
+atlas = ExtResource("8_rq6hk")
+region = Rect2(0, 64, 64, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_3w87u"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qjn3o")
+}, {
+"duration": 1.2,
+"texture": SubResource("AtlasTexture_dxvin")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8jqoy")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cf0hj")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 13.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yidy2")
+}],
+"loop": 1,
+"name": &"jump",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_j8t7y")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gowgc")
+}, {
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_eysfa")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_2brsh")
+}],
+"loop": 1,
+"name": &"run",
+"speed": 13.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_dqk1k"]
+radius = 1.0
+height = 2.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_4tsyc"]
+radius = 35.0
+
+[sub_resource type="Animation" id="Animation_quqct"]
+resource_name = "Invincible frame"
+length = 0.5
+step = 0.075
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.075, 0.15, 0.225, 0.3, 0.375, 0.45),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [true, false, true, false, true, false, true]
+}
+
+[sub_resource type="Animation" id="Animation_54v52"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Graphics:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Graphics:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_apy7m"]
+_data = {
+&"Invincible frame": SubResource("Animation_quqct"),
+&"RESET": SubResource("Animation_54v52")
+}
+
+[sub_resource type="Animation" id="Animation_btd8x"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics/AnimatedSprite2D:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Graphics/AnimatedSprite2D:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, -17)]
+}
+
+[sub_resource type="Animation" id="Animation_kssmf"]
+resource_name = "kick_anim"
+length = 0.1
+step = 0.01
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics/AnimatedSprite2D:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.03, 0.1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [0.0, -0.698132, 0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Graphics/AnimatedSprite2D:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.03, 0.1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0, -17), Vector2(5, -20), Vector2(0, -17)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_y8tsq"]
+_data = {
+&"RESET": SubResource("Animation_btd8x"),
+&"kick_anim": SubResource("Animation_kssmf")
+}
+
+[node name="hare" type="CharacterBody2D" unique_id=814336257 node_paths=PackedStringArray("stats") groups=["Player"]]
+collision_mask = 256
+motion_mode = 1
+platform_floor_layers = 4294967040
+script = ExtResource("1_yidy2")
+player_card = ExtResource("2_arl35")
+ps_card = ExtResource("3_snt4d")
+stats = NodePath("Stats")
+player_color = Color(0.7607843, 0.8745098, 0, 1)
+allow_kick = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1307134586]
+position = Vector2(0, -6)
+shape = SubResource("CircleShape2D_l238d")
+
+[node name="Follow" parent="." unique_id=670549565 instance=ExtResource("4_6k815")]
+
+[node name="Shadow" parent="." unique_id=1387453203 instance=ExtResource("5_mn0kt")]
+scale = Vector2(0.445313, 0.445313)
+
+[node name="GPUParticles2D" parent="." unique_id=1412145173 instance=ExtResource("6_xrfe3")]
+emitting = false
+
+[node name="Graphics" type="Node2D" parent="." unique_id=1473084420]
+unique_name_in_owner = true
+
+[node name="Halo" type="Sprite2D" parent="Graphics" unique_id=645409445]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_bopf6")
+position = Vector2(-10, -32)
+rotation = 0.47822
+scale = Vector2(0.254, 0.276)
+texture = ExtResource("7_ppu2u")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Graphics" unique_id=647433233]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_g7sfc")
+position = Vector2(0, -17)
+sprite_frames = SubResource("SpriteFrames_3w87u")
+animation = &"idle"
+autoplay = "idle"
+frame_progress = 0.9950304
+flip_h = true
+
+[node name="HaloRoot" type="Node2D" parent="Graphics/AnimatedSprite2D" unique_id=338191493]
+unique_name_in_owner = true
+position = Vector2(-9, -28)
+
+[node name="Hat" parent="Graphics/AnimatedSprite2D" unique_id=730565075 instance=ExtResource("10_paup8")]
+position = Vector2(1, -12)
+
+[node name="Gun" parent="Graphics" unique_id=1083175339 node_paths=PackedStringArray("stats") instance=ExtResource("11_bhnrg")]
+unique_name_in_owner = true
+position = Vector2(0, -8)
+stats = NodePath("../../Stats")
+bullet = ExtResource("12_p60mh")
+
+[node name="HurtBox" type="Area2D" parent="." unique_id=335900981 node_paths=PackedStringArray("body") groups=["PlayerBox"]]
+collision_layer = 2048
+collision_mask = 1160
+script = ExtResource("13_lbyav")
+body = NodePath("..")
+is_player = true
+
+[node name="HurtboxShape" type="CollisionShape2D" parent="HurtBox" unique_id=2002508033]
+position = Vector2(0, -8)
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_dqk1k")
+debug_color = Color(3.18866e-06, 0.0816588, 0.291816, 0.42)
+
+[node name="PickBox" type="Area2D" parent="." unique_id=725312478]
+collision_layer = 0
+collision_mask = 64
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PickBox" unique_id=311131848]
+position = Vector2(0, -11)
+shape = SubResource("CircleShape2D_4tsyc")
+debug_color = Color(0.724221, 0.462988, 0.32265, 0.42)
+
+[node name="FlyTimer" type="Timer" parent="." unique_id=591006984]
+wait_time = 0.3
+one_shot = true
+
+[node name="JumpTimer" type="Timer" parent="." unique_id=1588867141]
+wait_time = 0.1
+one_shot = true
+
+[node name="JumpCDTimer" type="Timer" parent="." unique_id=1835168107]
+one_shot = true
+
+[node name="RunSoundsTimer" type="Timer" parent="." unique_id=1538906868]
+wait_time = 0.2
+one_shot = true
+
+[node name="InvincibleFrame" type="Timer" parent="." unique_id=1779296011]
+wait_time = 0.5
+one_shot = true
+
+[node name="StateMachine" type="Node" parent="." unique_id=1506302176]
+script = ExtResource("14_f5ol8")
+
+[node name="Stats" type="Node" parent="." unique_id=2122875524]
+script = ExtResource("15_jc1rc")
+max_hp = 56
+max_ammo = 20
+bullet_damage = 3
+bullet_shoot_time = 240
+bullet_speed = 900
+bullet_recoil = 40
+bullet_knockback = 70
+reload_timer = 1.2
+
+[node name="RunSounds" type="AudioStreamPlayer2D" parent="." unique_id=302917896]
+process_mode = 3
+stream = ExtResource("16_2ft7p")
+volume_db = -6.0
+bus = &"SFX"
+
+[node name="JumpSounds" type="AudioStreamPlayer2D" parent="." unique_id=1309017338]
+process_mode = 3
+stream = ExtResource("17_y17eh")
+bus = &"SFX"
+
+[node name="OnHitSounds" type="AudioStreamPlayer2D" parent="." unique_id=449247452]
+process_mode = 3
+stream = ExtResource("18_im8ph")
+volume_db = 8.0
+bus = &"SFX"
+
+[node name="CoinSounds" type="AudioStreamPlayer2D" parent="." unique_id=882990323]
+process_mode = 3
+stream = ExtResource("19_1h51r")
+volume_db = -2.0
+bus = &"SFX"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=693419034]
+libraries/ = SubResource("AnimationLibrary_apy7m")
+
+[node name="GameUI" parent="." unique_id=1010579495 node_paths=PackedStringArray("player", "stats") instance=ExtResource("20_du1sv")]
+player = NodePath("..")
+stats = NodePath("../Stats")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1376125162]
+layer = 3
+
+[node name="PauseScreen" parent="CanvasLayer" unique_id=995634183 instance=ExtResource("21_5j4yq")]
+visible = false
+
+[node name="JumpCDBar" type="TextureProgressBar" parent="." unique_id=1083567095]
+visible = false
+z_index = 20
+offset_left = -16.0
+offset_top = 7.0
+offset_right = 16.0
+offset_bottom = 13.0
+size_flags_horizontal = 4
+max_value = 1.0
+step = 0.0
+value = 0.355
+texture_under = ExtResource("22_38jij")
+texture_progress = ExtResource("23_dq3lv")
+
+[node name="Camera2D" parent="." unique_id=721135821 instance=ExtResource("24_v3lyi")]
+offset = Vector2(0, -15)
+
+[node name="Kick" parent="." unique_id=684883691 node_paths=PackedStringArray("player") instance=ExtResource("25_i6sx7")]
+position = Vector2(0, -16)
+player = NodePath("..")
+
+[node name="AnimationPlayer2" type="AnimationPlayer" parent="." unique_id=1778237123]
+libraries/ = SubResource("AnimationLibrary_y8tsq")
+
+[node name="PlayerBuffManager" parent="." unique_id=1313312428 instance=ExtResource("26_x5uj0")]
+
+[node name="T_HP_Count" parent="." unique_id=1823330357 node_paths=PackedStringArray("stats") instance=ExtResource("27_qr5g1")]
+stats = NodePath("../Stats")
+
+[node name="HealthComponent" type="Node" parent="." unique_id=136328311 node_paths=PackedStringArray("stats", "hurt_box")]
+script = ExtResource("28_s7wd4")
+stats = NodePath("../Stats")
+hurt_box = NodePath("../HurtBox")
+
+[node name="HarePS" parent="." unique_id=69604359 node_paths=PackedStringArray("stats", "player", "gun") instance=ExtResource("29_hareps")]
+stats = NodePath("../Stats")
+player = NodePath("..")
+gun = NodePath("../Graphics/Gun")
+
+[connection signal="is_hurt" from="." to="." method="_on_is_hurt"]
+[connection signal="area_entered" from="PickBox" to="." method="_on_pick_box_area_entered"]
+[connection signal="timeout" from="JumpCDTimer" to="." method="_on_jump_cd_timer_timeout"]
+[connection signal="pick_up_range_changed" from="Stats" to="." method="_on_stats_pick_up_range_changed"]

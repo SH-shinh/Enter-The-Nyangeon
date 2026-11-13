@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/player/hare/hare_ps.gd" id="1_hare_ps"]
+
+[node name="HarePS" type="Node"]
+script = ExtResource("1_hare_ps")

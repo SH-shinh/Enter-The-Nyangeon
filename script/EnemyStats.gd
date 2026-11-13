@@ -53,6 +53,15 @@ var hurt_resis_add: int = 0
 var global_hurt_damage_mult: float = 1
 ## 异常伤害易伤乘区（Maki 颜料标记）：只作用于纯异常类伤害，由 HealthComponent 结算时直接读取。
 var anomaly_hurt_damage_mult: float = 1
+## 按伤害属性的易伤乘区（默认 1.0，加算字段；由 HealthComponent 的通用接口读取）。
+var bullet_hurt_damage_mult: float = 1
+var melee_hurt_damage_mult: float = 1
+var explosion_hurt_damage_mult: float = 1
+var fire_hurt_damage_mult: float = 1
+var poison_hurt_damage_mult: float = 1
+var chill_hurt_damage_mult: float = 1
+var shock_hurt_damage_mult: float = 1
+var equip_hurt_damage_mult: float = 1
 ## 感电伤害免疫：置 true 后 ShockChain 的感电伤害跳过本敌人（仍可被链选中/传导）。
 var shock_immune: bool = false
 var Enemy_Knockback_mult: float = 1
@@ -167,6 +176,27 @@ func get_body_base_ability():
 func _compute_knockback_resis() -> int:
 	var raw: float = BASE_KNOCKBACK_RESIS_PCT + base_knockback_resis * knockback_resis_mult
 	return DamageRouter.apply_knockback_resist(raw)
+
+func get_hurt_damage_mult(damage_type: Array) -> float:
+	var mult: float = 1.0
+	if damage_type.has(GameTags.BULLET_DAMAGE):
+		mult *= bullet_hurt_damage_mult
+	if damage_type.has(GameTags.MELEE_DAMAGE):
+		mult *= melee_hurt_damage_mult
+	if damage_type.has(GameTags.EXPLOSION_DAMAGE):
+		mult *= explosion_hurt_damage_mult
+	if damage_type.has(GameTags.FIRE_DAMAGE):
+		mult *= fire_hurt_damage_mult
+	if damage_type.has(GameTags.POISON_DAMAGE):
+		mult *= poison_hurt_damage_mult
+	if damage_type.has(GameTags.CHILL_DAMAGE):
+		mult *= chill_hurt_damage_mult
+	if damage_type.has(GameTags.SHOCK_DAMAGE):
+		mult *= shock_hurt_damage_mult
+	if damage_type.has(GameTags.EQUIP_DAMAGE):
+		mult *= equip_hurt_damage_mult
+	return mult
+
 
 func update_body_ability():
 	max_hp = clamp(base_max_hp * max_hp_mult, 1, 9223372036854775807)

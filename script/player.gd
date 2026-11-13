@@ -18,6 +18,8 @@ enum State {
 @export var hat_position: float = 13
 @export var halo_root_position: float = 17
 @export var gun_root: float = 9
+## 是否允许近战踢击。hare 用右键切换形态，需关闭以免同键触发。
+@export var allow_kick: bool = true
 @export var base_pitch_scale: float = 1.0
 
 var ACCELERATION: float
@@ -279,7 +281,7 @@ func _unhandled_input(event:InputEvent ) -> void:
 		if event.is_action_released("fire"):
 			gun.is_shoot = false
 		
-		if event.is_action_pressed("kick") and kick != null:
+		if event.is_action_pressed("kick") and kick != null and allow_kick:
 			kick.kick_start()
 		
 		if event.is_action_pressed("reload"):

@@ -1,8 +1,9 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://ui/society_card.gd" id="1_q2nc0"]
 [ext_resource type="Texture2D" uid="uid://b04jb7sdqj7kc" path="res://ui/card icon/Veritas_icon.png" id="2_2be0f"]
 [ext_resource type="PackedScene" path="res://scenes/player/chihiro/chihiro_card.tscn" id="3_chihiro"]
+[ext_resource type="PackedScene" path="res://scenes/player/hare/hare_card.tscn" id="4_hare"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2ai8v"]
 
@@ -248,6 +249,7 @@ theme = SubResource("Theme_o5njg")
 script = ExtResource("1_q2nc0")
 player_card_1 = "res://scenes/player/maki/maki_card.tscn"
 player_card_2 = "res://scenes/player/chihiro/chihiro_card.tscn"
+player_card_3 = "res://scenes/player/hare/hare_card.tscn"
 group_id = "VRT"
 
 [node name="Node2D" type="Node2D" parent="."]

@@ -18,6 +18,10 @@ extends SceneTree
 ##   scenes/effects/bullet_smoke_frames.res         子弹命中烟（0.2s / 30fps / 48×48 / 6 帧，1:1 像素）
 ##   scenes/effects/explosion_small_frames.res      小爆炸（0.55s / 30fps / 160×160，俯视）
 ##   scenes/effects/explosion_big_frames.res        大爆炸（0.85s / 30fps / 224×224，俯视）
+##   scenes/effects/hare_lock_in_frames.res          Hare 锁定入场（0.6s / 45fps / 64×64）
+##   scenes/effects/hare_lock_idle_frames.res        Hare 锁定呼吸（1.6s / 45fps / 64×64）
+##   scenes/effects/hare_lock_cursor_frames.res      Hare 准星框（1.6s / 45fps / 128×128）
+##   scenes/effects/hare_mark_idle_frames.res        Hare 标记红框（1.6s / 45fps / 64×64）
 ##
 ## 断言：
 ##   ① 不透明包围盒（画布 - 2px 余量）越界即失败；
@@ -51,6 +55,11 @@ const BBOX_LIMIT := {
 	"burning_aura_frames.res": 78,
 	"poison_aura_frames.res": 78,
 	"chihiro_static_burst_frames.res": 348,
+	# Hare 锁定框：画布 64，留 2px 余量
+	"hare_lock_in_frames.res": 62,
+	"hare_lock_idle_frames.res": 62,
+	"hare_lock_cursor_frames.res": 126,
+	"hare_mark_idle_frames.res": 62,
 	
 }
 
@@ -71,6 +80,7 @@ const ONESHOT := {
 	"bullet_smoke_frames.res": true,
 	"explosion_small_frames.res": true,
 	"explosion_big_frames.res": true,
+	"hare_lock_in_frames.res": true,
 	
 }
 
@@ -80,6 +90,9 @@ const MAKI_PAINT_RAMPS := [
 	["#0b1e2a", "#16414d", "#217a8c", "#3fb3c4", "#7bd9e6", "#aeeaf2", "#d8f6fa", "#ffffff"],
 	["#2a230b", "#4d3f14", "#8c7420", "#c4a434", "#e6c74d", "#f2dd7b", "#faf0b8", "#ffffff"],
 ]
+
+## Hare 标记红框 ramp（只改红框：去粉白，全部红色系）。
+const HARE_MARK_RAMP := ["#1a0505", "#3a0a0a", "#6e1212", "#a81c1c", "#e03a3a", "#ff4a3a", "#ff5a4a", "#ff8a7a"]
 
 
 func _initialize() -> void:
@@ -193,6 +206,21 @@ func _initialize() -> void:
 	var epa := Baker.save_sprite_frames(pa, "res://scenes/effects/poison_aura_frames.res", "combined")
 	print("BAKE dot_aura burning n=%d err=%s | poison n=%d err=%s" % [ba.n, str(ea), pa.n, str(epa)])
 
+	# Hare 锁定框（黄绿、无 actor）：入场扫描一次 + 呼吸循环
+	var lock_in: Script = load("res://scenes/effects/pixelfx_hare_lock_in.gd")
+	var lock_idle: Script = load("res://scenes/effects/pixelfx_hare_lock_idle.gd")
+	var lock_cursor: Script = load("res://scenes/effects/pixelfx_hare_lock_cursor.gd")
+	var bi: Dictionary = Baker.bake(lock_in, {"seed": 22.0})
+	var ti := _trim_tail(bi)
+	var ei := Baker.save_sprite_frames(bi, "res://scenes/effects/hare_lock_in_frames.res", "combined")
+	var bid: Dictionary = Baker.bake(lock_idle, {"seed": 22.0})
+	var eid := Baker.save_sprite_frames(bid, "res://scenes/effects/hare_lock_idle_frames.res", "combined")
+	var bc: Dictionary = Baker.bake(lock_cursor, {"seed": 22.0})
+	var ec := Baker.save_sprite_frames(bc, "res://scenes/effects/hare_lock_cursor_frames.res", "combined")
+	var bm: Dictionary = Baker.bake(lock_idle, {"seed": 22.0, "palette": HARE_MARK_RAMP})
+	var em := Baker.save_sprite_frames(bm, "res://scenes/effects/hare_mark_idle_frames.res", "combined")
+	print("BAKE hare_lock in n=%d trim=%d err=%s | idle n=%d err=%s | cursor n=%d err=%s | mark n=%d err=%s" % [bi.n, ti, str(ei), bid.n, str(eid), bc.n, str(ec), bm.n, str(em)])
+
 	print("BAKE ring=%d plus_small=%d plus_big=%d aura=%d bubbles=%d frenzy=%d | serina halo=%d burst=%d dust=%d beam_in=%d heal=%d (trim %d/%d/%d/%d) | chill=%d trim=%d | errs=%s | ms=%d" % [
 		b1.n, b2.n, b3.n, b4.n, b5.n, b6.n, b7.n, b8.n, b9.n, b10.n, b11.n,
 		t8, t9, t10, t11, b12.n, t12,
@@ -212,6 +240,10 @@ func _initialize() -> void:
 		[bx2, "explosion_big_frames.res"],
 		[ba, "burning_aura_frames.res"],
 		[pa, "poison_aura_frames.res"],
+		[bi, "hare_lock_in_frames.res"],
+		[bid, "hare_lock_idle_frames.res"],
+		[bc, "hare_lock_cursor_frames.res"],
+		[bm, "hare_mark_idle_frames.res"],
 	]:
 		ok = _check_frames(pair[0], pair[1]) and ok
 	for pair in maki_checks:

@@ -21,6 +21,9 @@ func _enter_tree() -> void:
 # 懒初始化（类型化 Dictionary 不能存 null，故不加类型标注）。
 var _hit_contacts = null
 
+## 只命中指定目标（null = 不限制）。比较 HurtBox 的 owner（敌人根），为空时退回父节点。
+var required_target: Node = null
+
 # 自管理命中需能检测到所有「直击可命中」的 HurtBox 层：
 # 敌 HurtBox = 15(16384)、可破坏道具 PropHurtBox = 19(262144)。
 # 在代码里并入，避免逐个子弹场景改 collision_mask。
@@ -38,6 +41,8 @@ func _setup_self_hits() -> void:
 func _on_self_hit_area_entered(area: Area2D) -> void:
 	if not (area is HurtBox):
 		return
+	if not _is_allowed_hit_target(area):
+		return
 	if _hit_contacts == null:
 		_hit_contacts = {}
 	if _hit_contacts.has(area):
@@ -49,6 +54,15 @@ func _on_self_hit_area_entered(area: Area2D) -> void:
 func _on_self_hit_area_exited(area: Area2D) -> void:
 	if _hit_contacts != null:
 		_hit_contacts.erase(area)
+
+
+func _is_allowed_hit_target(area: Area2D) -> bool:
+	if required_target == null:
+		return true
+	var owner_node: Node = area.owner
+	if owner_node == null:
+		owner_node = area.get_parent()
+	return owner_node == required_target
 
 func _clear_self_hits() -> void:
 	if _hit_contacts != null:

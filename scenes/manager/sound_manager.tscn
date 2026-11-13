@@ -227,6 +227,10 @@
 [ext_resource type="AudioStream" uid="uid://cslaxhxb4sgbx" path="res://sounds/voice/chihiro/CH0160_MemorialLobby_1.ogg" id="188_oi1kr"]
 [ext_resource type="AudioStream" uid="uid://bsbf17v5k6c4a" path="res://sounds/voice/chihiro/CH0160_Cafe_monolog_2.ogg" id="189_ahekd"]
 [ext_resource type="AudioStream" uid="uid://62r2a7x2m55h" path="res://sounds/voice/chihiro/CH0160_Cafe_monolog_3.ogg" id="190_48n30"]
+[ext_resource type="AudioStream" uid="uid://dtc5uphvw05ce" path="res://sounds/night_vision.wav" id="200_night"]
+[ext_resource type="AudioStream" uid="uid://l3u4a2uv4pik" path="res://sounds/night_vision_reverse.wav" id="201_nightrev"]
+[ext_resource type="AudioStream" uid="uid://dwgvlmdqky5xi" path="res://sounds/menu-selection-click.wav" id="202_menuclick"]
+[ext_resource type="AudioStream" uid="uid://v2t5v1goocfk" path="res://sounds/laser3.wav" id="203_laser3"]
 
 [sub_resource type="Animation" id="Animation_4rqlr"]
 resource_name = "1s"
@@ -286,6 +290,26 @@ process_mode = 3
 script = ExtResource("1_fvbol")
 
 [node name="SFX" type="Node" parent="." unique_id=672496890]
+
+[node name="HareLockIn" type="AudioStreamPlayer" parent="SFX" unique_id=657841779]
+stream = ExtResource("200_night")
+volume_db = 5.0
+pitch_scale = 2.0
+bus = &"SFX"
+
+[node name="HareLockOut" type="AudioStreamPlayer" parent="SFX" unique_id=922388062]
+stream = ExtResource("201_nightrev")
+pitch_scale = 2.5
+bus = &"SFX"
+
+[node name="HareLockOn" type="AudioStreamPlayer" parent="SFX" unique_id=103779517]
+stream = ExtResource("202_menuclick")
+bus = &"SFX"
+
+[node name="Laser3" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("203_laser3")
+volume_db = -6.0
+bus = &"SFX"
 
 [node name="EMP_blast" type="AudioStreamPlayer" parent="SFX" unique_id=535393]
 stream = ExtResource("184_emp")

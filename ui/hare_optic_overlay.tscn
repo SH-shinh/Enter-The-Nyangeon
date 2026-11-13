@@ -1,0 +1,36 @@
+[gd_scene format=3 uid="uid://dhbte7x5ud2y8"]
+
+[ext_resource type="Script" uid="uid://csejinmbhvfmr" path="res://ui/hare_optic_overlay.gd" id="1_script"]
+[ext_resource type="Shader" uid="uid://faxgkam8jgei" path="res://shaders/hare_optic.gdshader" id="2_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_optic"]
+shader = ExtResource("2_shader")
+shader_parameter/resolution = Vector2(640, 360)
+shader_parameter/open = 0.0
+shader_parameter/tint = Vector3(0.72, 1, 0.3)
+shader_parameter/tint_strength = 0.800000038
+shader_parameter/scanline_strength = 0.6000000285
+shader_parameter/vignette_strength = 0.800000038
+shader_parameter/aberration = 1.0
+shader_parameter/sweep_speed = 0.35
+shader_parameter/edge_inner = 0.0
+shader_parameter/edge_outer = 0.78
+shader_parameter/rain_strength = 1.0
+shader_parameter/rain_speed = 0.5
+shader_parameter/rain_density = 0.55
+
+[node name="HareOpticOverlay" type="CanvasLayer" unique_id=1299801497]
+layer = 4
+script = ExtResource("1_script")
+
+[node name="BackBufferCopy" type="BackBufferCopy" parent="." unique_id=75425688]
+visible = false
+copy_mode = 2
+
+[node name="Filter" type="ColorRect" parent="." unique_id=196994074]
+visible = false
+material = SubResource("ShaderMaterial_optic")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2

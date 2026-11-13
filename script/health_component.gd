@@ -267,6 +267,7 @@ func _resolve_damage(data: HealthChangeData, raw: int, emit_proc: bool, apply_mo
 		result = int(result * damage_multiplier)
 	# Maki 被动「异常伤害可暴击」：纯元素/DOT 伤害统一在最终数值口掷暴击（真伤同样适用）。
 	result = _apply_anomaly_vulnerability(data, result)
+	result = _apply_type_vulnerability(data, result)
 	result = _apply_anomaly_crit(data, result)
 	# 订阅者临时追加的修饰只属于当前命中，不能累积到穿透弹的下个目标。
 	data.damage_modifier.assign(original_modifiers)
@@ -282,6 +283,16 @@ func _apply_anomaly_vulnerability(data: HealthChangeData, result: int) -> int:
 	if not AnomalyDamage.is_anomaly_damage(dmg):
 		return result
 	var mult: float = float(stats.anomaly_hurt_damage_mult)
+	if mult <= 1.0:
+		return result
+	return maxi(1, int(round(float(result) * mult)))
+
+# 按伤害属性易伤（子弹/近战/爆炸/燃烧/中毒/恶寒/感电/装备）：每次命中独立乘算；真伤同样适用。
+func _apply_type_vulnerability(data: HealthChangeData, result: int) -> int:
+	var dmg := data as DamageData
+	if dmg == null:
+		return result
+	var mult: float = stats.get_hurt_damage_mult(dmg.damage_type)
 	if mult <= 1.0:
 		return result
 	return maxi(1, int(round(float(result) * mult)))

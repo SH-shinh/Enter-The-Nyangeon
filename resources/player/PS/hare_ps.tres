@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PSCard" format=3]
+
+[ext_resource type="Script" path="res://resources/player/PS/ps_card.gd" id="1_hare_ps"]
+[ext_resource type="Texture2D" path="res://sprites/weapon/auto_aimer.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_hare_ps")
+weapon_icon = ExtResource("2_icon")
+t_level = Array[String](["初始拥有3架攻击无人机，使用近战开启锁定模式，锁定模式命中敌人可叠加标记，提高无人机性能。", "+1攻击无人机，锁定瞄准框扩大并提高可锁定的敌人数量，标记的叠加上限提高，重复命中已标记敌人也可为自身叠加标记。", "+1攻击无人机，锁定瞄准框扩大并提高可锁定的敌人数量，标记的叠加上限提高。", "+1攻击无人机，锁定瞄准框扩大并可锁定范围内所有敌人，标记的叠加上限提高，重复命中叠加标记需要的次数减少。"])
