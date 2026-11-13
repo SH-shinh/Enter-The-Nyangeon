@@ -4390,3 +4390,10 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - Source / 来源: user
 - Date / 日期: 2026-11-13
 
+
+### [UI] 升级卡多行词条不要用 max_lines_visible / 省略号截断
+- Evidence / 证据: `ui/ability_upgrade_card.tscn` 的 `DescriptionLabel/Forward/Negative`；`resources/upgrades/*.tres` 的 `forward`/`negative`/`description` 是显式换行多行字符串（如 `aether_essence.tres` 的 `forward = "独特\n子弹每造成一次命中，提高该子弹5%伤害"`）；`tests/test_ui_ux_regressions.gd:_check_card_font`。
+- Notes / 说明: `max_lines_visible` 按渲染行数截断，`text_overrun_behavior = 3` 会加省略号；词条常是「独特 + 说明」两行，设 1 行会把说明吃掉。处理换行词条时不要设行数上限/省略号，交给 `auto_text.gd` 按预算缩字号，超出卡片高度用 `SHOW_NEVER` 拖动兜底；`base_size_y` 预算要给足（描述 72、Forward/Negative 30）。
+- Source / 来源: user
+- Date / 日期: 2026-11-14
+

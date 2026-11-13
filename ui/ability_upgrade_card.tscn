@@ -628,12 +628,10 @@ text = "芭娜娜！
 1
 "
 autowrap_mode = 1
-max_lines_visible = 6
-text_overrun_behavior = 3
 script = ExtResource("7_fit")
 base_font_size = 10
 base_size_x = 124.0
-base_size_y = 88.0
+base_size_y = 72.0
 min_font_size = 7
 
 [node name="Forward" type="Label" parent="ContentScroll/VBoxContainer" unique_id=1739548298]
@@ -648,12 +646,10 @@ theme_override_fonts/font = ExtResource("2_h2sd1")
 theme_override_font_sizes/font_size = 10
 text = "+99999999属性"
 autowrap_mode = 1
-max_lines_visible = 1
-text_overrun_behavior = 3
 script = ExtResource("7_fit")
 base_font_size = 10
 base_size_x = 124.0
-base_size_y = 20.0
+base_size_y = 30.0
 min_font_size = 7
 
 [node name="Negative" type="Label" parent="ContentScroll/VBoxContainer" unique_id=2115278099]
@@ -668,12 +664,10 @@ theme_override_fonts/font = ExtResource("2_h2sd1")
 theme_override_font_sizes/font_size = 10
 text = "-99999999属性"
 autowrap_mode = 1
-max_lines_visible = 1
-text_overrun_behavior = 3
 script = ExtResource("7_fit")
 base_font_size = 10
 base_size_x = 124.0
-base_size_y = 20.0
+base_size_y = 30.0
 min_font_size = 7
 
 [node name="Line2D" type="Line2D" parent="." unique_id=1870075172]
