@@ -253,6 +253,7 @@
 
 - **身份键 = `id`/`*_id` 字符串，通常等于 `.tres` 文件名**（`resources/enemy/sweeper.tres` → `id="sweeper"`）。
 - 显示文本两条路：① 直接内嵌字符串（`name="负债buff"`）；② 按 **`<id>_name` / `<id>_description` / `<id>_forward` / `<id>_negative`** 本地化键约定（`ui/ability_upgrade_card.gd:75-78`）。
+- 升级卡长文本（2026-11-13，用户要求）：`ui/ability_upgrade_card.tscn` 的 `ContentScroll` 设 `vertical_scroll_mode = 3`（`SCROLL_MODE_SHOW_NEVER`）隐藏滚动条、滚动保留作兜底，根 `AbilityUpgradeCard` 与 `ContentScroll` 都设 `clip_contents = true`；`NameLabel/DescriptionLabel/Forward/Negative` 挂 `script/auto_text.gd`（标题 `base_size_y=44`、`min_font_size=12`；正文 `base_font_size=10`、`base_size_x=124`、`base_size_y=88/20/20`、`min_font_size=7`），字数过多时缩字号而不是滚动。另用 `max_lines_visible`（标题 2 / 描述 6 / 加成 1）+ `text_overrun_behavior = 3`（省略号）限制极端超长文本，避免撑高卡片或画到卡外。
 - `.tres` 结构：`[gd_resource type script_class load_steps format uid]` → `[ext_resource]` → `[sub_resource]` → `[resource]`（`load_steps = 1 + #ext + #sub`）。见 `CONVENTIONS.md` §3。
 - 加载方式：`@export` 数组（编辑器中配置）、`preload`、按 id 动态 `load("res://resources/<type>/<id>.tres")`；`ui/enemy_test_menu.gd:43` 经 `ModManager.get_content("enemies")` 合并 Mod 注册内容（目录扫描逻辑已移除）。**buff 无目录扫描**，一律显式引用。
 

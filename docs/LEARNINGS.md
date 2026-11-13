@@ -4383,3 +4383,10 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - Source / 来源: code
 - Date / 日期: 2026-11-12
 
+
+### [UI] 长文本卡片不要靠 ScrollContainer 滚动，挂 auto_text 自动缩放并禁用滚动
+- Evidence / 证据: `ui/ability_upgrade_card.tscn` 的 `ContentScroll`（`ScrollContainer` + `script/ScrollBox.gd`，`vertical_scroll_mode` 默认 auto）与 `DescriptionLabel/Forward/Negative`（原 font_size 10、未挂 `auto_text.gd`）；`NameLabel` 已挂 `script/auto_text.gd`（`base_size_y=44`、`min_font_size=12`）；`tests/test_ui_ux_regressions.gd:_check_card_font`。
+- Notes / 说明: ① 用户要求「字数过多时不出现滚动条、自动缩放」：把 `ScrollContainer.vertical_scroll_mode` 设为 `3`（`SCROLL_MODE_SHOW_NEVER`，隐藏滚动条但保留滚动兜底），并给每个可能变长的 Label 挂 `script/auto_text.gd`；② 各 Label 的 `base_size_y` 预算总和要 ≤ 卡片高度（本卡 253：标题 44 + 图标 70 + 小字 7 + 正文 88 + Forward/Negative 各 20 ≈ 249）；③ 禁用滚动后极端超长文本会被 `ScrollContainer` 裁切，不再提供滚动——这是用户明确选择的取舍；④ `ScrollBox.gd` 只负责拖动，不会自动出现滚动条，滚动条来自 `ScrollContainer` 的 `vertical_scroll_mode` 默认 auto；⑤ 改完同步 `_check_card_font`：断言禁滚动 + 长描述字号缩小（<10、≥7），去掉「可滚动查看」。
+- Source / 来源: user
+- Date / 日期: 2026-11-13
+

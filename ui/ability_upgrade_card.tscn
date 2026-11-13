@@ -422,6 +422,7 @@ shader_parameter/tint = Color(1, 1, 1, 1)
 
 [node name="AbilityUpgradeCard" type="PanelContainer" unique_id=1587352540]
 process_mode = 3
+clip_contents = true
 custom_minimum_size = Vector2(142, 253)
 offset_left = -6.0
 offset_top = -11.0
@@ -565,6 +566,8 @@ end_cap_mode = 2
 layout_mode = 2
 mouse_filter = 1
 horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
+clip_contents = true
 script = ExtResource("8_scroll")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="ContentScroll" unique_id=77274953]
@@ -587,6 +590,8 @@ theme_override_font_sizes/font_size = 16
 text = "物品名称"
 horizontal_alignment = 1
 autowrap_mode = 3
+max_lines_visible = 2
+text_overrun_behavior = 3
 script = ExtResource("7_fit")
 base_font_size = 16
 base_size_x = 124.0
@@ -623,6 +628,13 @@ text = "芭娜娜！
 1
 "
 autowrap_mode = 1
+max_lines_visible = 6
+text_overrun_behavior = 3
+script = ExtResource("7_fit")
+base_font_size = 10
+base_size_x = 124.0
+base_size_y = 88.0
+min_font_size = 7
 
 [node name="Forward" type="Label" parent="ContentScroll/VBoxContainer" unique_id=1739548298]
 layout_mode = 2
@@ -636,6 +648,13 @@ theme_override_fonts/font = ExtResource("2_h2sd1")
 theme_override_font_sizes/font_size = 10
 text = "+99999999属性"
 autowrap_mode = 1
+max_lines_visible = 1
+text_overrun_behavior = 3
+script = ExtResource("7_fit")
+base_font_size = 10
+base_size_x = 124.0
+base_size_y = 20.0
+min_font_size = 7
 
 [node name="Negative" type="Label" parent="ContentScroll/VBoxContainer" unique_id=2115278099]
 layout_mode = 2
@@ -649,6 +668,13 @@ theme_override_fonts/font = ExtResource("2_h2sd1")
 theme_override_font_sizes/font_size = 10
 text = "-99999999属性"
 autowrap_mode = 1
+max_lines_visible = 1
+text_overrun_behavior = 3
+script = ExtResource("7_fit")
+base_font_size = 10
+base_size_x = 124.0
+base_size_y = 20.0
+min_font_size = 7
 
 [node name="Line2D" type="Line2D" parent="." unique_id=1870075172]
 texture_repeat = 2
