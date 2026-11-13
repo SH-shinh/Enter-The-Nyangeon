@@ -45,7 +45,7 @@ const SHOCK_DURATION: float = 4.0
 const PAINT_ENERGY_MAX: int = 50
 ## 喷涂层半径（像素）：以 Megu 火场为基准后按反馈再缩 30%（逻辑 68 / 视觉半径 56）。
 const PAINT_AOE_RADIUS: float = 68.0
-const PAINT_THROW_DISTANCE: float = 90.0
+const PAINT_THROW_DISTANCE: float = 40.0
 ## 敌人站在颜料上每 10 个 10Hz tick（1 秒）+1 层。
 const PAINT_MARK_TICK: int = 10
 ## 标记层数上限与持续时间：常驻改为 2 秒；站在颜料上时每 10Hz `refresh_buff` 续时长（不加层），
