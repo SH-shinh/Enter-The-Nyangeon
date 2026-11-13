@@ -14,6 +14,8 @@ extends Node2D
 @onready var shoot_position = $ShootPosition
 
 var damage_data: DamageData
+## 分裂/子代是否按父子弹快照继承伤害（shrapnel_bullet 使用）。
+var snapshot_damage: bool = false
 var crosshair_pos: Vector2
 var player: Node
 
@@ -71,17 +73,25 @@ func _configure_bullet(node: Node) -> void:
 	player = _ensure_player()
 	if player == null:
 		return
-	node.speed = bullet_speed
-	node.penetrate = bullet_penetrate
-	node.collision_num = collision_num
-	node.kill_time = player.stats.bullet_kill_time * 10
-	if bullet_can_r == true:
+	# 字段守卫：允许继承非标准 PlayerBullet 场景（缺字段时不报错）。
+	if node.get("speed") != null:
+		node.speed = bullet_speed
+	if node.get("penetrate") != null:
+		node.penetrate = bullet_penetrate
+	if node.get("collision_num") != null:
+		node.collision_num = collision_num
+	if node.get("kill_time") != null:
+		node.kill_time = player.stats.bullet_kill_time * 10
+	if bullet_can_r == true and node.get("can_r") != null:
 		node.can_r = true
 		node.target_position = crosshair_pos
 
 func _configure_bullet_multi(node: Node) -> void:
 	if damage_data != null:
 		node.damage_data = damage_data.duplicate(true)
+		if node.damage_data != null:
+			# 不继承父子弹的 on-hit 闭包，避免子代命中误改父子弹/重复触发。
+			node.damage_data.on_damage_dealt.clear()
 	_configure_bullet(node)
 
 func _post_bullet(node: Node) -> void:
@@ -92,3 +102,14 @@ func _post_bullet(node: Node) -> void:
 		for i in flags:
 			player.flags.append(i)
 	GameEvents.emit_player_shot_position(shoot_position.global_position, node)
+	# 快照继承：覆盖回父子弹的实际伤害/暴击与标签（emit 会按玩家当前 stats 重算 base）。
+	if snapshot_damage and damage_data != null and node.get("damage_data") != null:
+		var dd = node.damage_data
+		dd.base_damage = damage_data.base_damage
+		dd.is_crit = damage_data.is_crit
+		for t in damage_data.damage_type:
+			if not dd.damage_type.has(t):
+				dd.damage_type.append(t)
+		for t in damage_data.source_type:
+			if not dd.source_type.has(t):
+				dd.source_type.append(t)

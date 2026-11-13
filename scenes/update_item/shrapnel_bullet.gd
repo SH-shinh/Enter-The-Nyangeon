@@ -35,6 +35,15 @@ func _apply_effect(quantity: int):
 	equip_luck += 10
 
 func shoot_bullet(_final_damage: int, damage_data: DamageData, body_path: NodePath):
+	if damage_data == null:
+		return
+	# 联机归属：只处理本机归属的伤害，避免 host 端因队友命中误触发本机分裂。
+	var op: int = int(damage_data.owner_peer)
+	if op != 0:
+		if multiplayer == null or multiplayer.multiplayer_peer == null:
+			return
+		if op != multiplayer.get_unique_id():
+			return
 	if can_shoot == true and damage_data.damage_type.has(GameTags.BULLET_DAMAGE) and damage_data.source_type.has(GameTags.PLAYER) and !damage_data.flags.has("shrapnel_bullet"):
 		var luck = randf_range(0, 200)
 		if luck < (player.stats.luck + equip_luck):
@@ -43,9 +52,20 @@ func shoot_bullet(_final_damage: int, damage_data: DamageData, body_path: NodePa
 				return
 			can_shoot = false
 			launcher.flags.append("shrapnel_bullet")
+			launcher.set("damage_data", damage_data)
+			launcher.set("snapshot_damage", true)
 			launcher.rotation = randf_range(-PI, PI)
-			launcher.bullet = player.gun.bullet
-			launcher.pool_id = player.gun.bullet_pool_id
+			# 优先使用触发子弹的场景/池（仅 PlayerBullet 系；其它场景回退枪子弹）。
+			var parent_scene: PackedScene = null
+			var parent_pool: String = ""
+			if damage_data.source_node != NodePath():
+				var parent := get_tree().root.get_node_or_null(damage_data.source_node)
+				if parent is PlayerBullet and parent.scene_file_path != "":
+					parent_scene = load(parent.scene_file_path) as PackedScene
+					if parent.get("pool_id") != null:
+						parent_pool = str(parent.get("pool_id"))
+			launcher.bullet = parent_scene if parent_scene != null else player.gun.bullet
+			launcher.pool_id = parent_pool if parent_pool != "" else player.gun.bullet_pool_id
 			launcher.bullet_count = 4
 			launcher.bullet_arc = 270
 			launcher.bullet_speed = player.stats.bullet_speed
