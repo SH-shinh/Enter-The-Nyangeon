@@ -26,6 +26,15 @@ var on_round_end: bool = false
 
 var selected_mult: float = 6
 
+## 无尽刷新费用软拐点：原始价超过该值后按对数曲线放缓（<= 0 关闭，回到旧曲线）
+@export var endless_refresh_soft_cap: int = 5000
+## 软拐点弯曲强度：越小越平缓，越大越接近旧曲线
+@export var endless_refresh_soft_scale: float = 500.0
+
+# 未压缩的刷新价（普通模式与显示值恒等；仅无尽超过拐点后才有差异）
+var refresh_cost_raw: float = 2.0
+var now_refresh_cost_raw: float = 2.0
+
 func _ready():
 	boss_controller = BossRoundController.new()
 	boss_controller.name = "BossRoundController"
@@ -39,6 +48,23 @@ func _ready():
 
 func is_game_over_true(_player_dead: bool):
 	is_game_over = true
+
+func is_endless_mode() -> bool:
+	return PlayerData.game_mode.has("endless") or is_game_mode_2
+
+## 未压缩的每回合刷新基础价（保留旧表达式，未超拐点时数值逐位不变）
+func _raw_refresh_cost() -> float:
+	return float(pow(round_mult, 1)) + float(pow(round_mult, 1.5)) * float(pow(round_mult, 1.5))
+
+## 显示/实际收费的价格：普通模式恒等；无尽超过软拐点后按对数放缓
+func _soft_refresh_cost(value: float) -> int:
+	if not is_endless_mode() or endless_refresh_soft_cap <= 0:
+		return int(value)
+	if value <= float(endless_refresh_soft_cap):
+		return int(value)
+	var scale := maxf(1.0, endless_refresh_soft_scale)
+	var excess := value - float(endless_refresh_soft_cap)
+	return int(float(endless_refresh_soft_cap) + scale * log(1.0 + excess / scale))
 
 func round_num_count(round_num: int):
 	now_round_num = round_num
@@ -62,12 +88,14 @@ func emit_player_portal():
 	player_portal.emit()
 
 func selected_cost_count():
-	now_refresh_cost += int(selected_mult * round_mult + now_refresh_cost)
+	now_refresh_cost_raw += float(int(selected_mult * round_mult + now_refresh_cost))
+	now_refresh_cost = _soft_refresh_cost(now_refresh_cost_raw)
 	refresh_cost_add_num += 0.2
 	GameEvents.emit_refresh_cost_count(now_refresh_cost)
 
 func refresh_cost_count():
-	now_refresh_cost += int(refresh_cost * refresh_cost_add)
+	now_refresh_cost_raw += float(int(float(refresh_cost) * refresh_cost_add))
+	now_refresh_cost = _soft_refresh_cost(now_refresh_cost_raw)
 	refresh_cost_add_num += 0.2
 	refresh_cost_add = refresh_cost_add_num * refresh_cost_add_num * refresh_cost_add_num
 	GameEvents.emit_refresh_cost_count(now_refresh_cost)
@@ -79,6 +107,8 @@ func first_round_start():
 	selected_mult = (float(max_round) / 20.0) * 6
 	refresh_cost = 2
 	now_refresh_cost = refresh_cost
+	refresh_cost_raw = 2.0
+	now_refresh_cost_raw = 2.0
 	refresh_cost_add = 0
 	refresh_cost_add_num = 0
 	selected_cost_add = 0
@@ -93,7 +123,9 @@ func _on_round_start():
 	on_round_end = false
 	
 	round_mult += 0.2
-	refresh_cost = int(float(pow(round_mult,1)) + float(pow(round_mult,1.5)) * float(pow(round_mult,1.5)))
+	refresh_cost_raw = _raw_refresh_cost()
+	refresh_cost = _soft_refresh_cost(refresh_cost_raw)
+	now_refresh_cost_raw = refresh_cost_raw
 	now_refresh_cost = refresh_cost
 	refresh_cost_add = 0
 	refresh_cost_add_num = 0
