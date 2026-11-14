@@ -1,14 +1,14 @@
-[gd_resource type="Resource" script_class="CharacterCard" format=3]
+[gd_resource type="Resource" script_class="CharacterCard" format=3 uid="uid://msojdut0nsau"]
 
-[ext_resource type="Texture2D" path="res://ui/school/MILLENNIUM_icon.png" id="1_school"]
-[ext_resource type="Script" path="res://resources/shop/character/character_card.gd" id="2_script"]
-[ext_resource type="Texture2D" path="res://ui/weapon/AR_icon.png" id="3_weapon"]
+[ext_resource type="Texture2D" uid="uid://ca7j4dmko8tds" path="res://ui/school/MILLENNIUM_icon.png" id="1_school"]
+[ext_resource type="Script" uid="uid://c0xho6kcxb134" path="res://resources/shop/character/character_card.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://csb12yhlnb4sr" path="res://ui/weapon/AR_icon.png" id="3_weapon"]
 
 [resource]
 script = ExtResource("2_script")
 cost = 6
-name_1 = "HARE"
-name_2 = ""
+name_1 = "OMAGARI"
+name_2 = "HARE"
 character_sprite_path = "res://sprites/player/hare/hare_picture.png"
 weapon_name = "AUTO AIMER"
 weapon_type_name = "AR"

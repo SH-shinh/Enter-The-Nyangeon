@@ -5,7 +5,7 @@
 
 [resource]
 script = ExtResource("1_player")
-name = "HARE"
+name = "OMAGARI HARE"
 weapon = "AUTO AIMER"
 weapon_type = "AR"
 sprite_path = "res://sprites/player/hare/hare_picture.png"
