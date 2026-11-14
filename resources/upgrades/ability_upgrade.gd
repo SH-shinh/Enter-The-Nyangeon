@@ -41,6 +41,9 @@ enum ItemType {
 @export_flags("弹道", "爆炸", "装备", "概率", "暴击", "燃烧", "中毒", "恶寒", "防御", "生命", "成长", "召唤", "近战", "速度", "护甲", "金币", "策反") var item_tags: int = 0
 @export var tags: Array[String]
 @export var weight: float = 1.0  # 基础权重
+## 是否走「防御门控」（首发不可抽 → 随回合累积 → 抽中清零 → 拥有数封顶）。
+## 默认按 DEFENSE 标签统一门控；混搭道具若要豁免，在对应 .tres 里置 false。
+@export var defense_weight_gated: bool = true
 
 func has_tag(tag: ItemType) -> bool:
 	return (item_tags & tag) != 0

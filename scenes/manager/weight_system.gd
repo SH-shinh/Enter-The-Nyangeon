@@ -14,14 +14,25 @@ class AliasMethod:
 		probabilities = []
 		alias = []
 		
-		# 1. 归一化权重
+		if n <= 0:
+			return
+		
+		# 1. 归一化权重（总权重为 0 时退化为等概率，避免除零）
 		var sum = 0.0
 		for w in weights:
-			sum += w
+			sum += maxf(0.0, w)
+		
+		if sum <= 0.0:
+			probabilities.resize(n)
+			alias.resize(n)
+			for i in n:
+				probabilities[i] = 1.0
+				alias[i] = i
+			return
 		
 		var normalized = []
 		for w in weights:
-			normalized.append(w * float(n) / sum)
+			normalized.append(maxf(0.0, w) * float(n) / sum)
 		
 		# 2. 初始化数组
 		probabilities.resize(n)
@@ -65,6 +76,8 @@ class AliasMethod:
 			probabilities[s] = 1.0
 	
 	func next_index() -> int:
+		if n <= 0:
+			return -1
 		var i = randi() % n
 		var r = randf()
 		
@@ -146,16 +159,23 @@ class WeightGroup:
 		if items.size() == 0:
 			return null
 		
-		if use_alias:
+		if use_alias and alias_method != null:
 			var index = alias_method.next_index()
+			if index < 0 or index >= items.size():
+				return null
 			return items[index]
 		else:
 			# 简单线性选择
-			var r = randf_range(0.0, total_weight)
+			var total := 0.0
+			for weight in weights:
+				total += maxf(0.0, float(weight))
+			if total <= 0.0:
+				return items[randi() % items.size()]
+			var r = randf_range(0.0, total)
 			var cumulative = 0.0
 			
 			for i in range(items.size()):
-				cumulative += weights[i]
+				cumulative += maxf(0.0, float(weights[i]))
 				if r <= cumulative:
 					return items[i]
 			

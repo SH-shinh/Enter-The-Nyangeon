@@ -4542,3 +4542,21 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - Notes / 说明: `max_lines_visible` 按渲染行数截断，`text_overrun_behavior = 3` 会加省略号；词条常是「独特 + 说明」两行，设 1 行会把说明吃掉。处理换行词条时不要设行数上限/省略号，交给 `auto_text.gd` 按预算缩字号，超出卡片高度用 `SHOW_NEVER` 拖动兜底；`base_size_y` 预算要给足（描述 72、Forward/Negative 30）。
 - Source / 来源: user
 - Date / 日期: 2026-11-14
+
+### [Upgrade] 防御道具「0 起步」是设计意图，但原实现既没拦住首回合、也没实现拥有上限
+- Evidence / 证据: `scenes/manager/item_weight_manager.gd:188-266`（`calculate_special_rules` 里的防御门控乘区、`defense_gate()`、`count_owned_defense()`）；`scenes/manager/upgrade_manager.gd:65-83`（`_reset_run_state`、`round_bouns_upgrade` 调 `advance_round()`）；`resources/upgrades/ability_upgrade.gd`（`defense_weight_gated`）；`tests/item_weight_distribution_checks.gd:_test_defense_gate`。
+- Notes / 说明: 用户设计意图（来源：user）= 防御道具**首发回合不可抽**、随回合累积权重、**抽中一件后累积清零**、且**限制玩家可拥有件数**（性能强）。原实现只有「抽中清零」是对的：① `for tag in item.item_tags` 迭代的是整数 `0..item_tags-1` 而非位标志（GDScript 允许 `for i in N`，语义是 0..N-1），标签均值因此恒 ≈1.0，`tag_weights[DEFENSE] = 0.0` 从未生效；② `defense_bonus` 每回合先 +0.3，再以 `multiplier +=` 加法进入乘区 → 首个三选一的防御道具反而 ×1.3，与「首发不可抽」相反。**通用教训**：以位标志字段为键查表要用 `item.get_tag_list()`（按 `has_tag` 拆位），不要 `for x in bitfield`（会静默给出错误结果）；「0 起步的累积权重」必须写成**乘区门控**，加法区会被任意其它乘数（尤其 0）吞掉。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-14
+
+### [Upgrade] 历史乘区逻辑写在 for 循环内 → 倍数随历史条数指数放大
+- Evidence / 证据: `scenes/manager/item_weight_manager.gd:156-186`（`calculate_history_multiplier`）；修复前 20 条历史 × 1 标签 = 40.7×、× 2 标签 = 204.9×，再叠 `refresh_mult=0.331`（刷新 3 次）= **19082×**；`tests/item_weight_distribution_checks.gd:_test_history_multiplier` 断言 20 条同标签历史 ≤ 1.6×。
+- Notes / 说明: 原写法把 `multiplier *= (1 + streak_bonus*common_tags + refresh_mult)` 放在 `for history` 循环体里，且 `common_tags` 跨条目累加，于是「历史越长 / 共同标签越多 / 刷新次数越多」三者相乘。刷新增益被重复乘 N 次尤其隐蔽：单看 `refresh_mult` 只有 0.331，实际会把稀有档放大到上万倍。**通用教训**：与遍历无关的累加量要移出循环、只乘一次；「亲和度」这类指标按**条数**线性化并显式设上限，不要用乘法链表达。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-14
+
+### [Upgrade] 「先按权重填池、再池内等概率取 3」对分布几乎没有影响，别把它当权重失真的原因
+- Evidence / 证据: `scenes/manager/upgrade_manager.gd:214-340`（`_pick_weighted_distinct` 与 `use_pool_sampling` 旧路径）；15–20 万样本实测 `pool_size` 10/30/60 与直接加权无放回的稀有度占比一致（R1 ~86/13/0.7，R20 ~12/73/15），单件概率相对误差中位数 ~1%。
+- Notes / 说明: 早期判断「两阶段池把权重压平 16%」是**采样噪声**：稀有档在中等样本下的期望命中次数 <100，相对误差天然很大，不是系统偏差。两阶段池的真实代价是**可解释性/可约束性**——概率要经过「填池次数」才算得出来，且很难表达三卡构成约束（任一标签上限、稀有度保底）。**通用教训**：比较两个采样器前先算各档期望命中次数，期望太小的档位不要看相对误差；要证明分布差异用卡方检验或固定权重比再测比例。
+- Source / 来源: test
+- Date / 日期: 2026-11-14
