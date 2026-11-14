@@ -41,6 +41,7 @@ ModManager="*res://script/mod_manager.gd"
 ExtensionHooks="*res://script/extension_hooks.gd"
 DebugPerformanceMonitor="*res://ui/debug_performance_monitor.tscn"
 CRTOverlay="*res://ui/crt_overlay.tscn"
+GlitchClock="*res://script/glitch_clock.gd"
 
 [debug]
 
@@ -257,3 +258,10 @@ renderer/rendering_method.web="forward_plus"
 textures/vram_compression/import_etc2_astc=true
 viewport/hdr_2d=true
 anti_aliasing/screen_space_roughness_limiter/enabled=false
+
+[shader_globals]
+
+glitch_clock={
+"type": "float",
+"value": 0.0
+}

@@ -134,7 +134,7 @@
 
 ### [Pooling] `PooledFollowFx` 默认跟随且目标失效即回收；「对象池 + 定点爆发」需覆写
 - Evidence / 证据: `script/pooled_follow_fx.gd:23-29,31-39`, `scenes/update_item/sugar_cube_steam.gd:6-7`, `scenes/manager/PoolManager.gd:148-155`
-- Notes / 说明: `PooledFollowFx._physics_process` 每帧把 `global_position` 对齐 `target`，且 `target` 失效即 `idle_state()`；而敌人池化死亡后 `Enemy.idle_state()` 会把 `global_position` 置回 `(0,0)`，若特效仍跟随就会跳回原点。要「在生成点爆发、用对象池回收」时，覆写 `_physics_process` 为空（停在生成坐标），仍由 `spawn_fx` 的 `follow_body`/`play_anim` 定位并播放，动画 method track 调 `idle_state` 回收。音效可放在覆写的 `play_anim()` 里（同 `convert_damage.gd`），如 `sugar_cube_steam.gd` 用 `SoundManager.play_sfx_once("EquipSounds7")`。
+- Notes / 说明: `PooledFollowFx._physics_process` 每帧把 `global_position` 对齐 `target`，且 `target` 失效即 `idle_state()`；而敌人池化死亡后 `Enemy.idle_state()` 会把 `global_position` 置回 `(0,0)`，若特效仍跟随就会跳回原点。要「在生成点爆发、用对象池回收」时，覆写 `_physics_process` 为空（停在生成坐标），仍由 `spawn_fx` 的 `follow_body`/`play_anim` 定位并播放，动画 method track 调 `idle_state` 回收。音效可放在覆写的 `play_anim()` 里（写法同 `sugar_cube_steam.gd`：`SoundManager.play_sfx_once("EquipSounds7")`）。
 - Source / 来源: code
 - Date / 日期: 2026-09-25
 
@@ -4559,4 +4559,35 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - Evidence / 证据: `scenes/manager/upgrade_manager.gd:214-340`（`_pick_weighted_distinct` 与 `use_pool_sampling` 旧路径）；15–20 万样本实测 `pool_size` 10/30/60 与直接加权无放回的稀有度占比一致（R1 ~86/13/0.7，R20 ~12/73/15），单件概率相对误差中位数 ~1%。
 - Notes / 说明: 早期判断「两阶段池把权重压平 16%」是**采样噪声**：稀有档在中等样本下的期望命中次数 <100，相对误差天然很大，不是系统偏差。两阶段池的真实代价是**可解释性/可约束性**——概率要经过「填池次数」才算得出来，且很难表达三卡构成约束（任一标签上限、稀有度保底）。**通用教训**：比较两个采样器前先算各档期望命中次数，期望太小的档位不要看相对误差；要证明分布差异用卡方检验或固定权重比再测比例。
 - Source / 来源: test
+- Date / 日期: 2026-11-14
+
+### [VFX] 外挂叠图贴不上任意精灵，贴图级故障要在敌人自己的 shader 上做
+- Evidence / 证据: `script/entity_ENEMY.gd:1250`、`shaders/sprite_outline.gdshader`
+- Notes / 说明: 烘焙 SpriteFrames 只能给一个矩形/锚点，无法跟随敌人轮廓；正确做法是在敌人材质里做 UV 行/块位移 + RGB 分离。两个坑：① `AnimatedSprite2D`/`CanvasGroup` 的 UV 是 0..1（帧内/合成图），`Sprite2D` 的 `hframes` 才是整张 sheet 空间，像素尺寸必须用 sheet 尺寸（用 `get_rect()` 的帧尺寸会放大 38 倍、采样到相邻帧）；② 运行时给 `CanvasGroup` 补材质会整块画成白板，必须在场景里预置；坦克因此退化为逐子 Sprite2D + 关闭水平撕裂。
+- Source / 来源: user
+- Date / 日期: 2026-11-14
+
+### [VFX] 描边采样不能复用 glitch 的自定义像素尺寸
+- Evidence / 证据: `shaders/sprite_outline.gdshader:23-52`、`script/entity_ENEMY.gd:1251-1290`
+- Notes / 说明: 描边采样必须固定用 `TEXTURE_PIXEL_SIZE`，不要用 `glitch_pixel`（按节点算的故障像素）。否则第一次策反命中把 `glitch_pixel` 写成 `1/region` 后，描边会比原版粗 4–8 倍，再叠 HDR 红描边 + bloom 就是一个大红块；而且描边被 clamp 到 `glitch_uv_rect` 会在帧边缘拉出阶梯条带。故障参数只在补间期间有效，结束（含 kill/回池）必须清零 `glitch_pixel`/`glitch_uv_rect`。
+- Source / 来源: user
+- Date / 日期: 2026-11-14
+- SUPERSEDED: 2026-11-14 改为 shader 时间衰减（无补间）；回池只清 `glitch_start` 与目标缓存，不再逐材质清零 `glitch_pixel`。
+
+### [VFX] shader TIME 与 GDScript 时间戳不同源，要用全局时钟对齐
+- Evidence / 证据: `script/glitch_clock.gd`、`shaders/sprite_outline.gdshader` 的 `glitch_clock`、`project.godot` 的 `[shader_globals]`
+- Notes / 说明: 实测 shader `TIME` 比 `Time.get_ticks_msec()/1000` 晚约 1.3s（渲染器启动晚于进程启动），直接拿 GDScript 时间戳当 `glitch_start` 会让 `TIME - start` 长期为负、衰减永远停在满强度。正解：把 `glitch_clock` 注册为 global shader uniform（project.godot `[shader_globals]`），用 `GlitchClock` autoload 每帧写 `Time.get_ticks_msec()/1000`，shader 内只用这个时钟。另：高频命中不要用 Tween 反复 kill/重建（每个材质一条 PropertyTweener，坦克 53 个材质时每帧大量属性写入）；用 shader 时间衰减 + 目标缓存 + 按 texture 合批，单次命中约 4–10µs。
+- Source / 来源: test
+- Date / 日期: 2026-11-14
+
+### [VFX] 场景内联 Shader 副本不会获得后续新增 uniform
+- Evidence / 证据: `scenes/enemies/soldier_helmet_ar.tscn` 等 7 个敌人场景（原 `[sub_resource type="Shader"]`）→ 已改为引用 `res://shaders/sprite_outline.gdshader`；`script/entity_ENEMY.gd:_build_glitch_targets`
+- Notes / 说明: 新加 glitch uniform 后，内联旧副本的材质会静默忽略 `glitch_*`，表现为「部分敌人没效果」。统一引用 canonical 后一次生效；`_build_glitch_targets()` 对缺失 `glitch_start` 的材质打 `print_verbose` 便于以后排查。玩家场景（ako/chihiro/chinatsu/hare/maki）的内联 shader 是玩家专用，不动。
+- Source / 来源: user + code
+- Date / 日期: 2026-11-14
+
+### [VFX] screen_outline Boss 退化为逐子节点 sprite_outline 故障
+- Evidence / 证据: `scenes/enemies/boss/goliath.tscn`、`scenes/enemies/boss/erosion_tower.tscn` 的 `sprite_2d=Graphics` material → `res://shaders/screen_outline.gdshader`（`SCREEN_UV` + `hint_screen_texture`，无 `glitch_*`）；`script/entity_ENEMY.gd:_build_glitch_targets` 的 verbose 检查会提示缺 `glitch_start`。
+- Notes / 说明: 7 个内联 `sprite_outline` 副本迁移后普通敌人生效；Goliath / 侵蚀塔的 `Graphics` 走 screen-space 描边 shader，glitch 参数不存在，因此改为「CanvasGroup 材质无 glitch uniform 时退化为逐子节点材质」：goliath 14 个可见部件、erosion 7 个 Sprite2D 切片（逐节点 + 帧矩形，允许撕裂）；坦克同 texture 的 38 层切片仍共享材质、关闭撕裂，turret 逐节点。代价是 Boss 为逐部件独立故障，且每命中写入次数随部件数增加（实测 goliath ~39µs、erosion ~14µs）。
+- Source / 来源: code + test
 - Date / 日期: 2026-11-14

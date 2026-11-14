@@ -1,0 +1,6 @@
+[gd_resource type="Resource" format=3 uid="uid://htovqov5rwpe"]
+
+[ext_resource type="Script" uid="uid://b8gred0w8knvm" path="res://resources/vfx/convert_glitch_settings.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")

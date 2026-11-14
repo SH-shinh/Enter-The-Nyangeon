@@ -151,11 +151,12 @@ var _ai_stuck_count: int = 0
 var _ai_unstuck_ticks: int = 0
 
 const CONVERTED_BUFF: Buff = preload("res://resources/buff/player_buff/converted_buff.tres")
-const CONVERT_DAMAGE: PackedScene = preload("res://scenes/debuff/convert_damage.tscn")
 const CONVERTED_BUFF_DURATION := 3.0 #策反buff持续时间（秒）
 const CONVERT_BREAK_RATIO := 0.1 #破条真实伤害 = 10% max_hp
 const CONVERT_TINT := Color(0.003, 13.636, 16.472) #策反描边色（亮蓝）
 const CONVERT_OUTLINE_WIDTH := 1.0 #策反时强制描边宽度
+# 策反故障参数（duration/strength/撕裂/分离/扫描线等），改 .tres 后下一次命中生效
+const GLITCH_SETTINGS = preload("res://resources/vfx/convert_glitch_settings.tres")
 const OVERHEAD_GAP := 2.0
 const OVERHEAD_SEPARATION := 4.0
 const OVERHEAD_FALLBACK_TOP := -16.0
@@ -165,6 +166,8 @@ enum ConvertResult { NONE, CONVERTED, BREAK }
 var convert_gauge: int = 0 #策反进度
 
 var _outline_base: Dictionary = {} #各描边材质的初始 width/color，策反结束后恢复用
+var _glitch_targets_cache: Array = [] #策反故障目标（首次命中构建，回池清空）
+var _last_glitch_start_ms: int = -100000 #高频去重：同一帧多段伤害不重复写
 
 var overhead_margin: MarginContainer
 var overhead_stack: VBoxContainer
@@ -249,6 +252,7 @@ func idle_state():
 	remove_from_group("Converted")
 	_propagate_faction()
 	_set_convert_visual(false)
+	_stop_convert_glitch()
 	if GameEvents.global_time_count.is_connected(time_count):
 		GameEvents.global_time_count.disconnect(time_count)
 	enemy_body.clear()
@@ -1018,7 +1022,7 @@ func apply_conversion_power(power: int) -> int:
 	var effective: int = max(1, int(round(power * DamageRouter.resist_factor(resist))))
 	convert_gauge += effective
 	convert_gauge_changed.emit(convert_gauge, stats.convert_threshold)
-	PoolManager.spawn_fx("convert", CONVERT_DAMAGE, self)
+	_start_convert_glitch()
 	if convert_gauge >= stats.convert_threshold:
 		convert_gauge = 0
 		convert_gauge_changed.emit(0, stats.convert_threshold)
@@ -1160,6 +1164,217 @@ func _apply_outline_state():
 			mat.set_shader_parameter("outline_width", base["width"])
 			mat.set_shader_parameter("outline_color", base["color"])
 			mat.set_shader_parameter("flash_opacity", 0.0)
+
+# ==================== 策反贴图故障（shader 时间衰减）====================
+
+# 参与 glitch 的目标：[{node, mat, rect?, pixel?, tear?}]；首次命中构建并缓存。
+# 坦克（无材质 CanvasGroup）与 screen_outline Boss 退化为逐子节点材质；同 texture 的堆叠切片 >=8 时共享材质。
+func _glitch_targets() -> Array:
+	if _glitch_targets_cache.is_empty():
+		_glitch_targets_cache = _build_glitch_targets()
+	return _glitch_targets_cache
+
+
+func _build_glitch_targets() -> Array:
+	var nodes: Array = []
+	for sp in _outline_materials():
+		if sp != null and is_instance_valid(sp):
+			nodes.append(sp)
+	if nodes.size() == 1 and nodes[0] is CanvasGroup:
+		var group := nodes[0] as CanvasGroup
+		var group_mat = group.material
+		var group_ok := false
+		if group_mat is ShaderMaterial:
+			var group_shader: Shader = (group_mat as ShaderMaterial).shader
+			group_ok = group_shader != null and _shader_has_uniform(group_shader, "glitch_start")
+		if not group_ok:
+			if group_mat is ShaderMaterial:
+				print_verbose("[glitch] %s 的 CanvasGroup shader 无 glitch，退化为逐子节点" % name)
+			return _build_group_glitch_targets(group)
+	var targets: Array = []
+	for node in nodes:
+		if node == null or not is_instance_valid(node) or not (node is CanvasItem):
+			continue
+		_ensure_material_on(node as CanvasItem)
+		var mat = (node as CanvasItem).material
+		if mat is ShaderMaterial:
+			var shader: Shader = (mat as ShaderMaterial).shader
+			if shader != null and not _shader_has_uniform(shader, "glitch_start"):
+				print_verbose("[glitch] %s 的材质 shader 缺少 glitch_start（内联副本？）" % name)
+			targets.append({"node": node, "mat": mat})
+	return targets
+
+
+func _shader_has_uniform(shader: Shader, uniform_name: String) -> bool:
+	for uniform in shader.get_shader_uniform_list():
+		if String(uniform.get("name", "")) == uniform_name:
+			return true
+	return false
+
+
+# CanvasGroup 材质不可用（坦克无材质 / Boss 用 screen_outline）：退化为逐子节点材质。
+# - 同一 texture 的可见 Sprite2D 切片 >=8（坦克堆叠）：共享材质、关闭水平撕裂；
+# - 其余 Sprite2D（Boss 切片 / 枪）：逐节点材质 + 帧矩形，允许撕裂；
+# - AnimatedSprite2D：逐节点材质（整帧 UV）。
+func _build_group_glitch_targets(group: CanvasGroup) -> Array:
+	var slice_counts: Dictionary = {}
+	for child in group.find_children("*", "", true, false):
+		if child is Sprite2D and (child as CanvasItem).is_visible_in_tree():
+			var slice_tex = (child as Sprite2D).texture
+			if slice_tex != null:
+				slice_counts[slice_tex] = int(slice_counts.get(slice_tex, 0)) + 1
+	var targets: Array = []
+	var shared_by_texture: Dictionary = {}
+	for child in group.find_children("*", "", true, false):
+		if not (child is CanvasItem) or not (child as CanvasItem).is_visible_in_tree():
+			continue
+		if child is AnimatedSprite2D:
+			_ensure_material_on(child as CanvasItem)
+			var anim_mat = (child as CanvasItem).material
+			if anim_mat is ShaderMaterial:
+				if _shader_has_uniform((anim_mat as ShaderMaterial).shader, "glitch_start"):
+					targets.append({"node": child, "mat": anim_mat})
+				else:
+					print_verbose("[glitch] %s 的子节点 %s 使用非 glitch shader，跳过" % [name, child.name])
+			continue
+		if not (child is Sprite2D):
+			continue
+		var sprite := child as Sprite2D
+		if sprite.texture == null:
+			continue
+		var tex = sprite.texture
+		var existing = sprite.material
+		if existing is ShaderMaterial:
+			if _shader_has_uniform((existing as ShaderMaterial).shader, "glitch_start"):
+				targets.append({"node": sprite, "mat": existing, "rect": _glitch_uv_rect_for(sprite),
+					"pixel": _glitch_pixel_for(sprite), "tear": 1.0})
+			else:
+				print_verbose("[glitch] %s 的子节点 %s 使用非 glitch shader，跳过" % [name, sprite.name])
+			continue
+		if int(slice_counts.get(tex, 0)) >= 8:
+			var shared = shared_by_texture.get(tex)
+			if shared == null:
+				shared = _new_glitch_material()
+				shared_by_texture[tex] = shared
+				targets.append({"node": sprite, "mat": shared, "pixel": _glitch_pixel_for(sprite), "tear": 0.0})
+			sprite.material = shared
+		else:
+			var mat := _new_glitch_material()
+			sprite.material = mat
+			targets.append({"node": sprite, "mat": mat, "rect": _glitch_uv_rect_for(sprite),
+				"pixel": _glitch_pixel_for(sprite), "tear": 1.0})
+	return targets
+
+
+# 单像素 UV 尺寸：Sprite2D 用整张 sheet、AnimatedSprite2D 用当前帧纹理；CanvasGroup 用兜底值
+func _glitch_pixel_for(node: Node) -> Vector2:
+	if node is Sprite2D:
+		var sprite := node as Sprite2D
+		# Sprite2D 的 UV 是整张 sheet 空间，像素尺寸必须用 sheet 尺寸（不是单帧 get_rect）
+		if sprite.texture != null:
+			var tex_size := sprite.texture.get_size()
+			if tex_size.x > 0.0 and tex_size.y > 0.0:
+				return Vector2(1.0 / tex_size.x, 1.0 / tex_size.y)
+	elif node is AnimatedSprite2D:
+		var anim := node as AnimatedSprite2D
+		if anim.sprite_frames != null and anim.sprite_frames.has_animation(anim.animation):
+			var count := anim.sprite_frames.get_frame_count(anim.animation)
+			if count > 0:
+				var tex := anim.sprite_frames.get_frame_texture(anim.animation, clampi(anim.frame, 0, count - 1))
+				if tex != null and tex.get_size().x > 0.0 and tex.get_size().y > 0.0:
+					return Vector2(1.0 / tex.get_size().x, 1.0 / tex.get_size().y)
+	return Vector2(1.0 / 128.0, 1.0 / 128.0)
+
+
+# 帧 UV 矩形：Sprite2D 的 hframes/region 需要帧矩形防位移串帧；AnimatedSprite2D/CanvasGroup 整张
+func _glitch_uv_rect_for(node: Node) -> Vector4:
+	if node is Sprite2D:
+		var sprite := node as Sprite2D
+		if sprite.texture != null:
+			var tex_size := sprite.texture.get_size()
+			if tex_size.x > 0.0 and tex_size.y > 0.0:
+				if sprite.region_enabled:
+					var region := sprite.region_rect
+					return Vector4(region.position.x / tex_size.x, region.position.y / tex_size.y,
+						region.size.x / tex_size.x, region.size.y / tex_size.y)
+				var hf := maxi(1, sprite.hframes)
+				var vf := maxi(1, sprite.vframes)
+				var frame_size := Vector2(tex_size.x / float(hf), tex_size.y / float(vf))
+				var coords := sprite.frame_coords
+				return Vector4(coords.x * frame_size.x / tex_size.x, coords.y * frame_size.y / tex_size.y,
+					frame_size.x / tex_size.x, frame_size.y / tex_size.y)
+	return Vector4(0.0, 0.0, 1.0, 1.0)
+
+
+# 只用于 glitch 的「零描边」材质
+func _new_glitch_material() -> ShaderMaterial:
+	var mat := ShaderMaterial.new()
+	mat.shader = preload("res://shaders/sprite_outline.gdshader")
+	mat.set_shader_parameter("outline_width", 0.0)
+	mat.set_shader_parameter("outline_color", line_color)
+	mat.set_shader_parameter("flash_opacity", 0.0)
+	mat.set_shader_parameter("corruption_amount", 0.0)
+	return mat
+
+
+# 没有 shader 材质的敌人补一个材质（CanvasGroup 除外），只用于 glitch
+func _ensure_material_on(canvas_item: CanvasItem) -> void:
+	if canvas_item == null or not is_instance_valid(canvas_item):
+		return
+	if canvas_item is CanvasGroup:
+		return
+	if canvas_item.material is ShaderMaterial:
+		return
+	canvas_item.material = _new_glitch_material()
+
+
+func _apply_glitch_params(target: Dictionary, seed_value: float, start_value: float) -> void:
+	var node: Node = target["node"]
+	var mat: ShaderMaterial = target["mat"]
+	var s = GLITCH_SETTINGS
+	mat.set_shader_parameter("glitch_duration", s.duration)
+	mat.set_shader_parameter("glitch_strength", s.strength)
+	mat.set_shader_parameter("glitch_row_gate", s.row_gate)
+	mat.set_shader_parameter("glitch_row_shift", s.row_shift_px)
+	mat.set_shader_parameter("glitch_block_size", s.block_size_px)
+	mat.set_shader_parameter("glitch_block_shift", s.block_shift_px)
+	mat.set_shader_parameter("glitch_rgb_split", s.rgb_split_px)
+	mat.set_shader_parameter("glitch_scanline", s.scanline_strength)
+	mat.set_shader_parameter("glitch_junk_gate", s.junk_gate)
+	var rect: Vector4 = target["rect"] if target.has("rect") else Vector4(0.0, 0.0, 1.0, 1.0)
+	mat.set_shader_parameter("glitch_uv_rect", rect)
+	var pixel: Vector2 = target["pixel"] if target.has("pixel") else _glitch_pixel_for(node)
+	mat.set_shader_parameter("glitch_pixel", pixel)
+	var tear: float = target["tear"] if target.has("tear") else (0.0 if node is Sprite2D else 1.0)
+	if not s.tear_enabled:
+		tear = 0.0
+	mat.set_shader_parameter("glitch_tear", tear)
+	mat.set_shader_parameter("glitch_seed", seed_value)
+	mat.set_shader_parameter("glitch_start", start_value)
+
+
+func _start_convert_glitch() -> void:
+	var now := Time.get_ticks_msec()
+	if now - _last_glitch_start_ms < 8:
+		return
+	var targets := _glitch_targets()
+	if targets.is_empty():
+		return
+	_last_glitch_start_ms = now
+	var seed_value := randf() * 1000.0
+	var start_value := now / 1000.0
+	for target in targets:
+		_apply_glitch_params(target, seed_value, start_value)
+
+
+# 回池/待机：把时间戳推到过去，shader 自动归零；同时清缓存，下次重新构建
+func _stop_convert_glitch() -> void:
+	for target in _glitch_targets_cache:
+		var mat = target.get("mat")
+		if mat is ShaderMaterial:
+			mat.set_shader_parameter("glitch_start", -1000.0)
+	_glitch_targets_cache.clear()
+	_last_glitch_start_ms = -100000
 
 func _propagate_faction():
 	for part in body_part:
