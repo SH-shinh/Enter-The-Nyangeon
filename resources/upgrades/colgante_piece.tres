@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" format=3 uid="uid://n8x0va5kt6eu"]
+
+[ext_resource type="Texture2D" uid="uid://4uh0rg5xhm7a" path="res://sprites/update_item/colgante_piece.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://cvlwfck2jbhvs" path="res://resources/upgrades/ability_upgrade.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = "colgante_piece"
+icon = ExtResource("1_icon")
+name = "Colgante Piece"
+rare = 1
+order_num = 3
+item_tags = 132

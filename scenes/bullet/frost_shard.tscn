@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://cqlqnthe5g7ek"]
+
+[ext_resource type="Script" uid="uid://oj3do5n5ujp1" path="res://script/player_bullet.gd" id="1_bullet"]
+[ext_resource type="Texture2D" uid="uid://bn1rgcscvit43" path="res://sprites/bullet/frost_shard.png" id="2_tex"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_shard"]
+
+[node name="FrostShard" type="Area2D" unique_id=657851877]
+z_index = 2
+collision_layer = 32772
+collision_mask = 16384
+script = ExtResource("1_bullet")
+pool_id = "frost_shard"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1928416663]
+shape = SubResource("CircleShape2D_shard")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1006479950]
+scale = Vector2(1.5, 1.5)
+texture = ExtResource("2_tex")
+
+[node name="RayCast2D" type="RayCast2D" parent="." unique_id=903812181]
+target_position = Vector2(5, 0)
+collision_mask = 2

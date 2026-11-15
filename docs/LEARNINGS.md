@@ -4591,3 +4591,69 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - Notes / 说明: 7 个内联 `sprite_outline` 副本迁移后普通敌人生效；Goliath / 侵蚀塔的 `Graphics` 走 screen-space 描边 shader，glitch 参数不存在，因此改为「CanvasGroup 材质无 glitch uniform 时退化为逐子节点材质」：goliath 14 个可见部件、erosion 7 个 Sprite2D 切片（逐节点 + 帧矩形，允许撕裂）；坦克同 texture 的 38 层切片仍共享材质、关闭撕裂，turret 逐节点。代价是 Boss 为逐部件独立故障，且每命中写入次数随部件数增加（实测 goliath ~39µs、erosion ~14µs）。
 - Source / 来源: code + test
 - Date / 日期: 2026-11-14
+
+### [Shock] 感电施加只能走 `enemy_buff_manager.apply_buff`（联机唯一安全通道）
+- Evidence / 证据: `scenes/update_item/shock_equip_item.gd`（`apply_shock`）、`mods/etn_coop/net/coop_net.gd:2271-2286`（`_gate_enemy_buff_apply` 把客机请求转给房主）、`:2458`（房主应用后统一广播）
+- Notes / 说明: 给敌人上感电/异常不要自己维护状态、也不要只改本地 `current_buff`：客机调用 `apply_buff` 会被 mod 拦下 RPC 给房主权威应用，再由房主广播回所有端；直接改字典会让两端层数分叉。必须带 `applier_stats`（`shock_layer/dot_damage/dot_time/global_damage` 快照），层上限与每跳伤害才按施加者结算。
+- Source / 来源: code
+- Date / 日期: 2026-11-14
+
+### [Shock] 感电链至少需要 2 个目标；玩家自身也能当链节点
+- Evidence / 证据: `script/shock_chain.gd:131-148`（`_build_path` 需 ≥2 节点）、`:169-199`（候选池含 `ShockCarrier` 组）、`resources/buff/player_buff/overload_chip_buff.tres`、`resources/buff/components/player_shock_component.gd`
+- Notes / 说明: 单个 Boss/单个目标被感电不会产生任何链伤害，只有「另一名被感电目标」在射程（`96+20×(层-1)`）内才成链。玩家挂上 `player_shock` 类 Buff 后进入 `ShockCarrier` 组，于是成为链的一环（每跳 2% 最大生命 + 击退）——这是单体战也能起链的手段，也是实打实的自伤来源。玩家自己的组件在 LAN 下被 `_on_global_tick` 跳过、不会主动起链，但**仍会被敌方链选中**。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-14
+
+### [GDScript] 对可能不存在的属性用 `bool(obj.get("x"))` 会把游戏打断
+- Evidence / 证据: `script/shock_chain.gd:181-183`（修前 `var conduit := bool(comp.get("shock_conduit"))`）
+- Notes / 说明: `Object.get("x")` 在属性不存在时返回 `null`，`bool(null)` 抛 `Invalid call. Nonexistent 'bool' constructor`，运行时直接进 debug break（表现为 `game_eval` 报 `EVAL_GAME_NOT_READY`、`editor_state.game_status.status="break"`）。改成 `obj.get("x") == true`，并且**要显式标类型**（`var conduit: bool = ...`）：Variant 比较结果无法用 `:=` 推断。同类隐患：对 `Node.get()` 的返回值直接 `int()/float()` 之前都要判空。
+- Source / 来源: test
+- Date / 日期: 2026-11-14
+
+### [Shock] 玩家侧感电层上限固定 999，敌人侧才看 `stats.shock_layer`
+- Evidence / 证据: `script/shock_chain.gd` 的 `PLAYER_SHOCK_MAX_LAYERS`、`scenes/manager/player_buff_manager.gd` 的 `_is_player_shock` / `_create_entry` 覆写、`scenes/update_item/overload_chip.gd`
+- Notes / 说明: 用户裁定（2026-11-14）玩家/召唤物身上的感电叠层不受 `stats.shock_layer` 影响，硬上限 999；判定按 Buff 的 `component_scene` 是否 `player_shock_component.tscn`，`value[0]` 与 `buff_layer_mult` 都不参与。给玩家挂感电时**不要**再用 `stats.shock_layer` 当上限，也不要用它推玩家侧强度。敌人身上的感电仍由施加者 `stats.shock_layer` 管，两侧上限已解耦。副作用：`enemy_shock_field` 的 `buff_layer=3` 也变成 999（受 10s 场地存活限制约 ~100 层），自伤频率翻倍、玩家作为链节点时链射程变长。
+- Source / 来源: user
+- Date / 日期: 2026-11-14
+
+### [Localization] `ETN_item_localization.csv` 被其它编辑器保存后会变 LF / 裸引号
+- Evidence / 证据: `tests/check_localization.py` 的「存在非 CRLF 行尾」「字段内双引号未按 CSV 规则转义」；`git diff` 显示既有描述里的 `""X""` 被改成裸 `"X"`
+- Notes / 说明: 该文件必须 UTF-8 BOM + CRLF，字段内 ASCII 双引号要写成 `""` 且整体加引号。用普通文本编辑器/表格软件另存会变成 LF 行尾，并把 `""X""` 直观地改成 `"X"`（Godot importer 会吞掉裸引号）。改完务必跑 `python tests/check_localization.py`；修复时按字符级替换恢复 `""` 并整体归一 CRLF，**不要重排/重写整表**（否则所有人的既改会被搅成一个大 diff）。
+- Source / 来源: test
+- Date / 日期: 2026-11-14
+
+### [Anomaly] 异常联动道具必须先占冷却再出效果，否则会自激/重复补层
+- Evidence / 证据: `scenes/update_item/arc_lighter.gd`（`_combo_ready` 在 `apply_buff` 循环之前调用）、`scenes/update_item/sugar_cube.gd`、`scenes/update_item/matcha_ramune.gd`
+- Notes / 说明: 联动道具挂在 `GameEvents.enemy_damage_taken` 上，而 DOT 每跳都会再发这个信号（燃烧 `20/层` tick、中毒 3 tick 一跳）。所以：① 冷却必须在**造成任何伤害/补层之前**写入，否则同帧多次链命中或紧接着的 DOT tick 会反复触发；② 追加的伤害如果仍是本道具的触发类型（例如「感电→追加毒伤」的毒伤会再进本钩子），只靠冷却兜底，所以冷却值要大于一次 DOT 间隔；③ 「X→Y」的组合要靠 `enemy_buff_manager.current_buff` 取另一条异常，读条目时判 `stop`/`layer`/`max_layer`，已满层直接返回，别重复刷表现。另：`CHILL_DAMAGE` 只在「带恶寒的敌人受近战伤害」时产生（`enemy_buff_manager.gd:144-161`），恶寒 DOT 本身不造成伤害，凡是需要稳定触发的组合不要拿恶寒伤害当触发器。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-14
+
+### [Anomaly] 形状查询型场地（腐化池/毒池）的远端视觉副本必须显式 `visual_only`
+- Evidence / 证据: `scenes/update_item/poison_pool.gd`（`_ready` 里 `visual_only = has_meta("remote_visual")`；`time_count` 里 `if not visual_only`）、`scenes/debuff/corruption_field.gd`（同名标记）、`mods/etn_coop/net/coop_visual_sync.gd:_disable_damage`
+- Notes / 说明: 联机视觉副本只被清掉 `collision_layer/mask` 并禁用 shape，**不会**让 `PhysicsShapeQueryParameters2D.intersect_shape` 失效——它用的是查询自己设的 mask。所以凡是「用形状查询而不是 area 信号」的场地类节点，接到 `on_visual_activated` 广播后必须在 `_ready` 判定 `has_meta("remote_visual")` 并跳过一切施加逻辑，否则副本会在客机端重复上状态（`apply_buff` 还会被 mod 转给房主，等于双倍）。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-15
+
+### [Anomaly] 不要手动 `queue_free` 敌人的 DOT 光环
+- Evidence / 证据: `scenes/manager/enemy_buff_manager.gd:240`（`_ensure_dot_aura` 缓存 `_dot_auras[id]`）、`:229-236`（`_drop_dot_aura` 才是正规释放路径）
+- Notes / 说明: 调试时为了截干净图，直接 `queue_free` 了 YSort 下的光环节点，下一次毒 tick 触发 `_ensure_dot_aura` 时把「已释放实例」写回缓存 → 引擎报 `Trying to assign invalid previously freed instance` 并进 debug break。要清光环请用 `enemy_buff_manager.remove_buff(buff)`（走 `_on_entry_removed → _drop_dot_aura`）。
+- Source / 来源: test
+- Date / 日期: 2026-11-15
+
+### [FX] 场地类持续特效：入场缩放挂独立 `Visual` 子节点，且只在激活时播一次
+- Evidence / 证据: `scenes/update_item/poison_pool.gd`（`_play_spawn_scale()` 只被 `active_state()` 调；`refresh_field()` 只 `_ensure_bubbles_playing()`）、`scenes/update_item/poison_pool.tscn`（`Visual/Puddle`、`Visual/Bubbles`）
+- Notes / 说明: 毒池最初把池面做成「一次性 GPUParticles2D + `scale_curve`（0.1→1）」，同点合并续命时 `refresh_field()` 会 `restart()`，于是每次合并都重放一次「由小长大」，观感就是「偶尔不断从小变大」。正确做法：① 池面用静态 Sprite2D（无粒子、无缩放曲线）；② 入场缩放用 Tween 作用在独立的 `Visual` 子节点上（不缩放根节点/碰撞形状，形状查询的几何不受影响），且**只在 `active_state()`** 播；③ `refresh_field()` 只续命与重置 alpha，绝不重播缩放/动画；④ `idle_state()` 要 `kill()` 掉 Tween 并把 `Visual.scale` 复位，池化复用才不会带着旧姿态。另：`corruption_field_pulse.gdshader` 的 `wave` 是持续呼吸，做持续场地底时不要挂它。
+- Source / 来源: user + test
+- Date / 日期: 2026-11-15
+
+### [Projectile] `spawn_core` 的 `notify` 只管联机视觉广播，与伤害重算无关（2026-11-15 修正）
+- Evidence / 证据: `script/projectile_spawner.gd:90-92`（`notify` → `ExtensionHooks.notify_named("on_projectile_spawned", ...)`，供 mod 广播视觉副本）、`script/player.gd:101`（`bullet_hit_damage` 只连 `GameEvents.player_shot_position`）、`script/player_gun.gd:210` / `script/update_item/player_bullet_launcher.gd:104` 才发 `emit_player_shot_position`
+- Notes / 说明: 旧结论「`notify=true` 会 `emit_player_shot_position` 从而覆盖 `damage_data`」**是错的**。`spawn_core` 只发 `on_projectile_spawned`；`bullet_hit_damage`（按 `bullet_damage` 重算成 BULLET）只在有人显式 `emit_player_shot_position` 时触发（玩家枪/发射器）。所以：① 自定义伤害的子代弹道只要**不** `emit_player_shot_position`，就不会被重算，`notify` 取值与伤害无关；② 需要队友看到弹体时传 `notify=true`（走 `on_projectile_spawned` 广播），漏传会让子代弹体只在本地可见；③ 自定义 `damage_data` 在 configure 写、`apply_penetrate_dealt()` 在 post 调，仍然成立。SUPERSEDED: 本条为 2026-11-15 对同名旧条目的修正（旧条目误把 `notify` 与 `player_shot_position` 混为一谈）。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-15
+
+### [FX] 参考库效果裁剪/加速后重烘：用单效果烘焙脚本，别跑全量
+- Evidence / 证据: `tests/_bake_snowflake_burst.gd`（`Baker.bake(fork, {...})` + `Baker.save_sprite_frames`）、`scenes/effects/pixelfx_snowflake_burst.gd`（`SPEED=1.5`，时间窗 ÷1.5，`meta.duration=1.2`、`fps=30` → 37 帧）、`H:\Godot_v4.7-stable_win64.exe --headless --path . -s res://tests/_bake_*.gd`
+- Notes / 说明: 参考库效果要「只留某一段 + 加速/改色」时，fork 成 `scenes/effects/pixelfx_*.gd`（`extends RefCounted` + 静态 `meta`/`draw`），用 `SPEED` 统一压缩时间窗；烘焙用 `tests/` 里的一次性脚本只烘目标 `.res`，并保留 `bake_pixelfx_fx.gd` 的注册项以便复现。**不要跑全量 `bake_pixelfx_fx.gd`**：它会把所有效果的 `.res` 重写一遍（工作区里 18 个 `.res` 早就是脏的，容易被误算进本次改动）。烘焙后用 `SpriteFrames.get_frame_count("default")` 校验帧数（`duration×fps` 附近）与画布尺寸。
+- Source / 来源: user + test
+- Date / 日期: 2026-11-15

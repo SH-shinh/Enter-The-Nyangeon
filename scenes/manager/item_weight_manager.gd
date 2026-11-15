@@ -84,6 +84,7 @@ func initialize_default_weights():
 			AbilityUpgrade.ItemType.SPEED: 1.0,
 			AbilityUpgrade.ItemType.ARMOR: 1.0,
 			AbilityUpgrade.ItemType.COIN: 1.0,
+			AbilityUpgrade.ItemType.SHOCK: 1.0,
 		}
 
 # 计算单个道具的权重

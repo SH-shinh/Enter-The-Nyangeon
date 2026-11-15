@@ -27,6 +27,7 @@ enum ItemType {
 	ARMOR = 1 << 14,
 	COIN = 1 << 15,
 	CONVERT = 1 << 16,
+	SHOCK = 1 << 17,
 }
 
 @export var id: String
@@ -38,7 +39,7 @@ enum ItemType {
 @export_multiline var description: String
 @export_multiline var forward: String
 @export_multiline var negative: String
-@export_flags("弹道", "爆炸", "装备", "概率", "暴击", "燃烧", "中毒", "恶寒", "防御", "生命", "成长", "召唤", "近战", "速度", "护甲", "金币", "策反") var item_tags: int = 0
+@export_flags("弹道", "爆炸", "装备", "概率", "暴击", "燃烧", "中毒", "恶寒", "防御", "生命", "成长", "召唤", "近战", "速度", "护甲", "金币", "策反", "感电") var item_tags: int = 0
 @export var tags: Array[String]
 @export var weight: float = 1.0  # 基础权重
 ## 是否走「防御门控」（首发不可抽 → 随回合累积 → 抽中清零 → 拥有数封顶）。
@@ -74,6 +75,7 @@ func get_tag_names() -> Array:
 		ItemType.SPEED: "速度",
 		ItemType.ARMOR: "护甲",
 		ItemType.COIN: "金币",
+		ItemType.SHOCK: "感电",
 	}
 	for tag in tag_dict:
 		if has_tag(tag):

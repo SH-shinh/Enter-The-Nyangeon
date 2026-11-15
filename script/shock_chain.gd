@@ -6,6 +6,11 @@ class_name ShockChain
 ## 结算由各敌人的 EnemyBuffManager 在 10Hz tick 驱动，本类只做静态协调。
 
 const SHOCK_DOT_ID := "shock_dot"
+## 玩家侧感电（挂在玩家/召唤物身上的 shock 类 Buff）的层数硬上限。
+## 用户裁定（2026-11-14）：玩家侧叠层不受 `stats.shock_layer` 限制，最高 999 层；
+## 该上限由 PlayerBuffManager 在创建条目时统一覆盖，施加方传进来的 value[0] 不参与。
+## 注意：敌人身上的感电仍由施加者的 `stats.shock_layer` 管，两边不再共用同一个上限。
+const PLAYER_SHOCK_MAX_LAYERS: int = 999
 const HOP_DECAY := 0.85
 const HOP_MAX := 6
 const RANGE_BASE := 96.0
@@ -178,7 +183,9 @@ static func _candidate_pool(head: Node) -> Array:
 				continue
 			# 感电导管（如 Chihiro 无人机）：没有 stats/health_component 也允许进链；
 			# 链命中时由导管组件自行忽略伤害（shock_chain_hit 空实现）。
-			var conduit := bool(comp.get("shock_conduit"))
+			# ⚠️ 组件不一定有这个属性（player_shock_component 就没有）：不能用 bool(x) 包 null，
+			# 否则报「Nonexistent 'bool' constructor」把游戏打断。
+			var conduit: bool = comp.get("shock_conduit") == true
 			if not conduit:
 				var bst = b.get("stats")
 				if bst == null:

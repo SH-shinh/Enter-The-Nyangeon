@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/update_item/overload_chip.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/buff/player_buff/overload_chip_buff.tres" id="2_buff"]
+
+[node name="OverloadChip" type="Node2D"]
+script = ExtResource("1_script")
+overload_buff = ExtResource("2_buff")

@@ -48,6 +48,7 @@ Declared in `project.godot:25-43`. **Order = `_ready()` order** (relevant: `Game
 - 节点：`$SFX`, `$VOICE`, `$Talk`, `$BGM/BGMPlayer`, `$BGM/AnimationPlayer`, `$SupportVoice/VoicePlayer`（`SoundManager.gd:8-13`）。
 - 方法：`play_sfx`/`play_sfx_once`/`play_loop_sfx`/`stop_sfx`, `play_support_voice`, `play_voice`, `play_talk`, `play_bgm`, `play_bgm_cut`（等 stream `finished` 后 emit `cut_finish`）, `bgm_fade_out`, `bgm_slow_fade_out`（`game_end` 时中止）, `get_volume`/`set_volume`。
 - `play_sfx_throttled(sfx_name, min_interval_ms=40)`：同名音效**同一 process 帧最多 1 次**且全局最小间隔 40ms，供高频受击音（`health_component.gd:171` 的 `HurtSounds`）使用；其余 `play_sfx` 不受影响。
+- **新增 SFX 的做法**：在 `scenes/manager/sound_manager.tscn` 的 `$SFX` 下加一个同名 `AudioStreamPlayer`（`stream=` 音频资源、`bus=&"SFX"`、按需 `volume_db`），`play_sfx(name)` 按**节点名**查找；名字对不上会返回 null 且**先打一条引擎错误**（`LEARNINGS.md` 有记录）。
 
 ### 1.4 Transition
 - `ui/transition.gd`：`signal left_end_start`, `is_left_end_start`；`play_left_start()`, `play_left_end()`（重置 flag）。

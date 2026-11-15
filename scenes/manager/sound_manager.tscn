@@ -231,6 +231,7 @@
 [ext_resource type="AudioStream" uid="uid://l3u4a2uv4pik" path="res://sounds/night_vision_reverse.wav" id="201_nightrev"]
 [ext_resource type="AudioStream" uid="uid://dwgvlmdqky5xi" path="res://sounds/menu-selection-click.wav" id="202_menuclick"]
 [ext_resource type="AudioStream" uid="uid://v2t5v1goocfk" path="res://sounds/laser3.wav" id="203_laser3"]
+[ext_resource type="AudioStream" uid="uid://bb7lne6d13pev" path="res://sounds/ice-spell.wav" id="204_icespell"]
 
 [sub_resource type="Animation" id="Animation_4rqlr"]
 resource_name = "1s"
@@ -306,7 +307,7 @@ bus = &"SFX"
 stream = ExtResource("202_menuclick")
 bus = &"SFX"
 
-[node name="Laser3" type="AudioStreamPlayer" parent="SFX"]
+[node name="Laser3" type="AudioStreamPlayer" parent="SFX" unique_id=651965665]
 stream = ExtResource("203_laser3")
 volume_db = -6.0
 bus = &"SFX"
@@ -549,6 +550,11 @@ bus = &"SFX"
 
 [node name="BlipSounds1" type="AudioStreamPlayer" parent="SFX" unique_id=94675837]
 stream = ExtResource("43_j27j0")
+volume_db = -4.0
+bus = &"SFX"
+
+[node name="IceSpell" type="AudioStreamPlayer" parent="SFX" unique_id=1204477123]
+stream = ExtResource("204_icespell")
 volume_db = -4.0
 bus = &"SFX"
 

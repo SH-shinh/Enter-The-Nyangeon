@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" format=3 uid="uid://cfl6r04aav2ko"]
+
+[ext_resource type="Texture2D" uid="uid://bnvupuyvgov8p" path="res://sprites/update_item/overload_chip.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://cvlwfck2jbhvs" path="res://resources/upgrades/ability_upgrade.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = "overload_chip"
+icon = ExtResource("1_icon")
+name = "过载芯片"
+rare = 1
+order_num = 3
+forward = "最大持有3个
++1每次叠加的层数"
+negative = "身边有感电目标时，你会被闪电链接入"
+item_tags = 131072

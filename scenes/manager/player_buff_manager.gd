@@ -39,6 +39,19 @@ func _layer_mult() -> float:
 func _scale_max_layer(base: int) -> int:
 	return max(1, int(floor(base * _layer_mult())))
 
+# 玩家侧感电：层数上限固定 999，不受 stats.shock_layer 与 buff_layer_mult 影响（用户裁定 2026-11-14）。
+# 判定依据是「挂了 player_shock_component」，因此 player_shock / overload_chip 及将来同类 Buff 自动适用。
+func _is_player_shock(buff: Buff) -> bool:
+	if buff == null or buff.component_scene == null:
+		return false
+	return str(buff.component_scene.resource_path).ends_with("player_shock_component.tscn")
+
+func _create_entry(buff: Buff, value: Array) -> Dictionary:
+	var entry: Dictionary = super._create_entry(buff, value)
+	if _is_player_shock(buff):
+		entry["max_layer"] = ShockChain.PLAYER_SHOCK_MAX_LAYERS
+	return entry
+
 # 只对玩家自身的有益 buff 乘算时长；debuff 不受影响
 func _duration_multiplier(buff: Buff) -> float:
 	if buff == null or buff.is_debuff:

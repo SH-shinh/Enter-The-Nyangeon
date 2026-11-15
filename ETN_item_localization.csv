@@ -812,3 +812,55 @@ Chance to perform a quick reload when firing","Único
 Disparar tem chance de acionar uma recarga instantânea","Độc Nhất
 Có xác suất thực hiện nạp đạn nhanh khi bắn"
 rapid_loader_negative, , , ,
+mysterious_cables_name,神秘线缆,Mysterious Cables,Cabos Misteriosos,Dây Cáp Bí Ẩn
+mysterious_cables_description,聚集电子设备便会无限增殖的线缆，每命中同一目标8次使其叠加1层感电。,Cables that multiply endlessly around electronic devices. Every 8 hits on the same target adds 1 Shock layer.,"Cabos que se multiplicam sem parar perto de aparelhos eletrônicos. A cada 8 acertos no mesmo alvo, aplica 1 camada de Eletricidade.",Loại dây cáp sinh sôi không ngừng khi ở gần thiết bị điện tử. Mỗi 8 lần trúng cùng một mục tiêu sẽ cộng 1 tầng Nhiễm Điện.
+mysterious_cables_forward,"最大持有3个
+减少1次需要的命中次数","Max Stack: 3
+Reduces the hits needed by 1","Acúmulo Máximo: 3
+Reduz em 1 os acertos necessários","Tối đa 3 cái
+Giảm 1 lần trúng cần thiết"
+mysterious_cables_negative,, , ,
+weird_wire_name,贵重电缆,Weird Wire,Cabo Valioso,Dây Cáp Quý Giá
+weird_wire_description,只有在千年废墟才能看到的的贵重电缆。,A precious cable found only in the Millennium Ruins.,Um cabo valioso encontrado apenas nas Ruínas da Millennium.,Một cuộn cáp quý chỉ tìm thấy ở Phế Tích Millennium.
+weird_wire_forward,"独特
+感电目标死亡时将其感电层数传导给周围2个敌人","Unique
+When a Shocked enemy dies, its Shock layers spread to 2 nearby enemies","Único
+Quando um inimigo com Eletricidade morre, as camadas dele se espalham para 2 inimigos próximos","Độc Nhất
+Khi kẻ địch bị Nhiễm Điện chết, các tầng của nó lan sang 2 kẻ địch gần đây"
+weird_wire_negative, , , ,
+overload_chip_name,过载芯片,Overload Chip,Chip de Sobrecarga,Chip Quá Tải
+overload_chip_description,超负荷运载的芯片，自身常驻感电每层感电+4%全局伤害。,An overclocked chip that leaves you permanently Shocked. Each Shock layer grants +4% Global Damage.,Um chip sobrecarregado que mantém você permanentemente com Eletricidade. Cada camada concede +4% de Dano Global.,Một con chip quá tải khiến bản thân luôn bị Nhiễm Điện. Mỗi tầng Nhiễm Điện cộng +4% Sát Thương Toàn Cục.
+overload_chip_forward,"最大持有3个
++1每次叠加的层数","Max Stack: 3
++1 Layer per Stack","Acúmulo Máximo: 3
++1 camada por acúmulo","Tối đa 3 cái
++1 tầng mỗi lần cộng dồn"
+overload_chip_negative,身边有感电目标时，你会被闪电链接入,You join the lightning chain when a Shocked enemy is nearby,Você entra na corrente elétrica quando há um inimigo com Eletricidade por perto,Bạn sẽ bị nối vào chuỗi sét khi có kẻ địch Nhiễm Điện ở gần
+ggc_replica_name,GGC复刻版,GGC Replica,Réplica GGC,Bản Sao GGC
+ggc_replica_description,曾经风靡一世的游戏机，「Game Girl Color」的复刻版！,"A replica of the Game Girl Color, the handheld console that once took the world by storm!","Uma réplica do Game Girl Color, o portátil que um dia conquistou o mundo!","Bản sao của Game Girl Color, chiếc máy chơi game từng làm mưa làm gió một thời!"
+ggc_replica_forward,+2感电上限,+2 max Shock layers,+2 de camadas máximas de Eletricidade,+2 giới hạn tầng Nhiễm Điện
+ggc_replica_negative, , , ,
+arc_lighter_name,电弧打火机,Arc Lighter,Isqueiro a Arco,Bật Lửa Hồ Quang
+arc_lighter_description,露营必备工具，防风性能很好，也不用担心会咬炸。,A camping essential with excellent wind resistance — and no need to worry about it exploding.,"Item essencial para acampar, com ótima resistência ao vento — e sem preocupação de explodir.","Vật dụng cần thiết khi cắm trại, chống gió rất tốt và không phải lo nó phát nổ."
+arc_lighter_forward,"独特
+对燃烧中的敌人施加感电伤害可立刻叠满燃烧","Unique
+Applying Shock damage to a burning enemy instantly maxes out Burn stacks.","Único
+Aplicar dano de Eletricidade a um inimigo em chamas enche instantaneamente as camadas de Queimadura.","Độc Nhất
+Áp dụng ST Nhiễm Điện lên kẻ địch đang thiêu đốt sẽ lập tức đạt giới hạn tầng thiêu đốt."
+arc_lighter_negative, , , ,
+cucumber_toothpaste_name,黄瓜味牙膏,Cucumber Toothpaste,Pasta de Dente de Pepino,Kem Đánh Răng Vị Dưa Chuột
+cucumber_toothpaste_description,特点是有着黄瓜的清爽气味，但由于过于独特而导致好恶两极分化，击倒中毒敌人后会生成一滩毒池。,Known for its refreshing cucumber scent — so distinctive that people either love it or hate it. Defeating a poisoned enemy leaves a pool of poison behind.,Conhecida pelo aroma refrescante de pepino — tão peculiar que divide opiniões. Derrotar um inimigo envenenado deixa uma poça de veneno.,Nổi bật với mùi dưa chuột thanh mát — quá đặc biệt nên chia thành hai phe yêu/ghét. Hạ gục kẻ địch trúng độc sẽ để lại một vũng độc.
+cucumber_toothpaste_forward,"最大持有3个
+提高毒池毒伤比例","Max Stack: 3
+Increases the poison pool's damage ratio","Acúmulo Máximo: 3
+Aumenta a proporção de dano da poça de veneno","Tối đa 3 cái
+Tăng tỷ lệ sát thương của vũng độc"
+cucumber_toothpaste_negative, , , ,
+colgante_piece_name,圆盘碎片,Colgante Piece,Colgante Piece,Colgante Piece
+colgante_piece_description, 科尔甘特圆盘坠饰的损坏碎片，近战伤害命中恶寒敌人可造成飞散的冰晶。,A broken fragment of a Colgante disc pendant. Melee hits on Chilled enemies scatter ice crystals.,Um fragmento quebrado do pingente de disco Colgante. Acertos corpo a corpo em inimigos com Calafrio espalham cristais de gelo.,Mảnh vỡ của mặt dây chuyền đĩa Colgante. Đánh cận chiến lên kẻ địch bị Rét sẽ làm bắn tung các tinh thể băng.
+colgante_piece_forward,"最大持有3个
++1冰晶数量","Max Stack: 3
++1 Ice Crystal count","Acúmulo Máximo: 3
++1 quantidade de Cristais de Gelo","Tối đa 3 cái
++1 số lượng Tinh Thể Băng"
+colgante_piece_negative, , , ,

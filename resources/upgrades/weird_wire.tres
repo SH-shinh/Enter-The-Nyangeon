@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" format=3 uid="uid://dg5kspodiey01"]
+
+[ext_resource type="Texture2D" uid="uid://c48v5w1vf0ogs" path="res://sprites/update_item/weird_wire.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://cvlwfck2jbhvs" path="res://resources/upgrades/ability_upgrade.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = "weird_wire"
+icon = ExtResource("1_icon")
+name = "贵重电缆"
+rare = 2
+order_num = 1
+forward = "感电目标死亡时
+将其感电层数传导给周围2个敌人"
+item_tags = 131072
+tags = Array[String](["感电"])

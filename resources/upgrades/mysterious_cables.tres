@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://sprites/update_item/mysterious_cables.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = "mysterious_cables"
+icon = ExtResource("1_icon")
+name = "神秘线缆"
+rare = 1
+order_num = 3
+description = ""
+forward = "最大持有3个
+减少1次需要的命中次数"
+negative = ""
+item_tags = 131073
+tags = Array[String](["感电", "弹道"])
+weight = 1.0

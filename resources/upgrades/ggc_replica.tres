@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://sprites/update_item/ggc_replica.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = "ggc_replica"
+icon = ExtResource("1_icon")
+name = "GGC复刻版"
+rare = 0
+order_num = -1
+description = ""
+forward = "+2感电层上限"
+negative = ""
+item_tags = 131072
+tags = Array[String](["感电"])
+weight = 1.0

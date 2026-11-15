@@ -60,6 +60,8 @@ const BBOX_LIMIT := {
 	"hare_lock_idle_frames.res": 62,
 	"hare_lock_cursor_frames.res": 126,
 	"hare_mark_idle_frames.res": 62,
+	# 圆盘碎片迸发：画布 140，留 2px 余量
+	"snowflake_burst_frames.res": 136,
 	
 }
 
@@ -81,6 +83,7 @@ const ONESHOT := {
 	"explosion_small_frames.res": true,
 	"explosion_big_frames.res": true,
 	"hare_lock_in_frames.res": true,
+	"snowflake_burst_frames.res": true,
 	
 }
 
@@ -206,6 +209,12 @@ func _initialize() -> void:
 	var epa := Baker.save_sprite_frames(pa, "res://scenes/effects/poison_aura_frames.res", "combined")
 	print("BAKE dot_aura burning n=%d err=%s | poison n=%d err=%s" % [ba.n, str(ea), pa.n, str(epa)])
 
+	# 圆盘碎片迸发：参考库 ice/snowflake-burst 的 pop 段（去雪花 + 整体 1.5×）
+	var snow_burst: Script = load("res://scenes/effects/pixelfx_snowflake_burst.gd")
+	var bfz: Dictionary = Baker.bake(snow_burst, {"seed": 8.0})
+	var efz := Baker.save_sprite_frames(bfz, "res://scenes/effects/snowflake_burst_frames.res", "combined")
+	print("BAKE snowflake_burst n=%d err=%s" % [bfz.n, str(efz)])
+
 	# Hare 锁定框（黄绿、无 actor）：入场扫描一次 + 呼吸循环
 	var lock_in: Script = load("res://scenes/effects/pixelfx_hare_lock_in.gd")
 	var lock_idle: Script = load("res://scenes/effects/pixelfx_hare_lock_idle.gd")
@@ -244,6 +253,7 @@ func _initialize() -> void:
 		[bid, "hare_lock_idle_frames.res"],
 		[bc, "hare_lock_cursor_frames.res"],
 		[bm, "hare_mark_idle_frames.res"],
+		[bfz, "snowflake_burst_frames.res"],
 	]:
 		ok = _check_frames(pair[0], pair[1]) and ok
 	for pair in maki_checks:

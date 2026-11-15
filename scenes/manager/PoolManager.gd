@@ -110,6 +110,9 @@ const IDLE_LIMITS := {
 	"cannon_flash_1": 10,
 	"hit_flash": 10,
 	"hit_flash_2": 10,
+	# 圆盘碎片：冰片弹体 + 发射迸发特效
+	"frost_shard": 60,
+	"snowflake_burst": 16,
 }
 
 @onready var floating_text_scene: PackedScene = preload("res://ui/floating_text.tscn")
