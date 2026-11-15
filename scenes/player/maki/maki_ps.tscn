@@ -4,11 +4,11 @@
 [ext_resource type="Resource" uid="uid://ddlwsbdn8hn6j" path="res://resources/buff/enemy_buff/fire_dot.tres" id="2_fire"]
 [ext_resource type="Resource" uid="uid://dsblwps2uxvdu" path="res://resources/buff/enemy_buff/poison_dot.tres" id="3_poison"]
 [ext_resource type="Resource" uid="uid://lmang0jl8vw2" path="res://resources/buff/enemy_buff/chill_dot.tres" id="4_chill"]
-[ext_resource type="Resource" path="res://resources/buff/enemy_buff/shock_dot.tres" id="9_shock"]
 [ext_resource type="Resource" path="res://resources/buff/enemy_buff/maki_paint_mark.tres" id="5_paint"]
 [ext_resource type="Resource" path="res://resources/buff/enemy_buff/maki_paint_mark_t3.tres" id="6_paint_t3"]
-[ext_resource type="AudioStream" uid="uid://c01aancfk3jra" path="res://sounds/magic3.wav" id="7_paintsfx"]
 [ext_resource type="Shader" uid="uid://cu25jaim3jw4p" path="res://shaders/maki_paint_charge_bar.gdshader" id="8_bar_shader"]
+[ext_resource type="AudioStream" uid="uid://c1cyqih14f14m" path="res://sounds/aerosol-spray.wav" id="9_d8nab"]
+[ext_resource type="Resource" path="res://resources/buff/enemy_buff/shock_dot.tres" id="9_shock"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_paint_bar"]
 resource_local_to_scene = true
@@ -48,6 +48,6 @@ mouse_filter = 2
 
 [node name="PaintballSound" type="AudioStreamPlayer2D" parent="." unique_id=1390640285]
 process_mode = 3
-stream = ExtResource("7_paintsfx")
-volume_db = 6.0
+stream = ExtResource("9_d8nab")
+volume_db = 3.0
 bus = &"SFX"
