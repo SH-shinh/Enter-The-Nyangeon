@@ -107,6 +107,7 @@ func draw(p: Px.Painter) -> void:
 9. **干净**：贴合画布、结束为空或循环无缝、完全确定性，`pfx check` 通过。
 
 ## 7. 二次创作工作流（把库当蓝本的具体操作）
+按**用途**选参考（先定场景再挑题材）：`.agents/skills/pixelfx-catalog/references/by-use-case.md`。
 
 `AUTHORING.md:224-237` 的方法：**先找参考 → 一句话说清美术意图 → 起草 → 渲染看 → 改最差的一处 → 反复三轮**。
 
@@ -161,6 +162,11 @@ $fx = 'third_party\pixelfx-godot\godot\addons\pixelfx\fx'
 > `holy/heal-aoe` 被 fork 成 `scenes/effects/pixelfx_heal_ring.gd` + `pixelfx_heal_plus.gd`，用 `script/bake_pixelfx_fx.gd`
 > 烘成 SpriteFrames 后在运行时播放（LIVE 实测 58.6ms/帧，常驻光环不可用）。下方三种方式仍适用于其它效果。
 > **可执行版**：本管线的逐步操作、适配清单与坑表已沉淀为 skill .agents/skills/pixelfx-effect-authoring/（配 pixelfx-catalog 选型、godot-baked-vfx 运行时）。
+>
+> **追加（2026-11-10）**：大/小爆炸也改成烘焙帧 —— `scenes/effects/pixelfx_explosion_{small,big}.gd`（fork 自
+> `explosions/small-explosion`，按俯视重写）+ 共用件 `pixelfx_explosion_lib.gd` → `explosion_{small,big}_frames.res`
+> （0.55s/160×160/18 帧、0.85s/224×224/27 帧，30fps），由 `script/explosion.tscn` / `small_explosion.tscn` 的
+> `AnimatedSprite2D` 播放；原 4 路 GPUParticles2D + 6–9 个物理碎片节点已删。
 
 **A. 纯读（0 代码）**
 把本快照当教程与配方库，用来改 ENN 现有的 `GPUParticles2D` / `AnimationPlayer` / `shaders/` 特效。适合只想学"相位编排 + 光逻辑"。

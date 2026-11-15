@@ -4,9 +4,10 @@ description: >
   Find the right source effect in the vendored pixelfx-godot snapshot
   (third_party/pixelfx-godot): search 244 effects by id / meta tags / description,
   pick a blueprint for a target look (heal, poison, rage, hit spark, pickup, UI,
-  ground hazard), render a contact sheet, and know the licensing + quality bar
-  before forking it. Use when choosing which pixelfx effect to port, asking
-  "参考库里有没有…/ 哪个效果像…", or before handing off to
+  ground hazard), select by use case (enemy status / hit feedback / AoE / projectile /
+  pickup / UI / weather / spawn / heal), render a contact sheet, and know the
+  licensing + quality bar before forking it. Use when choosing which pixelfx effect
+  to port, asking "参考库里有没有…/ 哪个效果像…", or before handing off to
   pixelfx-effect-authoring.
 ---
 
@@ -39,7 +40,25 @@ Get-ChildItem "$SNAP\addons\pixelfx\fx" -Recurse -Filter *.gd | Select-String -P
 
 完整清单：`$SNAP\docs\CATALOG.md`（每个效果的描述与标签）。
 
-## 21 个分类（挑蓝本用）
+## 先按用途选（推荐入口）
+
+做特效**先看用途，再看题材**：`references/by-use-case.md` 有 10 类用途的完整表
+（首选 id + 备选 + 本项目已落地 + 锚定/z/循环方式 + 选型误区）。速查：
+
+| 用途 | 首选 | 本项目已落地 |
+|---|---|---|
+| 敌人持续状态 / 光环 | `status/poisoned` | 腐化 / 狂怒 / 恶寒 |
+| 命中 / 受击反馈 | `impacts/hit-spark` | 未落地 |
+| 范围 / 领域 / 地面圈 | `holy/heal-aoe` | 治疗圈 / 毒池 / Serina 光环 |
+| 技能爆发 / 入场 | `holy/holy-pillar` | Serina 爆发环 / 入场光柱 |
+| 弹道 / 拖尾 / 命中爆点 | `projectiles/bullet-tracer` | Maki 彩弹 |
+| 拾取 / 开箱 / 升级 | `pickups/coin-spin` | 未落地 |
+| UI 数字 / 提示 | `ui/damage-number` | 未落地 |
+| 环境 / 天气 | `weather/rain` | 未落地（全屏 320×180） |
+| 入场 / 退场 / 死亡消散 | `spawn/poof` | 未落地 |
+| 治疗 / 回血 | `holy/heal` | 治疗圈 / "+" / Serina 螺旋 |
+
+## 21 个分类（题材清单）
 
 | 分类 | 数量 | 画布 | 时长 s | 循环 | 代表 |
 |---|---|---|---|---|---|
@@ -91,6 +110,7 @@ Get-ChildItem "$SNAP\addons\pixelfx\fx" -Recurse -Filter *.gd | Select-String -P
 
 ## 参考
 
-- `references/categories.md`：ENN 相关分类的完整 id 清单。
+- `references/by-use-case.md`：**按用途选型**（10 类场景 → 首选/备选/已落地/锚定方式/误区）。
+- `references/categories.md`：ENN 相关分类的完整 id 清单（按题材）。
 - `docs/REFERENCE_PIXELFX.md`：库的整体说明、尺度对齐、接入方式、常见坑。
 - 相关 skill：`pixelfx-effect-authoring`（落地管线）、`godot-baked-vfx`（运行时）。

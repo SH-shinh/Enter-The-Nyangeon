@@ -35,7 +35,9 @@ description: >
 ## 六步管线
 
 ### 1) 选型
-先用 `pixelfx-catalog` skill 找同族蓝本；再确认它**不含必须重绘身体**的部分。
+先按**用途**查 `pixelfx-catalog/references/by-use-case.md`（敌人状态/命中/范围/弹道/拾取/UI/天气/入场/治疗），
+拿到首选 + 2–3 个备选；再按题材用 `pixelfx-catalog` 的 `categories.md` 扩散。
+定稿前确认它**不含必须重绘身体**的部分（含 `o.actor` 的效果要做 bodyless 改造）。
 
 ### 2) fork
 在 `scenes/effects/` 新建 `pixelfx_<name>.gd`，不要改 `third_party/`（快照只读）：
