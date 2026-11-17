@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" uid="uid://bg4rhqy2owatq" path="res://sprites/update_item/lace_pillow.png" id="1_lace"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = "lace_pillow"
+icon = ExtResource("1_lace")
+name = "蕾丝枕头"
+rare = 1
+order_num = 3
+special_rules = 0
+description = "绣着蕾丝的柔软枕头。最适合趁敌人还满着血、毫无防备时先下手——第一发子弹会格外致命。"
+forward = "最大持有3个
+子弹对满血敌人造成200%/300%/400%伤害"
+negative = ""
+item_tags = 1
+tags = Array[String](["弹道"])
+weight = 1.0
