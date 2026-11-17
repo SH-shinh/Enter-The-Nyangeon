@@ -4697,6 +4697,7 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 ### [Combat] 隐身/全息嘲讽要同时处理选敌缓存、无目标与直读 player
 - Evidence / 证据: `script/player.gd` 的 `is_stealthed()`（读 `stealth` buff）；`script/entity_ENEMY.gd:346-356`（`force_retarget`）、`:362`（`_select_target`）、`:410`（`_is_valid_player_target`）、`:425`（`get_target_position`）、`:733`（`ai_steer`）；`scenes/player/kotama/kotama_ps.gd`、`scenes/player/kotama/kotama_hologram.gd`；`scenes/enemies/tank_gun_1.gd`、`scenes/enemies/boss/goliath.gd`、`scenes/enemies/boss/erosion_tower.gd`。
 - Notes / 说明: 只给 `Enemy` 加 `is_stealthed` 过滤不够。`get_target()` 有约 0.1s 缓存，全息 set/clear `aggro_override` 后必须 `force_retarget()` 才能立即生效；`get_target_position()` 不能再回退 `_ensure_player()`，否则隐身玩家仍会被“隔空瞄准”；`tank_gun_1`/`goliath`/`erosion_tower` 这类直接读 `player` 或目标位置的射击入口要单独加无目标守卫。全息不是 `Player` 组、无 HurtBox，只靠 `aggro_override` 吸引；`EnemyAI` 会因 override 跳过共享导航场，改走直线追击，这是接受的设计取舍，不是 bug。
+- SUPERSEDED: 2026-11-17 复杂地形下全息带 `is_threat_nav_target()` 标记会进入 EnemyAI/导航场（`EnemyAI._is_nav_node`/`ai_steer` 放行）；普通场景和外部无标记 taunt 仍直线。取舍保留为“普通场景直线、complex path 寻路”。
 - Source / 来源: code
 - Date / 日期: 2026-11-16
 
@@ -4829,6 +4830,8 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 ### [Aggro] 多全息不再先到先得：ThreatAggro 权重分配
 - Evidence / 证据: `script/threat_aggro.gd`（register/unregister、0.25s tick、`_pick_target` 的 proximity/weight/hash/sticky）、`scenes/player/kotama/kotama_hologram.gd`（`taunt_weight=2.0`、despawn 注销、旧 `_taunted` 删除）、`scenes/player/kotama/kotama_ps.gd`（T3 残影 `taunt_weight=1.4`）、`project.godot`（autoload `ThreatAggro`）。
 - Notes / 说明: 旧实现每个全息自己扫描并直接写 `aggro_override`，先占者赢，后续全息永远不抢；主全息存在时 T3 残影基本分不到敌人。新实现由 `ThreatAggro` 统一管理候选，按 `score = hash01(enemy,holo)^(1/effective_weight)` 选目标，`effective_weight = weight × (0.6+0.4×proximity)`，当前目标有 1.15 粘性；目标变化才 `force_retarget()`。主全息2.0、残影1.4；`despawn` 必须先 unregister，不能等烟雾结束，否则敌人会追已消失的全息。外部 `aggro_override`（非注册候选）和 `route_target` 完全不碰。`KotamaHologram` 用 `/root/ThreatAggro` 动态调用，避免脚本解析依赖 autoload 名称。本轮已把 `Player`/`RemotePlayer` 扫描进同一候选池（玩家权重默认1.0）；敌人会在玩家与全息之间按权重/距离/hash 分配，玩家隐身/倒地时自动移出候选。
+- SUPERSEDED: 2026-11-17 玩家/远端玩家目标改为写 `threat_target`（AI 寻路保留），全息继续写 `aggro_override`；本条所述“分配”仍成立，字段以新条目为准。
+- SUPERSEDED: 2026-11-17 complex path 下全息带 `is_threat_nav_target()` 标记，`EnemyAI`/`ai_steer` 不再因 `aggro_override` 跳过；外部无标记 override 仍直线。
 - Source / 来源: user + code + test
 - Date / 日期: 2026-11-17
 
@@ -4842,4 +4845,35 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - Evidence / 证据: `scenes/player/kotama/kotama_ps.gd`（`_broadcast_kotama_event`、`kotama_stealth`/`kotama_holo_spawn`/`kotama_holo_despawn`/`kotama_break_fx`、远端 `_apply_network_*`）、`scenes/player/kotama/kotama_hologram.gd`（`despawn_started`、`play_smoke_sound`）。
 - Notes / 说明: `KotamaPS._set_stealth_state()` 直接调用 `player_buff_manager.apply_buff/remove_source`，不会经过 `BuffRouter` 的 `player_buff_apply_interceptor`，因此联机不会自动广播隐身；必须走 `Player.broadcast_character_event`。远端应用隐身时也应**直接**操作 `player_buff_manager`，不要再走 `BuffRouter`，否则会被 `_gate_player_buff_apply` 再转交一次。远端全息代理只做视觉 + Host 侧 `ThreatAggro` 仇恨，不要写 `_hologram`，也不要有本机 PS 的减 CD/标记副作用。`KotamaHologram` 的 `despawn_started` 必须在 `despawn()` 开头 emit，才能让主全息/残影的网络 despawn 及时发出；远端代理 `play_smoke_sound=false` 避免每个客户端重复播烟雾。Host 生成代理后 `_ready` 会注册 `ThreatAggro`，这是客机全息能拉仇恨的关键。
 - Source / 来源: code + user
+- Date / 日期: 2026-11-17
+
+### [Combat] `enemy_damage_calculating` 只由敌方 `HealthComponent` 发射，前置增伤按伤害标签过滤即可
+- Evidence / 证据: `script/health_component.gd:261`（唯一 emit 点，且在 `not TRUE_DAMAGE` 分支内）、`script/player_health_component.gd`（无该信号）、`script/summoned_health_component.gd`（无该信号）；`scenes/update_item/lace_pillow.gd`、`scenes/update_item/peroro_wheel.gd`。
+- Notes / 说明: 订阅该信号写目标 `damage_multiplier` 的前置增伤道具只会在敌方受击时触发；玩家/召唤物承伤走各自的组件，不会误吃这个乘区。真伤在该阶段之前就被 `is_true` 分流，既不发射前置信号也不乘 `damage_multiplier`，所以这类道具对真伤天然无效（如 `kitchen_knife` 的 MELEE+TRUE_DAMAGE）。新道具若只想吃玩家枪弹，仍应自行加 `source_type.has(GameTags.PLAYER)`（召唤物弹是 SUMMONED、装备弹是 EQUIP）。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-17
+
+### [Enemy/AI] 常规选敌不要写 `aggro_override`：它是 EnemyAI/导航场的关闭开关
+- Evidence / 证据: `script/entity_ENEMY.gd`（`ai_steer()` 在 `aggro_override != null` 时首段 `return base_dir`；`threat_target` 不早退）、`script/enemy_ai.gd`（`_is_candidate()` 排除 `aggro_override` 但保留 `threat_target`）、`script/threat_aggro.gd`（玩家目标写 `threat_target`，全息写 `aggro_override`）、`tests/_threat_aggro_probe.tscn`（本地探针：修复前 23 条失败、修复后 0）。
+- Notes / 说明: ThreatAggro 把 `Player`/`RemotePlayer` 也加入候选后，如果仍写 `aggro_override`，单机只有一个玩家时也会给**所有**敌人写入 override：`ai_steer()` 直接返回 `base_dir`、`EnemyAI._is_candidate()` 把敌人全部排除，共享导航场/阵型/密度/离墙推力全部失效（表现就是“寻路又没了”）。`aggro_override` 的语义只能是外部嘲讽或全息这类**非玩家**目标（接受直线追击）；常规加权选敌必须写 `threat_target`，它在 `_select_target()` 中位于 `route_target` 之后、最近玩家之前，且不参与 AI 互斥。判断/清理时只把“已注册候选”的 `aggro_override` 当作自己写的，外部 override（包括指向玩家）不能被覆盖或清除；`idle_state()` 必须同时清 `aggro_override`/`threat_target`。另外 ThreatAggro 遍历 "Enemy" 组时要排除 `EnemyPart`（护盾/手臂也在该组且没有目标字段），否则会向无属性节点 `set`。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-17
+
+### [Enemy/AI] 导航场按目标缓存，容量必须覆盖 co-op 玩家上限
+- Evidence / 证据: `script/enemy_nav_field.gd:20`（`MAX_FIELDS`）、`:444-490`（`ensure_rebuilt`/`_evict_one`）、`script/enemy_ai.gd:344-371`（每个 `_groups` 目标各建一张场）、`mod_sdk/coop_mod/mods/etn_coop/net/coop_net.gd:542`（`MAX_PLAYERS=4`）、`script/threat_aggro.gd`（玩家目标写 `threat_target`）、`tests/_threat_aggro_probe.tscn`（4 玩家：修复前 ready=2、修复后 ready=4）。
+- Notes / 说明: `EnemyNavField` 的场按目标 instance id 缓存，`MAX_FIELDS=2` 只够 1~2 人；3~4 人时逐个 `ensure_rebuilt()` 会 LRU 淘汰前面的场，之后该组 `is_ready(target)=false`，`sample()` 返回 ZERO、`dist()` 返回 INF，`ai_steer()` 退回直线/驻留——复杂地形绕障失效。ThreatAggro 把玩家加入候选后，加权目标会把敌人拆成更多组，使旧上限更容易触发。容量提到 4（仅 complex path 使用；单/双人实际场数不变），Mod 超过 4 目标仍按最旧淘汰。`threat_target`/`aggro_override` 是 host-only、不进敌人快照；远端玩家 `threat_weight` 未同步，host 按 1.0。临时探针强制清空场缓存后，2 组约 58.6ms、4 组约 113.4ms（≈1.94×，仍在 2× 门槛内；实战场按 600ms 求解且 seed 近邻可复用，实际重建频率低于该测法）。
+- SUPERSEDED: 2026-11-17 容量提升到 `MAX_FIELDS=8`（4 玩家 + 最多 4 个全息/残影目标）；全息/残影为静态目标，场可复用。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-17
+
+### [Enemy/AI] 隐身结束后的 0 仇恨窗口要同时过滤候选、选敌缓存与 fallback
+- Evidence / 证据: `script/player.gd`（`set_threat_silence`/`is_threat_silenced`/`clear_threat_silence`）、`script/entity_ENEMY.gd`（`get_target` 缓存失效、`get_nearest_player` 缓存失效、`_is_valid_player_target`）、`script/threat_aggro.gd`（`_active_candidates`/`_player_candidates`）、`scenes/player/kotama/kotama_ps.gd`（破隐/超时/外部移除/全息异常结束与 `_apply_network_stealth`）、`tests/_kotama_silence_probe.tscn`。
+- Notes / 说明: 隐身结束时 `is_stealthed()` 立刻变 false；只给 ThreatAggro 加过滤不够，`Enemy.get_nearest_player()` 的 fallback 和 `get_target()` 约 0.1s 缓存仍可能继续选中玩家；必须同时在 `_is_valid_player_target`、`get_target` 缓存、`get_nearest_player` 缓存、ThreatAggro 候选四处过滤。窗口只影响选敌，不改 `is_stealthed`/背刺/视觉；破隐、5s 超时、Buff 外部移除、全息异常消失都进入 0.5s；回合结束/升级/测试重置/游戏结束/倒地清理，重新隐身提前清除。联机经 `kotama_stealth` 的 `silence` 字段同步到 Host 镜像；缺省 0，兼容旧 payload。时间基准 `Time.get_ticks_msec()`，暂停时会按墙钟走完。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-17
+
+### [Enemy/AI] 复杂地形全息必须显式接入 EnemyAI，不能依赖 aggro_override 直线
+- Evidence / 证据: `scenes/player/kotama/kotama_hologram.gd`（`is_threat_nav_target()`）、`script/entity_ENEMY.gd`（`_ai_is_nav_target`、`ai_steer`、`ai_charge_path_clear`）、`script/enemy_ai.gd`（`_is_nav_node`、`_resolve_target`、`_is_candidate`）、`script/enemy_nav_field.gd`（`MAX_FIELDS`）、`tests/_holo_nav_probe.tscn`。
+- Notes / 说明: `aggro_override` 的默认语义是关闭 EnemyAI/导航场并直线追；全息沿用它时，复杂地形会直接撞墙。修法是给全息加 `is_threat_nav_target()` 标记，并在 `EnemyNavField.complex_path_enabled` 为真时让带标记的 override 进入 `_is_candidate`/`_resolve_target`，`ai_steer` 对这类目标不再早退；普通场景和外部无标记 taunt 仍保持直线。全息/残影是静态目标，`EnemyNavField` 的场可复用；容量 `MAX_FIELDS=8` 覆盖 4 玩家 + 4 全息/残影，超出仍按 LRU 淘汰并退回直线。外部嘲讽/技能不实现该标记，语义不变。
+- Source / 来源: code + test
 - Date / 日期: 2026-11-17

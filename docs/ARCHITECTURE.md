@@ -26,7 +26,7 @@ Declared in `project.godot:25-44`. **Order = `_ready()` order** (relevant: `Game
 | 13 | `ModManager` | `script/mod_manager.gd` | `Node` | Mod 包挂载/内容发现/注册表/id 治理/zip 导入；详见 §1.11、`CONVENTIONS.md` §10。 |
 | 13 | `CoinManager` | `scenes/manager/coin_manager.gd` | `Node` | 金币掉落/合并：池上限 `COIN_POOL_CAP=150`，满额时新掉落并入最近活跃金币；活跃集 `_active`（`instance_id→Node`）由 `coin.gd` 登记/注销。详见 §1.6、`SYSTEMS.md` §8。 |
 | 14 | `ExtensionHooks` | `script/extension_hooks.gd` | `Node` | 通用扩展点：一批默认空 `Callable` 槽（接管类 `*_gate`/`*_interceptor` + 通知类 `on_*`），供 mod 运行期挂接；未注入时本体逻辑与单机一致。详见 §1.12。 |
-| — | `ThreatAggro` | `script/threat_aggro.gd` | `Node` | 最小仇恨权重调度器：全息注册候选，按权重/距离/确定性 hash 为每个敌人分配 `aggro_override`；外部 override 与 `route_target` 不覆盖。当前已接全息与 `Player`/`RemotePlayer`。 |
+| — | `ThreatAggro` | `script/threat_aggro.gd` | `Node` | 最小仇恨权重调度器：全息注册候选，`Player`/`RemotePlayer` 每 tick 扫描进同一池；按权重/距离/确定性 hash 为敌人分配目标。玩家/远端玩家写 `threat_target`（保留 AI/导航场），全息等非玩家写 `aggro_override`；全息在 complex path 下带 `is_threat_nav_target()` 标记进入 EnemyAI 导航场，普通场景/外部嘲讽仍直线。外部 `aggro_override` 与 `route_target` 不覆盖。 |
 | 15 | `DebugPerformanceMonitor` | `ui/debug_performance_monitor.tscn` | `CanvasLayer` | F3 调试性能叠层（`layer=100`、右下角）：FPS、各层子节点数、`PoolManager.pool_stats()` 汇总与 Top 池、网络行占位（本体无网络）。**无门控**（任何构建 F3 均可切换）。自联机版 `ETN_coop` 的 `DebugPerformanceMonitor` 迁移；池统计走公开接口。 |
 | 16 | `CRTOverlay` | `ui/crt_overlay.tscn` | `CanvasLayer` | 全屏 CRT/VHS 滤镜（`layer=90`，游戏/UI 之上、调试叠层之下）：`BackBufferCopy(copy_mode=VIEWPORT)` 先拷贝整帧，再由全屏 `Filter` ColorRect 用 `shaders/crt_filter.gdshader`（pend00「VHS and CRT monitor effect」的 Godot 4 移植）采样叠加扫描线、荫罩、滚动干扰、噪点、色差、曲率与暗角。设置项 `Game.crt_filter` 默认关；关闭时两节点隐藏，无渲染开销；移动端强制禁用。`resolution` 跟随设计分辨率（640×360），扫描线 1:1 逻辑像素，荫罩频率取 `resolution.x / 3`；观感参数全在 `crt_filter_material.tres`。 |
 
