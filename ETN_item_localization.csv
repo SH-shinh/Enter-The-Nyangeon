@@ -864,3 +864,19 @@ colgante_piece_forward,"最大持有3个
 +1 quantidade de Cristais de Gelo","Tối đa 3 cái
 +1 số lượng Tinh Thể Băng"
 colgante_piece_negative, , , ,
+modification_part_name,改造零件,Modification Part,Peça de Modificação,Linh Kiện Cải Tạo
+modification_part_description,格黑娜杯公认的改造零件。根本不知道什么算被禁止的，总之就是要得到批准，召唤物造成伤害可施加1层感电。,"A modification part recognized by the Gehenna Cup. Nobody knows what counts as prohibited, but it needs approval anyway. Summoned damage applies 1 Shock layer.","Uma peça de modificação reconhecida pela Copa Gehenna. Ninguém sabe o que conta como proibido, mas precisa de aprovação de qualquer forma. Dano das invocações aplica 1 camada de Eletricidade.","Một linh kiện cải tạo được Cúp Gehenna công nhận. Không ai rõ thế nào là bị cấm, nhưng dù sao vẫn cần phê duyệt. Sát thương triệu hồi cộng 1 tầng Nhiễm Điện."
+modification_part_forward,"最大持有3个
+减少感电的施加冷却","Max Stack: 3
+Reduces Shock application cooldown","Acúmulo Máximo: 3
+Reduz o tempo de recarga da aplicação de Eletricidade","Tối đa 3 cái
+Giảm thời gian hồi khi áp dụng Nhiễm Điện"
+modification_part_negative, , , ,
+stun_grenades_name,震撼弹,Stun Grenade,Granada de Atordoamento,Lựu Đạn Choáng
+stun_grenades_description,填装强光与高频电击的投掷物，敌人被感电的同时会短暂僵直。,A thrown device packed with blinding light and high-frequency shocks. Enemies are briefly paralyzed when shocked.,Um artefato arremessável com luz ofuscante e choques de alta frequência. Inimigos ficam brevemente paralisados ao serem eletrocutados.,Thiết bị ném chứa ánh sáng chói lòa và xung điện tần số cao. Kẻ địch bị tê liệt trong chốc lát khi bị nhiễm điện.
+stun_grenades_forward,"独特
+感电施加时眩晕0.5秒","Unique
+Stuns for 0.5s when Shock is applied","Único
+Atordoa por 0,5s ao aplicar Eletricidade","Độc Nhất
+Gây choáng 0,5 giây khi áp dụng Nhiễm Điện"
+stun_grenades_negative,,,,

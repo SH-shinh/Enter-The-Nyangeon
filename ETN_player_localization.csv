@@ -99,3 +99,7 @@ chinatsu_ps_3,+100%增益叠加上限，子弹命中敌人时，根据自身拥�
 "hare_ps_1","+1攻击无人机，锁定瞄准框扩大并提高可锁定的敌人数量，标记的叠加上限提高，重复命中已标记敌人也可为自身叠加标记。","+1 attack drone. Lock reticle expands and locks more enemies; mark stack cap increases; repeated hits on marked enemies also add a mark to yourself.","",""
 "hare_ps_2","+1攻击无人机，锁定瞄准框扩大并提高可锁定的敌人数量，标记的叠加上限提高。","+1 attack drone. Lock reticle expands and locks more enemies; mark stack cap increases.","",""
 "hare_ps_3","+1攻击无人机，锁定瞄准框扩大并可锁定范围内所有敌人，标记的叠加上限提高，重复命中叠加标记需要的次数减少。","+1 attack drone. Lock reticle expands and can lock all enemies in range; mark stack cap increases; repeated hits require fewer marks.","",""
+kotama_ps_0,"可造成背刺伤害，停止射击2秒进入隐身并在原地放置一个全息影像，破隐射击必暴击并额外造成100%背刺伤害，破隐击杀返还穿透值。","Can deal backstab damage. After 2s without firing, enter stealth and place a hologram at your position. The breaking shot always crits and deals an extra 100% backstab damage; kills with it refund penetration.",,
+kotama_ps_1,"+50%背刺伤害，破隐射击每造成一次击杀可-20%下次进入隐身的时间，最多-80%。","+50% backstab damage. Each kill with the breaking shot reduces the time needed to re-enter stealth by 20%, up to 80%.",,
+kotama_ps_2,"+50%背刺伤害，全息影像对周围的敌人施加减益标记，破隐射击的额外背刺伤害提高到200%。","+50% backstab damage. The hologram applies a vulnerability mark to nearby enemies. The breaking shot's extra backstab damage is increased to 200%.",,
+kotama_ps_3,"+50%背刺伤害，标记的易伤提高，破隐击杀被标记的敌人时，可在目标位置留下一个2秒全息残影。","+50% backstab damage. Mark vulnerability is increased. Killing a marked enemy with the breaking shot can leave a 2s hologram echo at the target's position.",,
