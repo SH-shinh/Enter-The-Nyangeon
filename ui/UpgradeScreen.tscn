@@ -439,7 +439,7 @@ _data = {
 
 [node name="UpgradeScreen" type="CanvasLayer" unique_id=1283869893]
 process_mode = 3
-layer = 2
+layer = 4
 script = ExtResource("1_3wpjx")
 upgrade_card_scene = ExtResource("2_xb1k4")
 

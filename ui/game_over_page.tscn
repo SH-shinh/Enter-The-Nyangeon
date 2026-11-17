@@ -753,7 +753,7 @@ _data = {
 
 [node name="GameOverPage" type="CanvasLayer" unique_id=396713168]
 process_mode = 3
-layer = 2
+layer = 4
 visible = false
 script = ExtResource("1_1ys6c")
 bgm_loop = ExtResource("2_okksg")

@@ -35,11 +35,13 @@ func get_target_pos(target_position: Vector2):
 	target_pos = target_position * get_canvas_transform()
 
 func touch_mode_show():
-	Input.mouse_mode = Input.MOUSE_MODE_CONFINED_HIDDEN
+	# 回合开始：释放鼠标所有权；没有其它全屏 UI 持有时才真正隐藏指针。
+	UICursor.hide_for(self)
 	visible = true
 
 func touch_mode_hide():
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	# 回合升级页：取得鼠标所有权（升级页自己也会持有一份，见 ui/player_up_screen_date.gd）。
+	UICursor.show_for(self)
 	visible = false
 
 func get_player():

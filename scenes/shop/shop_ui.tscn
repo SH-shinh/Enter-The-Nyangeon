@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://owtvqmd3tfd2" path="res://sprites/update_item/refresh.png" id="4_88j4s"]
 
 [node name="ShopUI" type="CanvasLayer"]
+layer = 4
 script = ExtResource("1_lqpbk")
 
 [node name="Shop" type="Control" parent="."]

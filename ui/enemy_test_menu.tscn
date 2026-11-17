@@ -186,6 +186,7 @@ _data = {
 }
 
 [node name="EnemyTestMenu" type="CanvasLayer" unique_id=2074926915]
+layer = 4
 script = ExtResource("1_66oiq")
 enemy_group = Array[ExtResource("60_enemycard")]([ExtResource("72_esweep"), ExtResource("65_emodd"), ExtResource("62_eenh"), ExtResource("67_emystic"), ExtResource("68_ered"), ExtResource("73_etesta"), ExtResource("66_emp"), ExtResource("64_emenac"), ExtResource("74_etestrl"), ExtResource("75_etestsh"), ExtResource("69_esar"), ExtResource("70_esasg"), ExtResource("71_esrsr"), ExtResource("61_edroid"), ExtResource("63_elight")])
 

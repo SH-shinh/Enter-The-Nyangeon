@@ -1,5 +1,8 @@
 extends Control
 
+## 暂停菜单要高于 Hare/Kotama 屏幕滤镜（3）与普通弹窗（4），但仍低于 CRT（90）。
+const PAUSE_CANVAS_LAYER: int = 5
+
 @export var up_item_card: PackedScene
 @export_file("*.tscn") var path: String
 
@@ -34,6 +37,9 @@ var can_pause: bool = true
 var _pause_locked: bool = false
 
 func _ready():
+	var host_layer := get_parent() as CanvasLayer
+	if host_layer != null:
+		host_layer.layer = PAUSE_CANVAS_LAYER
 	hide()
 	visibility_changed.connect(func():
 		if ExtensionHooks.is_hook_active("pause_visibility"):

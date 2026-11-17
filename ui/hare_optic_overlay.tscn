@@ -20,7 +20,7 @@ shader_parameter/rain_speed = 0.5
 shader_parameter/rain_density = 0.55
 
 [node name="HareOpticOverlay" type="CanvasLayer" unique_id=1299801497]
-layer = 4
+layer = 3
 script = ExtResource("1_script")
 
 [node name="BackBufferCopy" type="BackBufferCopy" parent="." unique_id=75425688]

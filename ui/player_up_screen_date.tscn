@@ -354,7 +354,7 @@ _data = {
 
 [node name="PlayerUpScreenDate" type="CanvasLayer"]
 process_mode = 3
-layer = 2
+layer = 4
 scale = Vector2(0.8, 0.8)
 transform = Transform2D(0.8, 0, 0, 0.8, 0, 0)
 script = ExtResource("1_st26a")

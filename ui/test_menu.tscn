@@ -179,6 +179,7 @@ _data = {
 
 [node name="TestMenu" type="CanvasLayer" unique_id=909476141]
 process_mode = 3
+layer = 4
 script = ExtResource("1_e5cud")
 enemy = ExtResource("2_wasfc")
 
