@@ -1,0 +1,22 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/effects/bullet_casing.gd" id="1_casing"]
+
+[node name="BulletCasing" type="Node2D"]
+script = ExtResource("1_casing")
+
+[node name="Shadow" type="Sprite2D" parent="."]
+texture_filter = 1
+centered = false
+offset = Vector2(-2, -1)
+
+[node name="Body" type="Sprite2D" parent="."]
+texture_filter = 1
+centered = false
+offset = Vector2(-2, -1)
+
+[node name="Spark" type="Sprite2D" parent="."]
+visible = false
+texture_filter = 1
+centered = false
+offset = Vector2(-2, -1)

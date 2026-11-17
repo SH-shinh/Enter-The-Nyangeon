@@ -12,6 +12,9 @@ class_name PlayerGun
 @export var random_sounds: bool = false
 @export var semi_auto: bool = false
 @export var is_clip: bool = false
+## 开火是否抛壳（每扳机一颗，不按弹丸数）。非枪械类武器可在场景里关掉。
+@export var eject_casings: bool = true
+@export var casing_scene: PackedScene = preload("res://scenes/effects/bullet_casing.tscn")
 
 @onready var fire_sounds = $FireSounds
 @onready var reload_sounds = $ReloadSounds
@@ -59,6 +62,9 @@ func _physics_process(delta: float):
 			_shot_streak = 0
 	if stats.bullet_shoot_time > 0:
 		shoot_timer.wait_time = float(60.0 / stats.bullet_shoot_time )
+	# 眩晕（stun buff）：本帧不开火；枪的朝向由 StateMachine 早退一并停住。
+	if player != null and player.has_method("is_stunned") and player.is_stunned():
+		return
 	if player != null and is_shoot == true and shoot_timer.time_left <= 0 and ammo_reload_timer.time_left <= 0 and can_shoot == true :
 		_shoot()
 		if semi_auto == true:
@@ -142,6 +148,7 @@ func _shoot() -> void:
 	GameEvents.emit_shake_screen( stats.shake_length, 15 * stats.shake_mult, 0.025 )
 	_pending_damage_mult = _current_sustained_fire_damage_mult()
 	_shoot_bullet()
+	_eject_casing()
 	if PoolManager.fx_allowed(&"muzzle_flash"):
 		var now_shoot_flash = PoolManager.get_pool("player_flash")
 		if now_shoot_flash == null or now_shoot_flash.is_idle == 0:
@@ -186,6 +193,40 @@ func _shoot_bullet():
 				Callable(self, "_configure_bullet"),
 				Callable(self, "_emit_player_shot_pre")
 			)
+
+## 抛壳：每扳机一颗（不按弹丸数）。生成点就是 Gun 自身位置，离地高度取 Gun 的 y。
+## **不消耗子弹（`bullet_cost <= 0`，UI 显示 "∞"）的武器不抛壳**——没有弹壳概念。
+## 纯本地表现：不参与伤害/碰撞，不做联机同步。挂在 FloorLayer（在 YSort 之前），
+## 飞行期把 z_index 抬到世界层之上（不会被角色挡住），落地静止后 z 归 0 回到地板层；
+## 数量上限由 PoolManager.IDLE_LIMITS["casing"] 给，满额时环状复用最旧弹壳。
+func _eject_casing() -> void:
+	if eject_casings == false:
+		return
+	# 读运行时值：PlayerData 会按 base_bullet_cost * bullet_cost_mult 重算，不能读场景快照。
+	# 0 消耗的实例见 scenes/player/aris/aris.tscn（HUD 显示 "∞"）。
+	if stats == null or stats.bullet_cost <= 0.0:
+		return
+	if PoolManager.fx_allowed(&"casing") == false:
+		return
+	var floor_layer := get_tree().get_first_node_in_group("FloorLayer")
+	if floor_layer == null:
+		return
+	var aim: Vector2 = global_position.direction_to(crosshair_pos).normalized()
+	if aim == Vector2.ZERO:
+		aim = Vector2.RIGHT
+	# 抛壳口高度 = Gun 的 y：player.gd 每帧维护 gun.position.y = sprite_2d.position.y + gun_root(9)，
+	# 地面时约 -8（离地 8px），跳跃时 sprite_2d.position.y 更负 → Gun 更高，弹壳也从更高处抛出。
+	var ground: Vector2 = global_position
+	var start_height: float = 0.0
+	if player is Node2D:
+		var ground_y: float = (player as Node2D).global_position.y
+		start_height = maxf(0.0, ground_y - global_position.y)
+		ground = Vector2(global_position.x, ground_y)
+	var casing = PoolManager.get_pool("casing")
+	if casing == null:
+		casing = casing_scene.instantiate()
+		floor_layer.add_child(casing)
+	casing.active_state(ground, aim, start_height)
 
 func _configure_bullet(node: Node) -> void:
 	var direction: Vector2 = global_position \

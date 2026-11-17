@@ -61,6 +61,8 @@ const FX_BASE_MS := {
 	&"maki_paintball": 80,
 	&"shock_chain": 80,
 	&"chihiro_static_burst": 0,
+	# 0 = 不按间隔节流（每发都抛），只受 Game.effect_freq=0 的总开关控制。
+	&"casing": 0,
 }
 var _fx_last_ms: Dictionary = {}
 var _fx_body_last_ms: Dictionary = {}
@@ -89,6 +91,7 @@ const IDLE_LIMITS := {
 	"bullet_smoke_2": 30,
 	"floating_text": 100,
 	"chill": 30,
+	"stun_star_fx": 30,
 	"convert": 30,
 	"sugar_cube_steam": 15,
 	"player_flash": 5,
@@ -97,6 +100,9 @@ const IDLE_LIMITS := {
 	"summon_level_display": 16,
 	"floor_paint": 20,
 	"anomaly_paint": 24,
+	# 弹壳：俯视角抛壳后长期躺地，上限即「全场弹壳数」；满额环状复用最旧者。
+	# 6 发/秒下约 10s 才轮换一圈；想要留更久只需调大这个值。
+	"casing": 64,
 	"maki_paintball": 4,
 	# 感电链真实并发 ≤5：_spawn_arc 受 fx_allowed("shock_chain", 80ms) 全局节流，
 	# 单链寿命仅 0.25–0.35s。12 仍有 2.4 倍余量，不会触发 get_pool 满额强收活跃链。
