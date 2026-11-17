@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="PlayerCard" format=3 uid="uid://wryekeh1b5ok"]
+
+[ext_resource type="Script" uid="uid://mhculkp4opo6" path="res://resources/player/player.gd" id="1_player"]
+[ext_resource type="Texture2D" uid="uid://dne1ce5ylik22" path="res://sprites/player/kotama/kotama_picture_halo.png" id="2_halo"]
+
+[resource]
+script = ExtResource("1_player")
+name = "OTOSE KOTAMA"
+weapon = "ECHO LINK"
+weapon_type = "HG"
+sprite_path = "res://sprites/player/kotama/kotama_picture.png"
+halo = ExtResource("2_halo")
+color = Color(0.88235295, 0.74509805, 0, 1)
+description = "停止射击2秒后留下全息影像并隐身，隐身最多持续5秒，超时自动破隐并回收全息；普通背刺按背刺伤害属性结算；开火破隐，破隐子弹必暴击，背后额外获得100%背刺伤害（独立乘区）。"
+voice_name = "kotama"
+id = "kotama"
+scene_path = "res://scenes/player/kotama/kotama.tscn"
+card_scene = "res://scenes/player/kotama/kotama_card.tscn"

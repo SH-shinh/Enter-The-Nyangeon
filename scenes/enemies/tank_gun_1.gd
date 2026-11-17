@@ -36,8 +36,8 @@ func add_tank_bullet():
 		source_faction = Faction.PLAYER_SIDE
 	else:
 		source_faction = Faction.ENEMY_SIDE
-	var target: Node = body.get_target() if body != null else _ensure_player()
-	if target == null:
+	var target: Node = body.get_target() if body != null else null
+	if target == null or not is_instance_valid(target):
 		return
 	for i in gun_shoot_num:
 		var tank_bullet_ins = PoolManager.get_pool(pool_id)

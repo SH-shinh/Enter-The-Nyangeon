@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="Buff" format=3 uid="uid://ch73t1p7w74ar"]
+
+[ext_resource type="Texture2D" uid="uid://bgy6a4hn0xt3x" path="res://sprites/buff_icon/stealth_buff.png" id="2_lsw4w"]
+[ext_resource type="Script" uid="uid://dhb70b327wxvy" path="res://resources/buff/buff.gd" id="2_script"]
+[ext_resource type="PackedScene" uid="uid://blb7y4ngmnxfe" path="res://resources/buff/components/stealth_component.tscn" id="3_component"]
+
+[resource]
+script = ExtResource("2_script")
+id = "stealth"
+icon = ExtResource("2_lsw4w")
+name = "隐身"
+description = "停止射击后进入隐身，最多持续 5 秒；开火破隐。"
+source_refcount = true
+ignore_duration_multiplier = true
+component_scene = ExtResource("3_component")

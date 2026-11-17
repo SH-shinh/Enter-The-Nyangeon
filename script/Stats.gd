@@ -23,6 +23,7 @@ signal hurt_invalid_changed
 
 @export var critical_luck: int = 0 #暴击率
 @export var critical_damage: float = 1.5 #暴击伤害倍率
+@export var backstab_damage: float = 2.0 #背刺伤害倍率
 
 @export var luck: int = 0 #概率事件发生率
 @export var luck_critical_mult: float = 1 #暴击率乘算

@@ -20,6 +20,8 @@ enum State {
 @export var gun_root: float = 9
 ## 是否允许近战踢击。hare 用右键切换形态，需关闭以免同键触发。
 @export var allow_kick: bool = true
+## 敌人仇恨权重；多人目标分配由 ThreatAggro 使用，默认等权。
+@export var threat_weight: float = 1.0
 @export var base_pitch_scale: float = 1.0
 
 var ACCELERATION: float
@@ -188,6 +190,29 @@ func game_over_state(player_dead: bool):
 
 func get_downed() -> bool:
 	return is_downed
+
+## 隐身判定：buff 字典是唯一真相；视觉由 stealth buff 的 StealthComponent 负责。
+func is_stealthed() -> bool:
+	if player_buff_manager == null:
+		return false
+	var cbs = player_buff_manager.get("current_buff")
+	return cbs is Dictionary and cbs.has("stealth")
+
+## 眩晕判定：buff 字典即唯一真相（不写 can_move/can_control/gun.can_shoot，避免覆盖交互/蓄力等其它系统）。
+func is_stunned() -> bool:
+	if player_buff_manager == null:
+		return false
+	var cbs = player_buff_manager.get("current_buff")
+	return cbs is Dictionary and cbs.has("stun")
+
+## 进入眩晕：空中被打断时直接落地，避免定在半空；跳跃/飞行计时一并停掉。
+func on_stun_start() -> void:
+	sprite_2d.position.y = -17
+	if jump_timer != null:
+		jump_timer.stop()
+	if fly_timer != null:
+		fly_timer.stop()
+	velocity = Vector2.ZERO
 
 # 联机倒地/复起的最小状态接口；具体表现（视觉、救援输入、操作禁用）由 mod 负责。
 func set_downed_state(value: bool) -> void:

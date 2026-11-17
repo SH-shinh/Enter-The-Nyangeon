@@ -677,9 +677,12 @@ static func _is_candidate(enemy: Enemy) -> bool:
 		return false
 	if enemy.faction == Faction.PLAYER_SIDE:
 		return false
-	if enemy.route_target != null or enemy.aggro_override != null:
+	if enemy.route_target != null or (enemy.aggro_override != null and is_instance_valid(enemy.aggro_override)):
 		return false
 	if enemy.is_idle != 0 or enemy.frozen:
+		return false
+	# 眩晕期间不推进 AI（状态机已早退，这里省掉导航求解）。
+	if enemy.has_method("is_stunned") and enemy.is_stunned():
 		return false
 	if enemy.is_standby():
 		return false

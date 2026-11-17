@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PSCard" format=3 uid="uid://der3fokgx6y7w"]
+
+[ext_resource type="Script" uid="uid://vole8yfgj5cu" path="res://resources/player/PS/ps_card.gd" id="1_kotama_ps"]
+[ext_resource type="Texture2D" uid="uid://cocynswa5nhbc" path="res://sprites/weapon/echo_link.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_kotama_ps")
+weapon_icon = ExtResource("2_icon")
+t_level = Array[String](["可造成背刺伤害，停止射击2秒进入隐身并在原地放置一个全息影像，破隐射击必暴击并额外造成100%背刺伤害，破隐击杀返还穿透值。", "+50%背刺伤害，破隐射击每造成一次击杀可-20%下次进入隐身的时间，最多-80%。", "+50%背刺伤害，全息影像对周围的敌人施加减益标记，破隐射击的额外背刺伤害提高到200%。", "+50%背刺伤害，标记的易伤提高，破隐击杀被标记的敌人时，可在目标位置留下一个2秒全息残影。"])

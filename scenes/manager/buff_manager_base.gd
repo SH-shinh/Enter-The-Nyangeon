@@ -19,6 +19,9 @@ var host: Node
 var _components: Dictionary = {}
 var _event_subs: Dictionary = {}
 var _refresh_dirty: bool = false
+## 重施冷却记忆：buff id -> 上次成功施加的 msec。不随 entry 过期清除，
+## 否则「0.5s 眩晕过期后立刻再施加」会绕过冷却，短控仍可能接近永久。
+var _reapply_last: Dictionary = {}
 
 func _ready():
 	body = get_parent()
@@ -87,6 +90,13 @@ func apply_buff(buff: Buff, value: Array, source_id: String = "", applier_stats:
 		return
 	if not _audience_ok(buff):
 		return
+	# 重施冷却：短控/短增益被高频来源重复施加时只忽略本次（不刷新时长、不叠层）。
+	# 记在 manager 上而非 entry 里，buff 过期移除后冷却仍然有效；放行即占冷却（含满层/无效施加）。
+	if buff.reapply_cooldown > 0.0:
+		var last_ms := int(_reapply_last.get(buff.id, 0))
+		if last_ms > 0 and Time.get_ticks_msec() - last_ms < int(buff.reapply_cooldown * 1000.0):
+			return
+		_reapply_last[buff.id] = Time.get_ticks_msec()
 	var entry: Dictionary
 	if current_buff.has(buff.id):
 		entry = current_buff[buff.id]
@@ -106,9 +116,13 @@ func apply_buff(buff: Buff, value: Array, source_id: String = "", applier_stats:
 			return
 		if _uses_source_caps(buff):
 			if not _add_source_layer(entry, source_id, value):
+				# 该来源已满层：时长已刷新，仍算一次「施加感电」。
+				_notify_enemy_shock_applied(buff)
 				return
 		else:
 			if entry["layer"] >= entry["max_layer"]:
+				# 满层：时长已刷新，仍算一次「施加感电」。
+				_notify_enemy_shock_applied(buff)
 				return
 			entry["layer"] += 1
 		_sync_card_layer(entry)
@@ -131,8 +145,16 @@ func apply_buff(buff: Buff, value: Array, source_id: String = "", applier_stats:
 	_on_buff_applied(entry)
 	_apply_ability(entry, 1)
 	buff_applied.emit(buff, current_buff)
+	_notify_enemy_shock_applied(buff)
 	# 联机：host 侧把 host 发起的敌人 buff 广播（客户机镜像应用）
 	ExtensionHooks.notify_named("on_enemy_buff_applied", [self, buff, value, source_id, applier_stats, applier_peer])
+
+## 敌人侧感电「施加或满层/直写刷新」事件：供震撼弹等联动道具使用。
+## 满层与来源满层时 apply_buff 会提前 return，所以这两条路径要各自补发一次；
+## 绕过 apply_buff 的直写刷新（如 chihiro_ps.release_static）由调用方自行补发。
+func _notify_enemy_shock_applied(buff: Buff) -> void:
+	if buff != null and buff.id == "shock_dot" and _host_kind() == BuffStatMap.ENEMY:
+		GameEvents.emit_enemy_shock_applied(body)
 
 # ---------------- 来源独立上限 ----------------
 # 覆写返回 true 后，层数按来源（道具）分别累计：每个来源各自有上限，

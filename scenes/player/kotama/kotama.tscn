@@ -1,0 +1,603 @@
+[gd_scene format=3 uid="uid://pjdf6ubhbabv"]
+
+[ext_resource type="Script" uid="uid://ci8narxcxkq0w" path="res://script/player.gd" id="1_us5wr"]
+[ext_resource type="Resource" uid="uid://wryekeh1b5ok" path="res://resources/player/kotama.tres" id="2_tdrpq"]
+[ext_resource type="Resource" uid="uid://der3fokgx6y7w" path="res://resources/player/PS/kotama_ps.tres" id="3_eiwfv"]
+[ext_resource type="PackedScene" uid="uid://b78jo1set8q45" path="res://script/follow.tscn" id="4_yfuh7"]
+[ext_resource type="PackedScene" uid="uid://bdo12rjvieur7" path="res://scenes/shadow/shadow.tscn" id="5_kjg1x"]
+[ext_resource type="PackedScene" uid="uid://ceydnirh2w7yb" path="res://scenes/player/smoke.tscn" id="6_bh8u7"]
+[ext_resource type="Texture2D" uid="uid://bufqkl2h3uq48" path="res://sprites/player/kotama/kotama_halo.png" id="7_jf4dp"]
+[ext_resource type="Shader" uid="uid://bqypa5578tm8a" path="res://shaders/sprite_outline.gdshader" id="8_wo33j"]
+[ext_resource type="Texture2D" uid="uid://c6iov1pewqjc7" path="res://sprites/player/kotama/kotama.png" id="9_yidni"]
+[ext_resource type="PackedScene" uid="uid://wffnchsknkba" path="res://script/hat.tscn" id="10_i3sq5"]
+[ext_resource type="PackedScene" uid="uid://bbj4hglmxysqf" path="res://scenes/weapon/echo_link/echo_link.tscn" id="11_5sami"]
+[ext_resource type="PackedScene" uid="uid://bgrnq5hfhg2fd" path="res://scenes/bullet/utaha_bullet.tscn" id="12_dqb8e"]
+[ext_resource type="Script" uid="uid://cog8pvonoqtxu" path="res://script/hurt_box.gd" id="13_1x32d"]
+[ext_resource type="Script" uid="uid://e2gvf56eu6jb" path="res://scenes/player/StateMachine.gd" id="14_rbk2a"]
+[ext_resource type="Script" uid="uid://c5wxmcve7xpca" path="res://script/Stats.gd" id="15_6napx"]
+[ext_resource type="AudioStream" uid="uid://5rnyiqxeiusa" path="res://sounds/RunSounds.wav" id="16_btjck"]
+[ext_resource type="AudioStream" uid="uid://b6t6pjb3evtw4" path="res://sounds/jump.wav" id="17_lynu2"]
+[ext_resource type="AudioStream" uid="uid://bqqs4akeispjg" path="res://sounds/OnHit.wav" id="18_prp7j"]
+[ext_resource type="AudioStream" uid="uid://b5fdodmk5utji" path="res://sounds/coin.wav" id="19_nabhp"]
+[ext_resource type="PackedScene" uid="uid://1th2ey27vgac" path="res://ui/game_ui.tscn" id="20_yh6ca"]
+[ext_resource type="PackedScene" uid="uid://cb5gh3hfe077g" path="res://ui/pause_screen.tscn" id="21_3fvga"]
+[ext_resource type="Texture2D" uid="uid://nu6i7yovali6" path="res://ui/cd_bar.png" id="22_4bgx1"]
+[ext_resource type="Texture2D" uid="uid://ben34oyvgea61" path="res://ui/cd_bar_2.png" id="23_olore"]
+[ext_resource type="PackedScene" uid="uid://d1gmjbadbxsjp" path="res://scenes/game_camera/gamecamera.tscn" id="24_3gkak"]
+[ext_resource type="PackedScene" uid="uid://ccbfmsfn7ay8r" path="res://script/kick.tscn" id="25_ftdlt"]
+[ext_resource type="PackedScene" uid="uid://voxip8vojin" path="res://scenes/manager/player_buff_manager.tscn" id="26_qsixc"]
+[ext_resource type="PackedScene" path="res://scenes/player/kotama/kotama_ps.tscn" id="27_ysexi"]
+[ext_resource type="PackedScene" uid="uid://c620jv6qq2f8w" path="res://scenes/player/t_hp_count.tscn" id="28_jhhej"]
+[ext_resource type="Script" uid="uid://crtabh2xwunne" path="res://script/player_health_component.gd" id="29_4abqw"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_l238d"]
+radius = 7.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_x10dy"]
+shader = ExtResource("8_wo33j")
+shader_parameter/outline_width = 1.0
+shader_parameter/outline_color = Color(26.041, 21.578, 5.331, 1)
+shader_parameter/flash_opacity = 0.0
+shader_parameter/corruption_tint = Color(1, 1, 1, 1)
+shader_parameter/corruption_amount = 0.0
+shader_parameter/hologram_amount = 0.0
+shader_parameter/hologram_tint = Color(0.55, 0.9, 1, 1)
+shader_parameter/hologram_alpha = 0.65
+shader_parameter/hologram_scan_speed = 2.0
+shader_parameter/glitch_start = -1000.0
+shader_parameter/glitch_duration = 0.3
+shader_parameter/glitch_strength = 1.0
+shader_parameter/glitch_seed = 0.0
+shader_parameter/glitch_tear = 1.0
+shader_parameter/glitch_pixel = Vector2(0, 0)
+shader_parameter/glitch_uv_rect = Vector4(0, 0, 1, 1)
+shader_parameter/glitch_row_gate = 0.66
+shader_parameter/glitch_row_shift = 3.0
+shader_parameter/glitch_block_size = 8.0
+shader_parameter/glitch_block_shift = 6.0
+shader_parameter/glitch_rgb_split = 1.0
+shader_parameter/glitch_scanline = 0.16
+shader_parameter/glitch_junk_gate = 0.972
+
+[sub_resource type="Shader" id="Shader_us5wr"]
+code = "shader_type canvas_item;
+
+uniform float outline_width = 1.0;
+uniform vec4 outline_color : source_color = vec4(0.0, 0.0, 0.0, 1.0);
+uniform float flash_opacity : hint_range(0.0, 1.0, 0.1) = 0.0;
+uniform vec4 corruption_tint : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform float corruption_amount : hint_range(0.0, 1.0, 0.01) = 0.0;
+// 隐身/全息显示模式：默认 0，不影响既有角色；Kotama 的 StealthComponent 在 Buff 期间置 1。
+uniform float hologram_amount : hint_range(0.0, 1.0, 0.01) = 0.0;
+uniform vec4 hologram_tint : source_color = vec4(0.55, 0.90, 1.0, 1.0);
+uniform float hologram_alpha : hint_range(0.0, 1.0, 0.01) = 0.65;
+uniform float hologram_scan_speed : hint_range(0.0, 8.0, 0.1) = 2.0;
+
+// 策反「信号故障」：衰减完全在 shader 内按 glitch_clock 计算；GDScript 只在命中时写 glitch_start/seed。
+// 未使用者默认 glitch_start 在过去 → amount = 0，输出与旧版逐像素一致。
+global uniform float glitch_clock;
+uniform float glitch_start = -1000.0;
+uniform float glitch_duration = 0.30;
+uniform float glitch_strength = 1.0;
+uniform float glitch_seed = 0.0;
+// 水平撕裂开关（Sprite2D 堆叠切片为 0）
+uniform float glitch_tear = 1.0;
+// 故障位移用的单像素 UV 尺寸；描边不用它（固定 TEXTURE_PIXEL_SIZE）。
+uniform vec2 glitch_pixel = vec2(0.0, 0.0);
+// Sprite2D(hframes/region) 的帧 UV 矩形；其余情况为整张 (0,0,1,1)。
+uniform vec4 glitch_uv_rect = vec4(0.0, 0.0, 1.0, 1.0);
+
+// 可调参数（默认值 = 原硬编码值）
+uniform float glitch_row_gate : hint_range(0.0, 1.0, 0.01) = 0.66;
+uniform float glitch_row_shift = 3.0;
+uniform float glitch_block_size = 8.0;
+uniform float glitch_block_shift = 6.0;
+uniform float glitch_rgb_split = 1.0;
+uniform float glitch_scanline : hint_range(0.0, 1.0, 0.01) = 0.16;
+uniform float glitch_junk_gate : hint_range(0.0, 1.0, 0.001) = 0.972;
+
+float glitch_hash(float n) {
+	return fract(sin(n * 127.1 + 311.7) * 43758.5453123);
+}
+
+void fragment() {
+	float elapsed = max(glitch_clock - glitch_start, 0.0);
+	float amount = clamp(1.0 - elapsed / max(glitch_duration, 0.001), 0.0, 1.0) * glitch_strength;
+	vec2 texel = TEXTURE_PIXEL_SIZE;
+	vec2 px = glitch_pixel.x > 0.0 ? glitch_pixel : texel;
+	// 兜底：CanvasGroup / 空纹理可能给出 (1,1) 之类的假像素尺寸，会采到图集其它帧
+	if (px.x <= 0.0 || px.x > 0.1) { px = vec2(1.0 / 128.0, 1.0 / 128.0); }
+	vec2 uv = UV;
+	bool full_rect = glitch_uv_rect.z >= 0.999 && glitch_uv_rect.w >= 0.999;
+	if (amount > 0.001) {
+		float tick = floor(TIME * 24.0);
+		// 行撕裂：部分整行水平错位
+		float row = floor(uv.y / max(px.y, 1e-6));
+		float h_row = glitch_hash(row * 1.37 + glitch_seed + tick * 2.7);
+		if (h_row > glitch_row_gate) {
+			uv.x += (h_row - (glitch_row_gate + 0.17)) * glitch_row_shift * amount * glitch_tear;
+		}
+		// 粗块错位：按 glitch_block_size 像素见方的块整体平移
+		float block = floor(uv.x / max(px.x * glitch_block_size, 1e-6));
+		float h_block = glitch_hash(block * 7.31 + glitch_seed * 1.7 + tick);
+		if (h_block > 0.90) {
+			uv.x += (h_block - 0.95) * glitch_block_shift * amount * glitch_tear;
+		}
+		if (!full_rect) {
+			uv = clamp(uv, glitch_uv_rect.xy + px * 0.5, glitch_uv_rect.xy + glitch_uv_rect.zw - px * 0.5);
+		}
+	}
+	vec2 uv_min = full_rect ? vec2(0.0) : glitch_uv_rect.xy + px * 0.5;
+	vec2 uv_max = full_rect ? vec2(1.0) : glitch_uv_rect.xy + glitch_uv_rect.zw - px * 0.5;
+	// 描边用原始 UV + texel，不参与故障位移/夹取，避免边缘被拉成条带
+	vec2 uv_up = UV + vec2(0.0, texel.y) * outline_width;
+	vec2 uv_down = UV + vec2(0.0, -texel.y) * outline_width;
+	vec2 uv_left = UV + vec2(texel.x, 0.0) * outline_width;
+	vec2 uv_right = UV + vec2(-texel.x, 0.0) * outline_width;
+
+	vec4 color_up = texture(TEXTURE, uv_up);
+	vec4 color_down = texture(TEXTURE, uv_down);
+	vec4 color_left = texture(TEXTURE, uv_left);
+	vec4 color_right = texture(TEXTURE, uv_right);
+
+	vec4 orginal_color = texture(TEXTURE, uv);
+	if (amount > 0.001) {
+		// RGB 分离：红向右、青向左
+		vec2 split = vec2(px.x * glitch_rgb_split * (1.0 + 2.0 * amount), 0.0);
+		float r = texture(TEXTURE, clamp(uv + split, uv_min, uv_max)).r;
+		float b = texture(TEXTURE, clamp(uv - split, uv_min, uv_max)).b;
+		orginal_color.r = mix(orginal_color.r, r, 0.9);
+		orginal_color.b = mix(orginal_color.b, b, 0.9);
+		// 隔行压暗（扫描线）
+		float scan_row = floor(uv.y / max(px.y, 1e-6));
+		if (mod(scan_row, 2.0) < 1.0) {
+			orginal_color.rgb *= 1.0 - glitch_scanline * amount;
+		}
+		// 偶发坏点：粗块闪成亮青白
+		float h_junk = glitch_hash(scan_row * 3.7 + floor(uv.x / max(px.x * 5.0, 1e-6)) + glitch_seed * 2.3 + floor(TIME * 18.0));
+		orginal_color.rgb = mix(orginal_color.rgb, vec3(0.8, 1.0, 1.0), step(glitch_junk_gate, h_junk) * amount);
+	}
+	orginal_color.rgb = mix(orginal_color.rgb, outline_color.rgb, flash_opacity);
+
+	vec4 outline = color_up + color_down + color_left + color_right;
+	outline.rgb = outline_color.rgb;
+	outline.a = min(outline.a, 1.0);
+
+	COLOR = mix(outline, orginal_color, orginal_color.a);
+	COLOR.rgb = mix(COLOR.rgb, corruption_tint.rgb, corruption_amount);
+	if (hologram_amount > 0.001) {
+		float scan = 0.5 + 0.5 * sin((UV.y + TIME * hologram_scan_speed) * 180.0);
+		COLOR.rgb = mix(COLOR.rgb, hologram_tint.rgb, 0.6 * hologram_amount);
+		COLOR.rgb *= mix(1.0, 0.70 + 0.30 * scan, hologram_amount);
+		COLOR.a *= mix(1.0, hologram_alpha, hologram_amount);
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_tdrpq"]
+shader = SubResource("Shader_us5wr")
+shader_parameter/outline_width = 1.0
+shader_parameter/outline_color = Color(26.041, 21.578, 5.331, 1)
+shader_parameter/flash_opacity = 0.0
+shader_parameter/corruption_tint = Color(1, 1, 1, 1)
+shader_parameter/corruption_amount = 0.0
+shader_parameter/hologram_amount = 0.0
+shader_parameter/hologram_tint = Color(0.55, 0.9, 1, 1)
+shader_parameter/hologram_alpha = 0.65
+shader_parameter/hologram_scan_speed = 2.0
+shader_parameter/glitch_start = -1000.0
+shader_parameter/glitch_duration = 0.3
+shader_parameter/glitch_strength = 1.0
+shader_parameter/glitch_seed = 0.0
+shader_parameter/glitch_tear = 1.0
+shader_parameter/glitch_pixel = Vector2(0, 0)
+shader_parameter/glitch_uv_rect = Vector4(0, 0, 1, 1)
+shader_parameter/glitch_row_gate = 0.66
+shader_parameter/glitch_row_shift = 3.0
+shader_parameter/glitch_block_size = 8.0
+shader_parameter/glitch_block_shift = 6.0
+shader_parameter/glitch_rgb_split = 1.0
+shader_parameter/glitch_scanline = 0.16
+shader_parameter/glitch_junk_gate = 0.972
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tywkr"]
+atlas = ExtResource("9_yidni")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_31cq0"]
+atlas = ExtResource("9_yidni")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8yndv"]
+atlas = ExtResource("9_yidni")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_glacc"]
+atlas = ExtResource("9_yidni")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gcrnn"]
+atlas = ExtResource("9_yidni")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wghv1"]
+atlas = ExtResource("9_yidni")
+region = Rect2(64, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hiyty"]
+atlas = ExtResource("9_yidni")
+region = Rect2(128, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_oxrix"]
+atlas = ExtResource("9_yidni")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2b500"]
+atlas = ExtResource("9_yidni")
+region = Rect2(0, 64, 64, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_wwxo6"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tywkr")
+}, {
+"duration": 1.2,
+"texture": SubResource("AtlasTexture_31cq0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8yndv")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_glacc")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 13.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gcrnn")
+}],
+"loop": 1,
+"name": &"jump",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_wghv1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hiyty")
+}, {
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_oxrix")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_2b500")
+}],
+"loop": 1,
+"name": &"run",
+"speed": 13.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_dqk1k"]
+radius = 1.0
+height = 2.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_4tsyc"]
+radius = 35.0
+
+[sub_resource type="Animation" id="Animation_quqct"]
+resource_name = "Invincible frame"
+length = 0.5
+step = 0.075
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.075, 0.15, 0.225, 0.3, 0.375, 0.45),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [true, false, true, false, true, false, true]
+}
+
+[sub_resource type="Animation" id="Animation_54v52"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Graphics:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Graphics:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_apy7m"]
+_data = {
+&"Invincible frame": SubResource("Animation_quqct"),
+&"RESET": SubResource("Animation_54v52")
+}
+
+[sub_resource type="Animation" id="Animation_btd8x"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics/AnimatedSprite2D:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Graphics/AnimatedSprite2D:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, -17)]
+}
+
+[sub_resource type="Animation" id="Animation_kssmf"]
+resource_name = "kick_anim"
+length = 0.1
+step = 0.01
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Graphics/AnimatedSprite2D:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.03, 0.1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [0.0, -0.698132, 0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Graphics/AnimatedSprite2D:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.03, 0.1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0, -17), Vector2(5, -20), Vector2(0, -17)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_y8tsq"]
+_data = {
+&"RESET": SubResource("Animation_btd8x"),
+&"kick_anim": SubResource("Animation_kssmf")
+}
+
+[node name="kotama" type="CharacterBody2D" unique_id=814336257 node_paths=PackedStringArray("stats") groups=["Player"]]
+collision_mask = 256
+motion_mode = 1
+platform_floor_layers = 4294967040
+script = ExtResource("1_us5wr")
+player_card = ExtResource("2_tdrpq")
+ps_card = ExtResource("3_eiwfv")
+stats = NodePath("Stats")
+player_color = Color(0.88235295, 0.74509805, 0, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1307134586]
+position = Vector2(0, -6)
+shape = SubResource("CircleShape2D_l238d")
+
+[node name="Follow" parent="." unique_id=670549565 instance=ExtResource("4_yfuh7")]
+
+[node name="Shadow" parent="." unique_id=1387453203 instance=ExtResource("5_kjg1x")]
+scale = Vector2(0.445313, 0.445313)
+
+[node name="GPUParticles2D" parent="." unique_id=1412145173 instance=ExtResource("6_bh8u7")]
+emitting = false
+
+[node name="Graphics" type="Node2D" parent="." unique_id=1473084420]
+unique_name_in_owner = true
+
+[node name="Halo" type="Sprite2D" parent="Graphics" unique_id=645409445]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_x10dy")
+position = Vector2(-10, -32)
+rotation = 0.47822
+scale = Vector2(0.254, 0.276)
+texture = ExtResource("7_jf4dp")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Graphics" unique_id=647433233]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_tdrpq")
+position = Vector2(0, -17)
+sprite_frames = SubResource("SpriteFrames_wwxo6")
+animation = &"run"
+autoplay = "idle"
+frame_progress = 0.88457376
+flip_h = true
+
+[node name="HaloRoot" type="Node2D" parent="Graphics/AnimatedSprite2D" unique_id=338191493]
+unique_name_in_owner = true
+position = Vector2(-9, -28)
+
+[node name="Hat" parent="Graphics/AnimatedSprite2D" unique_id=730565075 instance=ExtResource("10_i3sq5")]
+position = Vector2(1, -12)
+
+[node name="Gun" parent="Graphics" unique_id=1981837391 node_paths=PackedStringArray("stats") instance=ExtResource("11_5sami")]
+unique_name_in_owner = true
+position = Vector2(7, -8)
+stats = NodePath("../../Stats")
+bullet = ExtResource("12_dqb8e")
+
+[node name="HurtBox" type="Area2D" parent="." unique_id=335900981 node_paths=PackedStringArray("body") groups=["PlayerBox"]]
+collision_layer = 2048
+collision_mask = 1160
+script = ExtResource("13_1x32d")
+body = NodePath("..")
+is_player = true
+
+[node name="HurtboxShape" type="CollisionShape2D" parent="HurtBox" unique_id=2002508033]
+position = Vector2(0, -8)
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_dqk1k")
+debug_color = Color(3.18866e-06, 0.0816588, 0.291816, 0.42)
+
+[node name="PickBox" type="Area2D" parent="." unique_id=725312478]
+collision_layer = 0
+collision_mask = 64
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PickBox" unique_id=311131848]
+position = Vector2(0, -11)
+shape = SubResource("CircleShape2D_4tsyc")
+debug_color = Color(0.724221, 0.462988, 0.32265, 0.42)
+
+[node name="FlyTimer" type="Timer" parent="." unique_id=591006984]
+wait_time = 0.3
+one_shot = true
+
+[node name="JumpTimer" type="Timer" parent="." unique_id=1588867141]
+wait_time = 0.1
+one_shot = true
+
+[node name="JumpCDTimer" type="Timer" parent="." unique_id=1835168107]
+one_shot = true
+
+[node name="RunSoundsTimer" type="Timer" parent="." unique_id=1538906868]
+wait_time = 0.2
+one_shot = true
+
+[node name="InvincibleFrame" type="Timer" parent="." unique_id=1779296011]
+wait_time = 0.5
+one_shot = true
+
+[node name="StateMachine" type="Node" parent="." unique_id=1506302176]
+script = ExtResource("14_rbk2a")
+
+[node name="Stats" type="Node" parent="." unique_id=2122875524]
+script = ExtResource("15_6napx")
+max_hp = 72
+MAX_SPEED = 155
+bullet_damage = 9
+bullet_speed = 950
+bullet_recoil = 60
+bullet_knockback = 80
+fire_dot_layer = 10
+
+[node name="RunSounds" type="AudioStreamPlayer2D" parent="." unique_id=302917896]
+process_mode = 3
+stream = ExtResource("16_btjck")
+volume_db = -6.0
+bus = &"SFX"
+
+[node name="JumpSounds" type="AudioStreamPlayer2D" parent="." unique_id=1309017338]
+process_mode = 3
+stream = ExtResource("17_lynu2")
+bus = &"SFX"
+
+[node name="OnHitSounds" type="AudioStreamPlayer2D" parent="." unique_id=449247452]
+process_mode = 3
+stream = ExtResource("18_prp7j")
+volume_db = 8.0
+bus = &"SFX"
+
+[node name="CoinSounds" type="AudioStreamPlayer2D" parent="." unique_id=882990323]
+process_mode = 3
+stream = ExtResource("19_nabhp")
+volume_db = -2.0
+bus = &"SFX"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=693419034]
+libraries/ = SubResource("AnimationLibrary_apy7m")
+
+[node name="GameUI" parent="." unique_id=1010579495 node_paths=PackedStringArray("player", "stats") instance=ExtResource("20_yh6ca")]
+player = NodePath("..")
+stats = NodePath("../Stats")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1376125162]
+layer = 3
+
+[node name="PauseScreen" parent="CanvasLayer" unique_id=995634183 instance=ExtResource("21_3fvga")]
+visible = false
+
+[node name="JumpCDBar" type="TextureProgressBar" parent="." unique_id=1083567095]
+visible = false
+z_index = 20
+offset_left = -16.0
+offset_top = 7.0
+offset_right = 16.0
+offset_bottom = 13.0
+size_flags_horizontal = 4
+max_value = 1.0
+step = 0.0
+value = 0.355
+texture_under = ExtResource("22_4bgx1")
+texture_progress = ExtResource("23_olore")
+
+[node name="Camera2D" parent="." unique_id=721135821 instance=ExtResource("24_3gkak")]
+offset = Vector2(0, -15)
+
+[node name="Kick" parent="." unique_id=684883691 node_paths=PackedStringArray("player") instance=ExtResource("25_ftdlt")]
+position = Vector2(0, -16)
+player = NodePath("..")
+
+[node name="AnimationPlayer2" type="AnimationPlayer" parent="." unique_id=1778237123]
+libraries/ = SubResource("AnimationLibrary_y8tsq")
+
+[node name="PlayerBuffManager" parent="." unique_id=1313312428 instance=ExtResource("26_qsixc")]
+
+[node name="KotamaPS" parent="." unique_id=78970242 node_paths=PackedStringArray("stats", "player", "gun") instance=ExtResource("27_ysexi")]
+stats = NodePath("../Stats")
+player = NodePath("..")
+gun = NodePath("../Graphics/Gun")
+
+[node name="T_HP_Count" parent="." unique_id=1823330357 node_paths=PackedStringArray("stats") instance=ExtResource("28_jhhej")]
+stats = NodePath("../Stats")
+
+[node name="HealthComponent" type="Node" parent="." unique_id=136328311 node_paths=PackedStringArray("stats", "hurt_box")]
+script = ExtResource("29_4abqw")
+stats = NodePath("../Stats")
+hurt_box = NodePath("../HurtBox")
+
+[connection signal="is_hurt" from="." to="." method="_on_is_hurt"]
+[connection signal="area_entered" from="PickBox" to="." method="_on_pick_box_area_entered"]
+[connection signal="timeout" from="JumpCDTimer" to="." method="_on_jump_cd_timer_timeout"]
+[connection signal="pick_up_range_changed" from="Stats" to="." method="_on_stats_pick_up_range_changed"]

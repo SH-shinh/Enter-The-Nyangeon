@@ -3,6 +3,9 @@ extends HitBox
 
 signal in_idle(bullet_body: Node)
 
+## 仅破隐子弹使用：击杀时返还本次消耗的穿透值。
+const REFUND_PENETRATE_META := &"refund_penetrate_on_kill"
+
 var velocity: Vector2
 var acceleration: Vector2 = Vector2.ZERO
 var target_position: Vector2
@@ -90,13 +93,17 @@ func does_direct_hit() -> bool:
 func apply_penetrate_dealt():
 	var cb: Callable = func(victim: Node, _actual_damage: float):
 		var is_prop: bool = victim.is_in_group("SceneProp")
+		var spent: int = maxi(0, int(victim.stats.penetrate_resis))
+		# 先返还，再扣减：击杀时子弹回到命中前的穿透值，避免这次击杀把自己回收。
+		if not is_prop and has_meta(REFUND_PENETRATE_META) and victim.stats.hp <= 0:
+			penetrate += spent
 		if not is_prop:
 			GameEvents.emit_player_bullet_hit_enemy(self, victim)
 			var p := _ensure_player()
 			if p != null:
 				damage_data.knockback_direction = (victim.global_position - p.global_position).normalized()
 		bulletSmoke(global_position)
-		penetrate -= victim.stats.penetrate_resis
+		penetrate -= spent
 		if penetrate <= 0:
 			if collision_num > 0:
 				direction = Vector2.RIGHT.rotated(global_rotation + randf_range(0.7, 1.3) * PI)
@@ -109,6 +116,7 @@ func apply_penetrate_dealt():
 
 func idle_state():
 	reset_physics_interpolation()
+	remove_meta(REFUND_PENETRATE_META)
 	if is_idle == 0:
 		ExtensionHooks.notify_named("on_projectile_despawned", [self])
 	is_idle = 1

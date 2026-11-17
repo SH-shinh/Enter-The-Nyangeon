@@ -232,6 +232,7 @@
 [ext_resource type="AudioStream" uid="uid://dwgvlmdqky5xi" path="res://sounds/menu-selection-click.wav" id="202_menuclick"]
 [ext_resource type="AudioStream" uid="uid://v2t5v1goocfk" path="res://sounds/laser3.wav" id="203_laser3"]
 [ext_resource type="AudioStream" uid="uid://bb7lne6d13pev" path="res://sounds/ice-spell.wav" id="204_icespell"]
+[ext_resource type="AudioStream" uid="uid://c6nystaurcfvi" path="res://sounds/cloud-poof.wav" id="205_smoke"]
 
 [sub_resource type="Animation" id="Animation_4rqlr"]
 resource_name = "1s"
@@ -439,6 +440,11 @@ bus = &"SFX"
 
 [node name="EquipSounds5" type="AudioStreamPlayer" parent="SFX" unique_id=598815682]
 stream = ExtResource("17_omv7x")
+bus = &"SFX"
+
+[node name="SmokeSounds" type="AudioStreamPlayer" parent="SFX"]
+stream = ExtResource("205_smoke")
+volume_db = -6.0
 bus = &"SFX"
 
 [node name="UISounds1" type="AudioStreamPlayer" parent="SFX" unique_id=802385921]

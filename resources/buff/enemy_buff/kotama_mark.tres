@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://sprites/buff_icon/mark_buff_icon.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = "kotama_mark"
+icon = ExtResource("1_icon")
+name = "猎杀标记"
+ability = "global_hurt_damage_mult"
+remove_by_layer = false
+is_debuff = true
+description = "被 Kotama 破隐弹标记；受到的伤害提高。"

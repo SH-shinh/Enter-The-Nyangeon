@@ -1,0 +1,78 @@
+[gd_scene load_steps=10 format=3 uid="uid://dkg8vpc437cvn"]
+
+[ext_resource type="Script" uid="uid://db4gxrtonyrn3" path="res://scenes/player/kotama/kotama_hologram.gd" id="1_holo"]
+[ext_resource type="Texture2D" uid="uid://b578c3a2fkhq5" path="res://sprites/player/kotama/kotama_box.png" id="2_box"]
+[ext_resource type="Texture2D" uid="uid://c6iov1pewqjc7" path="res://sprites/player/kotama/kotama.png" id="3_figure"]
+[ext_resource type="Shader" uid="uid://c6nuy1kbwj5cf" path="res://shaders/kotama_hologram.gdshader" id="5_shader"]
+[ext_resource type="Script" path="res://scenes/player/kotama/kotama_hologram_orbit.gd" id="6_orbit"]
+
+[sub_resource type="Gradient" id="Gradient_glow"]
+offsets = PackedFloat32Array(0, 0.35, 1)
+colors = PackedColorArray(1, 1, 1, 0.65, 1, 1, 1, 0.28, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_glow"]
+gradient = SubResource("Gradient_glow")
+width = 64
+height = 64
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0.0)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_holo"]
+shader = ExtResource("5_shader")
+shader_parameter/tint = Color(0.62782896, 0.8823829, 1, 1)
+shader_parameter/reveal = 0.0
+shader_parameter/scan_speed = 2.000000095
+shader_parameter/flicker = 0.50000002375
+shader_parameter/split = 2.000000095
+shader_parameter/white_scan = 0.70
+shader_parameter/white_scan_speed = 0.55
+shader_parameter/white_scan_width = 0.02
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_glow"]
+blend_mode = 1
+
+[node name="KotamaHologram" type="Node2D" unique_id=1943820284]
+script = ExtResource("1_holo")
+
+[node name="GroundGlow" type="Sprite2D" parent="."]
+z_index = -2
+position = Vector2(0, -1)
+scale = Vector2(1.5, 0.4)
+modulate = Color(0.42, 0.82, 1, 0)
+material = SubResource("CanvasItemMaterial_glow")
+texture = SubResource("GradientTexture2D_glow")
+
+[node name="ProjectionGlow" type="Sprite2D" parent="."]
+z_index = -1
+position = Vector2(0, -20)
+scale = Vector2(1.1, 1)
+modulate = Color(0.42, 0.82, 1, 0)
+material = SubResource("CanvasItemMaterial_glow")
+texture = SubResource("GradientTexture2D_glow")
+
+[node name="Box" type="Sprite2D" parent="." unique_id=1198205958]
+position = Vector2(0, -3)
+texture = ExtResource("2_box")
+hframes = 4
+
+[node name="Smoke" type="AnimatedSprite2D" parent="."]
+visible = false
+z_index = 3
+position = Vector2(0, -2)
+centered = false
+offset = Vector2(-56, -80)
+
+[node name="Figure" type="Sprite2D" parent="." unique_id=1544896152]
+material = SubResource("ShaderMaterial_holo")
+position = Vector2(0, -26)
+texture = ExtResource("3_figure")
+hframes = 5
+vframes = 2
+frame = 1
+
+[node name="OrbitParticles" type="Node2D" parent="."]
+z_index = 1
+position = Vector2(0, -24)
+material = SubResource("CanvasItemMaterial_glow")
+script = ExtResource("6_orbit")

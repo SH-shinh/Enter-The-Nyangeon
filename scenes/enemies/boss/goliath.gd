@@ -709,7 +709,7 @@ func random_bullet():
 	var shoot_gen := _shoot_generation
 	if _stop_shoot_if_needed(shoot_gen):
 		return
-	if player != null:
+	if player != null and get_target() != null:
 		for i in random_shoot_num:
 			var player_rotation = (get_target_position() - global_position).angle()
 			var L_shoot_rotation = player_rotation + randf_range(-0.5,0.5)
@@ -734,7 +734,7 @@ func strafe_bullet():
 	var shoot_gen := _shoot_generation
 	if _stop_shoot_if_needed(shoot_gen):
 		return
-	if player != null:
+	if player != null and get_target() != null:
 		for x in 2:
 			for i in strafe_shoot_num * 0.5:
 				
@@ -797,7 +797,7 @@ func big_gun_shoot():
 		await body_anim.animation_finished
 		if _big_gun_interrupted(big_gun_gen):
 			return
-		if player != null:
+		if player != null and get_target() != null:
 			var shoot_p = get_target_position() + Vector2(randf_range(-150,150),randf_range(-150,150))
 			if not is_mirror:
 				shoot_p = MapBounds.nearest_inside(shoot_p, 0.0)

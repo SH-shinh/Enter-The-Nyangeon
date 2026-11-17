@@ -5,6 +5,11 @@ uniform vec4 outline_color : source_color = vec4(0.0, 0.0, 0.0, 1.0);
 uniform float flash_opacity : hint_range(0.0, 1.0, 0.1) = 0.0;
 uniform vec4 corruption_tint : source_color = vec4(1.0, 1.0, 1.0, 1.0);
 uniform float corruption_amount : hint_range(0.0, 1.0, 0.01) = 0.0;
+// 隐身/全息显示模式：默认 0，不影响既有角色；Kotama 的 StealthComponent 在 Buff 期间置 1。
+uniform float hologram_amount : hint_range(0.0, 1.0, 0.01) = 0.0;
+uniform vec4 hologram_tint : source_color = vec4(0.55, 0.90, 1.0, 1.0);
+uniform float hologram_alpha : hint_range(0.0, 1.0, 0.01) = 0.65;
+uniform float hologram_scan_speed : hint_range(0.0, 8.0, 0.1) = 2.0;
 
 // 策反「信号故障」：衰减完全在 shader 内按 glitch_clock 计算；GDScript 只在命中时写 glitch_start/seed。
 // 未使用者默认 glitch_start 在过去 → amount = 0，输出与旧版逐像素一致。
@@ -98,4 +103,10 @@ void fragment() {
 
 	COLOR = mix(outline, orginal_color, orginal_color.a);
 	COLOR.rgb = mix(COLOR.rgb, corruption_tint.rgb, corruption_amount);
+	if (hologram_amount > 0.001) {
+		float scan = 0.5 + 0.5 * sin((UV.y + TIME * hologram_scan_speed) * 180.0);
+		COLOR.rgb = mix(COLOR.rgb, hologram_tint.rgb, 0.6 * hologram_amount);
+		COLOR.rgb *= mix(1.0, 0.70 + 0.30 * scan, hologram_amount);
+		COLOR.a *= mix(1.0, hologram_alpha, hologram_amount);
+	}
 }

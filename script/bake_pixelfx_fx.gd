@@ -16,6 +16,9 @@ extends SceneTree
 ##   scenes/effects/serina_beam_in_frames.res       Serina 入场光束（0.55s / 45fps / 56×200）
 ##   scenes/effects/serina_beam_out_frames.res      Serina 退场光束（0.45s / 45fps / 56×200）
 ##   scenes/effects/bullet_smoke_frames.res         子弹命中烟（0.2s / 30fps / 48×48 / 6 帧，1:1 像素）
+##   scenes/effects/kotama_smoke_frames.res         Kotama 全息箱体烟雾（0.9s / 45fps / 112×92 / 42 帧）
+##   scenes/effects/kotama_blink_in_frames.res      Kotama 隐身进入闪现（0.5s / 45fps / 136×96 / 24 帧，无地面环）
+##   scenes/effects/kotama_blink_out_frames.res     Kotama 隐身退出闪现（0.5s / 45fps / 136×96 / 24 帧，无地面环）
 ##   scenes/effects/explosion_small_frames.res      小爆炸（0.55s / 30fps / 160×160，俯视）
 ##   scenes/effects/explosion_big_frames.res        大爆炸（0.85s / 30fps / 224×224，俯视）
 ##   scenes/effects/hare_lock_in_frames.res          Hare 锁定入场（0.6s / 45fps / 64×64）
@@ -48,6 +51,10 @@ const BBOX_LIMIT := {
 	"maki_paintball_pop_1.res": 70,
 	"maki_paintball_pop_2.res": 70,
 	"bullet_smoke_frames.res": 44,
+	"kotama_smoke_frames.res": 110,
+	"kotama_blink_in_frames.res": 134,
+	"kotama_blink_out_frames.res": 134,
+	"kotama_break_muzzle_frames.res": 156,
 	# 爆炸两档：画布 160/208，留 2px 余量
 	"explosion_small_frames.res": 156,
 	"explosion_big_frames.res": 220,
@@ -80,6 +87,10 @@ const ONESHOT := {
 	"maki_paintball_pop_1.res": true,
 	"maki_paintball_pop_2.res": true,
 	"bullet_smoke_frames.res": true,
+	"kotama_smoke_frames.res": true,
+	"kotama_blink_in_frames.res": true,
+	"kotama_blink_out_frames.res": true,
+	"kotama_break_muzzle_frames.res": true,
 	"explosion_small_frames.res": true,
 	"explosion_big_frames.res": true,
 	"hare_lock_in_frames.res": true,
@@ -116,6 +127,10 @@ func _initialize() -> void:
 	var maki_bolt: Script = load("res://scenes/effects/pixelfx_maki_paintball_bolt.gd")
 	var maki_pop: Script = load("res://scenes/effects/pixelfx_maki_paintball_pop.gd")
 	var smoke: Script = load("res://scenes/effects/pixelfx_bullet_smoke.gd")
+	var kotama_smoke: Script = load("res://scenes/effects/pixelfx_kotama_smoke.gd")
+	var kotama_blink_in: Script = load("res://scenes/effects/pixelfx_kotama_blink_in.gd")
+	var kotama_blink_out: Script = load("res://scenes/effects/pixelfx_kotama_blink_out.gd")
+	var kotama_break_muzzle: Script = load("res://scenes/effects/pixelfx_kotama_break_muzzle.gd")
 	var static_burst: Script = load("res://scenes/effects/pixelfx_chihiro_static_burst_v3.gd")
 
 	var b1: Dictionary = Baker.bake(ring, {"reach": 85.0})
@@ -188,6 +203,25 @@ func _initialize() -> void:
 	var ts := _trim_tail(bs)
 	var es := Baker.save_sprite_frames(bs, "res://scenes/effects/bullet_smoke_frames.res", "combined")
 	print("BAKE bullet_smoke n=%d trim=%d err=%s" % [bs.n, ts, str(es)])
+
+	# Kotama 全息箱体烟雾：0.9s / 45fps / 112×92（参考 spawn/poof 原版 soft smoke + stars + speed lines）
+	var bks: Dictionary = Baker.bake(kotama_smoke, {"seed": 21.0})
+	var eks := Baker.save_sprite_frames(bks, "res://scenes/effects/kotama_smoke_frames.res", "combined")
+	print("BAKE kotama_smoke n=%d err=%s" % [bks.n, str(eks)])
+
+	# Kotama 隐身进入/退出闪现：bodyless，无地面环
+	var bki: Dictionary = Baker.bake(kotama_blink_in, {"seed": 12.0})
+	var eki := Baker.save_sprite_frames(bki, "res://scenes/effects/kotama_blink_in_frames.res", "combined")
+	print("BAKE kotama_blink_in n=%d err=%s" % [bki.n, str(eki)])
+	var bko: Dictionary = Baker.bake(kotama_blink_out, {"seed": 11.0})
+	var eko := Baker.save_sprite_frames(bko, "res://scenes/effects/kotama_blink_out_frames.res", "combined")
+	print("BAKE kotama_blink_out n=%d err=%s" % [bko.n, str(eko)])
+
+	# Kotama 破隐首枪枪口爆发：0.31s / 45fps / 160×96（白闪 + 星爆 + 青蓝环 + 前向火花）
+	var bkm: Dictionary = Baker.bake(kotama_break_muzzle, {"seed": 17.0})
+	var tkm := _trim_tail(bkm)
+	var ekm := Baker.save_sprite_frames(bkm, "res://scenes/effects/kotama_break_muzzle_frames.res", "combined")
+	print("BAKE kotama_break_muzzle n=%d trim=%d err=%s" % [bkm.n, tkm, str(ekm)])
 
 	# 爆炸两档（俯视重写版）：小 0.55s / 160×160，大 0.85s / 208×208
 	var ex_small: Script = load("res://scenes/effects/pixelfx_explosion_small.gd")

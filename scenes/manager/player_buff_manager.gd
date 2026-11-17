@@ -54,7 +54,7 @@ func _create_entry(buff: Buff, value: Array) -> Dictionary:
 
 # 只对玩家自身的有益 buff 乘算时长；debuff 不受影响
 func _duration_multiplier(buff: Buff) -> float:
-	if buff == null or buff.is_debuff:
+	if buff == null or buff.is_debuff or buff.ignore_duration_multiplier:
 		return 1.0
 	if body == null or body.get("stats") == null:
 		return 1.0

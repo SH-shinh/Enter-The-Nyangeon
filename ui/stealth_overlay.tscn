@@ -1,0 +1,33 @@
+[gd_scene format=3 uid="uid://dxcs7412qad6f"]
+
+[ext_resource type="Script" uid="uid://dq5rgo1hworil" path="res://ui/stealth_overlay.gd" id="1_script"]
+[ext_resource type="Shader" uid="uid://bsu7nsx456ves" path="res://shaders/stealth_screen.gdshader" id="2_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_stealth"]
+shader = ExtResource("2_shader")
+shader_parameter/open = 0.0
+shader_parameter/strength = 0.008
+shader_parameter/radius = 0.50000002375
+shader_parameter/width = 0.50000002375
+shader_parameter/feather = 0.16
+shader_parameter/aberration = 0.2
+shader_parameter/tint = Vector3(0.36, 0.78, 1)
+shader_parameter/tint_strength = 0.14
+shader_parameter/scanline_strength = 0.2000000095
+shader_parameter/vignette_strength = 0.400000019
+
+[node name="StealthOverlay" type="CanvasLayer" unique_id=2010127197]
+layer = 3
+script = ExtResource("1_script")
+
+[node name="BackBufferCopy" type="BackBufferCopy" parent="." unique_id=1078450479]
+visible = false
+copy_mode = 2
+
+[node name="Filter" type="ColorRect" parent="." unique_id=230371219]
+visible = false
+material = SubResource("ShaderMaterial_stealth")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2

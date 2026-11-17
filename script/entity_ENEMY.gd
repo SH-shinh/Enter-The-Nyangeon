@@ -186,6 +186,8 @@ func _ready():
 		stats.is_dead.connect(_on_enemy_stats_is_dead)
 	if enemy_buff_manager != null and not enemy_buff_manager.buff_expired.is_connected(_on_buff_expired):
 		enemy_buff_manager.buff_expired.connect(_on_buff_expired)
+	if enemy_buff_manager != null and not enemy_buff_manager.buff_applied.is_connected(_on_buff_applied):
+		enemy_buff_manager.buff_applied.connect(_on_buff_applied)
 	_setup_overhead_display()
 	PoolManager.add_pool(pool_id, self)
 
@@ -243,6 +245,7 @@ func idle_state():
 	_target_cache = null
 	_target_cache_frame = -1
 	route_target = null
+	aggro_override = null
 	ai_profile = null
 	_reset_ai_runtime()
 	PoolManager.unregister_active_enemy(self)
@@ -349,10 +352,17 @@ func get_target() -> Node:
 		_target_cache = null
 	return _target_cache
 
+## 外部强制刷新选敌（嘲讽目标 set/clear、玩家隐身切换等），跳过物理帧节流缓存。
+func force_retarget() -> void:
+	_target_cache = null
+	_target_cache_frame = -1
+	_nearest_player_cache = null
+	_nearest_player_cache_frame = -1
+
 func _select_target() -> Node:
 	if faction == Faction.PLAYER_SIDE:
 		return get_nearest_enemy()
-	if aggro_override != null and is_instance_valid(aggro_override):
+	if aggro_override != null and is_instance_valid(aggro_override) and _is_valid_player_target(aggro_override):
 		return aggro_override
 	if route_target != null and is_instance_valid(route_target):
 		return route_target
@@ -404,6 +414,8 @@ func _is_valid_player_target(candidate) -> bool:
 		return false
 	if candidate.get("is_downed") == true:
 		return false
+	if candidate.has_method("is_stealthed") and candidate.is_stealthed():
+		return false
 	return true
 
 # 策反单位无敌对目标时待机：不移动、不转向、不射击（子类据此短路）。
@@ -414,9 +426,7 @@ func get_target_position() -> Vector2:
 	var t := get_target()
 	if t != null:
 		return t.global_position
-	var p := _ensure_player()
-	if p != null:
-		return p.global_position
+	# 无有效目标（倒地/隐身/全息消失）时不要回退到玩家位置，避免隔空瞄准/朝自己开火。
 	return global_position
 
 # 贴脸接触（enemy_body）优先；无接触则用 Targeting 的按物理帧缓存活跃敌人列表，
@@ -727,7 +737,7 @@ func ai_steer(base_dir: Vector2, _mode: int, _standoff: float = -1.0) -> Vector2
 		return base_dir
 	if faction == Faction.PLAYER_SIDE:
 		return base_dir
-	if route_target != null or aggro_override != null:
+	if route_target != null or (aggro_override != null and is_instance_valid(aggro_override)):
 		return base_dir
 	if is_standby():
 		return base_dir
@@ -1086,6 +1096,22 @@ func _on_buff_expired(buff: Buff):
 	if is_idle == 1 or faction != Faction.PLAYER_SIDE:
 		return
 	_on_revert()
+
+## 眩晕（stun）首次挂上时立即停掉正在进行的连射/激光；后续由 EnemyStateMachine 早退阻止新的射击。
+func _on_buff_applied(buff: Buff, _current_buff: Dictionary):
+	if buff == null or buff.id != "stun":
+		return
+	_interrupt_weapons()
+
+## 眩晕判定：buff 字典即唯一真相，不复用 frozen（frozen 被 Ako 链锁定占用）。
+func is_stunned() -> bool:
+	if enemy_buff_manager == null:
+		return false
+	var cbs = enemy_buff_manager.get("current_buff")
+	return cbs is Dictionary and cbs.has("stun")
+
+func on_stun_start() -> void:
+	_interrupt_weapons()
 
 func is_converted() -> bool:
 	return faction == Faction.PLAYER_SIDE

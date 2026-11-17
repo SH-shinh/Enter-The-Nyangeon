@@ -114,6 +114,8 @@ signal enemy_critical_hurt(enemy_body: Node)
 signal enemy_body(body: Node ,bullet_body: Node) #子弹击中敌人
 signal enemy_dead_position(dead_position: Vector2)
 signal enemy_buff_added(enemy_buff: Buff, current_buff: Dictionary)
+## 敌人被施加感电（含满层/直写刷新）时发出：震撼弹等联动道具监听。
+signal enemy_shock_applied(enemy: Node)
 signal enemy_fire_hurt(enemy_body: Node)
 signal enemy_explosion_hurt(enemy_body: Node)
 signal enemy_poison_hurt(enemy_body: Node)
@@ -392,6 +394,9 @@ func emit_enemy_dead_position(dead_position: Vector2):
 
 func emit_enemy_buff_added(enemy_buff: Buff, current_buff: Dictionary):
 	enemy_buff_added.emit(enemy_buff, current_buff)
+
+func emit_enemy_shock_applied(enemy: Node):
+	enemy_shock_applied.emit(enemy)
 
 func emit_enemy_fire_hurt(enemy: Node):
 	enemy_fire_hurt.emit(enemy)
