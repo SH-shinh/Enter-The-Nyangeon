@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/update_item/stun_grenades.gd" id="1_script"]
+
+[node name="StunGrenades" type="Node2D"]
+script = ExtResource("1_script")

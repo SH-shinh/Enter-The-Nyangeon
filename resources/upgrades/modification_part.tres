@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" format=3 uid="uid://bawdplbg1ct3w"]
+
+[ext_resource type="Texture2D" uid="uid://cdrb18hovltit" path="res://sprites/update_item/modification_part.png" id="1_sucha"]
+[ext_resource type="Script" uid="uid://cvlwfck2jbhvs" path="res://resources/upgrades/ability_upgrade.gd" id="2_part"]
+
+[resource]
+script = ExtResource("2_part")
+id = "modification_part"
+icon = ExtResource("1_sucha")
+rare = 1
+order_num = 3
+item_tags = 133120
+tags = Array[String](["召唤", "感电"])

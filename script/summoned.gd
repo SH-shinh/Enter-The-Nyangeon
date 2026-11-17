@@ -38,6 +38,13 @@ func _ensure_player() -> Node:
 	player = PlayerRef.ensure(self, player)
 	return player
 
+## 眩晕判定：buff 字典即唯一真相（StateMachine 早退据此停移动/射击）。
+func is_stunned() -> bool:
+	if summoned_buff_manager == null:
+		return false
+	var cbs = summoned_buff_manager.get("current_buff")
+	return cbs is Dictionary and cbs.has("stun")
+
 func _ready():
 	player = PlayerRef.resolve(self)
 	_setup_level_display()

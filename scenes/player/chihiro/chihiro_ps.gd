@@ -219,6 +219,8 @@ func release_static(origin: Vector2) -> void:
 				entry["now_time"] = 0
 				if manager.has_method("_update_card"):
 					manager.call("_update_card", entry)
+				# 直写刷新绕过了 apply_buff，手动补发「施加感电」事件。
+				GameEvents.emit_enemy_shock_applied(e)
 	# 释放消耗比例：T0 100% / T1 90% / T2 75% / T3 50%（ceil，至少 1 层）
 	var ratio: float = [1.0, 0.9, 0.75, 0.5][_tier()]
 	var cost: int = maxi(1, int(ceil(float(layers) * ratio)))

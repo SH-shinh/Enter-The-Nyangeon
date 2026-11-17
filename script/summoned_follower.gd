@@ -149,6 +149,10 @@ func get_direction_to_player():
 	return Vector2.ZERO
 
 func jump_start():
+	# 眩晕中不跟随玩家跳跃，也不吃跳跃闪避。
+	if is_stunned():
+		is_jump_request = false
+		return
 	is_jump_request = true
 	hurt_box.set_dodge(true)
 
@@ -158,9 +162,24 @@ func jump_end():
 	hurt_box.set_dodge(false)
 
 func follow_player_jump(_position: Vector2):
+	# 眩晕期间完全不跟随玩家跳跃（连延迟都不排）。
+	if is_stunned():
+		return
 	var rand_time = randf_range(0.1, 0.4)
 	jump_dely.wait_time = rand_time
 	jump_dely.start()
+
+## 眩晕开始：取消跳跃（含空中被打断），强制落地并清掉跳跃闪避。
+func on_stun_start() -> void:
+	is_jump_request = false
+	if jump_dely != null:
+		jump_dely.stop()
+	if jump_anim != null:
+		jump_anim.stop()
+	sprite_2d.position.y = -17
+	velocity = Vector2.ZERO
+	if hurt_box != null:
+		hurt_box.set_dodge(false)
 
 func invincibility_frames():
 	# 普通无敌帧：挡普通子弹/近战与接触，但不动 monitorable → 激光等来源侧检测仍命中。

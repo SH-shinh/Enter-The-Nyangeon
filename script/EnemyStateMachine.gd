@@ -22,6 +22,10 @@ func _physics_process(delta: float) -> void:
 	if owner.get("frozen") == true:
 		owner.velocity = Vector2.ZERO
 		return
+	# 眩晕（stun buff）：不推进状态机 → 同时停移动与 tick_physics 内的射击。
+	if owner.has_method("is_stunned") and owner.is_stunned():
+		owner.velocity = Vector2.ZERO
+		return
 	if cd_time <= 0:
 		cd_time = 3
 		while  true:

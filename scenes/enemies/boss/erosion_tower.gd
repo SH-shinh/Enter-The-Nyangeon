@@ -83,7 +83,9 @@ func hurt_defense(_value_index: int):
 
 func time_count():
 	super.time_count()
-	
+	# 眩晕（stun buff）：Boss 塔的攻击由全局 tick 驱动，不走状态机，这里单独停火。
+	if is_stunned():
+		return
 	if shoot_cd > 0:
 		shoot_cd -= 1
 		if shoot_cd <= 0:
@@ -170,6 +172,8 @@ func transition_state(_from:State, to: State) -> void:
 			on_dead()
 
 func shooting_state(_type: int):
+	if get_target() == null:
+		return
 	if can_shoot == false:
 		if can_defense:
 			spawn_shoot()

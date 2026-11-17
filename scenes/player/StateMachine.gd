@@ -13,6 +13,10 @@ func _ready() -> void:
 	
 	
 func _physics_process(delta: float) -> void:
+	# 眩晕（stun buff）：不推进状态机 → 玩家/召唤物同时停移动、转向与 tick_physics 内的射击。
+	if owner.has_method("is_stunned") and owner.is_stunned():
+		owner.velocity = Vector2.ZERO
+		return
 	while  true:
 		var next := owner.get_next_state(current_state) as int
 		if current_state == next:

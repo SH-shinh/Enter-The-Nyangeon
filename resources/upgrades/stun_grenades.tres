@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://sprites/update_item/stun_grenades.png" id="1_stun"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_stun"]
+
+[resource]
+script = ExtResource("2_stun")
+id = "stun_grenades"
+icon = ExtResource("1_stun")
+name = "震撼弹"
+rare = 1
+order_num = 1
+special_rules = 1
+description = "填装强光与高频电击的投掷物，敌人被感电的同时会短暂僵直。"
+forward = "感电施加时眩晕 0.5 秒"
+negative = ""
+item_tags = 131072
+tags = Array[String](["感电", "装备"])
+weight = 1.0

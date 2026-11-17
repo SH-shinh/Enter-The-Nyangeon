@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=4 format=3]
+
+[ext_resource type="Texture2D" path="res://sprites/buff_icon/stun_buff.png" id="1_stun"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_stun"]
+[ext_resource type="PackedScene" path="res://resources/buff/components/stun_component.tscn" id="3_comp"]
+
+[resource]
+script = ExtResource("2_stun")
+id = "stun"
+icon = ExtResource("1_stun")
+name = "眩晕"
+remove_by_layer = false
+description = "无法移动，也无法射击。"
+is_debuff = true
+source_refcount = true
+component_scene = ExtResource("3_comp")
+reapply_cooldown = 1.5
