@@ -13,6 +13,7 @@ const BACKSTAB_BONUS: Array[float] = [0.0, 0.5, 1.0, 1.5]
 const IDLE_SECONDS: float = 2.0
 const LINGER_SECONDS: float = 0.5
 const STEALTH_DURATION: float = 5.0
+const THREAT_SILENCE_SECONDS: float = 0.5
 const BREAK_BACKSTAB_MULT_BY_TIER: Array[float] = [2.0, 2.0, 3.0, 3.0]
 const BREAK_SHOT_META := &"kotama_break_shot"
 const BREAK_REFUND_META := &"refund_penetrate_on_kill"
@@ -103,12 +104,12 @@ func _process(delta: float) -> void:
 			_clear_all()
 		return
 	if _phase == Phase.STEALTH and not player.is_stealthed():
-		# Buff 被外部移除/过期：不要保持“假隐身”。
-		_clear_all()
+		# Buff 被外部移除/过期：不要保持“假隐身”；结束后给 0.5s 0 仇恨窗口。
+		_clear_all(true)
 		return
 	if _phase == Phase.STEALTH and not _hologram_is_valid():
-		# 全息被外部清掉（切场景/异常）：不要保持“假隐身”。
-		_set_stealth_state(false)
+		# 全息被外部清掉（切场景/异常）：不要保持“假隐身”，同样保留 0 仇恨窗口。
+		_set_stealth_state(false, true)
 		_phase = Phase.IDLE
 		_shot_idle = 0.0
 		return
@@ -313,7 +314,7 @@ func _on_hologram_exited(holo: Node) -> void:
 		return
 	_hologram = null
 	if _phase == Phase.STEALTH:
-		_set_stealth_state(false)
+		_set_stealth_state(false, true)
 	_phase = Phase.IDLE
 	_shot_idle = 0.0
 
@@ -325,7 +326,7 @@ func _on_player_shot(shot_position: Vector2, bullet_body: Node) -> void:
 		bullet_body.remove_meta(BREAK_REFUND_META)
 	if _phase == Phase.STEALTH:
 		_phase = Phase.BROKEN
-		_set_stealth_state(false)
+		_set_stealth_state(false, true)
 		_break_volley_until_msec = now + BREAK_VOLLEY_MS
 		_mark_break_bullet(bullet_body)
 		_defer_break_crit(bullet_body)
@@ -387,7 +388,7 @@ func _spawn_break_muzzle(shot_position: Vector2, bullet_body: Node) -> void:
 		"rot": angle,
 	})
 
-func _set_stealth_state(value: bool) -> void:
+func _set_stealth_state(value: bool, silence_on_end: bool = false) -> void:
 	if player == null or not is_instance_valid(player):
 		return
 	var mgr = player.get("player_buff_manager")
@@ -395,12 +396,20 @@ func _set_stealth_state(value: bool) -> void:
 		return
 	if value:
 		mgr.apply_buff(STEALTH_BUFF, [1, 0.0, STEALTH_DURATION], STEALTH_SOURCE)
+		if player.has_method("clear_threat_silence"):
+			player.call("clear_threat_silence")
+	elif silence_on_end and player.has_method("set_threat_silence"):
+		mgr.remove_source(STEALTH_BUFF, STEALTH_SOURCE)
+		player.call("set_threat_silence", THREAT_SILENCE_SECONDS)
 	else:
 		mgr.remove_source(STEALTH_BUFF, STEALTH_SOURCE)
+		if player.has_method("clear_threat_silence"):
+			player.call("clear_threat_silence")
 	if _local:
 		_broadcast_kotama_event(&"kotama_stealth", {
 			"on": value,
 			"duration": STEALTH_DURATION,
+			"silence": THREAT_SILENCE_SECONDS if (not value and silence_on_end) else 0.0,
 		})
 
 func _on_enemy_damage_calculating(_final_damage: int, data: DamageData, _body_path: NodePath) -> void:
@@ -442,6 +451,8 @@ func _on_round_start() -> void:
 	_shot_idle = 0.0
 	_reset_break_state()
 	_clear_echoes()
+	if player != null and is_instance_valid(player) and player.has_method("clear_threat_silence"):
+		player.call("clear_threat_silence")
 
 func _on_test_reset() -> void:
 	_passive_locked = false
@@ -452,10 +463,10 @@ func _on_game_over(_player_dead: bool) -> void:
 	_passive_locked = true
 	_clear_all()
 
-func _clear_all() -> void:
+func _clear_all(silence_on_end: bool = false) -> void:
 	if not _local:
 		return
-	_set_stealth_state(false)
+	_set_stealth_state(false, silence_on_end)
 	_phase = Phase.IDLE
 	_shot_idle = 0.0
 	_break_volley_until_msec = 0
@@ -481,6 +492,8 @@ func _on_remote_cleanup() -> void:
 	var mgr = player.get("player_buff_manager")
 	if mgr != null:
 		mgr.remove_source(STEALTH_BUFF, KOTAMA_NET_SOURCE)
+	if player.has_method("clear_threat_silence"):
+		player.call("clear_threat_silence")
 
 func _broadcast_kotama_event(event_name: StringName, data: Dictionary) -> void:
 	if not _local or player == null or not is_instance_valid(player):
@@ -522,8 +535,15 @@ func _apply_network_stealth(data: Dictionary) -> void:
 	if bool(data.get("on", false)):
 		var duration := clampf(float(data.get("duration", STEALTH_DURATION)), 0.1, STEALTH_DURATION)
 		mgr.apply_buff(STEALTH_BUFF, [1, 0.0, duration], KOTAMA_NET_SOURCE)
+		if player.has_method("clear_threat_silence"):
+			player.call("clear_threat_silence")
 	else:
 		mgr.remove_source(STEALTH_BUFF, KOTAMA_NET_SOURCE)
+		var silence := clampf(float(data.get("silence", 0.0)), 0.0, 2.0)
+		if silence > 0.0 and player.has_method("set_threat_silence"):
+			player.call("set_threat_silence", silence)
+		elif player.has_method("clear_threat_silence"):
+			player.call("clear_threat_silence")
 
 func _apply_network_holo_spawn(data: Dictionary) -> void:
 	if _local:

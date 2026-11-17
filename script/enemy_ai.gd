@@ -677,7 +677,12 @@ static func _is_candidate(enemy: Enemy) -> bool:
 		return false
 	if enemy.faction == Faction.PLAYER_SIDE:
 		return false
-	if enemy.route_target != null or (enemy.aggro_override != null and is_instance_valid(enemy.aggro_override)):
+	# threat_target（ThreatAggro 的加权目标）不排除；带 is_threat_nav_target() 的全息
+	# aggro_override 在 complex path 下也进入 AI，其余外部 override 仍保持直线。
+	if enemy.route_target != null:
+		return false
+	if enemy.aggro_override != null and is_instance_valid(enemy.aggro_override) \
+			and not _is_nav_node(enemy.aggro_override):
 		return false
 	if enemy.is_idle != 0 or enemy.frozen:
 		return false
@@ -693,7 +698,7 @@ static func _resolve_target(enemy: Enemy) -> Node2D:
 	var target = enemy.get_target()
 	if target == null or not is_instance_valid(target) or not (target is Node2D):
 		return null
-	if not _is_player_node(target):
+	if not _is_nav_node(target):
 		return null
 	return target as Node2D
 
@@ -704,6 +709,15 @@ static func _is_player_node(node) -> bool:
 	if not (node is Node):
 		return false
 	return node.is_in_group("Player") or node.is_in_group("RemotePlayer")
+
+
+## complex path 下允许带标记的全息/嘲讽目标参与 EnemyAI；普通场景只接受玩家目标。
+static func _is_nav_node(node) -> bool:
+	if _is_player_node(node):
+		return true
+	if not EnemyNavField.complex_path_enabled:
+		return false
+	return node is Node and node.has_method("is_threat_nav_target") and node.is_threat_nav_target()
 
 
 static func _first_profile(list: Array) -> EnemyAIProfile:

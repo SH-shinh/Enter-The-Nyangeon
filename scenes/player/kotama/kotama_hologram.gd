@@ -62,6 +62,10 @@ func _play_smoke() -> void:
 func _hide_smoke() -> void:
 	_smoke.visible = false
 
+## 全息标记：复杂地形下允许 EnemyAI/导航场把它当作可寻路目标（普通场景仍直线嘲讽）。
+func is_threat_nav_target() -> bool:
+	return true
+
 func setup(facing_flip: bool) -> void:
 	if _figure != null:
 		_figure.flip_h = facing_flip

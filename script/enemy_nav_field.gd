@@ -17,7 +17,8 @@ class_name EnemyNavField
 ## 约定：任何查询在场未就绪时返回 ZERO/INF/true，调用方据此退回"直冲"（今天的旧行为）。
 
 const REBUILD_MIN_MS := 200
-const MAX_FIELDS := 2
+## 仅 complex path 使用；覆盖 4 名玩家 + 最多 4 个全息/残影目标（静态目标可复用场）。
+const MAX_FIELDS := 8
 const WALL_LAYER := 256
 const OBSTACLE_INFLATE := 28.0
 const SCAN_MAX_DEPTH := 32

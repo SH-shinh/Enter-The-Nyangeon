@@ -44,6 +44,9 @@ var player_stop:bool = false
 # 联机倒地状态：由 mod 经 ExtensionHooks.player_death_gate 接管后调用 set_downed_state()。
 var is_downed: bool = false
 
+## 隐身结束后的短暂 0 仇恨窗口（墙钟）。只影响敌人选敌，不改变 is_stealthed/背刺/视觉。
+var _threat_silence_until_msec: int = 0
+
 var can_knockback: bool = true
 
 ## 受击无敌帧闪烁：由代码逐帧切 visible，时长跟随 InvincibleFrame（0.5s / 0.1s / 道具延长）。
@@ -106,6 +109,7 @@ func _ready():
 	GameEvents.game_over.connect(game_over_state)
 	GameEvents.crosshair_position.connect(get_crosshair_pos)
 	GameEvents.round_start.connect(reset_control_flags)
+	GameEvents.round_start.connect(clear_threat_silence)
 	if long_hair == true:
 		GameEvents.screen_changed.connect(hair_line_changed)
 	invincible_frame.timeout.connect(_on_invincible_frame_end)
@@ -197,6 +201,20 @@ func is_stealthed() -> bool:
 		return false
 	var cbs = player_buff_manager.get("current_buff")
 	return cbs is Dictionary and cbs.has("stealth")
+
+## 隐身结束后的短暂 0 仇恨窗口：只影响敌人选敌，不改变 is_stealthed/背刺/视觉。
+func set_threat_silence(seconds: float) -> void:
+	if seconds <= 0.0:
+		clear_threat_silence()
+		return
+	var until := Time.get_ticks_msec() + int(round(seconds * 1000.0))
+	_threat_silence_until_msec = maxi(_threat_silence_until_msec, until)
+
+func is_threat_silenced() -> bool:
+	return Time.get_ticks_msec() < _threat_silence_until_msec
+
+func clear_threat_silence() -> void:
+	_threat_silence_until_msec = 0
 
 ## 眩晕判定：buff 字典即唯一真相（不写 can_move/can_control/gun.can_shoot，避免覆盖交互/蓄力等其它系统）。
 func is_stunned() -> bool:

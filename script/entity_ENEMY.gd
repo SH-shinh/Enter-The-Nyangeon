@@ -71,6 +71,9 @@ var frozen: bool = false
 var faction: int = Faction.ENEMY_SIDE
 
 var aggro_override: Node = null #嘲讽目标（人偶等），非空时优先攻击它
+## ThreatAggro 的加权目标（玩家/远程玩家）。与 aggro_override 不同：它不关闭 AI/导航场。
+## 非玩家目标（全息）仍由 ThreatAggro 写 aggro_override，走既有直线追击。
+var threat_target: Node = null
 
 # ---------------- AI：导航场 + 难度分层走位 ----------------
 # 角色（近战/远程）由各敌人脚本的 _init() 给出；难度参数由 spawn_anim 在生成时注入。
@@ -246,6 +249,7 @@ func idle_state():
 	_target_cache_frame = -1
 	route_target = null
 	aggro_override = null
+	threat_target = null
 	ai_profile = null
 	_reset_ai_runtime()
 	PoolManager.unregister_active_enemy(self)
@@ -345,6 +349,10 @@ const TARGET_CACHE_FRAMES := 6
 
 func get_target() -> Node:
 	var f := Engine.get_physics_frames()
+	# 隐身刚结束的 0 仇恨窗口：旧缓存可能还指着玩家，必须立即失效。
+	if _target_cache != null and _is_silenced_target(_target_cache):
+		_target_cache = null
+		_target_cache_frame = -1
 	if _target_cache_frame < 0 or (f - _target_cache_frame) >= TARGET_CACHE_FRAMES:
 		_target_cache = _select_target()
 		_target_cache_frame = f
@@ -366,6 +374,10 @@ func _select_target() -> Node:
 		return aggro_override
 	if route_target != null and is_instance_valid(route_target):
 		return route_target
+	if threat_target != null and is_instance_valid(threat_target) \
+			and not threat_target.is_queued_for_deletion() \
+			and _is_valid_player_target(threat_target):
+		return threat_target
 	# 联机 host：需把远端玩家镜像也纳入选敌（镜像在 "RemotePlayer" 组，非 "Player"）
 	var nearest := get_nearest_player()
 	if nearest != null:
@@ -382,7 +394,8 @@ var _nearest_player_cache_frame: int = -1
 
 func get_nearest_player() -> Node:
 	var frame := Engine.get_physics_frames()
-	if frame == _nearest_player_cache_frame and is_instance_valid(_nearest_player_cache):
+	if frame == _nearest_player_cache_frame and is_instance_valid(_nearest_player_cache) \
+			and not _is_silenced_target(_nearest_player_cache):
 		return _nearest_player_cache
 	var is_net: bool = multiplayer.multiplayer_peer != null
 	var include_mirrors: bool = is_net and multiplayer.is_server()
@@ -416,7 +429,14 @@ func _is_valid_player_target(candidate) -> bool:
 		return false
 	if candidate.has_method("is_stealthed") and candidate.is_stealthed():
 		return false
+	if _is_silenced_target(candidate):
+		return false
 	return true
+
+## 隐身结束后的 0 仇恨窗口：只对实现了该接口的玩家生效，不改变其它目标类型。
+func _is_silenced_target(candidate) -> bool:
+	return candidate != null and is_instance_valid(candidate) \
+			and candidate.has_method("is_threat_silenced") and candidate.is_threat_silenced()
 
 # 策反单位无敌对目标时待机：不移动、不转向、不射击（子类据此短路）。
 func is_standby() -> bool:
@@ -479,6 +499,15 @@ func _ai_is_player_target(target) -> bool:
 	if not (target is Node):
 		return false
 	return target.is_in_group("Player") or target.is_in_group("RemotePlayer")
+
+## 复杂地形下允许带标记的全息/嘲讽目标进入 EnemyAI；普通场景仍按原直线处理。
+func _ai_is_nav_target(target) -> bool:
+	if _ai_is_player_target(target):
+		return true
+	if not EnemyNavField.complex_path_enabled:
+		return false
+	return target != null and is_instance_valid(target) and target is Node \
+			and target.has_method("is_threat_nav_target") and target.is_threat_nav_target()
 
 # 远程横移方向：有难度 profile 时按实例固定，否则沿用各脚本原本的随机取值。
 func ai_strafe_index(default_index: int) -> int:
@@ -737,12 +766,17 @@ func ai_steer(base_dir: Vector2, _mode: int, _standoff: float = -1.0) -> Vector2
 		return base_dir
 	if faction == Faction.PLAYER_SIDE:
 		return base_dir
-	if route_target != null or (aggro_override != null and is_instance_valid(aggro_override)):
+	# threat_target（ThreatAggro 的加权玩家目标）故意不在此早退；复杂地形下带
+	# is_threat_nav_target() 标记的全息 aggro_override 也交给 AI 走共享导航场。
+	if route_target != null:
+		return base_dir
+	if aggro_override != null and is_instance_valid(aggro_override) \
+			and not _ai_is_nav_target(aggro_override):
 		return base_dir
 	if is_standby():
 		return base_dir
 	var raw_target := get_target()
-	if not _ai_is_player_target(raw_target):
+	if not _ai_is_nav_target(raw_target):
 		return base_dir
 	var target := raw_target as Node2D
 	_ai_ensure_side()
@@ -968,13 +1002,13 @@ func _field_side_step(position: Vector2, target: Node2D) -> Vector2:
 	_ai_side_until = now + AI_SIDE_COMMIT_MS
 	return best
 
-# 冲撞发起前的一次性通路判定：无场 / 非玩家目标 / 极近距离一律放行（旧行为）。
+# 冲撞发起前的一次性通路判定：无场 / 非可寻路目标 / 极近距离一律放行（旧行为）。
 func ai_charge_path_clear(target: Node2D) -> bool:
 	if target == null or not ai_active():
 		return true
 	if faction == Faction.PLAYER_SIDE:
 		return true
-	if not _ai_is_player_target(target):
+	if not _ai_is_nav_target(target):
 		return true
 	if not EnemyNavField.is_ready(target):
 		EnemyAI.ensure_solved(target)

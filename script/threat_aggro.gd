@@ -3,7 +3,9 @@ extends Node
 ## 通用仇恨权重调度器：
 ## - 全息注册为候选；Player/RemotePlayer 每 tick 从组中扫描加入同一权重池。
 ## - 每个敌人独立选一个候选，按权重/距离/确定性 hash 分配，避免全部追第一个。
-## - 只写 Enemy.aggro_override；尊重外部 override 与 route_target。
+## - 玩家/远程玩家目标写 threat_target（不关闭 AI/导航场）；全息等非玩家目标写
+##   aggro_override（沿用既有直线追击、跳过 EnemyAI 的语义）。
+## - 外部 aggro_override（嘲讽/技能/Mod）与 route_target 不覆盖。
 
 const TICK_INTERVAL: float = 0.25
 const STICKY_BONUS: float = 1.15
@@ -29,15 +31,21 @@ func unregister(candidate: Node2D) -> void:
 	for i in range(_candidates.size() - 1, -1, -1):
 		if _candidates[i].get("node") == candidate:
 			_candidates.remove_at(i)
-	# 立即清掉仍指向该候选的 override，避免敌人继续追烟雾中的全息。
+	# 立即清掉仍指向该候选的受管目标，避免敌人继续追烟雾中的全息。
 	var tree := get_tree()
 	if tree == null:
 		return
 	for enemy in tree.get_nodes_in_group("Enemy"):
 		if enemy == null or not is_instance_valid(enemy):
 			continue
+		var changed := false
 		if enemy.get("aggro_override") == candidate:
 			enemy.set("aggro_override", null)
+			changed = true
+		if enemy.get("threat_target") == candidate:
+			enemy.set("threat_target", null)
+			changed = true
+		if changed:
 			_retarget(enemy)
 
 func _process(delta: float) -> void:
@@ -54,31 +62,53 @@ func _tick() -> void:
 	_prune_candidates()
 	var candidates := _active_candidates()
 	candidates.append_array(_player_candidates(candidates))
+	var enemies := tree.get_nodes_in_group("Enemy")
 	if candidates.is_empty():
+		for enemy in enemies:
+			_clear_managed_target(enemy)
 		return
-	for enemy in tree.get_nodes_in_group("Enemy"):
+	for enemy in enemies:
 		if not _enemy_eligible(enemy):
+			_clear_managed_target(enemy)
 			continue
-		if enemy.get("route_target") != null and is_instance_valid(enemy.get("route_target")):
+		if _has_valid_route(enemy):
+			# 路线型敌人由 enemy_path 接管；清掉我们自己的目标，避免残留覆盖路线。
+			_clear_managed_target(enemy)
 			continue
-		var current = enemy.get("aggro_override")
-		if current != null and is_instance_valid(current) and not _is_managed(current):
-			# 外部嘲讽/技能：不覆盖，等它自己结束。
+		var external = enemy.get("aggro_override")
+		if external != null and not is_instance_valid(external):
+			enemy.set("aggro_override", null)
+			external = null
+		if external != null and not _is_registered(external):
+			# 外部嘲讽/技能：完全不动；清掉我们自己的 threat_target，避免外部结束后串味。
+			if enemy.get("threat_target") != null:
+				enemy.set("threat_target", null)
 			continue
+		var current = _current_managed_target(enemy)
 		var best := _pick_target(enemy, candidates, current)
 		if best == null:
-			if current != null and _is_managed(current):
-				enemy.set("aggro_override", null)
-				_retarget(enemy)
+			_clear_managed_target(enemy)
 			continue
-		if current != best:
+		if best == current:
+			continue
+		if _is_player_target(best):
+			# 玩家目标：写 threat_target，保留 EnemyAI；若当前是自己的全息 override，先清掉。
+			if external != null and _is_registered(external):
+				enemy.set("aggro_override", null)
+			enemy.set("threat_target", best)
+		else:
+			# 全息目标：沿用 aggro_override 的直线追击/跳过 AI 语义。
 			enemy.set("aggro_override", best)
-			_retarget(enemy)
+			enemy.set("threat_target", null)
+		_retarget(enemy)
 
 func _enemy_eligible(enemy) -> bool:
 	if enemy == null or not is_instance_valid(enemy) or enemy.is_queued_for_deletion():
 		return false
 	if not (enemy is Node2D):
+		return false
+	# EnemyPart（护盾/手臂等）也挂在 "Enemy" 组，但没有目标/override 字段；统一跳过。
+	if enemy.is_in_group("EnemyPart"):
 		return false
 	if enemy.is_in_group("SceneProp") or enemy.has_meta("network_remote_enemy"):
 		return false
@@ -108,6 +138,8 @@ func _active_candidates() -> Array:
 			continue
 		if node.has_method("is_stealthed") and node.is_stealthed():
 			continue
+		if node.has_method("is_threat_silenced") and node.is_threat_silenced():
+			continue
 		out.append(c)
 	return out
 
@@ -116,13 +148,6 @@ func _is_registered(node) -> bool:
 		if c.get("node") == node:
 			return true
 	return false
-
-func _is_managed(node) -> bool:
-	if node == null or not is_instance_valid(node):
-		return false
-	if _is_registered(node):
-		return true
-	return node.is_in_group("Player") or node.is_in_group("RemotePlayer")
 
 func _player_candidates(existing: Array) -> Array:
 	var out: Array = []
@@ -146,6 +171,8 @@ func _player_candidates(existing: Array) -> Array:
 				continue
 			if node.has_method("is_stealthed") and node.is_stealthed():
 				continue
+			if node.has_method("is_threat_silenced") and node.is_threat_silenced():
+				continue
 			var weight := 1.0
 			var raw = node.get("threat_weight")
 			if raw is float or raw is int:
@@ -153,6 +180,47 @@ func _player_candidates(existing: Array) -> Array:
 			seen[node.get_instance_id()] = true
 			out.append({"node": node, "weight": weight, "radius": 0.0})
 	return out
+
+func _is_player_target(node) -> bool:
+	if node == null or not is_instance_valid(node):
+		return false
+	return node.is_in_group("Player") or node.is_in_group("RemotePlayer")
+
+func _has_valid_route(enemy) -> bool:
+	var route = enemy.get("route_target")
+	return route != null and is_instance_valid(route)
+
+## 当前实际受管目标：已注册的全息 override 优先，否则 threat_target。
+## 失效引用顺手清掉，避免继续参与 sticky 比较。
+func _current_managed_target(enemy):
+	var managed = enemy.get("aggro_override")
+	if managed != null:
+		if not is_instance_valid(managed):
+			enemy.set("aggro_override", null)
+			managed = null
+		elif _is_registered(managed):
+			return managed
+	var threat = enemy.get("threat_target")
+	if threat != null and not is_instance_valid(threat):
+		enemy.set("threat_target", null)
+		threat = null
+	return threat
+
+## 只清 ThreatAggro 自己写下的目标；绝不碰外部 aggro_override。
+func _clear_managed_target(enemy) -> void:
+	if enemy == null or not is_instance_valid(enemy):
+		return
+	var changed := false
+	var managed = enemy.get("aggro_override")
+	if managed != null:
+		if not is_instance_valid(managed) or _is_registered(managed):
+			enemy.set("aggro_override", null)
+			changed = true
+	if enemy.get("threat_target") != null:
+		enemy.set("threat_target", null)
+		changed = true
+	if changed:
+		_retarget(enemy)
 
 func _pick_target(enemy: Node2D, candidates: Array, current) -> Node2D:
 	var best: Node2D = null
