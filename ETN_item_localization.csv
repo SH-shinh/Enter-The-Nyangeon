@@ -879,4 +879,12 @@ stun_grenades_forward,"独特
 Stuns for 0.5s when Shock is applied","Único
 Atordoa por 0,5s ao aplicar Eletricidade","Độc Nhất
 Gây choáng 0,5 giây khi áp dụng Nhiễm Điện"
-stun_grenades_negative,,,,
+stun_grenades_negative, ,,,
+lace_pillow_name,蕾丝枕头,Lace Pillow,Travesseiro de Renda,Gối Ren
+lace_pillow_description,使用豪华原料制成的蕾丝枕头，子弹对满血的敌人造成200%伤害，使其快速入眠。,"A lace pillow made with luxurious materials. Bullets deal 200% damage to enemies at full HP, quickly lulling them to sleep.","Um travesseiro de renda feito com materiais luxuosos. As balas causam 200% de dano a inimigos com vida cheia, fazendo-os adormecer rapidamente.","Một chiếc gối ren làm từ nguyên liệu cao cấp. Đạn gây 200% sát thương lên kẻ địch còn đầy máu, khiến chúng nhanh chóng chìm vào giấc ngủ."
+lace_pillow_forward,"最大持有3个
++100%额外伤害","Max Stack: 3
++100% Bonus Damage","Acúmulo Máximo: 3
++100% Dano Adicional","Tối đa 3 cái
++100% Sát Thương Cộng Thêm"
+lace_pillow_negative, ,,,
