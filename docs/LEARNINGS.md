@@ -1379,8 +1379,8 @@
 - Date / 日期: 2026-10-07
 
 ### [Mod] 聊天室升级页按钮：升级页背景不透明且 layer 更高，按钮须放到上层 CanvasLayer
-- Evidence / 证据: `mod_sdk/coop_mod/mods/etn_coop/ui/coop_chat.tscn`（`%UpgradeChatButton` 挂 `CoopChat` layer 119；HUD 按钮在本地玩家 `$GameUI/AmmoPosition`）、`ui/coop_chat.gd`（`_upgrade_active` 由 `GameEvents.round_upgrade`→true / `round_upgrade_end`+`round_upgrade_closing`+`round_start`+`game_over`→false 驱动；`_ensure_upgrade_button()`；`_pointer_free()`）、`ui/UpgradeScreen.tscn:440-456`（`layer=2`，不透明 `ColorRect`）、`ui/game_ui.tscn:182`（`GameUI` 默认 `layer=1`）。
-- Notes / 说明: **现象**：升级页里看不到/点不到手机开聊按钮。**根因**：升级页 `UpgradeScreen` 是 `layer=2` 且背景不透明，玩家 HUD 按钮在 `$GameUI`（默认 `layer=1`）→ 被完全盖住（视觉与命中都被遮挡）。**修法**：在 `CoopChat`（`layer=119`）放第二个按钮 `%UpgradeChatButton`（场景节点，位置/大小编辑器可调），升级阶段显示；用事件（而非轮询）控制显隐，兼容升级页「刷新」重建（刷新不重发 `round_upgrade`，但仍在升级阶段，按钮保持）。**门控放宽**：鼠标分支由「仅 `_is_open`」改为「指针空闲」`_is_open or Input.mouse_mode==MOUSE_MODE_VISIBLE`——游玩期准星把鼠标设为 `CONFINED_HIDDEN`（不处理也不 consume，不误触/不挡开火），升级页/暂停等鼠标 `VISIBLE` 时桌面可点。**无头限制**：headless 会把 `Input.mouse_mode` 强制为 VISIBLE（写 `CONFINED_HIDDEN` 读回仍为 `0`），故「隐藏」分支只能靠条件本身保证、无法无头断言。**Enter 仍归聊天**（LAN 下不触发升级页 `ui_accept`；升级确认走空格/手柄A/鼠标）。验证（无头探针）：两按钮鼠标(VISIBLE)命中=true、触摸=true、触摸后同帧鼠标被守卫忽略=false、升级态开关 `begin=true/end=false`；双进程 LAN `--coop-devchat` 两端 `log=2` 无 `SCRIPT ERROR`。
+- Evidence / 证据: `mod_sdk/coop_mod/mods/etn_coop/ui/coop_chat.tscn`（`%UpgradeChatButton` 挂 `CoopChat` layer 119；HUD 按钮在本地玩家 `$GameUI/AmmoPosition`）、`ui/coop_chat.gd`（`_upgrade_active` 由 `GameEvents.round_upgrade`→true / `round_upgrade_end`+`round_upgrade_closing`+`round_start`+`game_over`→false 驱动；`_ensure_upgrade_button()`；`_pointer_free()`）、`ui/UpgradeScreen.tscn:440-456`（`layer=4`，不透明 `ColorRect`）、`ui/game_ui.tscn:182`（`GameUI` 默认 `layer=1`）。
+- Notes / 说明: **现象**：升级页里看不到/点不到手机开聊按钮。**根因**：升级页 `UpgradeScreen` 是 `layer=4` 且背景不透明，玩家 HUD 按钮在 `$GameUI`（默认 `layer=1`）→ 被完全盖住（视觉与命中都被遮挡）。**修法**：在 `CoopChat`（`layer=119`）放第二个按钮 `%UpgradeChatButton`（场景节点，位置/大小编辑器可调），升级阶段显示；用事件（而非轮询）控制显隐，兼容升级页「刷新」重建（刷新不重发 `round_upgrade`，但仍在升级阶段，按钮保持）。**门控放宽**：鼠标分支由「仅 `_is_open`」改为「指针空闲」`_is_open or Input.mouse_mode==MOUSE_MODE_VISIBLE`——游玩期准星把鼠标设为 `CONFINED_HIDDEN`（不处理也不 consume，不误触/不挡开火），升级页/暂停等鼠标 `VISIBLE` 时桌面可点。**无头限制**：headless 会把 `Input.mouse_mode` 强制为 VISIBLE（写 `CONFINED_HIDDEN` 读回仍为 `0`），故「隐藏」分支只能靠条件本身保证、无法无头断言。**Enter 仍归聊天**（LAN 下不触发升级页 `ui_accept`；升级确认走空格/手柄A/鼠标）。验证（无头探针）：两按钮鼠标(VISIBLE)命中=true、触摸=true、触摸后同帧鼠标被守卫忽略=false、升级态开关 `begin=true/end=false`；双进程 LAN `--coop-devchat` 两端 `log=2` 无 `SCRIPT ERROR`。
 - Source / 来源: user + code + test
 - Date / 日期: 2026-10-07
 
@@ -2943,7 +2943,7 @@
 - Date / 日期: 2026-10-20
 
 ### [UI] 词条 HUD 默认不显示计数，CanvasLayer 用 layer=1
-- Evidence / 证据: `ui/chip_hud.tscn`（`layer = 1`、`Root.scale = Vector2(0.5, 0.5)`）；`ui/chip_hud.gd`（`debug_show_counts`、count Label 默认隐藏）；`scenes/player/momoi.tscn`（pause CanvasLayer layer=3）。
+- Evidence / 证据: `ui/chip_hud.tscn`（`layer = 1`、`Root.scale = Vector2(0.5, 0.5)`）；`ui/chip_hud.gd`（`debug_show_counts`、count Label 默认隐藏）；`scenes/player/momoi.tscn`（pause 宿主由 `PauseScreen._ready` 统一设为 layer=5）。
 - Notes / 说明: 战斗内词条 HUD 只保留图标，不显示标题和名称；同场计数仍由 `ChipManager.get_chip_counts()` / `chip_assigned` / `chip_released` 提供，仅在 `debug_show_counts=true` 时显示。ChipHud 必须与 `RoundTimer` 同为 layer 1，否则会盖住 layer 3 的 pause 菜单；整体缩放 50% 用 Root 的 scale + 中心 pivot 实现，Root 透明度 0.7，位置贴近 `RoundTimer` 下方。
 - Source / 来源: user + code + test
 - Date / 日期: 2026-10-20
@@ -4442,7 +4442,7 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - Source / 来源: test
 - Date / 日期: 2026-11-13
 ### [VFX] Hare 锁定态战术目镜滤镜
-- Evidence / 证据: `shaders/hare_optic.gdshader`（`edge_mask = smoothstep(inner, outer, d)` 中心 0→边缘 1；`rain_mask` 更窄）、`ui/hare_optic_overlay.tscn` + `ui/hare_optic_overlay.gd`（`CanvasLayer(layer=4)` + `BackBufferCopy` + 全屏 `ColorRect`）、`scenes/player/hare/hare_ps.gd`（`_deploy` 创建、进/出锁定 `set_active`）
+- Evidence / 证据: `shaders/hare_optic.gdshader`（`edge_mask = smoothstep(inner, outer, d)` 中心 0→边缘 1；`rain_mask` 更窄）、`ui/hare_optic_overlay.tscn` + `ui/hare_optic_overlay.gd`（`CanvasLayer(layer=3)` + `BackBufferCopy` + 全屏 `ColorRect`）、`scenes/player/hare/hare_ps.gd`（`_deploy` 创建、进/出锁定 `set_active`）
 - Notes / 说明: 全屏滤镜用 `hint_screen_texture` + `filter_nearest`，逻辑像素吸附（`floor(uv*resolution)/resolution`）避免模糊；中心不覆盖用平滑 `edge_mask`，数字雨只乘更窄的 `rain_mask`，避免占用主视觉。开启动画用 `open` uniform + Tween（0.45s/0.28s），关闭后隐藏 `BackBufferCopy`/`Filter` 无开销；移动端禁用；CanvasLayer 放 HUD 之下（layer 4）保证血条/文字清晰。
 - Source / 来源: test
 - Date / 日期: 2026-11-13
@@ -4657,3 +4657,189 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - Notes / 说明: 参考库效果要「只留某一段 + 加速/改色」时，fork 成 `scenes/effects/pixelfx_*.gd`（`extends RefCounted` + 静态 `meta`/`draw`），用 `SPEED` 统一压缩时间窗；烘焙用 `tests/` 里的一次性脚本只烘目标 `.res`，并保留 `bake_pixelfx_fx.gd` 的注册项以便复现。**不要跑全量 `bake_pixelfx_fx.gd`**：它会把所有效果的 `.res` 重写一遍（工作区里 18 个 `.res` 早就是脏的，容易被误算进本次改动）。烘焙后用 `SpriteFrames.get_frame_count("default")` 校验帧数（`duration×fps` 附近）与画布尺寸。
 - Source / 来源: user + test
 - Date / 日期: 2026-11-15
+
+### [Item] 召唤物伤害来源标签是 `SUMMONED`，不能按 `CONVERTED` 判定
+- Evidence / 证据: `scenes/player_support/kei/luminous_nova.gd:107`（mobu 的 `sa_80.tscn` 与 Kei 的 `luminous_nova.tscn` 都挂这个枪脚本）、`script/turret_summoned.gd:142`、仓内既有判定 `scenes/player/utaha/UtahaPS.gd:88`；玩家武器 `script/bullet_launcher.gd:67` 走 `DamageRouter.source_tag(PLAYER_SIDE)`。
+- Notes / 说明: 召唤物与玩家/策反单位同属 `PLAYER_SIDE` 阵营，但枪脚本不同：召唤物用 `luminous_nova` / `turret_summoned` 并硬写 `source: GameTags.SUMMONED`，玩家枪用 `bullet_launcher` 按阵营推标签（`PLAYER_SIDE` → `CONVERTED`）。所以判定「召唤物伤害」只能用 `SUMMONED`；看到 `bullet_launcher` 的 CONVERTED 就推断召唤物也是 CONVERTED 是错的。
+- Source / 来源: code
+- Date / 日期: 2026-11-15
+
+### [Buff] 眩晕用 buff 字典判定，不要复用 `frozen`
+- Evidence / 证据: `scenes/player/ako/ako_chain.gd:64`（Ako 链锁定写 `enemy.frozen`）、`mod_sdk/coop_mod/.../coop_net.gd` 的 `_apply_ako_lock`、`script/entity_ENEMY.gd` / `script/player.gd` / `script/summoned.gd` 的 `is_stunned()`、`resources/buff/stun.tres`
+- Notes / 说明: 复用 `frozen` 会让「眩晕结束」和「Ako 链解锁」互相覆盖；直接查 `current_buff.has("stun")` 既避免冲突，也不需要手工引用计数（`source_refcount=true` 已处理多来源）。停手必须在 4 个入口都做：`EnemyStateMachine`、`scenes/player/StateMachine.gd`（玩家+召唤物）、`player_gun._physics_process`、`erosion_tower.time_count()`（Boss 塔不走状态机）。
+- Source / 来源: user + code
+- Date / 日期: 2026-11-15
+
+### [FX] 参考库 actor 状态效果 fork 成 bodyless + 头顶跟随
+- Evidence / 证据: `third_party/pixelfx-godot/godot/addons/pixelfx/fx/status/stunned.gd`（`actor=2` / `onBody` / `poses`）、`scenes/effects/pixelfx_stun_star.gd`（去掉 poses，环中心固定原点）、`scenes/effects/stun_star_fx.gd`（`HurtBoxMeasure` 头顶 + `sprite_2d.position.y` 跳跃偏移）
+- Notes / 说明: 参考库的 actor 效果会改身体姿态（lean/crouch），直接烘焙会把玩家/敌人的身体画成参考库的形状。fork 时只保留贴在角色上的元素（星星环/小鸟/闪光），画布按元素本身裁（48×32），位置在运行时用 `HurtBoxMeasure.measure` 的 `center - size.y/2` 得头顶。**跳跃必须单独加偏移**：`sprite_2d.position.y` 的地面基准是 -17，空中更小；`clampf(-17 - sprite_2d.position.y, 0, 200)` 即上移量，否则玩家跳起来时星星会留在原地。
+- Source / 来源: user + code
+- Date / 日期: 2026-11-15
+
+### [Buff] 短控防永久控放在 buff 层 `reapply_cooldown`，不要各道具自建 CD
+- Evidence / 证据: `resources/buff/buff.gd`（`reapply_cooldown`）、`scenes/manager/buff_manager_base.gd`（`apply_buff` 开头按 manager 级 `_reapply_last` 拦截，buff 过期后记忆仍保留）、`resources/buff/stun.tres`（1.5s）、`scenes/update_item/stun_grenades.gd`
+- Notes / 说明: 状态机层只查 buff 是否存在、buff 层原本只刷新 `now_time`，都不挡重复施加。眩晕这类短控若只在各道具里自建 CD，新道具/角色技能/敌人技能都能绕过，很容易被高频感电来源续成永久控制；统一在 buff 层用 `reapply_cooldown` 拦（`apply_buff` 直接 return），所有来源自动生效。`refresh_buff(id)` 不走 `apply_buff`，仍可显式续时；客机镜像重复 apply 也会被拦，短控两端最多差一个冷却窗口。
+- Source / 来源: user + code
+- Date / 日期: 2026-11-15
+
+### [Buff] `apply_buff` 的满层/来源满层提前 return 会吞掉「刷新」事件
+- Evidence / 证据: `scenes/manager/buff_manager_base.gd`（`_notify_enemy_shock_applied`；`entry["layer"] >= entry["max_layer"]` 与 `_add_source_layer` 失败两条 return 前各补发一次）、`scenes/player/chihiro/chihiro_ps.gd`（`release_static` 满层直写 `now_time=0` 后手动补发）
+- Notes / 说明: 满层时 `apply_buff` 仍会 `entry["now_time"] = 0` 刷新时长，但随后 return，不会走到函数末尾的事件通知。任何「刷新也算一次施加」的联动都要在这两条提前 return 前显式补发，不能只依赖末尾；来源满层（`per_source_layers`）同理。**还有第三类路径**：完全绕过 `apply_buff` 的直写刷新（`chihiro_ps.release_static` 在已满层时直接写 `entry["now_time"] = 0`），这种必须在调用处手动补发事件，否则刷新永远不触发联动。
+- Source / 来源: user + code
+- Date / 日期: 2026-11-15
+
+### [Combat] 背刺资格按 damage_type 过滤；朝向只用 graphics.scale.x
+- Evidence / 证据: `scenes/update_item/murky_hand_scythe_icon.gd:116-122`（MELEE_DAMAGE + EQUIP；持续伤害每次 `add_damage_data` 复用 damage_data，`hit_box_center` 是发射瞬间旧位置）、`script/kick.gd:30-36`（MELEE_DAMAGE + PLAYER）、`script/explosion_damage.gd:93`（EXPLOSION_DAMAGE）、`scenes/bullet/yuzu_bullet.gd:118-125`（爆炸克隆追加 EXPLOSION_DAMAGE）、`scenes/update_item/kitchen_knife.gd:63-70`（MELEE + TRUE_DAMAGE）、`script/health_component.gd:256-266`（TRUE_DAMAGE 跳过承伤与 modifier）、`script/entity_ENEMY.gd:321-332,988-993`（direction 10Hz 重算、visual 翻转）、`mods/etn_coop/net/coop_enemy_proxy.gd:309-316`（镜像按 velocity.x 补翻）、`script/backstab_passive.gd` 的 `_on_damage_calculating/_modify`、`script/enemy_hurt_floating_text.gd:25-26`（WEAK_DAMAGE → `Weak `）、`script/game_tags.gd:38`（WEAK_DAMAGE）。
+- Notes / 说明: 1) 背刺朝向用 `graphics.scale.x` + 玩家 x 相对位置，不用 `direction`：本作敌人 sprite 只有左右翻转，direction 是走位/索敌方向，automaton/tank/charge 与视觉朝向不一致。2) 资格按 `damage_type` 过滤：近战/子弹/装备直伤触发，`EXPLOSION_DAMAGE`/`DOT_DAMAGE`/`TRUE_DAMAGE` 不触发；`murky_hand_scythe` 是 MELEE+EQUIP，自动触发。3) 持续伤害道具的 `hit_box_center` 是发射瞬间旧位置，攻击来向统一用玩家当前位置，避免 scythe 飞到背后时误判。4) `kitchen_knife` 是 MELEE 但真伤，`HealthComponent` 对真伤不跑 modifier，属于已知例外；要支持得在它自己的 damage_add 里直接调 `Backstab.boost`。5) `BackstabPassive` 挂在玩家/角色上覆盖全部合格伤害；只给某件道具时直接在该道具 DamageData 上 append modifier，避免组件按 source_tag 过滤时误伤其它装备。6) 背刺飘字复用 `WEAK_DAMAGE` 显示 `Weak`；`_on_damage_calculating` 每个目标先清该 flag，`_modify` 背面再 append，避免 scythe/火场等共享 DamageData 把 Weak 串到正面目标；WeakPart 真伤不发 `enemy_damage_calculating`，其 `WEAK_DAMAGE+TRUE_DAMAGE` 不会被清；flags 随 `_damage_to_dict` 序列化，host 远端回放也显示 Weak。
+- Source / 来源: code
+- Date / 日期: 2026-11-16
+
+### [Combat] 隐身/全息嘲讽要同时处理选敌缓存、无目标与直读 player
+- Evidence / 证据: `script/player.gd` 的 `is_stealthed()`（读 `stealth` buff）；`script/entity_ENEMY.gd:346-356`（`force_retarget`）、`:362`（`_select_target`）、`:410`（`_is_valid_player_target`）、`:425`（`get_target_position`）、`:733`（`ai_steer`）；`scenes/player/kotama/kotama_ps.gd`、`scenes/player/kotama/kotama_hologram.gd`；`scenes/enemies/tank_gun_1.gd`、`scenes/enemies/boss/goliath.gd`、`scenes/enemies/boss/erosion_tower.gd`。
+- Notes / 说明: 只给 `Enemy` 加 `is_stealthed` 过滤不够。`get_target()` 有约 0.1s 缓存，全息 set/clear `aggro_override` 后必须 `force_retarget()` 才能立即生效；`get_target_position()` 不能再回退 `_ensure_player()`，否则隐身玩家仍会被“隔空瞄准”；`tank_gun_1`/`goliath`/`erosion_tower` 这类直接读 `player` 或目标位置的射击入口要单独加无目标守卫。全息不是 `Player` 组、无 HurtBox，只靠 `aggro_override` 吸引；`EnemyAI` 会因 override 跳过共享导航场，改走直线追击，这是接受的设计取舍，不是 bug。
+- Source / 来源: code
+- Date / 日期: 2026-11-16
+
+### [Scene] 复制角色场景后必须补 `%Gun` 唯一名；PS `_ready` 不要直接 add_child
+- Evidence / 证据: `script/player.gd:67`（`@onready var gun = $%Gun`）；`scenes/player/kotama/kotama.tscn:446-449`（`Gun` + `unique_name_in_owner`）；`script/backstab_passive.gd:26`；`scenes/player/kotama/kotama_ps.gd` 的 `call_deferred("_setup_backstab_passive")`。
+- Notes / 说明: 从 Momoi/Hare 复制场景时若武器节点仍叫 `echo_link` 且没有 `unique_name_in_owner`，`player.gun` 会是 null，枪/PS/相机相关逻辑一起坏。`PlayerPS._ready()` 执行时玩家父节点仍在 `_ready` 中设置子节点，直接 `BackstabPassive.attach()` 的 `add_child()` 会报 “Parent node is busy setting up children”；必须 deferred 挂载。`BackstabPassive` 的倍率/Weak 逻辑本身可复用。
+- Source / 来源: test
+- Date / 日期: 2026-11-16
+
+### [Coop] Kotama 首版 stealth/全息未做客机镜像同步
+- Evidence / 证据: `scenes/player/kotama/kotama_ps.gd` 的 `_is_local_player()` 守卫；`script/player.gd` 的 `is_stealthed()` 只读本地 `player_buff_manager` 的 `stealth` 条目；`scenes/player/kotama/kotama_hologram.gd` 只扫描本地 `Enemy` 组并写 `aggro_override`。
+- Notes / 说明: 首版按单机 / host 本机验证。客机玩家的 `stealth` buff 不会进入 host 的选敌，客机全息也不会在 host 侧生成嘲讽目标；否则会出现“客机自以为隐身、host 敌人仍追”的不一致。要做完整联机需要把 stealth 放进玩家状态/事件，并在 host 侧生成全息代理或转发嘲讽目标，属于额外协议/两副本 mod 改动。
+- Source / 来源: code
+- Date / 日期: 2026-11-16
+
+### [Buff] 隐身用 buff 承载，视觉用 ShaderMaterial + BuffComponent
+- Evidence / 证据: `scenes/player/kotama/kotama_ps.gd`（`apply_buff(stealth, [1,0,9999], "kotama_ps")` / `remove_source`）、`resources/buff/player_buff/stealth.tres`、`resources/buff/components/stealth_component.gd`、`shaders/sprite_outline.gdshader` 的 `hologram_*`、`scenes/player/kotama/kotama.tscn` 的 Halo canonical material。旧实现是 `Graphics.modulate` + 直接 `_stealthed` 布尔值。
+- Notes / 说明: `sprite_outline` 自己重写 `COLOR`，不会读取 CanvasItem 的 `modulate`；直接改 `graphics.modulate` 只会让没有 shader 的 Gun 半透明，body/Halo 不透明。隐身应由 `stealth` buff 承载，`Player.is_stealthed()` 查 `current_buff`；视觉由 BuffComponent 在 body/Halo 的 material 上写 `hologram_amount/tint/alpha/scan_speed`（0.65 alpha，Gun 不动）。material 要 duplicate 后替换并在 buff 移除时 restore，避免多人共享 subresource；Kotama Halo 的内联 shader 副本必须改 canonical，否则没有 `hologram_*`。buff 图标当前是 `buff_test.png` 占位符。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-16
+
+### [FX] Kotama 全息箱体出现/消失只留烟雾
+- Evidence / 证据: `scenes/player/kotama/kotama_hologram.gd`（`_play_smoke`/`_play_open`/`despawn`）、`scenes/player/kotama/kotama_hologram.tscn`（`Smoke`，删除 `Ring`/`Beam`/`OutBurst`）、`scenes/effects/pixelfx_kotama_smoke.gd` + `scenes/effects/kotama_smoke_frames.res`（参考 pixelfx `spawn/poof`，bodyless，保留 soft smoke balls / 白色 pop / 星星 / 速度线 / 地面光晕）、`scenes/manager/sound_manager.tscn`（`SmokeSounds`，stream `sounds/cloud-poof.wav`）。
+- Notes / 说明: 箱子出现和消失都用**同一团烟雾**覆盖，不再保留光柱/投影环/收束爆发。`Smoke` 的 `meta.origin=[56,80]` 对应 `AnimatedSprite2D` 的 `offset=-Vector2(56,80)`，`z_index=3` 盖在箱体/角色前；`_play_smoke()` 先 `stop()/frame=0/play()` 再播 `SmokeSounds`，`despawn()` 先起烟再让箱体/角色淡出，等待 `SMOKE_WAIT=0.95s` 后释放。出现/消失共用同一个 `SmokeSounds`，音频是 `sounds/cloud-poof.wav`，出现和消失共用这一条 stream。不要自行把参考 poof 简化成深灰实体团——用户要的是原版白/淡紫软烟 + 星星 + 轻速度线。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-16
+
+### [FX] 隐身进入/退出用 blink-in/out，fork 时去 actor 和地面环
+- Evidence / 证据: `resources/buff/components/stealth_component.gd`（`BLINK_IN_FRAMES`/`BLINK_OUT_FRAMES`、`_spawn_blink`）、`scenes/effects/pixelfx_kotama_blink_in.gd` / `pixelfx_kotama_blink_out.gd`、`scenes/effects/kotama_blink_in_frames.res` / `kotama_blink_out_frames.res`、参考库 `third_party/pixelfx-godot/godot/addons/pixelfx/fx/arcane/blink-in.gd` / `blink-out.gd`。
+- Notes / 说明: 隐身进入/退出的视觉统一挂在 `StealthComponent.activate/deactivate`，不要在 `KotamaPS` 和 buff 两侧各写一份。参考效果原本带 actor，会绘制/染色角色身体；fork 时必须去掉 `meta.actor`、`act`、`actorAlpha`、`inside`/`A`/`sh`/`Lib`，否则会重绘第二个人形。用户明确不要地面环，因此 `Px.band` 的 ring 必须两处都删（`drawBack` 与 `draw`），保留竖直光线、flare、星星/火花和 soft glow 即可。效果放 `SELayer`、`z_index=30`、动画结束 `queue_free`，不进对象池。时长从参考 1.4/1.6 压到 0.5s 时不能只改 `meta.duration`——保留相位常量，用 `TIME_SCALE` 同时推进 `t`、`ps.update`、`lights.update`，否则后半段被截断。`arcane` 偏紫，用户要更蓝，故改用 indigo→electric blue ramp（`#0b0d24` 到 `#d2efff` 再到白）。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-16
+
+### [Bullet/Kotama] 破隐子弹击杀返还穿透：在 `PlayerBullet` 回调内先返还再扣减
+- Evidence / 证据: `scenes/player/kotama/kotama_ps.gd`（`BREAK_REFUND_META`、`_mark_break_bullet`、`_on_player_shot`）、`script/player_bullet.gd`（`REFUND_PENETRATE_META`、`apply_penetrate_dealt`、`idle_state`）、`script/health_component.gd:166-177`（先扣血再执行 `on_damage_dealt`）、`scenes/weapon/echo_link/echo_link.tscn` → `scenes/bullet/shiroko_bullet.tscn`（脚本为 `PlayerBullet`）。
+- Notes / 说明: 在 `PlayerBullet.apply_penetrate_dealt` 的 `on_damage_dealt` 回调里，`victim.stats.hp <= 0` 已是击杀后状态；`spent = victim.stats.penetrate_resis`，破隐子弹先 `penetrate += spent` 再执行原有 `penetrate -= spent`，这样初始 1 穿透击杀 1 抗性目标仍回到 1、不会被本次击杀回收。**必须在扣减和 `if penetrate <= 0` 之前返还**，否则子弹已 `idle_state()`。排除 `SceneProp`，避免 999 抗性场景物异常返还。池化子弹要在 `PlayerBullet.idle_state()` 清 `refund_penetrate_on_kill` meta，且 `KotamaPS._on_player_shot()` 每发先清旧 meta；否则普通子弹会继承返还。只覆盖 `PlayerBullet`（当前 echo_link 破隐子弹），`SummonedBullet` 不参与；`variable_zoom_scope` 的击杀加穿透仍独立叠加。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-16
+
+### [Combat] 背刺总倍率拆成玩家 stat + 角色 bonus；破隐额外 100% 是独立乘区
+- Evidence / 证据: `script/Stats.gd`（`backstab_damage`，默认 2.0）、`script/PlayerData.gd`（`base_backstab_damage`/`backstab_damage_add`/`backstab_damage_mult` 捕获与重算）、`script/backstab_passive.gd`（从 owner 的 `stats.backstab_damage` 读取，加 `bonus` 后调用 `Backstab.boost`）、`scenes/player/kotama/kotama_ps.gd`（`BACKSTAB_BONUS=[0,.5,1,1.5]`、`BREAK_BACKSTAB_MULT=2.0`）。
+- Notes / 说明: 普通背刺倍率 = `max(1, stats.backstab_damage + passive.bonus)`；Kotama 的 T0..T3 只提供 bonus，基础 stat 2.0 时为 2.0/2.5/3.0/3.5。破隐背后必须走**按等级独立乘区** `BREAK_BACKSTAB_MULT_BY_TIER=[2.0,2.0,3.0,3.0]`（T0/T1 +100%，T2/T3 +200%），不要再用 `(mult+1)/mult` 把额外背刺加进普通倍率，否则 T0 只有 3x 而不是 4x。`BackstabPassive.mult` 已替换为 `bonus`（全仓只有 Kotama/本地测试使用）；由于 `BackstabPassive` 通过 `get_parent().stats` 实时读取，角色切换/装备改 stat 都生效。正面破隐仍只必暴击，不给额外乘区；爆炸/DOT/真伤和 Weak 规则不变。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-16
+
+### [Kotama] 隐身 5 秒上限用 buff 时间实现，BuffCard 显示剩余
+- Evidence / 证据: `resources/buff/player_buff/stealth.tres`（`ignore_duration_multiplier=true`）、`resources/buff/buff.gd`（新增字段）、`scenes/manager/player_buff_manager.gd:_duration_multiplier()`、`scenes/player/kotama/kotama_ps.gd`（`STEALTH_DURATION=5.0`、`apply_buff(...,[1,0,5.0])`、`_process` 的 `not player.is_stealthed()` → `_clear_all()`）、`ui/BuffCard.gd`（`now_time/erase_time` 进度环）。
+- Notes / 说明: 5 秒由 `PlayerBuffManager` 的 buff tick 驱动，BuffCard 直接显示剩余进度；到期后 buff 自动移除，KotamaPS 走现有 `_process` 的“buff 消失”分支 `_clear_all()`，全息 `despawn()` 自动回收箱子，不产生破隐子弹。**必须**在 `Buff` 上给 stealth 开 `ignore_duration_multiplier=true`，否则玩家 `stats.buff_duration` 会把 5 秒硬上限延长；不要把隐身 buff 写回 9999s，也不要再保留 PS 的 `_stealth_remaining` 计时（两套时钟会分叉）。开火破隐仍走 `_on_player_shot()` 的 `STEALTH→BROKEN` + `start_linger(0.5)`，buff 提前 `remove_source`；5 秒内开火优先于 buff 到期。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-16
+
+### [FX] 隐身屏幕滤镜：只用边缘折射/冷色，不复用全屏 CRT/瞄准镜强度
+- Evidence / 证据: `ui/stealth_overlay.tscn` / `ui/stealth_overlay.gd`、`shaders/stealth_screen.gdshader`、`resources/buff/components/stealth_component.gd`、`ui/hare_optic_overlay.gd`（BackBufferCopy + ColorRect + `open` 淡入淡出模板）。参考 [Distortion/Shockwave Shader](https://godotshaders.com/shader/distortion/)（CC0）。
+- Notes / 说明: 屏幕效果放在 `CanvasLayer layer=3`（高于 `gamecamera` layer2/GameUI layer1，低于暂停5与弹窗4；只做边缘，不整体遮黑）；`ColorRect.mouse_filter=IGNORE`。shader 只对屏幕边缘 `edge` mask 做 UV 折射/色差/青色 tint/扫描线/暗角，中心保持 `SCREEN_UV` 原画；`hint_screen_texture` 用 `BackBufferCopy copy_mode=2`，像素画用 `filter_nearest`，不要照搬参考 shader 的 `filter_linear_mipmap`。关闭时 `BackBufferCopy` 和 `Filter` 都隐藏，无每帧成本；移动端 `OS.has_feature("mobile")` 直接跳过，避免机型和兼容风险。不要把整屏 blur/重噪点/全屏 tint 直接搬过来，会伤害战斗可读性。
+- Source / 来源: user + web + code
+- Date / 日期: 2026-11-16
+
+### [FX/Kotama] 全息光感：箱体不挂 shader，Figure 白色扫描 + ADD 环绕粒子
+- Evidence / 证据: `scenes/player/kotama/kotama_hologram.tscn`（Box 无 material、`ProjectionGlow`/`GroundGlow`、`OrbitParticles`、`GradientTexture2D`）、`scenes/player/kotama/kotama_hologram_orbit.gd`、`shaders/kotama_hologram.gdshader`（`white_scan`/`white_scan_speed`/`white_scan_width`）、`scenes/player/kotama/kotama_hologram.gd`（`_glow_energy`、orbit alpha、淡出）。
+- Notes / 说明: 用户要求**箱子不加滤镜**，所以 Box 必须保持普通 `Sprite2D`，不要把全息 shader 挂回箱子。白色扫描线只属于 Figure：`white_band` 必须乘 `smoothstep(0.02,0.25,base.a)`，否则整张矩形会出现贯穿透明区域的白条。环绕粒子用 `Node2D._draw` 画 1px 白/青亮芯 + 3×3 低 alpha ADD halo，约 10 个、椭圆轨道 27×11；不要引入 GPUParticles/新纹理。`ProjectionGlow` z=-1、`GroundGlow` z=-2、`OrbitParticles` z=1、`Smoke` z=3；开箱 glow 0→1 0.3s，`_process` 用 pulse 同步 orbit alpha，`despawn()` 0.2s tween 回 0。项目无统一 2D 光照，不用 PointLight2D。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-16
+
+### [Shader] 场景 ShaderMaterial 的 shader_parameter 覆盖会压过 gdshader 默认值
+- Evidence / 证据: `ui/stealth_overlay.tscn`（原 `ShaderMaterial_stealth` 内序列化 `resolution/strength/radius/width/feather/aberration/tint/tint_strength/scanline_strength/vignette_strength`）、`shaders/stealth_screen.gdshader`（同名的 uniform 默认值）、`ui/stealth_overlay.gd`（`_sync_resolution` 写 resolution、`set_active` 写 open；`_ready` 默认隐藏）。
+- Notes / 说明: 修改 `.gdshader` 的 uniform 默认值**不会**改变已有 `ShaderMaterial` 上序列化的 `shader_parameter/*`。`stealth_overlay.tscn` 改为只保留 `shader = ExtResource(...)`，其它参数走 shader 默认值；`resolution`/`open` 由脚本运行时写入。要单独调参时必须在 Inspector 的 Material → Shader Parameters 里加覆盖，不要改 shader 默认值后期待现有场景跟随。`ShaderMaterial.get_shader_parameter("open")` 在场景无覆盖时会返回 `null`，脚本必须兜底 `0.0`，否则 `set_active()` 的 `float(null)` 会报错。另：`stealth_overlay` 的 `_ready()` 会隐藏 `BackBufferCopy`/`Filter`，单独打开场景不会显示，必须由 `StealthComponent.activate()` 调 `set_active(true)` 才可见。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-16
+
+### [Shader/UI] stealth_overlay 的 resolution 不能被 640×360 设计 viewport 覆盖
+- Evidence / 证据: `project.godot`（`window/size/viewport_width=640`、`height=360`、`window_width_override=1280`、`window_height_override=720`）、`ui/stealth_overlay.gd`（原 `_sync_resolution` 读 `display/window/size/viewport_*`）、`ui/stealth_overlay.tscn`（`resolution` 场景覆盖）、`shaders/stealth_screen.gdshader`（`resolution` uniform）。
+- Notes / 说明: 项目设计 viewport 是 640×360，实际窗口是 1280×720；`ProjectSettings` 的 `viewport_width/height` 是前者，不是窗口。之前 `_sync_resolution()` 每次 `_ready` 都把 material 的 `resolution` 写成 640×360，所以场景或 shader 里写 1280×720 都会被覆盖。现在改为 `@export var resolution_override := Vector2(1280,720)`，`_sync_resolution()` 只写这个值；场景 Material 删除了 `resolution` 覆盖，shader 默认也改成 1280×720。要调整滤镜扫描线/像素吸附尺度，改 `StealthOverlay.resolution_override`（或 shader 默认），不要改 viewport 设计分辨率。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-16
+
+### [Bullet/Kotama] 穿透弹的必暴击必须预乘进 base_damage，不能靠共享 DamageData.is_crit
+- Evidence / 证据: `scenes/player/kotama/kotama_ps.gd`（`_on_player_shot` → `_defer_break_crit` → `_apply_break_crit`；`_on_enemy_damage_calculating` 只保留背刺 ×2）、`script/health_component.gd`（`_resolve_damage` 只恢复 `damage_modifier`，不恢复 `is_crit`）、`script/damage_data.gd`（穿透弹共享同一份 DamageData）。
+- Notes / 说明: 旧实现用 `if not captured.is_crit` 当“本次是否已应用暴击”的标记；第一目标把共享 `DamageData.is_crit` 设为 true 后，第二目标直接跳过暴击倍率，只显示暴击色。正确做法是在 `player_shot_position` 中 `call_deferred("_apply_break_crit")`，等玩家 `bullet_hit_damage` 填好 `base_damage/is_crit` 后，如果原本未暴击，就把 `base_damage` 预乘 `critical_damage` 并置 `is_crit=true`；这样每个穿透目标读到的 base 都已含暴击。不要在 per-target 的 `enemy_damage_calculating` 里改共享 `is_crit`/base；该阶段只做每目标独立状态（Kotama 的背刺 ×2）。`call_deferred` 是为了规避 `player_shot_position` 监听器顺序不确定的问题。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-16
+
+### [VFX/Kotama] 破隐枪口爆发：单张烘焙合成，锚定 shot_position + bullet.global_rotation
+- Evidence / 证据: `scenes/effects/pixelfx_kotama_break_muzzle.gd`（参考 `impacts/crit-hit` + `impacts/hit-spark` + `explosions/plasma-explosion`，MIT）、`scenes/effects/kotama_break_muzzle.tscn`（z=30，一次性自毁）、`scenes/player/kotama/kotama_ps.gd`（`_on_player_shot` 的 STEALTH 首枪分支调 `_spawn_break_muzzle`）、`script/bake_pixelfx_fx.gd`（`kotama_break_muzzle_frames.res`，160×96 / 14 帧 / 45fps）。
+- Notes / 说明: 破隐齐射由同一 `_shoot_bullet` 发多颗弹丸，`player_shot_position` 会逐颗触发；特殊火光只放在 `Phase.STEALTH -> BROKEN` 的首枪分支，后续 60ms volley 不再生成，避免多团叠加。锚点用 `shot_position`，旋转用 `bullet.global_rotation`；子弹无效时回退 `player.crosshair_pos` 的方向。参考组合只保留 `crit-hit` 的星爆/破碎环、`hit-spark` 的菱形核心/前向火花锥、`plasma-explosion` 的开头冲击环/弧，剔除地面环、球体、烟柱和 actor。普通 `PlayerGun` 的橙色枪口闪光**保留**作为底火/联机可见层，特殊效果以 z=30 覆盖；不要为了替换它去改 `PlayerGun._shoot()`，否则会影响普通射击与联机广播。效果不池化，0.31s 动画结束自毁。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-17
+
+### [UI/Layer] 屏幕滤镜、弹窗、暂停、CRT 的固定层级
+- Evidence / 证据: `ui/hare_optic_overlay.tscn`/`ui/stealth_overlay.tscn`（layer=3）、`ui/pause_screen.gd`（`PAUSE_CANVAS_LAYER=5`，`_ready` 写父 CanvasLayer）、`ui/UpgradeScreen.tscn`/`ui/game_over_page.tscn`/`ui/player_up_screen_date.tscn`/`scenes/shop/shop_ui.tscn`/`ui/test_menu.tscn`/`ui/character_test_menu.tscn`/`ui/enemy_test_menu.tscn`（layer=4）、`ui/crt_overlay.tscn`（layer=90）。
+- Notes / 说明: 当前约定：`1`=GameUI/HUD/TestRoom 背景准星，`2`=gamecamera，`3`=Hare 自瞄/Kotama 隐身屏幕滤镜，`4`=普通全屏弹窗（升级、商店、GameOver、UP 日期、三个 TestMenu），`5`=PauseScreen 宿主，`90`=CRT。滤镜不要再放4，否则会盖住所有弹窗；暂停不要再放3，否则会与滤镜同层、顺序不稳。`PauseScreen` 是所有角色共用的 Control，在 `_ready` 里把父 CanvasLayer 设5，避免改 30 个玩家场景；父节点不是 CanvasLayer 时跳过。`TestRoom` 的背景/准星 CanvasLayer 保持1，不要把整个测试房 UI 都抬到4。CRT 保持90，永远高于暂停/弹窗。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-17
+
+### [FX] 俯视角落地留存物挂 FloorLayer 且不进 "Texture" 组即跨回合保留；上限靠池满额环状回收
+- Evidence / 证据: `scenes/main/main.gd:152-156`（`backlayer_clear_unit()` 只清 `FloorLayer` 下 `"Texture"` 组的子节点）、`scenes/main/main.gd:58-61`（新局 `first_round()` → `PoolManager.clear_pool()`）、`scenes/main/main.tscn:241-245`（`FloorLayer` y_sort 且在 `YSort` 之前）、`script/player_gun.gd:_eject_casing()`、`scenes/effects/bullet_casing.gd`。
+- Notes / 说明: 地面留存物（弹壳）不随回合清理：`backlayer_clear_unit()` 只对群组 `"Texture"` 的子节点 `clear_pool()+queue_free()`，所以新落地物**不加**该组就会跨回合保留，新局由 `clear_pool()` 兜底。这类"永久留存"的视觉物不能用"播完回池"的 FX 约定：`is_idle` 会长期为 0、`pool_active_count()` 恒等于上限（这是故意的，不是泄漏），数量上限直接写 `IDLE_LIMITS`，满额时 `get_pool` 环状复用最旧的活跃节点。静止后必须 `set_physics_process(false)` 且 `idle_state()` 重置全部状态，否则池复用会"复活"上一颗弹壳的位置/朝向。俯视角离地高度统一用屏幕 -y 偏移（与玩家跳跃 `sprite_2d.position.y = -17` 同约定），地面坐标与高度要分两套量，不要照搬参考库的侧视弹道（`_lib.gd:318 casing()` 的闭式抛物线里重力沿屏幕 y、地面是一条水平线）。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-17
+
+### [Pool] 池化节点禁止 reparent()：会触发 tree_exiting → PoolManager 自注销，节点被踢出池
+- Evidence / 证据: `scenes/manager/PoolManager.gd`（`_register_node_pool` 把 `_on_pooled_node_exit` 接到 `tree_exiting`；`_remove_node_from_pool` 注释「池空则删条目」）、`scenes/effects/bullet_casing.gd`（层级切换改用 `z_index` 而非 `reparent`）。
+- Notes / 说明: 现象：弹壳早期版本在落地时 `reparent()` 到 `FloorLayer`、飞行时再搬回 `SELayer`，结果第二次之后 `get_pool("casing")` 恒为 null、`pool.keys()` 直接为空、场景里只堆了 1 个节点——`reparent()` 内部先 `remove_child` 再 `add_child`，必然触发 `tree_exiting`，于是池把该节点从 `body/set/idle` 里摘掉，空了就把整个池条目删掉。`reparent` 后再调 `add_pool` 只能把自己加回去（`limit` 与其它同类节点全部丢失），不可取。**要换"层"就改 `z_index`**（飞行 1 / 落地 0），或者另建一个不参与池的纯表现副本。`detach()` 是给"不再回池的表现副本"用的，不是换父节点用的。项目里已有的 `reparent` 调用（`parabola_path` 的 coin、`buff_box` 卡片等）都不在池化复用路径上或被金币池单独管理，别当反例照抄。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-17
+
+### [Player/FX] Gun 的高度 = `player.global_position.y − gun.global_position.y`；抛壳类效果要按它算起点
+- Evidence / 证据: `script/player.gd:359`（`gun.position.y = sprite_2d.position.y + gun_root`，`gun_root` 默认 9）、地面 `sprite_2d.position.y = -17` → Gun 局部 y = -8；`scenes/player/kotama/kotama.tscn:465`（`Gun` 在 `Graphics` 下，`position = Vector2(7, -8)`）。
+- Notes / 说明: 玩家 root 是**地面点**（`floor_paint` 等贴地物也挂在 `body.global_position`），Gun 挂在 `Graphics` 下、y 由 `player.gd` 每帧按 `sprite_2d.position.y` 刷新，因此跳跃时 Gun 会随之上移——想"从枪口高度抛出/起爆"时用世界 y 差（`player.y − gun.y`，父节点有缩放也安全），不要写死 8，也不要用 `shoot_position`（那是枪口，方向会随瞄准转）。弹壳的起点高度就是这条（见 `script/player_gun.gd:_eject_casing()`）。
+- Source / 来源: code
+- Date / 日期: 2026-11-17
+
+### [UI] 全屏 UI 的鼠标所有权统一走 `UICursor` 引用计数（测试房选单 / 升级商店页 / crosshair）
+- Evidence / 证据: `script/ui_cursor.gd`（`show_for`/`hide_for`/`normalize_mode`）、`scenes/crosshair/crosshair.gd:37-45`（`round_upgrade`→`touch_mode_hide()`、`round_start`→`touch_mode_show()` 改走 UICursor）、`ui/player_up_screen_date.gd`、`ui/test_menu.gd` / `ui/character_test_menu.gd` / `ui/enemy_test_menu.gd`（`visibility_changed` → `_sync_mouse_cursor`）、`scenes/manager/upgrade_manager.gd:83-88`（`round_end` 时桌面端写 `MOUSE_MODE_HIDDEN`）。
+- Notes / 说明: **现象**：游戏进行中鼠标是 `MOUSE_MODE_CONFINED_HIDDEN`（`crosshair.gd:18`），而全屏选单/升级页是 CanvasLayer `layer=4`，世界层准星被盖住 → 选单开着时既没有系统指针也没有准星，等于看不见鼠标。**约定**：这类 UI 的显隐只改 `visible`，`_ready` 里挂 `visibility_changed` → `UICursor.show_for(self)` / `hide_for(self)`；用引用计数，多个面板叠加时关掉一个不会把另一个的鼠标藏回去。**归一化**：还原时 `MOUSE_MODE_HIDDEN → MOUSE_MODE_CONFINED_HIDDEN`，因为 `upgrade_manager` 在回合结束会把桌面端设成 `HIDDEN`，直接还原会丢掉"指针限制在窗口内"的语义。**历史**：升级商店页（`player_up_screen_date` + `ability_shop`）原本一行鼠标代码都没有，能看见指针完全靠 `crosshair` 在 `round_upgrade` 里顺手设 `VISIBLE`、`round_start` 再硬设回 `CONFINED_HIDDEN` —— 两者是"谁最后跑谁算"的竞争；现在 crosshair 与升级页都作为 owner 注册，顺序无关。**不在体系内**：`ui/pause_screen.gd`、`ui/game_over_page.gd`、`ui/cheat_menu.gd` 仍各自管理（已正确，改造风险大于收益）；`scenes/item/vending_machine.tscn`（`ShopUI` 是 Control）与 `scenes/shop/shop_ui.tscn`（layer 4）同样缺鼠标处理，但全库检索没有任何场景/脚本实例化它们（未启用），启用时要按同一约定补 `UICursor`。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-17
+
+### [Kotama] 回合末 1s 过渡会累计 `_shot_idle`，升级商店期间必须锁被动
+- Evidence / 证据: `scenes/player/kotama/kotama_ps.gd`（`_passive_locked`、`_on_round_end`/`_on_round_upgrade`/`_on_round_start`/`_on_test_reset`、`_process` 锁门）、`scenes/manager/round_manager.gd`（`round_end` → 1s 等待 → `round_upgrade` → `emit_player_buff_clear` → `paused=true`）。
+- Notes / 说明: 原实现只在 `round_end` 调 `_clear_all()`，但清完到升级页暂停之间还有约 1s，`KotamaPS._process()` 会把 `_shot_idle` 加到 1；升级页暂停期间停止，升级结束后新回合只需再停火 1s 就会触发全息/隐身，而不是完整 2s。修法：`round_end`/`round_upgrade` 设 `_passive_locked=true`、`_shot_idle=0`、`_clear_all()`；`_process` 在 lock 期间直接 return，异常残留的 phase 也清掉；`round_start` 解锁并清零。`round_upgrade` 作为测试/调试/非标准入口的兜底清理。`test_room_reset` 解锁并清理，`game_over` 锁住并清理。不要只依赖 `round_end` 的 `_clear_all`，否则长转场（co-op/封面 hold）可能在升级页前重新生成全息。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-17
+
+### [Kotama] T1 击杀减再隐身 CD、T2 全息标记、T3 单次处决残影
+- Evidence / 证据: `scenes/player/kotama/kotama_ps.gd`（`_register_break_kill`/`_next_idle_seconds`、`_tick_hologram_mark`/`_pulse_hologram_mark`、`_on_bullet_hit_enemy`、`_try_spawn_execution_echo`、`_reset_break_state`）、`resources/buff/enemy_buff/kotama_mark.tres`、`resources/player/PS/kotama_ps.tres`、`ETN_player_localization.csv`。
+- Notes / 说明: T1 的“重新进入隐身时间”是 IDLE 后需要保持不射击的 `_next_idle_seconds`，基础2s；破隐弹击杀累计，每次-20%，封顶-80%（0.4s），`_spawn_hologram`/`round_start`/`_clear_all` 重置。T2/T3 的 `kotama_mark` 由 KotamaPS 每秒对全息周围180px敌人施加，不走 `KotamaHologram`；易伤值0.8/2.0，持续5s。T3 击杀已标记目标才触发一次残影，使用 `_echo_used_in_break` + `_echo_holograms` 双重限制，残影加入列表并由 `_clear_all` 清理；不要直接复用主 `_hologram`。升级到更高档标记时，同 id max_layer=1 只刷新时长不会改 value，必须先 `remove_buff` 再 apply；已按 `entry.value` 判断。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-17
+
+### [Aggro] 多全息不再先到先得：ThreatAggro 权重分配
+- Evidence / 证据: `script/threat_aggro.gd`（register/unregister、0.25s tick、`_pick_target` 的 proximity/weight/hash/sticky）、`scenes/player/kotama/kotama_hologram.gd`（`taunt_weight=2.0`、despawn 注销、旧 `_taunted` 删除）、`scenes/player/kotama/kotama_ps.gd`（T3 残影 `taunt_weight=1.4`）、`project.godot`（autoload `ThreatAggro`）。
+- Notes / 说明: 旧实现每个全息自己扫描并直接写 `aggro_override`，先占者赢，后续全息永远不抢；主全息存在时 T3 残影基本分不到敌人。新实现由 `ThreatAggro` 统一管理候选，按 `score = hash01(enemy,holo)^(1/effective_weight)` 选目标，`effective_weight = weight × (0.6+0.4×proximity)`，当前目标有 1.15 粘性；目标变化才 `force_retarget()`。主全息2.0、残影1.4；`despawn` 必须先 unregister，不能等烟雾结束，否则敌人会追已消失的全息。外部 `aggro_override`（非注册候选）和 `route_target` 完全不碰。`KotamaHologram` 用 `/root/ThreatAggro` 动态调用，避免脚本解析依赖 autoload 名称。本轮已把 `Player`/`RemotePlayer` 扫描进同一候选池（玩家权重默认1.0）；敌人会在玩家与全息之间按权重/距离/hash 分配，玩家隐身/倒地时自动移出候选。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-17
+
+### [Kotama] 全息场景死代码清理：移除隐藏 Halo 与只写不读的 _facing_flip
+- Evidence / 证据: `scenes/player/kotama/kotama_hologram.tscn`（已删除 `kotama_halo.png` ext_resource 与 `Halo` 节点，load_steps 11→10）、`scenes/player/kotama/kotama_hologram.gd`（删除 `_halo`/`_facing_flip`，`setup(facing_flip)`）、`scenes/player/kotama/kotama_ps.gd`（两处 `setup` 调用简化为只传 `_player_flip()`）。
+- Notes / 说明: 全息 `Halo` 一直 `visible=false`，脚本只写 modulate，没有任何显示入口，属于旧版投影光环残留；全息表现由 Figure/ProjectionGlow/GroundGlow/OrbitParticles 承担。`_facing_flip` 只赋值、不读取，实际只用 `_figure.flip_h`。`setup` 的 `_player_node` 参数从未使用，已简化为 `setup(facing_flip: bool)`；仓库内只有 KotamaPS 两处调用，没有 mod/测试依赖旧双参签名。`kotama_halo.png` **不能删**：玩家本体 `scenes/player/kotama/kotama.tscn` 仍作为 Halo 使用。
+- Source / 来源: code + user
+- Date / 日期: 2026-11-17
+
+### [Kotama] 联机同步必须显式发 Character Event：本机 buff 直调不会自动广播
+- Evidence / 证据: `scenes/player/kotama/kotama_ps.gd`（`_broadcast_kotama_event`、`kotama_stealth`/`kotama_holo_spawn`/`kotama_holo_despawn`/`kotama_break_fx`、远端 `_apply_network_*`）、`scenes/player/kotama/kotama_hologram.gd`（`despawn_started`、`play_smoke_sound`）。
+- Notes / 说明: `KotamaPS._set_stealth_state()` 直接调用 `player_buff_manager.apply_buff/remove_source`，不会经过 `BuffRouter` 的 `player_buff_apply_interceptor`，因此联机不会自动广播隐身；必须走 `Player.broadcast_character_event`。远端应用隐身时也应**直接**操作 `player_buff_manager`，不要再走 `BuffRouter`，否则会被 `_gate_player_buff_apply` 再转交一次。远端全息代理只做视觉 + Host 侧 `ThreatAggro` 仇恨，不要写 `_hologram`，也不要有本机 PS 的减 CD/标记副作用。`KotamaHologram` 的 `despawn_started` 必须在 `despawn()` 开头 emit，才能让主全息/残影的网络 despawn 及时发出；远端代理 `play_smoke_sound=false` 避免每个客户端重复播烟雾。Host 生成代理后 `_ready` 会注册 `ThreatAggro`，这是客机全息能拉仇恨的关键。
+- Source / 来源: code + user
+- Date / 日期: 2026-11-17
