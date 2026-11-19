@@ -888,46 +888,43 @@ lace_pillow_forward,"最大持有3个
 +100% Dano Adicional","Tối đa 3 cái
 +100% Sát Thương Cộng Thêm"
 lace_pillow_negative,,,,
-lucky_egg_name,复古彩蛋,Lucky Egg,Ovo da Sorte,Trứng May Mắn
-lucky_egg_description,在卵形的主体上镶有美丽宝石并精心装饰了几何图案的工艺品，每次暴击暴击回复5%支援EX充能。,A lucky-patterned egg. Every critical hit quietly adds energy to your support skill.,Um ovo com padrões da sorte. Cada acerto crítico adiciona silenciosamente energia à habilidade de apoio.,Một quả trứng vẽ họa tiết may mắn. Mỗi đòn chí mạng lặng lẽ tiếp thêm năng lượng cho kỹ năng hỗ trợ.
+lucky_egg_name,复古彩蛋,Vintage Lucky Egg,Ovo da Sorte Vintage,Trứng May Mắn Cổ Điển
+lucky_egg_description,在卵形的主体上镶有美丽宝石并精心装饰了几何图案的工艺品，每次暴击暴击回复5%支援EX充能。,An oval ornament inlaid with beautiful gems and carefully decorated with geometric patterns. Each critical hit restores 5% support EX charge.,Um ornamento oval incrustado com belas gemas e decorado com padrões geométricos. Cada acerto crítico restaura 5% de carga da EX de apoio.,Một món đồ thủ công hình trứng được nạm đá quý đẹp và trang trí tỉ mỉ bằng họa tiết hình học. Mỗi đòn chí mạng hồi 5% năng lượng EX hỗ trợ.
 lucky_egg_forward,"最大持有 3 个
 +5%回复充能","Max Stack: 3
-Crit restores 5%/10%/15% charge (0.5s cooldown)","Máximo: 3
-Crítico restaura 5%/10%/15% de carga (recarga de 0.5s)","Tối đa 3 cái
-Chí mạng hồi 5%/10%/15% năng lượng (hồi 0.5s)"
++5% charge recovery","Máximo: 3
++5% de recuperação de carga","Tối đa 3 cái
++5% hồi năng lượng"
 lucky_egg_negative,,,,
-air_box_charger_name,A～Book Rare,Support Charger Case,Case de Carga de Apoio,Hộp Sạc Hỗ Trợ
-air_box_charger_description,排入了「基沃托斯的学生最想要的电子产品Top3」的著名笔记本电脑，每秒回复5%支援EX充能。,A charging case synced with the support terminal; its energy slowly refills over time.,Um case de carga sincronizado com o terminal de apoio; a energia se recupera lentamente com o tempo.,Một hộp sạc đồng bộ với thiết bị hỗ trợ; năng lượng tự hồi dần theo thời gian.
+air_box_charger_name,A～Book Rare,A～Book Rare,A～Book Rare,A～Book Rare
+air_box_charger_description,排入了「基沃托斯的学生最想要的电子产品Top3」的著名笔记本电脑，每秒回复5%支援EX充能。,"A famous laptop ranked in the ""Top 3 electronics Kivotos students want most"". Restores 5% support EX charge per second.","Um laptop famoso, listado entre os ""3 eletrônicos mais desejados pelos estudantes de Kivotos"". Recupera 5% de carga da EX de apoio por segundo.","Một chiếc laptop nổi tiếng nằm trong ""Top 3 thiết bị điện tử mà học sinh Kivotos muốn nhất"". Hồi 5% năng lượng EX hỗ trợ mỗi giây."
 air_box_charger_forward,"最大持有 3 个
 +5%每秒回复","Max Stack: 3
-Restore 5%/10%/15% charge per second","Máximo: 3
-Recupera 5%/10%/15% de carga por segundo","Tối đa 3 cái
-Hồi 5%/10%/15% năng lượng mỗi giây"
++5% per second","Máximo: 3
++5% por segundo","Tối đa 3 cái
++5% mỗi giây"
 air_box_charger_negative,,,,
-spreading_bamboo_name,乌竹笋,Spreading Bamboo Shoot,Broto de Bambu Espalhado,Măng Lan Tỏa
-spreading_bamboo_description,在玄龙门的庭园内栽培的黑色竹笋，生长速度很快，提高30%支援EX范围。,"A bamboo shoot that spreads on its own, widening both KEI's aura and AYANE's barrage.","Um broto de bambu que se espalha sozinho, ampliando a aura da KEI e o bombardeio da AYANE.","Một măng tre tự lan tỏa, mở rộng hào quang của KEI và phạm vi oanh tạc của AYANE."
+spreading_bamboo_name,乌竹笋,Black Bamboo Shoot,Broto de Bambu Negro,Măng Tre Đen
+spreading_bamboo_description,在玄龙门的庭园内栽培的黑色竹笋，生长速度很快，提高30%支援EX范围。,A black bamboo shoot cultivated in Genryumon's garden. It grows very quickly and increases support EX range by 30%.,Um broto de bambu negro cultivado no jardim de Genryumon. Cresce muito rápido e aumenta em 30% o alcance da EX de apoio.,Một măng tre đen được trồng trong vườn Genryumon. Nó lớn rất nhanh và tăng 30% phạm vi EX hỗ trợ.
 spreading_bamboo_forward,"最大持有 3 个
 +10% EX范围","Max Stack: 3
-KEI EX aura range +30%/40%/50%
-AYANE EX blast radius +30%/40%/50%","Máximo: 3
-Alcance da aura EX da KEI +30%/40%/50%
-Raio de explosão EX da AYANE +30%/40%/50%","Tối đa 3 cái
-Phạm vi hào quang EX của KEI +30%/40%/50%
-Bán kính nổ EX của AYANE +30%/40%/50%"
++10% EX range","Máximo: 3
++10% de alcance EX","Tối đa 3 cái
++10% phạm vi EX"
 spreading_bamboo_negative,,,,
 cheering_teddy_name,应援玩偶,Cheering Doll,Boneco de Torcida,Búp Bê Cổ Vũ
-cheering_teddy_description,缝着支援徽章的应援玩偶，握着它支援技能会更有干劲，支援EX技能倍率+30%。,A cheering doll stitched with a support badge; holding it makes support skills hit harder.,Um boneco de torcida com um emblema de apoio costurado; segurá-lo fortalece as habilidades de apoio.,Một búp bê cổ vũ có thêu huy hiệu hỗ trợ; cầm nó sẽ khiến kỹ năng hỗ trợ mạnh hơn.
+cheering_teddy_description,缝着支援徽章的应援玩偶，握着它支援技能会更有干劲，支援EX技能倍率+30%。,"A cheering doll stitched with a support badge. Holding it boosts your spirits, increasing support EX skill power by 30%.",Um boneco de torcida com um emblema de apoio costurado. Segurá-lo levanta o ânimo e aumenta em 30% a potência da habilidade EX de apoio.,"Một búp bê cổ vũ có thêu huy hiệu hỗ trợ. Cầm nó sẽ tiếp thêm tinh thần, tăng 30% hệ số kỹ năng EX hỗ trợ."
 cheering_teddy_forward,"最大持有 3 个
 +10% EX倍率","Max Stack: 3
-Support EX power +30%/40%/50%","Máximo: 3
-Potência de habilidade EX de apoio +30%/40%/50%","Tối đa 3 cái
-Hệ số kỹ năng EX hỗ trợ +30%/40%/50%"
++10% EX power","Máximo: 3
++10% de potência EX","Tối đa 3 cái
++10% hệ số EX"
 cheering_teddy_negative,,,,
 return_handkerchief_name,回礼手帕,Return Gift Handkerchief,Lenço de Retribuição,Khăn Tay Đáp Lễ
-return_handkerchief_description,印着回礼花纹的手帕，支援技能结束后会退回一部分能量，返还30%充能。,A handkerchief with a return-gift pattern; part of the energy comes back after your support skill ends.,Um lenço com estampa de retribuição; parte da energia retorna após o fim da habilidade de apoio.,Một chiếc khăn tay in họa tiết đáp lễ; một phần năng lượng được hoàn lại sau khi kỹ năng hỗ trợ kết thúc.
+return_handkerchief_description,印着回礼花纹的手帕，支援技能结束后会退回一部分能量，返还30%充能。,"A handkerchief printed with a return-gift pattern. After your support skill ends, part of the energy is returned, refunding 30% charge.","Um lenço estampado com um padrão de retribuição. Após o fim da habilidade de apoio, parte da energia é devolvida, reembolsando 30% de carga.","Một chiếc khăn tay in họa tiết đáp lễ. Sau khi kỹ năng hỗ trợ kết thúc, một phần năng lượng được hoàn lại, hoàn trả 30% năng lượng."
 return_handkerchief_forward,"最大持有 3 个
 +10%返还充能","Max Stack: 3
-Refund 30%/40%/50% charge after EX ends","Máximo: 3
-Devolve 30%/40%/50% de carga após o fim da EX","Tối đa 3 cái
-Hoàn lại 30%/40%/50% năng lượng sau khi kết thúc EX"
++10% charge refund","Máximo: 3
++10% de reembolso de carga","Tối đa 3 cái
++10% hoàn năng lượng"
 return_handkerchief_negative,,,,
