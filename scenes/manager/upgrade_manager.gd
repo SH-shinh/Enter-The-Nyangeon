@@ -56,6 +56,21 @@ func _ready():
 	for u in ModManager.get_content("upgrades"):
 		if u != null and not upgrade_pool.has(u):
 			upgrade_pool.append(u)
+	_validate_support_gates()
+
+## 支援门控数据校验：SPECIFIC 未填 support_ids 会永不入池，启动时明确告警而不是静默消失。
+func _validate_support_gates() -> void:
+	for item in upgrade_pool:
+		if item == null:
+			continue
+		match item.support_gate:
+			AbilityUpgrade.SupportGate.SPECIFIC:
+				if item.support_ids.is_empty():
+					push_warning("[upgrade_manager] 道具 %s 使用 SPECIFIC 支援门控但 support_ids 为空，将永不入池" % item.id)
+			AbilityUpgrade.SupportGate.NONE, AbilityUpgrade.SupportGate.ANY:
+				pass
+			_:
+				push_warning("[upgrade_manager] 道具 %s 的 support_gate 值非法：%d" % [item.id, item.support_gate])
 
 func reset_data():
 	current_upgrades.clear()
@@ -208,7 +223,35 @@ func _refresh_candidates(context: Dictionary = {}) -> void:
 			_candidate_items.append(item)
 			_candidate_weights.append(weight)
 
+# 入池资格唯一漏斗：_refresh_candidates / build_pool / get_random_item_from_pool 都经过这里，
+# 后续新增抽取路径也必须走这里，否则支援 EX 门控（AbilityUpgrade.support_gate）会被绕过。
+func _item_eligible(item: AbilityUpgrade, context: Dictionary) -> bool:
+	if item == null:
+		return false
+	return item.support_gate_ok(_support_id_from_context(context))
+
+## 本局出战的支援 id；无支援/资源缺失统一返回 "null"（fail-closed）。
+## 只认 game_support：selected_support_id 在 Mod 卸载/资源缺失时可能残留（见 docs/LEARNINGS.md）。
+func _current_support_id() -> String:
+	if SupportData == null:
+		return "null"
+	var support: SupportCard = SupportData.game_support
+	if support == null:
+		return "null"
+	var support_id := str(support.support_id)
+	return support_id if support_id != "" else "null"
+
+## context 可显式覆盖（测试/外部调用）；缺省读实时状态，保证旧路径 get_random_item_from_pool() 不漏。
+func _support_id_from_context(context: Dictionary) -> String:
+	if context.has("support_id") and context["support_id"] != null:
+		var value := str(context["support_id"])
+		if value != "":
+			return value
+	return _current_support_id()
+
 func _item_weight(item: AbilityUpgrade, context: Dictionary) -> float:
+	if not _item_eligible(item, context):
+		return 0.0
 	if weight_manager == null:
 		return maxf(0.0, item.weight)
 	return weight_manager.calculate_item_weight(item, context)
@@ -427,5 +470,6 @@ func get_current_context() -> Dictionary:
 		"floor": PlayerData.now_round,
 		"difficulty": PlayerData.level_num,
 		"player_tags": tags_group,
-		"item_count": current_upgrades.size()
+		"item_count": current_upgrades.size(),
+		"support_id": _current_support_id()
 	}

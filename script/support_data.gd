@@ -67,7 +67,122 @@ var ex_cost: int
 			if now_cost == v:
 				return
 			now_cost = v
+			if v < ex_cost:
+				ex_ready_announced = false
 			cost_changed.emit()
+
+# ==================== 支援 EX 数值接口 ====================
+# 本局临时修正：source_id -> {key: float}；*_add 求和、*_mult 连乘。不写存档，每局由
+# game_add_support() → reset_ex_modifiers() 清空；道具用 source_id=item_id 注册，释放时 clear。
+var ex_modifier_sources: Dictionary = {}
+var ex_cost_base: int = 0
+var ex_charge_add: float = 0.0
+var ex_charge_mult: float = 1.0
+var ex_cost_add: int = 0
+var ex_cost_mult: float = 1.0
+var ex_duration_add: float = 0.0
+var ex_duration_mult: float = 1.0
+var ex_power_mult: float = 1.0
+var ex_range_mult: float = 1.0
+# 充能小数累积（暴击/自动/返还/击杀共用）与 READY 去重标记；每局由 game_add_support() 重置。
+var ex_charge_fraction: float = 0.0
+var ex_ready_announced: bool = false
+
+func set_ex_modifiers(source_id: String, modifiers: Dictionary) -> void:
+	if source_id == "":
+		return
+	ex_modifier_sources[source_id] = modifiers.duplicate()
+	refresh_ex_values()
+
+func clear_ex_modifiers(source_id: String) -> void:
+	if ex_modifier_sources.erase(source_id):
+		refresh_ex_values()
+
+func reset_ex_modifiers() -> void:
+	ex_modifier_sources.clear()
+	refresh_ex_values()
+
+func _ex_sum(key: String) -> float:
+	var total := 0.0
+	for mods in ex_modifier_sources.values():
+		if mods is Dictionary:
+			total += float(mods.get(key, 0.0))
+	return total
+
+func _ex_product(key: String, fallback: float = 1.0) -> float:
+	var total := fallback
+	for mods in ex_modifier_sources.values():
+		if mods is Dictionary:
+			total *= float(mods.get(key, 1.0))
+	return total
+
+## 重算聚合修正与有效充能需求。修正变化/换卡后调用；cost_changed 必发以刷新 HUD 充能条。
+func refresh_ex_values() -> void:
+	ex_charge_add = _ex_sum("charge_add")
+	ex_charge_mult = maxf(0.0, _ex_product("charge_mult"))
+	ex_cost_add = int(round(_ex_sum("cost_add")))
+	ex_cost_mult = maxf(0.0, _ex_product("cost_mult"))
+	ex_duration_add = _ex_sum("duration_add")
+	ex_duration_mult = maxf(0.0, _ex_product("duration_mult"))
+	ex_power_mult = maxf(0.0, _ex_product("power_mult"))
+	ex_range_mult = maxf(0.0, _ex_product("range_mult"))
+	ex_cost = _compute_ex_cost()
+	if now_cost > ex_cost:
+		now_cost = ex_cost
+	if now_cost < ex_cost:
+		ex_ready_announced = false
+	cost_changed.emit()
+
+func _compute_ex_cost() -> int:
+	if ex_cost_base <= 0:
+		return 0
+	return clampi(int(round(float(ex_cost_base + ex_cost_add) * ex_cost_mult)), 1, 999)
+
+## 每次击杀的 EX 充能（基础值来自本局出战支援卡，默认 1.0）。
+func get_ex_charge_gain() -> float:
+	var base := 1.0
+	if game_support != null:
+		base = game_support.ex_charge_gain
+	return maxf(0.0, (base + ex_charge_add) * maxf(0.0, ex_charge_mult))
+
+## 计时型 EX（kei/serina）的实际持续时间：base 由场景 Timer 捕获。
+func get_ex_duration(base: float) -> float:
+	return clampf((base + ex_duration_add) * maxf(0.0, ex_duration_mult), 0.1, 30.0)
+
+## 序列型 EX（ayane）用持续时间倍率缩放轰炸发数。
+func get_ex_duration_mult() -> float:
+	return clampf(ex_duration_mult, 0.1, 4.0)
+
+func get_ex_power_mult() -> float:
+	return clampf(ex_power_mult, 0.0, 10.0)
+
+func get_ex_range_mult() -> float:
+	return clampf(ex_range_mult, 0.1, 5.0)
+
+## 统一的 EX 充能入口（击杀/暴击/自动/返还共用）：小数累积、clamp、充满时只发一次 READY。
+func add_ex_charge(amount: float) -> void:
+	if ex_cost <= 0 or amount <= 0.0:
+		return
+	if now_cost >= ex_cost:
+		_announce_ex_ready()
+		return
+	ex_charge_fraction += amount
+	var whole := int(floor(ex_charge_fraction))
+	if whole <= 0:
+		return
+	ex_charge_fraction -= float(whole)
+	now_cost = mini(ex_cost, now_cost + whole)
+	if now_cost >= ex_cost:
+		_announce_ex_ready()
+
+func reset_ex_charge_fraction() -> void:
+	ex_charge_fraction = 0.0
+
+func _announce_ex_ready() -> void:
+	if ex_ready_announced:
+		return
+	ex_ready_announced = true
+	GameEvents.emit_support_ex_ready()
 
 func _ready() -> void:
 	exp_changed.connect(count_exp)
@@ -84,7 +199,13 @@ func reset_game_support():
 		selected_support_id = remembered
 
 func game_add_support():
+	# 新一局（含测试房重置）先清空上一局的 EX 修正；无支援时也要把有效费用归零。
+	reset_ex_modifiers()
+	ex_charge_fraction = 0.0
+	ex_ready_announced = false
 	if game_support == null or game_support.support_id == "null":
+		ex_cost_base = 0
+		refresh_ex_values()
 		return
 	# 生成前同步当前支援的 EX 费用：get_card 的 has_card 分支依赖 count_exp，
 	# now_lv 为 0 时不会写 ex_cost，否则开局会停在 0 导致 EX 可无限释放。
@@ -169,7 +290,8 @@ func get_card(support_card: SupportCard):
 		now_count_exp = 0
 		now_count_ability = 0
 		next_exp = 0
-		ex_cost = 0
+		ex_cost_base = 0
+		refresh_ex_values()
 		return
 	
 	var has_card = support_data.has(now_support.support_id)
@@ -179,12 +301,13 @@ func get_card(support_card: SupportCard):
 		now_count_exp = 0
 		now_count_ability = 0
 		next_exp = 0
-		ex_cost = now_support.ex_cost
+		ex_cost_base = now_support.ex_cost
 	else:
 		load_data()
 	count_exp()
-	# has_card 分支的 count_exp 只在 now_lv > 0 时写 ex_cost；未解锁/0 级时也要按卡面值初始化。
-	ex_cost = now_support.ex_cost
+	# count_exp 只在 now_lv > 0 时写卡面费用；未解锁/0 级时也要按卡面值初始化。
+	ex_cost_base = now_support.ex_cost
+	refresh_ex_values()
 
 func check_upgrade():
 	if now_support.support_id == "null":
@@ -214,4 +337,5 @@ func count_exp():
 		next_exp = _total_exp_to_lv(now_lv + 1) - last_exp
 		now_count_exp = now_exp - last_exp
 		now_count_ability = now_support.pa_value.sample(now_lv / 100.0)
-		ex_cost = now_support.ex_cost
+		ex_cost_base = now_support.ex_cost
+		refresh_ex_values()

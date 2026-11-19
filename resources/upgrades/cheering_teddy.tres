@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://sprites/update_item/teddy_bear_with_bow.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = "cheering_teddy"
+icon = ExtResource("1_icon")
+name = "应援玩偶"
+rare = 1
+order_num = 3
+special_rules = 0
+description = "缝着支援徽章的应援玩偶，握着它支援技能会更有干劲。"
+forward = "最大持有 3 个
+支援 EX 技能倍率 +30%/40%/50%"
+negative = ""
+item_tags = 0
+tags = Array[String](["支援"])
+weight = 1.0
+support_gate = 1

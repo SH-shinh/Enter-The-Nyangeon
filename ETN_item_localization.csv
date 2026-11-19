@@ -6,11 +6,11 @@ ap_bullet_negative,-8%子弹伤害,-8% Bullet Damage,-8% Dano de Projétil,-8% S
 little_kei_name,小小凯伊,Little Kei,Pequena Kei,Kei Nhỏ Bé
 little_kei_description,一只小小的凯伊，能够环绕在周围替持有者承受子弹伤害。,A little Kei that can surround its holder and take bullet damage for them.,Uma Kei pequenininha que orbita ao redor do portador e bloqueia tiros inimigos no lugar dele.,Một Kei nhỏ bé có thể bay quanh chủ nhân và chịu ST đạn thay cho họ.
 little_kei_forward,+10%阻挡范围,+10% Block Range,+10% Raio de Bloqueio,+10% Phạm vi chặn
-little_kei_negative, , , , 
+little_kei_negative,,,,
 banana_magazine_name,加长弹匣,Extended Magazine,Pente de Banana,Băng Đạn Dài
 banana_magazine_description,能够装填更多的弹药，涂装具有一定迷惑性，请勿食用。,Able to hold more ammunition. The paint is somewhat deceptive. Do not eat.,Comporta muito mais munição. A pintura amarela é meio enganosa... favor não tentar comer!,"Có thể chứa nhiều đạn hơn. Lớp sơn bên ngoài hơi dễ gây nhầm lẫn, đừng có ăn."
 banana_magazine_forward,+8弹匣容量,+8 Max Ammo,+8 Capacidade do Pente,+8 viên đạn tối đa
-banana_magazine_negative, , , , 
+banana_magazine_negative,,,,
 exps_3_0_name,全息瞄准镜,EXPS 3.0,Mira Holográfica EXPS 3.0,Ống Ngắm Holographic EXPS 3.0
 exps_3_0_description,安装后时髦感翻倍，小幅度提高暴击率，降低后坐力。,"After equipping, coolness is doubled. Slightly increases critical hit rate and reduces recoil.",O seu estilo dobra depois de equipar. Concede um leve aumento na Chance Crítica e reduz o recuo.,"Sau khi gắn vô, độ ngầu tăng gấp đôi. Tăng nhẹ tỷ lệ chí mạng và giảm độ giật."
 exps_3_0_forward,"+5%暴击率
@@ -18,7 +18,7 @@ exps_3_0_forward,"+5%暴击率
 -15% Recoil","+5% Chance Crítica
 -15% Recuo","+5% Tỷ lệ chí mạng
 -15% Độ giật"
-exps_3_0_negative, , , , 
+exps_3_0_negative,,,,
 suppressor_name,枪口抑制器,Suppressor,Silenciador,Nòng Giảm Thanh
 suppressor_description,减少后坐力，增加伤害，但是会减少击退能力。,"Reduces recoil, increases damage, but reduces knockback.","Reduz o recuo da arma e aumenta o dano, mas diminui a força de repulsão.","Giảm độ giật, tăng ST, nhưng giảm khả năng bật lùi."
 suppressor_forward,+15%子弹伤害,+15% Bullet Damage,+15% Dano de Projétil,+15% ST đạn
@@ -66,7 +66,7 @@ shiroko_drone_forward,"+20本装备基础伤害
 Reduces firing cooldown.","+20 Dano Base deste equipamento
 Reduz recarga do disparo","+20 ST cơ bản của trang bị này
 Giảm độ trễ khi bắn."
-shiroko_drone_negative, , , , 
+shiroko_drone_negative,,,,
 arale_hat_name,翅膀帽子,Arale's Hat,Boné Alado,Mũ Cánh Chim
 arale_hat_description,能够像搞笑漫画的机器娃娃一样极速狂奔，但毕竟不是机器人，受伤风险也大幅提高了。,"Allows you to dash at high speed like a robot from a comedy manga. However, since you're not actually a robot, the risk of injury is greatly increased.","Permite correr a toda velocidade feito uma garotinha robô de mangá de comédia. Mas como você não é um robô de verdade, o risco de se machucar aumenta muito!","Cho phép bạn chạy cực nhanh như một Robot máy trong truyện hề. Tuy vậy, bạn éo phải là robot nên rủi ro bị thương cũng tăng thêm."
 arale_hat_forward,"独特
@@ -90,7 +90,7 @@ murky_hand_scythe_forward,"+18本装备基础伤害
 +10% Projectile Size","+18 Dano Base deste equipamento
 +10% Tamanho do equipamento","+18 ST cơ bản của trang bị này
 +10% Kích thước trang bị"
-murky_hand_scythe_negative, , , , 
+murky_hand_scythe_negative,,,,
 ammunition_box_name,50发弹链,50-round belt,Fita de 50 Tiros,Dây Đạn 50 Viên
 ammunition_box_description,大幅增加子弹容量，同时大幅提升后勤小精灵的人工费。,"Greatly increases bullet capacity, while also greatly increasing the labor cost of logistics fairies.","Aumenta drasticamente a capacidade do pente, mas eleva bastante os custos da mão de obra das fadinhas da intendência!","Tăng lượng đạn mang theo rất nhiều, nhưng cũng tăng thêm gánh nặng cho hậu cần."
 ammunition_box_forward,"独特
@@ -102,19 +102,19 @@ ammunition_box_negative,+100%换弹时间,+100% Reload Time,+100% Tempo de Recar
 yokai_max_name,妖怪MAX,Yokai MAX,Yokai MAX,Yokai MAX
 yokai_max_description,千年学院饮料畅销榜常年榜首，增加移速和子弹速度。,The long-standing top-selling beverage at Millennium. Increases Speed and bullet velocity.,Líder invicto de vendas entre as bebidas energéticas da Millennium! Aumenta a velocidade e a cadência de disparo.,Thức uống luôn đứng đầu danh sách bán chạy tại Học viện Millennium. Tăng tốc độ di chuyển và tốc độ đạn.
 yokai_max_forward,+20%射速,+20% Fire Rate,+20% Cadência de Tiro,+20% Tốc độ bắn
-yokai_max_negative, , , , 
+yokai_max_negative,,,,
 shrapnel_bullet_name,半价子弹,50% Off Bullets,Munição em Promoção,Đạn Giảm Giá
 shrapnel_bullet_description,便利店促销装子弹，命中时有概率分裂为四个。,"Convenience store promotional pack bullets. On hit, they have a chance to split into four.",Balas promocionais da loja de conveniência. Têm chance de se dividir em quatro estilhaços ao acertar o alvo.,"Đạn khuyến mãi ở cửa hàng tiện lợi, khi trúng địch có xác suất phân tách thành bốn viên (đạn tàu)."
 shrapnel_bullet_forward,提升触发概率,Increases trigger chance.,Aumenta a chance de ativação,Tăng xác suất kích hoạt
-shrapnel_bullet_negative, , , , 
+shrapnel_bullet_negative,,,,
 lucky_bullet_name,幸运子弹,Lucky Bullets,Bala da Sorte,Đạn May Mắn
 lucky_bullet_description,后勤小精灵的奇迹魔法，造成暴击时有概率装填1颗子弹。,A miracle spell from the logistics fairies. Landing a critical hit has a chance to reload 1 bullet.,Magia milagrosa das fadinhas da logística: acertos críticos têm chance de recarregar 1 tiro no pente.,"Phép màu từ các hậu cần, khi gây chí mạng có xác suất nạp lại 1 viên đạn."
 lucky_bullet_forward,提高触发概率,Increases trigger chance.,Aumenta a chance de ativação,Tăng xác suất kích hoạt
-lucky_bullet_negative, , , , 
+lucky_bullet_negative,,,,
 millennium_flag_name,千年学院旗,Millennium Flag,Bandeira da Millennium,Cờ Trường Millennium
 millennium_flag_description,大运动会的发令旗，造成伤害有概率提升65%攻击速度。,Starting flag from the Kivotos Halo Festival. Dealing damage has a chance to increase Attack Speed by 65%.,A bandeira oficial de largada do Festival Halo! Causar dano tem chance de conceder +65% de Velocidade de Ataque.,"Lá cờ lấy từ Đại hội Thể thao Kivotos, gây ST có xác suất tăng 65% tốc độ tấn công."
 millennium_flag_forward,提高触发概率,Increases trigger chance.,Aumenta a chance de ativação,Tăng xác suất kích hoạt
-millennium_flag_negative, , , , 
+millennium_flag_negative,,,,
 fuel_tank_name,便携燃料罐,Portable Fuel Canister,Galão de Combustível Portátil,Bình Nhiên Liệu Di Động
 fuel_tank_description,便携小罐装的燃料，造成子弹伤害时可点燃敌人。,Small portable can of fuel. Dealing bullet damage ignites enemies.,Combustível portátil em galão pequeno. Projéteis passam a incendiar os inimigos ao acertar.,"Bình nhiên liệu di động, bắn trúng địch có thể gây cháy kẻ địch."
 fuel_tank_forward,"+1施加的燃烧层数
@@ -122,11 +122,11 @@ fuel_tank_forward,"+1施加的燃烧层数
 +2 Burn Stack Limit","+1 Acúmulo de queimadura aplicado
 +2 Limite de queimadura","+1 Tầng thiêu cháy
 +2 Giới hạn tầng thiêu cháy"
-fuel_tank_negative, , , , 
+fuel_tank_negative,,,,
 red_ninpero_name,红色忍佩洛,Red Ninpero,Ninpero Vermelho,Ninpero Đỏ
 red_ninpero_description,红色忍佩洛玩偶，燃烧伤害对目标施加最大5层的10%易伤效果。,"Red Ninpero doll. Burn damage applies a 10% vulnerability effect to the target, stacking up to 5 times.",Boneco do Ninpero Vermelho. Dano de queimadura aplica até 5 acúmulos de 10% de Vulnerabilidade no alvo.,"Búp bê Ninpero Đỏ, ST thiêu cháy có thể gây thêm hiệu ứng dễ bị tổn thương (Gây Huyết) thêm 10% cho mục tiêu bị trúng, tối đa 5 tầng."
 red_ninpero_forward,+5最大施加层数,+5 Max Stack Count,+5 Limite máximo de acúmulos,+5 Tầng áp dụng tối đa
-red_ninpero_negative, , , , 
+red_ninpero_negative,,,,
 ink_cartridge_name,墨水瓶,Ink Cartridge,Frasco de Tinta,Lọ Mực
 ink_cartridge_description,"给弹药填充颜料，子弹造成伤害时有概率产生小范围爆炸。
 20基础伤害","Fills ammunition with pigment. Bullet damage has a chance to trigger a small-area explosion.  
@@ -142,19 +142,19 @@ Aumenta a chance de ativação
 +20 Dano Base deste equipamento","Có thể nhận thêm ST đạn
 Tăng xác suất kích hoạt
 +20 ST cơ bản của trang bị này"
-ink_cartridge_negative, , , , 
+ink_cartridge_negative,,,,
 black_ninpero_name,黑色忍佩洛,Black Ninpero,Ninpero Preto,Ninpero Đen
 black_ninpero_description,黑色忍佩洛玩偶，子弹命中叠加1层2%易伤，最大25层。,"Black Ninpero doll. Each bullet hit applies 1 stack of 2% vulnerability, up to a maximum of 25 stacks.",Boneco do Ninpero Preto. Acertos de tiros acumulam 1 camada de 2% de Vulnerabilidade no alvo (máx. 25).,"Búp bê Ninpero Đen, đạn trúng địch cộng dồn 1 tầng dễ bị tổn thương (Gây Huyết) thêm 2%, tối đa 25 tầng."
 black_ninpero_forward,+25最大叠加层数,+25 Max Stack Count,+25 Limite máximo de acúmulos,+25 Tầng cộng dồn tối đa
-black_ninpero_negative, , , , 
+black_ninpero_negative,,,,
 flammable_explosives_name,易燃炸药,Flammable Explosive,Explosivo Inflamável,Thuốc Nổ Dễ Cháy
 flammable_explosives_description,由青色衬衫紫色裤子的匠人打造而成，爆炸伤害会对目标施加1层燃烧。,Crafted by an artisan in a cyan shirt and purple pants. Explosion damage applies 1 stack of burn to the target.,Fabricado por um artesão de camisa ciano e calça azul escuro. Danos de explosão aplicam 1 camada de queimadura no alvo.,Được chế tạo bởi một nghệ nhân mặc áo xanh lam quần tím. Khi nổ có thể thêm 1 tầng gây cháy cho mục tiêu.
 flammable_explosives_forward,+1施加的燃烧层数,+1 Burn Stack Applied,+1 Acúmulo de queimadura aplicado,+1 Tầng thiêu cháy
-flammable_explosives_negative, , , , 
+flammable_explosives_negative,,,,
 thermal_scope_name,热成像瞄准镜,Thermal Scope,Mira Térmica,Ống Ngắm Nhiệt
 thermal_scope_description,未暴击的射击叠加每层+10%暴击率（最大10层），暴击后清空。,Non-critical hits stack +10% Critical per stack (max 10 stacks). Resets on critical hit.,Tiros que não forem críticos acumulam +10% de Chance Crítica cada (máx. 10 acúmulos; zera ao desferir um acerto crítico).,"Phát bắn không chí mạng sẽ cộng dồn thêm +10% tỷ lệ chí mạng mỗi tầng (tối đa 10 tầng), xóa sạch sau khi gây ra chí mạng (bóp vl)."
 thermal_scope_forward,+15%暴击伤害,+15% Critical Damage,+15% Dano Crítico,+15% ST chí mạng
-thermal_scope_negative, , , , 
+thermal_scope_negative,,,,
 cowboy_hat_name,破旧牛仔帽,Worn Cowboy Hat,Chapéu de Cowboy Gasto,Mũ Cao Bồi Viễn Tây Nát
 cowboy_hat_description,某人遗失的帽子，含有不可思议的力量，弹匣内的第一发子弹必暴击。,"A hat left behind by someone, containing mysterious power. The first bullet in the magazine always critically hits.","O chapéu esquecido de alguém, transbordando um poder misterioso. O primeiro tiro de cada pente é sempre crítico garantido!","Chiếc mũ bị ai đó bỏ quên, chứa đựng sức mạnh khó tin, viên đạn đầu tiên trong băng luôn chí mạng."
 cowboy_hat_forward,"独特
@@ -166,7 +166,7 @@ The first bullet always critically hits.","Único
 Primeiro tiro sempre crítico","Độc Nhất
 +25% ST chí mạng
 Viên đầu tiên luôn là chí mạng"
-cowboy_hat_negative, , , , 
+cowboy_hat_negative,,,,
 concentrated_ammo_name,浓缩炮弹,Concentrated Ammo,Munição Concentrada,Đạn Pháo Nén
 concentrated_ammo_description,将弹匣内子弹浓缩为一颗，按照消耗数量提升子弹伤害。,Concentrates all bullets in the magazine into a single shot. Increases bullet damage based on the total number of bullets in the magazine.,"Condensa todas as balas do pente em um único disparo avassalador, aumentando o dano com base na quantidade consumida.","Nén toàn bộ đạn trong băng thành một viên, tăng ST đạn theo số lượng tiêu thụ."
 concentrated_ammo_forward,"独特
@@ -194,7 +194,7 @@ blunderbuss_muzzle_negative,+100%后坐力（首次）,+100% Recoil (Once),+100%
 elasticity_bullet_name,弹力弹药,Elastic Bullet,Munição de Borracha,Đạn Nảy
 elasticity_bullet_description,子弹在击中墙壁或消失前能够进行一次反弹。,The bullet can bounce once before hitting a wall or disappearing.,Projéteis ricocheteiam uma vez antes de sumir ou acertar paredes.,Viên đạn có thể nảy một lần trước khi va vào tường hoặc biến mất.
 elasticity_bullet_forward,+1反弹次数,+1 Bounce Count,+1 Ricochete,+1 lần nảy
-elasticity_bullet_negative, , , , 
+elasticity_bullet_negative,,,,
 mandrake_seed_name,曼德拉草种子,Mandrake Seed,Semente de Mandrágora,Hạt Giống Mandrake
 mandrake_seed_description,紧闭着的曼德拉草种子，提升些许生命值。,A fully-matured mandrake seed. Slightly increases health.,Uma semente de mandrágora bem fechadinha. Concede um leve bônus de vida máxima.,"Hạt giống Mandrake đóng kín, tăng nhẹ lượng máu."
 mandrake_seed_forward,"独特
@@ -206,7 +206,7 @@ Abates recuperam 1% do dano causado em Vida (recarga de 1s)
 +10 Vida Máxima","Độc Nhất
 Hồi 1% ST gây ra dưới dạng HP khi tiêu diệt, hồi lại trong 1s
 +10 HP"
-mandrake_seed_negative, , , , 
+mandrake_seed_negative,,,,
 cathedral_candle_name,大教堂烛台,Cathedral Candle,Castiçal da Catedral,Đế Nến Thánh Đường
 cathedral_candle_description,烛火的微光照亮身旁，近身范围内造成伤害恢复3点生命值。,The faint glow of a candle illuminates the area nearby. Dealing damage within close range restores 3 health.,A fraca chama da vela ilumina ao redor. Causar dano a curta distância restaura 3 pontos de Vida.,"Ánh nến mờ ảo soi sáng xung quanh, gây ST ở cự ly gần sẽ hồi 3 máu."
 cathedral_candle_forward,"最大持有3个
@@ -214,19 +214,19 @@ cathedral_candle_forward,"最大持有3个
 +3 HP Heal","Acúmulo Máximo: 3
 +3 Cura por acerto","Tối đa 3 cái
 +3 Lượng hồi phục"
-cathedral_candle_negative, , , , 
+cathedral_candle_negative,,,,
 variable_zoom_scope_name,变焦瞄准镜,Variable Zoom Scope,Mira com Zoom Ajustável,Kính Ngắm Có Thể Chuyển Đổi Phóng Đại
 variable_zoom_scope_description,可以切换倍率的瞄准镜，造成击杀的子弹+1穿透值。,A scope with switchable magnification. Bullets that achieve a kill gain +1 penetration.,Permite alternar ampliações. Projéteis que abaterem um alvo ganham +1 de Perfuração.,"Kính ngắm có thể chuyển đổi độ phóng đại, tiêu diệt kẻ địch sẽ được +1 Xuyên giáp."
 variable_zoom_scope_forward,+1点增加的穿透值,+1 Penetration Gained,+1 Perfuração por abate,+1 Chỉ số xuyên giáp nhận thêm
-variable_zoom_scope_negative, , , , 
+variable_zoom_scope_negative,,,,
 pratt_helmet_name,钢加农,Pratt Helmet,Capacete Guncannon,Mũ Pratt
 pratt_helmet_description,附带枪口的奇怪头盔，每射出7颗子弹可额外往准星位置射击2颗子弹。,A strange helmet with a built-in muzzle. Every 7 bullets fired triggers an additional shot of 2 bullets aimed at the reticle.,"Um capacete esquisito com canhões acoplados. A cada 7 tiros disparados, atira mais 2 projéteis extras na direção da mira!","Chiếc mũ kỳ lạ đính kèm nòng súng, mỗi khi bắn 7 viên đạn sẽ bắn thêm 2 viên nữa về hướng tâm ngắm."
 pratt_helmet_forward,+1额外射击数,+1 Additional Shots,+1 Disparo adicional,+1 Số phát bắn thêm
-pratt_helmet_negative, , , , 
+pratt_helmet_negative,,,,
 ancient_battery_name,古代电池,Ancient Battery,Bateria Antiga,Pin Cổ Đại
 ancient_battery_description,子弹造成击杀+10%子弹伤害，最大叠加5层，射击后清空。,"Bullet kills grant +10% Bullet Damage per stack, up to 5 stacks. Resets after firing.",Abates com tiros concedem +10% de Dano de Projétil por acúmulo (máx. 5; zera após atirar).,"Diệt tiêu diệt kẻ địch +10% ST đạn, cộng dồn tối đa 5 tầng"
 ancient_battery_forward,+5最大叠加层数,+5 Max Stack Count,+5 Limite máximo de acúmulos,+5 Tầng cộng dồn tối đa
-ancient_battery_negative, , , , 
+ancient_battery_negative,,,,
 robotic_vacuum_cleaner_name,扫地机器人,Sweeping Robot,Robô Aspirador,Robot Hút Bụi
 robotic_vacuum_cleaner_description,千年学院量产型扫地机器人，能够在场上自动寻找金币。,A mass-produced sweeping robot from Millennium. Automatically searches for coins on the field.,Robô aspirador fabricado em massa pela Millennium. Passeia pelo campo recolhendo moedas caídas automaticamente!,"Robot hút bụi sản xuất hàng loạt của Millennium, có thể tự động tìm kiếm Xu vàng trên sân."
 robotic_vacuum_cleaner_forward,"最大持有5个
@@ -234,19 +234,19 @@ robotic_vacuum_cleaner_forward,"最大持有5个
 Increases robot movement speed.","Acúmulo Máximo: 5
 Aumenta a velocidade do robô"," Tối đa 5 cái
 Tăng tốc độ di chuyển của robot"
-robotic_vacuum_cleaner_negative, , , , 
+robotic_vacuum_cleaner_negative,,,,
 muzzle_brake_name,枪口制退器,Muzzle Brake,Freio de Boca,Bộ Hãm Đầu Nòng
 muzzle_brake_description,减少射击时的后坐冲量，大幅降低后坐力。,Reduces recoil impulse when firing. Significantly lowers recoil.,Compensa os gases do disparo e reduz drasticamente o recuo da arma.,"Giảm lực giật khi bắn, hạ thấp đáng kể độ giật."
 muzzle_brake_forward,-40%后坐力,-40% Recoil,-40% Recuo,-40% Độ giật
-muzzle_brake_negative, , , , 
+muzzle_brake_negative,,,,
 peroro_feather_name,佩洛洛护符,Peroro Feather,Amuleto do Peroro,Lông Vũ Peroro
 peroro_feather_description,白色的大羽毛护身符，据说可以带来好运。,"A large white feather charm, said to bring good luck.",Um amuleto feito com uma grande pena branca. Dizem que traz muita sorte!,"Bùa hộ mệnh lông vũ trắng lớn, tương truyền có thể mang lại may mắn."
 peroro_feather_forward,+12幸运值,+12 Luck,+12 Sorte,+12 Điểm may mắn
-peroro_feather_negative, , , , 
+peroro_feather_negative,,,,
 wind_up_music_box_name,发条八音盒,Wind-Up Music Box,Caixinha de Música à Manivela,Hộp Nhạc Lên Dây Cót
 wind_up_music_box_description,充满了古香感的高级发条式八音盒，停止射击每2秒叠加1层10%全局伤害，最大10层。,"A high-end wind-up music box with an antique feel. While not firing, stacks 10% Global Damage every 2 seconds, up to 10 stacks.",Caixa de música vintage cheia de requinte. Parar de atirar acumula +10% de Dano Global a cada 2s (máx. 10 acúmulos).,"Hộp nhạc lên dây cót cao cấp mang hơi hướng cổ điển, ngừng bắn mỗi 2 giây sẽ cộng dồn 1 tầng 10% ST toàn cục, tối đa 10 tầng."
 wind_up_music_box_forward,+10最大叠加层数,+10 Max Stack Count,+10 Limite máximo de acúmulos,+10 Tầng cộng dồn tối đa
-wind_up_music_box_negative, , , , 
+wind_up_music_box_negative,,,,
 voodoo_doll_name,诅咒娃娃,Voodoo Doll,Boneco Vodu,Búp Bê Voodoo
 voodoo_doll_description,承载着怨念之类强烈感情的诅咒娃娃，额外承受伤害换取力量。,A cursed doll imbued with strong emotions such as resentment. Gains power at the cost of taking additional damage.,Carrega rancores e sentimentos sombrios intensos. Receba mais dano em troca de poder bruto!,"Búp bê nguyền rủa mang theo cảm xúc mãnh liệt như oán hận, đánh đổi bằng việc chịu thêm ST để lấy sức mạnh."
 voodoo_doll_forward,+50%子弹伤害,+50% Bullet Damage,+50% Dano de Projétil,+50% ST đạn
@@ -258,19 +258,19 @@ aqua_sandals_forward,"最大持有3个
 +10% Speed","Acúmulo Máximo: 3
 +10% Velocidade"," Tối đa 3 cái
 +10% Tốc độ di chuyển"
-aqua_sandals_negative, , , , 
+aqua_sandals_negative,,,,
 rabbit_sticker_name,兔子贴纸,Rabbit Sticker,Adesivo de Coelho,Nhãn Dán Thỏ
 rabbit_sticker_description,不同的学生自由地制作，自由地贴在不同的地方，贴在枪身上能提高射击速度。,"Freely made by different students and freely applied to various places. When attached to the gun, it increases fire rate.",Feito pelas alunas para colar onde quiserem. Colar na arma aumenta a cadência de disparo!,"Được các học sinh tự do chế tạo và dán lên nhiều nơi, dán lên thân súng giúp tăng tốc độ bắn."
 rabbit_sticker_forward,+8%射速,+8% Fire Rate,+8% Cadência de Tiro,+8% Tốc độ bắn
-rabbit_sticker_negative, , , , 
+rabbit_sticker_negative,,,,
 superalloy_camping_pack_name,超合金地钉,Superalloy Camping Stake,Estaca de Superliga,Đinh Cắm Trại Siêu Cứng
 superalloy_camping_pack_description,由千年设计的超合金制成，不易生锈或损坏，提升子弹的穿透能力。,Made from superalloy designed by Millennium. Resistant to rust and damage. Increases bullet penetration.,"Feita com uma superliga desenvolvida pela Millennium. Resistente a ferrugem e impactos, aprimora a perfuração dos tiros.","Làm từ siêu hợp kim do Millennium thiết kế, không dễ rỉ sét hay hư hỏng, tăng khả năng xuyên giáp của đạn."
 superalloy_camping_pack_forward,+2穿透值,+2 Penetration,+2 Perfuração,+2 Xuyên giáp
-superalloy_camping_pack_negative, , , , 
+superalloy_camping_pack_negative,,,,
 relav_baton_name,接力棒,Relav Baton,Bastão de Revezamento Explosivo,Gậy Tiếp Sức (Lựu ném của Đức)
 relav_baton_description,做成了旧式柄式手榴弹样子的接力棒，其中装入了电子雷管，能够提升爆炸范围。,"A relay baton made in the shape of an old-style stick grenade, fitted with an electronic detonator. Increases explosion radius.","Bastão de revezamento no formato de uma granada clássica de cabo, com detonador eletrônico embutido! Aumenta o raio de explosão.","Gậy tiếp sức được tạo hình giống lựu đạn chày kiểu cũ, bên trong lắp kíp nổ điện tử, có thể tăng phạm vi nổ."
 relav_baton_forward,+25%爆炸范围,+25% Explosion Radius,+25% Raio de Explosão,+25% Phạm vi nổ
-relav_baton_negative, , , , 
+relav_baton_negative,,,,
 winged_hairpin_name,白翼发卡,Winged Hairpin,Presilha de Asas Brancas,Kẹp Tóc Hình Cánh
 winged_hairpin_description,以天使的翅膀为主题制作的发卡，提升射速。,A hairpin designed with the theme of angel wings. Increases fire rate.,Presilha de cabelo inspirada em asas de anjo. Concede mais cadência de disparo.,"Kẹp tóc lấy cảm hứng từ đôi cánh thiên thần, giúp tăng tốc độ bắn."
 winged_hairpin_forward,+15%射速,+15% Fire Rate,+15% Cadência de Tiro,+15% Tốc độ bắn
@@ -282,15 +282,15 @@ aether_piece_negative,-6%射速,-6% Fire Rate,-6% Cadência de Tiro,-6% Tốc đ
 whistle_name,哨子,Whistle,Apito Tecnológico,Còi
 whistle_description,使用工程部的尖端技术制成的特制哨子，提升子弹速度。,A special whistle made using the advanced technology of the Engineering Department. Increases bullet velocity.,Apito especial fabricado com tecnologia de ponta do Clube de Engenharia. Aumenta a velocidade dos tiros.,Còi đặc chế được làm từ công nghệ tiên tiến của Bộ Kỹ thuật.
 whistle_forward,+15%子弹速度,+15% Bullet Speed,+15% Velocidade dos Tiros,"+15% Tốc độ đạn, tăng tốc độ đạn."
-whistle_negative, , , , 
+whistle_negative,,,,
 capybara_bath_bomb_name,水豚入浴剂,Capybara Bath Bomb,Sais de Banho de Capivara,Viên Thả Bồn Tắm Capybara
 capybara_bath_bomb_description,做成了水豚外形的固态入浴剂，提升异常伤害。,A solid bath bomb made in the shape of a capybara. Increases anomaly damage.,Pastilha efervescente de banho no formato fofo de uma capivara. Aumenta o dano de anomalia.,"Viên thả bồn tắm dạng rắn hình Capybara, tăng ST dị thường."
 capybara_bath_bomb_forward,+18%异常伤害,+18% Anomaly Damage,+18% Dano de Anomalia,+18% ST dị thường
-capybara_bath_bomb_negative, , , , 
+capybara_bath_bomb_negative,,,,
 beanbag_name,沙包,Beanbag,Saquinho de Areia,Túi Đậu
 beanbag_description,用柔软的布料把豆和沙子之类的东西包起来制成的沙包，偶尔有会爆炸的混入其中。,"A sandbag made from soft cloth filled with beans, sand, and other materials. Occasionally, explosive ones are mixed in.",Saquinho de pano macio recheado com feijões e areia... embora às vezes misturem explosivos de verdade no meio!,"Túi đậu được làm bằng vải mềm bọc đậu và cát, thỉnh thoảng có loại dễ nổ lẫn vào."
 beanbag_forward,+15%爆炸伤害,+15% Explosion Damage,+15% Dano de Explosão,+15% ST nổ
-beanbag_negative, , , , 
+beanbag_negative,,,,
 dumbbell_set_name,哑铃套装,Dumbbell Set,Kit de Halteres,Bộ Tạ Tay
 dumbbell_set_description,放有多个各种重量的哑铃的套装商品，提高伤害和击退力。,A set containing multiple dumbbells of various weights. Increases damage and knockback.,Conjunto de halteres de diversos pesos para treino. Melhora o dano e a força de repulsão dos ataques.,"Bộ sản phẩm gồm nhiều tạ tay với các trọng lượng khác nhau, tăng ST và lực đẩy lùi."
 dumbbell_set_forward,"+23%击退力
@@ -298,7 +298,7 @@ dumbbell_set_forward,"+23%击退力
 +12% Bullet Damage","+23% Repulsão
 +12% Dano de Projétil","+23% Lực đẩy lùi
 +12% ST đạn"
-dumbbell_set_negative, , , , 
+dumbbell_set_negative,,,,
 chocolate_coin_name,巧克力硬币,Chocolate Coin,Moeda de Chocolate,Socola Xu
 chocolate_coin_description,好吃的硬币形状巧克力，不能当作货币使用，提升拾取范围。,Delicious coin-shaped chocolate. Cannot be used as currency. Increases pickup range.,Um delicioso chocolate em formato de moeda (não vale nada como dinheiro de verdade). Aumenta o alcance de coleta.,"Socola hình đồng xu thơm ngon, không thể dùng làm tiền tệ, tăng phạm vi thu thập."
 chocolate_coin_forward,"+25%拾取范围
@@ -306,11 +306,11 @@ chocolate_coin_forward,"+25%拾取范围
 Gain +1 Coin for every 30 Coins picked up.","+25% Alcance de Coleta
 +1 Moeda bônus a cada 30 moedas coletadas","+25% Phạm vi thu thập
 Mỗi khi nhặt 30 đồng xu, nhận thêm +1 đồng xu"
-chocolate_coin_negative, , , , 
+chocolate_coin_negative,,,,
 grs_grilled_corn_name,烤玉米,Grilled Corn,Espiga de Milho Grelhada,Ngô Nướng
 grs_grilled_corn_description,美食研究会烤的烤玉米，但是无法确定是什么味道，造成燃烧伤害时有概率恢复1点生命值。,"Grilled corn prepared by the Gourmet Research Society, though its flavor is uncertain. Dealing burn damage has a chance to restore 1 health.",Milho assado pelo Clube de Pesquisa Gastronômica... ninguém sabe ao certo que gosto isso tem. Dano de queimadura tem chance de curar 1 de Vida.,"Ngô nướng do Hội Nghiên cứu Mỹ thực Nướng lên, nhưng không chắc chắn là vị gì, khi gây ST thiêu cháy có xác suất hồi 1 máu."
 grs_grilled_corn_forward,提升触发概率,Increases trigger chance.,Aumenta a chance de ativação,Tăng xác suất kích hoạt
-grs_grilled_corn_negative, , , , 
+grs_grilled_corn_negative,,,,
 splashy_helmet_name,潮水头盔,Splashy Helmet,Capacete Praiano,Mũ Bảo Hiểm Splashy
 splashy_helmet_description,被没收的「潮水头盔团」头盔，上面有些许划痕，能够减少受到的伤害。,"A confiscated helmet from the ""Splashy Helmet"", with a few scratches on it. Reduces incoming damage.","Capacete confiscado da Gangue do Capacete Praiana. Tem uns arranhões, mas reduz o dano sofrido.","Chiếc mũ bảo hiểm bị tịch thu từ ""Băng Mũ Bảo Hiểm"", có vài vết trầy xước, giúp giảm ST nhận vào."
 splashy_helmet_forward,+2护甲值,+2 Armor,+2 Armadura,+2 Giáp
@@ -318,7 +318,7 @@ splashy_helmet_negative,-5%子弹伤害,-5% Bullet Damage,-5% Dano de Projétil,
 weird_fireworks_name,迷你火箭烟花,Weird Fireworks,Minitiroteio de Fogos,Pháo Hoa Kỳ Dị
 weird_fireworks_description,一个可爱的火箭型烟花，提高燃烧叠加层数。,A cute rocket-shaped firework. Increases burn stack limit.,Foguetes de artifício adoráveis em miniatura. Aumentam o limite máximo de acúmulos de queimadura.,"Một loại pháo hoa hình tên lửa dễ thương, tăng giới hạn cộng dồn thiêu cháy."
 weird_fireworks_forward,+3燃烧上限,+3 Burn Stack Limit,+3 Limite de queimadura,+3 Giới hạn thiêu cháy
-weird_fireworks_negative, , , , 
+weird_fireworks_negative,,,,
 lifebuoy_name,救生圈,Lifebuoy,Boia Salva-vidas,Phao Cứu Sinh
 lifebuoy_description,救援溺水者时使用的泳圈，受到伤害时产生冲击波清除周围的子弹。,"A lifebuoy used for rescuing drowning victims. Upon taking damage, creates a shockwave that clears nearby bullets.","Boia usada no resgate de banhistas. Ao sofrer dano, gera uma onda de choque que apaga projéteis inimigos ao redor.","Chiếc phao dùng để cứu người đuối nước, khi nhận ST sẽ tạo sóng xung kích dọn sạch đạn xung quanh."
 lifebuoy_forward,"独特
@@ -326,7 +326,7 @@ lifebuoy_forward,"独特
 On damage, clears bullets nearby","Único
 Apaga projéteis ao redor ao sofrer dano","Độc Nhất
 Dọn sạch đạn trong phạm vi khi bị thương"
-lifebuoy_negative, , , , 
+lifebuoy_negative,,,,
 life_jacket_name,救生衣,Life Jacket,Colete Salva-vidas,Áo Phao
 life_jacket_description,穿上就能浮在水面的救生衣，每5秒能够抵挡一次伤害并击退周围敌人。,"A life jacket that keeps you afloat when worn. Every 5 seconds, blocks one instance of damage and knocks back nearby enemies.","Basta vestir para flutuar. A cada 5 segundos, bloqueia 1 ataque e empurra os inimigos próximos para longe.","Chiếc áo phao giúp bạn nổi trên mặt nước, mỗi 5 giây có thể đỡ một lần ST và đẩy lùi kẻ địch xung quanh."
 life_jacket_forward,"独特
@@ -334,7 +334,7 @@ life_jacket_forward,"独特
 Blocks 1 instance of damage","Único
 Bloqueia 1 instância de dano","Độc Nhất
 Đỡ 1 lần ST"
-life_jacket_negative, , , , 
+life_jacket_negative,,,,
 multipurpose_rope_name,多功能绳索,Multipurpose Rope,Corda Multiuso,Dây Thừng Đa Năng
 multipurpose_rope_description,千年开发的新材料高弹性绳索，造成击杀时有概率直接拾取掉落的金币。,A highly elastic rope made from new materials developed by Millennium. Defeating an enemy has a chance to instantly collect dropped coins.,Corda de alta elasticidade feita de novos materiais da Millennium. Eliminar inimigos tem chance de recolher moedas caídas na hora!,"Loại dây thừng đàn hồi cao bằng vật liệu mới do Millennium phát triển, khi tiêu diệt kẻ địch có xác suất nhặt trực tiếp tiền vàng rơi ra."
 multipurpose_rope_forward,"最大持有5个
@@ -342,7 +342,7 @@ multipurpose_rope_forward,"最大持有5个
 Increases trigger chance","Acúmulo Máximo: 5
 Aumenta a chance de ativação","Tối đa 5 cái
 Tăng xác suất kích hoạt"
-multipurpose_rope_negative, , , , 
+multipurpose_rope_negative,,,,
 tnt_name,TNT,TNT,Dinamite TNT,TNT
 tnt_description,威力极大的方块炸药，注意使用安全。,Extremely powerful block explosive. Use with caution.,Bloco de dinamite com poder destrutivo descomunal. Tome cuidado ao manusear!,"Thuốc nổ TNT cực mạnh, chú ý an toàn khi sử dụng (éo ai care)."
 tnt_forward,"独特
@@ -380,7 +380,7 @@ a_pod_pro_forward,"独特
 +3% Equip Damage per 50 kills with Equipment","Único
 +3% Dano de Equipamento a cada 50 abates com equipamentos","Độc Nhất
 Khi đang trang bị. mỗi khi đạt 50 hạ gục +3% ST trang bị"
-a_pod_pro_negative, , , , 
+a_pod_pro_negative,,,,
 cherino_matryoshka_name,切里诺套娃,Cherino Matryoshka,Matrioska da Cherino,Búp Bê Nga Cherino
 cherino_matryoshka_description,模仿切里诺的样貌制造的威严套娃。,A matryoshka made in Cherino's majestic likeness.,Uma imponente matrioska esculpida à imagem e semelhança da grande líder Cherino!,Búp bê Nga uy nghiêm mô phỏng theo vẻ ngoài của Cherino.
 cherino_matryoshka_forward,"独特
@@ -388,7 +388,7 @@ cherino_matryoshka_forward,"独特
 Every 10 explosions: deal (10 + Bullet Damage) explosion damage nearby","Único
 A cada 10 explosões: gera uma explosão de (10 + Dano de Projétil) ao seu redor","Độc Nhất
 Cứ nổ 10 lần sẽ tạo ra một vụ nổ (10 + ST đạn) quanh bản thân"
-cherino_matryoshka_negative, , , , 
+cherino_matryoshka_negative,,,,
 drum_magazine_name,弹鼓,Drum Magazine,Tambor de Munição,Băng Đạn dạng Trống
 drum_magazine_description,提供更多的弹匣容量，但是会降低一些子弹伤害。,"Provides more magazine capacity, but slightly reduces bullet damage.","Garante uma quantidade colossal de balas no pente, mas reduz levemente o dano dos tiros.","Cung cấp nhiều đạn hơn, nhưng sẽ giảm một chút ST đạn."
 drum_magazine_forward,+15弹匣容量,+15 Max Ammo,+15 Capacidade do Pente,+15 Băng đạn tối đa
@@ -408,7 +408,7 @@ student_council_hard_hat_forward,"独特
 On 50% Max HP damage: 3s invincibility","Único
 Ao sofrer dano igual a 50% da Vida Máxima: concede 3s de invencibilidade","Độc Nhất
 Khi chịu ST tương đương 50% HP tối đa, nhận 3 giây bất tử."
-student_council_hard_hat_negative, , , , 
+student_council_hard_hat_negative,,,,
 ginseng_doll_name,人形参,Ginseng Doll,Ginseng Silvestre,Nhân Sâm Hình Người
 ginseng_doll_description,在山海经的深山中发现的人参。,A human-shaped root herb found deep in the mountains of Shanhaijing.,Uma raiz rara de ginseng colhida nas montanhas profundas de Shanhaijing.,Nhân sâm được tìm thấy trong núi sâu ở Shanhaijing.
 ginseng_doll_forward,"独特
@@ -416,7 +416,7 @@ ginseng_doll_forward,"独特
 For 3s after damage: heal 10% of damage dealt (capped at damage taken).","Único
 Por 3s após sofrer dano: regenera 10% do dano causado em Vida (limitado ao dano sofrido)","Độc Nhất
 Sau khi bị thương, trong 3 giây hồi máu bằng 10% ST gây ra (không vượt quá ST đã nhận)"
-ginseng_doll_negative, , , , 
+ginseng_doll_negative,,,,
 energy_supplement_name,特制营养剂,Energy Supplement,Tônico da Longevidade,Thực Phẩm Bổ Sung
 energy_supplement_description,炼丹术研究会为了节日的成功，特地炮制的营养剂。,An energy supplement specially made by the Eastern Alchemy Society.,Suplemento nutricional preparado pelo Clube de Alquimia de Shanhaijing para garantir o sucesso do festival.,Thực phẩm bổ sung do Hiệp hội Nghiên cứu Luyện kim bào chế đặc biệt để kỷ niệm lễ hội đã thành công.
 energy_supplement_forward,"独特
@@ -448,7 +448,7 @@ mint_chocolate_parfait_forward,"独特
 +20% Bullet Damage per second in flight","Único
 +20% Dano de Projétil a cada 1s de voo do tiro","Độc Nhất
 Mỗi giây đạn bay sẽ thêm 20% ST đạn"
-mint_chocolate_parfait_negative, , , , 
+mint_chocolate_parfait_negative,,,,
 chill_cake_name,小蛋糕,Chill Cake,Fatia de Bolo Festivo,Bánh Ngọt
 chill_cake_description,供应至学园祭各处的美味蛋糕。,A piece of cake given out at various places throughout the Academy Festival.,Um pedaço de bolo delicioso distribuído a todos durante o Festival da Academia.,Bánh ngọt thơm ngon được cung cấp tại khắp nơi trong lễ hội trường.
 chill_cake_forward,"独特
@@ -460,7 +460,7 @@ chill_cake_forward,"独特
 +1 Vida Máxima a cada 80 abates","Độc Nhất
 +5 HP
 Mỗi 80 hạ gục +1 HP tối đa"
-chill_cake_negative, , , , 
+chill_cake_negative,,,,
 winnipesaukee_stone_name,温尼珀索基石,Winnipesaukee Stone,Pedra de Winnipesaukee,Đá Winnipesaukee
 winnipesaukee_stone_description,状态完好的温尼珀索基石，造成伤害时落下巨石造成自身生命值比例（80%）的额外伤害。,An intact Winnipesaukee Stone. Dealing damage drops a boulder dealing 80% Max HP bonus damage.,Uma misteriosa Pedra de Winnipesaukee em perfeito estado. Causar dano faz desabar um pedregulho causando dano bônus igual a 80% da sua Vida Máxima.,"Đá Winnipesaukee nguyên vẹn, khi gây ST sẽ rơi một tảng đá gây thêm ST theo tỷ lệ (80%) HP tối đa."
 winnipesaukee_stone_forward,"最大持有3个
@@ -468,7 +468,7 @@ winnipesaukee_stone_forward,"最大持有3个
 +80% Max HP bonus damage","Acúmulo Máximo: 3
 +80% da Vida Máxima como dano bônus","Tối đa 3 cái
 +80% ST theo tỷ lệ HP tối đa"
-winnipesaukee_stone_negative, , , , 
+winnipesaukee_stone_negative,,,,
 macaron_name,马卡龙,Macaron,Macaron da Trinity,Bánh Macaron
 macaron_description,一只手就能包住的马卡龙。,Macarons that fit in the palm of your hand.,Um docinho refinado que cabe todinho na palma da mão.,Bánh Macaron nhỏ trong lòng bàn tay.
 macaron_forward,"独特
@@ -480,7 +480,7 @@ macaron_negative,+100%承伤率,+100% Damage Taken,+100% Dano Recebido,+100% ST 
 shiny_conch_name,光滑海螺,Shiny Conch,Concha Polida,Ốc Biển Óng Ánh
 shiny_conch_description,表面光滑的海螺。,A conch with a smooth and silky exterior.,Uma concha do mar de superfície lisa e brilhante.,Chiếc ốc biển có bề mặt trơn nhẵn.
 shiny_conch_forward,+25%装备伤害,+25% Equip Damage,+25% Dano de Equipamento,+25% ST trang bị
-shiny_conch_negative, , , , 
+shiny_conch_negative,,,,
 summer_ninjutsu_codex_scroll_name,忍法图鉴卷轴,Summer Ninjutsu Codex Scroll,Manual Ninja de Verão,Cuộn Sách Nhẫn Pháp Mùa Hè
 summer_ninjutsu_codex_scroll_description,写有各种忍法（瞎编的）的卷轴。,A scroll with various original ninjutsus that can be used in summer.,Um pergaminho contendo diversas artes ninja secretas (inventadas da cabeça dela).,Cuộn sách ghi lại nhiều nhẫn pháp khác nhau (toàn là bịa ra).
 summer_ninjutsu_codex_scroll_forward,+28幸运值,+28 Luck,+28 Sorte,+28 Điểm may mắn
@@ -492,7 +492,7 @@ buried_treasure_map_forward,"独特
 Critical benefits from Luck","Único
 Chance Crítica recebe bônus com base na Sorte","Độc Nhất
 Tỷ lệ chí mạng tỉ lệ thuận với may mắn"
-buried_treasure_map_negative, , , , 
+buried_treasure_map_negative,,,,
 utaha_turret_name,雷酱MK-Ⅱ,Thundergun MK-II,Torreta Thunder-chan MK-II,Thundergun MK-II
 utaha_turret_description,工程部自研的先进炮塔，造成自身20%子弹伤害。,An advanced turret developed by the Engineering Department. Deals 20% of your Bullet Damage.,Torreta de defesa autônoma projetada pelo Clube de Engenharia. Causa 20% do seu Dano de Projétil.,"Tháp pháo tiên tiến do Bộ Kỹ thuật tự nghiên cứu, gây 20% ST đạn của bản thân."
 utaha_turret_forward,"最大持有3个
@@ -500,7 +500,7 @@ utaha_turret_forward,"最大持有3个
 Summons auto-attacking turret","Acúmulo Máximo: 3
 Invoca torretas que disparam sozinhas contra os inimigos","Tối đa 3 cái
 Triệu hồi súng máy nhỏ tự động tấn công kẻ địch"
-utaha_turret_negative, , , , 
+utaha_turret_negative,,,,
 machine_part_name,设备零件,Machine Part,Peça de Maquinário,Linh Kiện Thiết Bị
 machine_part_description,用于修理千年废墟的设备的零件，增强防御能力。,A part used to repair equipment and facilities in the Millennium Ruins. Increases defensive capabilities.,Componente sobressalente para consertar os maquinários das Ruínas da Millennium. Melhora as defesas.,"Linh kiện dùng để sửa chữa thiết bị tại Di tích Millennium, tăng cường khả năng phòng thủ."
 machine_part_forward,"独特
@@ -508,7 +508,7 @@ machine_part_forward,"独特
 -5% Damage Taken per summon","Único
 -5% Dano Recebido para cada invocação ativa em campo","Độc Nhất
 Cứ thêm một vật triệu hồi -5% ST nhận vào"
-machine_part_negative, , , , 
+machine_part_negative,,,,
 sakura_daifuku_name,樱花大福饼,Sakura Daifuku,Daifuku de Sakura,Bánh Daifuku Anh Đào
 sakura_daifuku_description,百鬼夜行传统茶馆「百夜堂」的常备点心。,The steadiest-selling dessert of Hyakkiyako's Momoyodou tea house.,Doce tradicional sempre servido na famosa casa de chá Momoyodou em Hyakkiyako.,"Món điểm tâm thường thấy tại trà quán truyền thống ""Momoyodou"" của Hyakkiyako."
 sakura_daifuku_forward,+28%暴击伤害,+28% Critical Damage,+28% Dano Crítico,+28% ST chí mạng
@@ -516,7 +516,7 @@ sakura_daifuku_negative,-5%子弹伤害,-5% Bullet Damage,-5% Dano de Projétil,
 seashell_name,贝壳,Seashell,Conchinha da Praia,Vỏ Sò
 seashell_description,海岸上很常见的小贝壳。,A small seashell commonly found on the beach.,Uma conchinha comum que se encontra aos montes na beira da praia.,Vỏ sò nhỏ thường tìm thấy trên bờ biển.
 seashell_forward,+12%暴击伤害,+12% Critical Damage,+12% Dano Crítico,+12% ST chí mạng
-seashell_negative, , , , 
+seashell_negative,,,,
 motivation_boost_candy_name,干劲提升棒棒糖,Motivation Boost Candy,Pirulito de Disposição,Kẹo Mút Truyền Động Lực
 motivation_boost_candy_description,为失去动力的全身注入活力的棒棒糖，口味丰富多彩。,A candy that revives your lost motivation.,Pirulito de sabores sortidos feito para injetar energia até em quem perdeu toda a vontade de viver!,"Kẹo mút truyền lại động lực cho những ai đang bị kiệt sức, hương vị đa dạng."
 motivation_boost_candy_forward,"独特
@@ -524,11 +524,11 @@ motivation_boost_candy_forward,"独特
 3% of poison damage dealt is converted into Temp HP","Único
 3% do dano de veneno é convertido em Vida Temporária","Độc Nhất
 3% ST độc chuyển hóa thành HP tạm thời"
-motivation_boost_candy_negative, , , , 
+motivation_boost_candy_negative,,,,
 unusual_screw_name,变形螺丝,Unusual Screw,Parafuso Deformado,Ốc Vít Biến Dạng
 unusual_screw_description,多少有些变形的螺丝，使用在千年废墟的机器上。,A screw with a rather unusual shape. Used by devices in the Millennium Ruins.,Um parafuso meio torto retirado das máquinas antigas nas Ruínas da Millennium.,"Ốc vít bị biến dạng một chút, được sử dụng trên máy móc ở Di tích Millennium."
 unusual_screw_forward,+20%召唤物伤害,+20% Summon Damage,+20% Dano de Invocação,+20% ST từ triệu hồi
-unusual_screw_negative, , , , 
+unusual_screw_negative,,,,
 effective_cure_name,万能特效药,Universal Remedy,Remédio Panaceia,Thuốc Đặc Trị Vạn Năng
 effective_cure_description,据说对什么疾病都有效的万灵药，但是，严禁过度依赖和过量摄取！,"Medicine that's effective anytime, anywhere. Please refrain from abusing it.",Dizem curar absolutamente qualquer doença existente... mas é estritamente proibido abusar da dose!,"Thuốc tiên được cho là có hiệu quả với mọi loại bệnh, Cấm lạm dụng thuốc và dùng quá liều!"
 effective_cure_forward,"独特
@@ -536,7 +536,7 @@ effective_cure_forward,"独特
 End of turn: convert 10% Temp HP to Max HP","Único
 No fim da rodada: converte 10% da Vida Temporária em Vida Máxima permanente","Độc Nhất
 Kết thúc màn hiện tại chuyển 10% HP tạm thời thành HP tối đa"
-effective_cure_negative, , , , 
+effective_cure_negative,,,,
 boom_classic_edition_name,BOOM：经典版,BOOM: Classic Edition,BOOM: Edição Clássica,BOOM: Phiên Bản Kinh Điển
 boom_classic_edition_description,能够安装在任何机器上的杰作游戏。,A game cartridge that Maki brought for everyone to play.,A lendária obra-prima dos videogames capaz de rodar em qualquer tela e aparelho existente!,Trò chơi kiệt tác có thể cài đặt trên bất kỳ máy móc nào.
 boom_classic_edition_forward,"独特
@@ -544,11 +544,11 @@ boom_classic_edition_forward,"独特
 Melee kills: +10% Max HP as Temp HP","Único
 Abates corpo a corpo concedem 10% da sua Vida Máxima em Vida Temporária","Độc Nhất
 Dùng cận chiến nhận HP tạm thời bằng 10% HP tối đa"
-boom_classic_edition_negative, , , , 
+boom_classic_edition_negative,,,,
 mustache_shampoo_name,胡子洗发剂,Mustache Shampoo,Shampoo de Bigode,Dầu Gội Vuốt Râu
 mustache_shampoo_description,红冬联邦学园特制洗发剂，名字里有「胡子」，但似乎并不适合用来洗胡子。,President Cherino's favorite Red Winter Academy special shampoo.,"Shampoo especial da Federação Red Winter. Tem ""bigode"" no nome, mas não parece muito adequado para lavar bigodes de verdade...","Dầu gội đặc chế của Học viện Red Winter, dù tên có chữ ""Râu"" nhưng dường như không thích hợp để gội râu."
 mustache_shampoo_forward,+32%异常持续时间,+32% Anomaly Duration,+32% Duração das Anomalias,+32% Thời gian duy trì dị thường
-mustache_shampoo_negative, , , , 
+mustache_shampoo_negative,,,,
 hot_spring_towel_name,温泉毛巾,Hot Spring Towel,Toalha de Águas Termais,Khăn Tắm Suối Nước Nóng
 hot_spring_towel_description,227号温泉乡提供的毛巾，材质并不是很好，用于擦拭身体时请注意不要用力过度。,Basic towels provided by Hot Springs Resort No. 227. They're made from rough materials and may cause damage to the skin.,"Toalha oferecida pelo Resort Termal nº 227. O tecido é meio áspero, então evite esfregar o corpo com muita força!","Khăn tắm cung cấp bởi khu suối nước nóng số 227, chất liệu không tốt lắm, khi lau người đừng dùng lực quá mạnh."
 hot_spring_towel_forward,"最大持有2个
@@ -560,7 +560,7 @@ hot_spring_towel_negative,-25%异常持续时间,-25% Anomaly Duration,-25% Dura
 multivitamin_gummies_name,维生素软糖,Multivitamin Gummies,Gomas Multivitamínicas,Kẹo Dẻo Vitamin
 multivitamin_gummies_description,含有多种维生素的营养软糖。拥有多种水果口味，吃起来别有一番滋味。不过需要注意别吃着吃着罐子空了！,"They're fun to eat with their various fruit flavors. You might end up finishing the entire bottle without even realizing, so be careful!",Gominhas nutritivas e mastigáveis com diversos sabores de frutas. Só tome cuidado para não devorar o pote inteiro de uma vez!,"Kẹo dẻo dinh dưỡng chứa nhiều loại vitamin. Có nhiều hương vị trái cây, ăn rất ngon. Nhưng coi chừng ăn hết cả lọ lúc nào không hay!"
 multivitamin_gummies_forward,+15%临时生命值上限,+15% Max Temp HP,+15% Limite de Vida Temporária,+15% Giới hạn HP tạm thời
-multivitamin_gummies_negative, , , , 
+multivitamin_gummies_negative,,,,
 mustache_crepe_name,胡子可丽饼,Mustache Crepe,Crepe com Bigodinho,Bánh Crepe Râu
 mustache_crepe_description,在红冬各处有售的香甜可口可丽饼。,A sweet and soft crepe sold throughout Red Winter Academy.,"Crepe doce e crocante decorado com um simpático bigode, vendido por toda Red Winter.",Bánh Crepe ngọt ngào thơm ngon được bán ở khắp nơi tại Red Winter.Có hơi dính chút râu.
 mustache_crepe_forward,"独特
@@ -568,7 +568,7 @@ mustache_crepe_forward,"独特
 Gain Temp HP equal to HP lost","Único
 Ao perder Vida: ganha quantidade equivalente em Vida Temporária","Độc Nhất
 Khi mất HP sẽ nhận được lượng HP tạm thời tương đương"
-mustache_crepe_negative, , , , 
+mustache_crepe_negative,,,,
 wavecat_pillow_name,波浪猫枕,Wavecat Pillow,Almofada Wavecat,Gối Mèo của MomoFriends
 wavecat_pillow_description,热门Momo好友联名商品，第7弹！,The seventh product of the smash hit Momo Friends collaboration line-up!,O cobiçado 7º produto oficial da linha de colaboração de pelúcias Momo Amigos!,"Sản phẩm liên danh Momo Friends nổi tiếng, đợt thứ 7!"
 wavecat_pillow_forward,"独特
@@ -576,7 +576,7 @@ wavecat_pillow_forward,"独特
 Crit: +35% Melee Damage for 2s (stacks)","Único
 Por 2s após um acerto crítico: +35% Dano Corpo a Corpo (acumulável)","Độc Nhất
 Sau khi gây chí mạng, tăng 35% ST cận chiến trong 2 giây (có thể cộng dồn)"
-wavecat_pillow_negative, , , , 
+wavecat_pillow_negative,,,,
 dimension_engine_part_name,次元引擎配件,Dimension Engine Part,Peça do Motor Dimensional,Linh Kiện Động Cơ Đa Chiều
 dimension_engine_part_description,从次元引擎上拆下来的配件。,A piece of the Dimension Engine.,Peça sobressalente desmontada diretamente do lendário Motor Dimensional.,Phụ tùng tháo rời từ động cơ đa chiều.
 dimension_engine_part_forward,"独特
@@ -584,7 +584,7 @@ dimension_engine_part_forward,"独特
 Melee gains 50% of Bullet Damage as bonus","Único
 Ataques corpo a corpo recebem bônus de 50% do Dano de Projétil","Độc Nhất
 Gây cận chiến có thể nhận thêm 50% từ ST đạn"
-dimension_engine_part_negative, , , , 
+dimension_engine_part_negative,,,,
 kikyou_doll_name,桔梗人偶,Kikyou Doll,Boneco de Madeira da Kikyou,Búp Bê Kikyou
 kikyou_doll_description,"桔梗做的自己的木雕人偶。
 以人偶为中心发射一个范围脉冲，对波及的敌人施加40%子弹伤害的毒异常。","A wooden doll that Kikyou made to resemble herself.
@@ -595,7 +595,7 @@ kikyou_doll_forward,"最大持有5个
 +15% Poison Anomaly ratio","Acúmulo Máximo: 5
 +15% Proporção de veneno com base no Dano de Projétil"," Tối đa 5 cái
 +15% Tỷ lệ ST đạn của dị thường độc"
-kikyou_doll_negative, , , , 
+kikyou_doll_negative,,,,
 matcha_ramune_name,抹茶汽水,Matcha Ramune,Ramune de Matcha,Ramune Matcha
 matcha_ramune_description,"独特风味让人欲罢不能的抹茶味碳酸饮料。
 对受到燃烧影响的敌人施加毒异常会引发一次爆炸。","A matcha-flavored, carbonated soft drink.
@@ -606,7 +606,7 @@ matcha_ramune_forward,"独特
 Explosion scales with Anomaly Damage","Único
 A explosão gerada recebe bônus de Dano de Anomalia","Độc Nhất
 Vụ nổ gây ra tương đương với ST dị thường"
-matcha_ramune_negative, , , , 
+matcha_ramune_negative,,,,
 crystal_haniwa_name,水晶埴轮,Crystal Haniwa,Haniwa de Cristal,Pha Lê Haniwa
 crystal_haniwa_description,状态完好的水晶埴轮。,An intact Crystal Haniwa.,Uma relíquia arqueológica de haniwa feita de cristal em estado impecável.,Pha Lê Haniwa trong tình trạng nguyên vẹn.
 crystal_haniwa_forward,"独特
@@ -642,7 +642,7 @@ kitchen_knife_forward,"可受近战伤害加成
 +1% no limiar de Vida para execução","Có thể nhận thêm ST cận chiến
 +45 ST cơ bản của trang bị này
 +1% Ngưỡng HP kết liễu"
-kitchen_knife_negative, , , , 
+kitchen_knife_negative,,,,
 bug_eating_plant_name,食虫植物,Bug-Eating Plant,Vaso de Planta Carnívora,Cây Bắt Ruồi
 bug_eating_plant_description,有特殊爱好的人们都会去买的食虫植物花盆。,A potted plant that's popular among those with eccentric taste.,Um vaso com planta carnívora comprado apenas por quem tem gostos bem peculiares.,Chậu cây bắt ruồi mà những người có sở thích đặc biệt thường mua.
 bug_eating_plant_forward,"独特
@@ -650,7 +650,7 @@ bug_eating_plant_forward,"独特
 +1% Bullet Damage per 1% Anomaly Damage","Único
 Cada 1% de Dano de Anomalia concede +1% de Dano de Projétil","Độc Nhất
 Mỗi 1% ST dị thường cung cấp 1% ST đạn"
-bug_eating_plant_negative, , , , 
+bug_eating_plant_negative,,,,
 solvent_extraction_set_name,溶液提取套装,Solvent Extraction Set,Kit de Extração de Solvente,Bộ Chiết Xuất Dung Môi
 solvent_extraction_set_description,在市面销售的据说是任何人都能使用的溶液提取套装。,A solvent extraction set they say can be used by anyone.,Kit comercial de destilação química vendido sob a promessa de que qualquer um consegue usar.,Bộ chiết xuất dung môi bán trên thị trường được cho là ai cũng có thể sử dụng.
 solvent_extraction_set_forward,"独特
@@ -658,7 +658,7 @@ solvent_extraction_set_forward,"独特
 Melee attacks deal bonus damage based on the target's current HP (up to 400%)","Único
 Ataques corpo a corpo causam dano bônus baseado na Vida atual do alvo (até +400%)","Độc Nhất
 Tấn công cận chiến sẽ gây thêm ST dựa trên lượng HP hiện tại của kẻ địch (tối đa 400%)"
-solvent_extraction_set_negative, , , , 
+solvent_extraction_set_negative,,,,
 peroro_wheel_name,佩洛洛健腹滚轮,Peroro Wheel,Rolo Abdominal do Peroro,Con Lăn Peroro
 peroro_wheel_description,今年锻炼类商品排行榜荣获第一位的，佩洛洛样式的健腹滚轮！？,This Peroro-shaped exercise wheel is this year's most popular fitness accessory!,Eleito o produto fitness número 1 do ano: a incrível roda de exercícios temática do Peroro?!,Con lăn tập bụng kiểu Peroro giành vị trí thứ nhất trong bảng xếp hạng dụng cụ tập thể dục năm nay!? (Bé Hifumi rất thích)
 peroro_wheel_forward,"独特
@@ -666,7 +666,7 @@ peroro_wheel_forward,"独特
 Melee attacks deal double damage to enemies at full HP","Único
 Ataques corpo a corpo causam o dobro de dano em alvos com Vida cheia","Độc Nhất
 Tấn công cận chiến sẽ gây gấp đôi ST lên kẻ địch đầy máu"
-peroro_wheel_negative, , , , 
+peroro_wheel_negative,,,,
 roller_skates_name,空中轮鞋,Roller Skates,Air Trecks (Patins Aéreos),Giày Trượt Patin
 roller_skates_description,内含庞大动力的高科技直排轮，因为是仿制品，所以没办法飞行。,"High-tech inline skates packed with immense power. As a replica, they are unable to fly.","Patins in-line de alta tecnologia equipados com motores potentes. Por serem réplicas baratas, não conseguem voar de verdade!","Giày trượt công nghệ cao chứa động năng khổng lồ, vì là hàng nhái nên không thể bay."
 roller_skates_forward,"独特
@@ -690,7 +690,7 @@ fish_cakes_forward,"最大持有3个
 +35% Dano de Anomalia"," Tối đa 3 cái
 +35% ST từ trang bị
 +35% ST dị thường"
-fish_cakes_negative, , , , 
+fish_cakes_negative,,,,
 encyclopedia_name,百科全书,Encyclopedia,Grande Enciclopédia,Bách Khoa Toàn Thư
 encyclopedia_description,知识就是力量。,Knowledge is power.,Conhecimento é poder absoluto!,Tri thức là sức mạnh.
 encyclopedia_forward,+100%护甲值,+100% Armor,+100% Armadura,+100% Giáp
@@ -713,7 +713,7 @@ peroro_kagami_mochi_forward,"独特
 Explosion deals more damage for each enemy within its radius","Único
 Quanto mais inimigos estiverem na área da explosão, maior será o dano causado","Độc Nhất
 Càng nhiều kẻ địch trong phạm vi bán kính, ST nổ càng cao"
-peroro_kagami_mochi_negative, , , , 
+peroro_kagami_mochi_negative,,,,
 aether_essence_name,以太精,Aether Essence,Essência Pura de Éter,Dụng Cụ Chiết Tinh Chất
 aether_essence_description,仅选用最为纯净强效的以太提炼制成的以太澄清液。,An essence created out of Aether of the highest potency and purity.,Extrato purificado e cristalino obtido a partir do mais puro e potente éter.,Chất lỏng Ether trong suốt được tinh chế từ Ether tinh khiết và mạnh mẽ nhất.
 aether_essence_forward,"独特
@@ -721,7 +721,7 @@ aether_essence_forward,"独特
 Each hit increases that bullet's damage by 5%","Único
 Cada acerto com o mesmo tiro aumenta o dano daquele projétil em +5%","Độc Nhất
 Mỗi khi viên đạn trúng đích, tăng 5% ST cho chính viên đạn đó"
-aether_essence_negative, , , , 
+aether_essence_negative,,,,
 spiked_shell_name,尖刺龟壳,Spiked Shell,Casco com Espinhos,Mai Rùa có Gai
 spiked_shell_description,生活在一个水管世界的奇妙生物的壳。,The shell of a wondrous creature that lives in a world of pipes.,O casco espinhoso de uma criatura curiosa que habita um mundo repleto de canos verdes!,Mai của một sinh vật kỳ lạ sống trong thế giới bé tí trong mai.
 spiked_shell_forward,"独特
@@ -733,7 +733,7 @@ Colidir com inimigos causa dano baseado na Armadura e Velocidade atual
 Velocidade acima de 300 concede imunidade a repulsão","Độc Nhất
 Gây ST khi va chạm với kẻ địch dựa trên chỉ số giáp và tốc độ hiện tại
 Nhận miễn nhiễm đẩy lùi khi tốc độ vượt quá 300"
-spiked_shell_negative, , , , 
+spiked_shell_negative,,,,
 puzzle_cube_name,智力魔方,Puzzle Cube,Cubo Mágico Quântico,Cục Rubik
 puzzle_cube_description,千年科学学园公认的高手向魔方。,A tricky cube for advanced puzzle-solvers certified by Millennium Science School.,O cubo mágico oficial reconhecido pelo corpo docente da Millennium como o teste de raciocínio supremo.,Cục Rubik dành cho cao nhân đắc đạo được công nhận bởi Học viện Khoa học Millennium.
 puzzle_cube_forward,"独特
@@ -741,7 +741,7 @@ puzzle_cube_forward,"独特
 Excess damage after a kill is randomly transferred to other enemies on the field","Único
 Dano excedente de golpes fatais se transfere para outro inimigo aleatório em campo","Độc Nhất
 ST dư thừa sau khi tiêu diệt mục tiêu sẽ chuyển ngẫu nhiên sang kẻ địch khác trên sân (cứ hiểu là lệch pity là được)"
-puzzle_cube_negative, , , , 
+puzzle_cube_negative,,,,
 nagusa_doll_name,名草人偶,Nagusa Doll,Boneco de Madeira da Nagusa,Búp bê Nagusa
 nagusa_doll_description,桔梗做的名草木雕人偶，以人偶为中心，每0.5秒释放一圈恶寒，对波及的敌人施加1层恶寒（最大6层）。,"A wooden doll that Nagusa made to resemble herself.
 Every 0.5s it releases a chill ring, applying 3 Chill layers to enemies in range.","Boneco entalhado pela Kikyou retratando Nagusa.
@@ -752,7 +752,7 @@ Releases 3 Chill layers every 0.5s
 +1 layer per stack","Acúmulo Máximo: 5
 +1 Limite máximo de Calafrio","Tối đa được 5 cái
 +1 giới hạn tầng Rét"
-nagusa_doll_negative, , , ,
+nagusa_doll_negative,,,,
 homing_bullet_name,先知核心,Prophet's Core,Núcleo do Profeta,Lõi Tiên Tri
 homing_bullet_description,记录了先知的信息的核心，引导子弹自动锁定目标。,"A core that records the Prophet's information, guiding bullets to automatically lock onto targets.",Núcleo cibernético contendo registros dos Profetas que guia os disparos a perseguirem os alvos automaticamente.,"Lõi ghi lại thông tin của Tiên Tri, dẫn đường cho đạn tự động khóa mục tiêu."
 homing_bullet_forward,"独特
@@ -760,7 +760,7 @@ homing_bullet_forward,"独特
 Bullet Tracking","Único
 Tiros teleguiados","Độc Nhất
 Đạn Truy Đuổi"
-homing_bullet_negative, , , ,
+homing_bullet_negative,,,,
 eggnog_name,蛋奶酒,Eggnog,Ponche de Ovo (Eggnog),Rượu Trứng
 eggnog_description,用牛奶、鸡蛋和砂糖做的暖饮，在寒冷的时候喝能暖身子。,"A warm drink made from milk, eggs, and sugar. Drinking it in the cold warms you up.","Bebida quentinha e aconchegante feita de leite, ovos e açúcar. Perfeita para afastar o frio do corpo!","Thức uống ấm làm từ sữa, trứng và đường, uống khi trời lạnh sẽ làm ấm cơ thể."
 eggnog_forward,"最大持有3个
@@ -768,7 +768,7 @@ eggnog_forward,"最大持有3个
 +100 Anomaly Duration","Acúmulo Máximo: 3
 +100 Duração das Anomalias","Tối đa được 3 cái
 +100 thời gian dị thường"
-eggnog_negative, , , ,
+eggnog_negative,,,,
 sugar_cube_name,极品方糖,Sugar Cube,Torrão de Açúcar de Primeira,Viên Đường Thượng Hạng
 sugar_cube_description,缓解红茶苦涩的甘甜方糖，对处于燃烧上限的敌人施加恶寒伤害时造成额外伤害，并清除燃烧与恶寒。,"A sweet sugar cube that eases the bitterness of black tea. Deals bonus damage when applying Chill damage to enemies at max Burn, and removes Burn and Chill.","Torrão açucarado para suavizar o amargor do chá preto. Ao aplicar dano de Calafrio em alvos no limite de Queimadura, causa dano maciço e purga ambos os efeitos.","Viên đường ngọt làm dịu vị đắng của trà đen, gây thêm ST khi áp dụng ST Rét lên kẻ địch đang đạt giới hạn thiêu đốt, đồng thời xóa thiêu đốt và Rét."
 sugar_cube_forward,"独特
@@ -776,7 +776,7 @@ sugar_cube_forward,"独特
 True damage equal to 10% of the target's max HP","Único
 Causa 10% da Vida Máxima do alvo como Dano Verdadeiro","Độc Nhất
 ST chân thực bằng 10% máu tối đa của mục tiêu"
-sugar_cube_negative, , , ,
+sugar_cube_negative,,,,
 renge_doll_name,莲华人偶,Renge Doll,Boneco de Madeira da Renge,Búp bê Renge
 renge_doll_description,桔梗做的莲华木雕人偶，以人偶为中心，每0.2秒在其位置留下一个火场，灼烧范围内的敌人，基础伤害15。,"A wooden Renge doll that Kikyou made. Centered on the doll, every 0.2s it leaves a fire field at its position, burning enemies in range. Base damage 15.","Boneco entalhado pela Kikyou retratando Renge.
 A cada 0.2s deixa uma labareda no chão queimando quem estiver na área.
@@ -786,7 +786,7 @@ renge_doll_forward,"最大持有5个
 +20 This Equipment's Base Damage","Acúmulo Máximo: 5
 +20 Dano Base deste equipamento","Tối đa được 5 cái
 +20 ST cơ bản của trang bị này"
-renge_doll_negative, , , ,
+renge_doll_negative,,,,
 yukari_doll_name,紫草人偶,Yukari Doll,Boneco de Madeira da Yukari,Búp bê Yukari
 yukari_doll_description,桔梗做的紫草木雕人偶，受到伤害产生一个脉冲波对所有敌人施加一次80策反值的策反伤害，冷却5秒。,A wooden Yukari doll that Kikyou made. Taking damage emits a pulse wave that applies one instance of Convert damage with 80 Convert value to all enemies. Cooldown 5s.,"Boneco entalhado pela Kikyou retratando Yukari.
 Ao sofrer dano, emite um pulso que aplica 80 de Submissão a todos os inimigos (recarga de 5s).","Búp bê gỗ Yukari do Kikyou làm, khi nhận ST sẽ phát ra một xung sóng áp dụng một lần ST Chuyển hóa 80 giá trị Chuyển hóa lên tất cả kẻ địch, hồi chiêu 5 giây."
@@ -795,7 +795,7 @@ yukari_doll_forward,"最大持有5个
 -1 Cooldown","Acúmulo Máximo: 5
 -1s Tempo de recarga","Tối đa được 5 cái
 -1 thời gian hồi"
-yukari_doll_negative, , , ,
+yukari_doll_negative,,,,
 samuela_the_beyond_name,莎缪艾菈,Samuela the Beyond,Perfume Samuela the Beyond,Samuela the Beyond
 samuela_the_beyond_description,高级化妆品厂商「莎缪艾菈」发售的最高级香水。,"The finest perfume released by the high-end cosmetics brand ""Samuela the Beyond"".",A fragrância mais nobre e sofisticada lançada pela luxuosa grife de cosméticos Samuela the Beyond.,"Nước hoa cao cấp nhất do hãng mỹ phẩm cao cấp ""Samuela the Beyond"" phát hành."
 samuela_the_beyond_forward,"最大持有3个
@@ -811,7 +811,7 @@ rapid_loader_forward,"独特
 Chance to perform a quick reload when firing","Único
 Disparar tem chance de acionar uma recarga instantânea","Độc Nhất
 Có xác suất thực hiện nạp đạn nhanh khi bắn"
-rapid_loader_negative, , , ,
+rapid_loader_negative,,,,
 mysterious_cables_name,神秘线缆,Mysterious Cables,Cabos Misteriosos,Dây Cáp Bí Ẩn
 mysterious_cables_description,聚集电子设备便会无限增殖的线缆，每命中同一目标8次使其叠加1层感电。,Cables that multiply endlessly around electronic devices. Every 8 hits on the same target adds 1 Shock layer.,"Cabos que se multiplicam sem parar perto de aparelhos eletrônicos. A cada 8 acertos no mesmo alvo, aplica 1 camada de Eletricidade.",Loại dây cáp sinh sôi không ngừng khi ở gần thiết bị điện tử. Mỗi 8 lần trúng cùng một mục tiêu sẽ cộng 1 tầng Nhiễm Điện.
 mysterious_cables_forward,"最大持有3个
@@ -819,7 +819,7 @@ mysterious_cables_forward,"最大持有3个
 Reduces the hits needed by 1","Acúmulo Máximo: 3
 Reduz em 1 os acertos necessários","Tối đa 3 cái
 Giảm 1 lần trúng cần thiết"
-mysterious_cables_negative,, , ,
+mysterious_cables_negative,,,,
 weird_wire_name,贵重电缆,Weird Wire,Cabo Valioso,Dây Cáp Quý Giá
 weird_wire_description,只有在千年废墟才能看到的的贵重电缆。,A precious cable found only in the Millennium Ruins.,Um cabo valioso encontrado apenas nas Ruínas da Millennium.,Một cuộn cáp quý chỉ tìm thấy ở Phế Tích Millennium.
 weird_wire_forward,"独特
@@ -827,7 +827,7 @@ weird_wire_forward,"独特
 When a Shocked enemy dies, its Shock layers spread to 2 nearby enemies","Único
 Quando um inimigo com Eletricidade morre, as camadas dele se espalham para 2 inimigos próximos","Độc Nhất
 Khi kẻ địch bị Nhiễm Điện chết, các tầng của nó lan sang 2 kẻ địch gần đây"
-weird_wire_negative, , , ,
+weird_wire_negative,,,,
 overload_chip_name,过载芯片,Overload Chip,Chip de Sobrecarga,Chip Quá Tải
 overload_chip_description,超负荷运载的芯片，自身常驻感电每层感电+4%全局伤害。,An overclocked chip that leaves you permanently Shocked. Each Shock layer grants +4% Global Damage.,Um chip sobrecarregado que mantém você permanentemente com Eletricidade. Cada camada concede +4% de Dano Global.,Một con chip quá tải khiến bản thân luôn bị Nhiễm Điện. Mỗi tầng Nhiễm Điện cộng +4% Sát Thương Toàn Cục.
 overload_chip_forward,"最大持有3个
@@ -839,7 +839,7 @@ overload_chip_negative,身边有感电目标时，你会被闪电链接入,You j
 ggc_replica_name,GGC复刻版,GGC Replica,Réplica GGC,Bản Sao GGC
 ggc_replica_description,曾经风靡一世的游戏机，「Game Girl Color」的复刻版！,"A replica of the Game Girl Color, the handheld console that once took the world by storm!","Uma réplica do Game Girl Color, o portátil que um dia conquistou o mundo!","Bản sao của Game Girl Color, chiếc máy chơi game từng làm mưa làm gió một thời!"
 ggc_replica_forward,+2感电上限,+2 max Shock layers,+2 de camadas máximas de Eletricidade,+2 giới hạn tầng Nhiễm Điện
-ggc_replica_negative, , , ,
+ggc_replica_negative,,,,
 arc_lighter_name,电弧打火机,Arc Lighter,Isqueiro a Arco,Bật Lửa Hồ Quang
 arc_lighter_description,露营必备工具，防风性能很好，也不用担心会咬炸。,A camping essential with excellent wind resistance — and no need to worry about it exploding.,"Item essencial para acampar, com ótima resistência ao vento — e sem preocupação de explodir.","Vật dụng cần thiết khi cắm trại, chống gió rất tốt và không phải lo nó phát nổ."
 arc_lighter_forward,"独特
@@ -847,7 +847,7 @@ arc_lighter_forward,"独特
 Applying Shock damage to a burning enemy instantly maxes out Burn stacks.","Único
 Aplicar dano de Eletricidade a um inimigo em chamas enche instantaneamente as camadas de Queimadura.","Độc Nhất
 Áp dụng ST Nhiễm Điện lên kẻ địch đang thiêu đốt sẽ lập tức đạt giới hạn tầng thiêu đốt."
-arc_lighter_negative, , , ,
+arc_lighter_negative,,,,
 cucumber_toothpaste_name,黄瓜味牙膏,Cucumber Toothpaste,Pasta de Dente de Pepino,Kem Đánh Răng Vị Dưa Chuột
 cucumber_toothpaste_description,特点是有着黄瓜的清爽气味，但由于过于独特而导致好恶两极分化，击倒中毒敌人后会生成一滩毒池。,Known for its refreshing cucumber scent — so distinctive that people either love it or hate it. Defeating a poisoned enemy leaves a pool of poison behind.,Conhecida pelo aroma refrescante de pepino — tão peculiar que divide opiniões. Derrotar um inimigo envenenado deixa uma poça de veneno.,Nổi bật với mùi dưa chuột thanh mát — quá đặc biệt nên chia thành hai phe yêu/ghét. Hạ gục kẻ địch trúng độc sẽ để lại một vũng độc.
 cucumber_toothpaste_forward,"最大持有3个
@@ -855,7 +855,7 @@ cucumber_toothpaste_forward,"最大持有3个
 Increases the poison pool's damage ratio","Acúmulo Máximo: 3
 Aumenta a proporção de dano da poça de veneno","Tối đa 3 cái
 Tăng tỷ lệ sát thương của vũng độc"
-cucumber_toothpaste_negative, , , ,
+cucumber_toothpaste_negative,,,,
 colgante_piece_name,圆盘碎片,Colgante Piece,Colgante Piece,Colgante Piece
 colgante_piece_description, 科尔甘特圆盘坠饰的损坏碎片，近战伤害命中恶寒敌人可造成飞散的冰晶。,A broken fragment of a Colgante disc pendant. Melee hits on Chilled enemies scatter ice crystals.,Um fragmento quebrado do pingente de disco Colgante. Acertos corpo a corpo em inimigos com Calafrio espalham cristais de gelo.,Mảnh vỡ của mặt dây chuyền đĩa Colgante. Đánh cận chiến lên kẻ địch bị Rét sẽ làm bắn tung các tinh thể băng.
 colgante_piece_forward,"最大持有3个
@@ -863,7 +863,7 @@ colgante_piece_forward,"最大持有3个
 +1 Ice Crystal count","Acúmulo Máximo: 3
 +1 quantidade de Cristais de Gelo","Tối đa 3 cái
 +1 số lượng Tinh Thể Băng"
-colgante_piece_negative, , , ,
+colgante_piece_negative,,,,
 modification_part_name,改造零件,Modification Part,Peça de Modificação,Linh Kiện Cải Tạo
 modification_part_description,格黑娜杯公认的改造零件。根本不知道什么算被禁止的，总之就是要得到批准，召唤物造成伤害可施加1层感电。,"A modification part recognized by the Gehenna Cup. Nobody knows what counts as prohibited, but it needs approval anyway. Summoned damage applies 1 Shock layer.","Uma peça de modificação reconhecida pela Copa Gehenna. Ninguém sabe o que conta como proibido, mas precisa de aprovação de qualquer forma. Dano das invocações aplica 1 camada de Eletricidade.","Một linh kiện cải tạo được Cúp Gehenna công nhận. Không ai rõ thế nào là bị cấm, nhưng dù sao vẫn cần phê duyệt. Sát thương triệu hồi cộng 1 tầng Nhiễm Điện."
 modification_part_forward,"最大持有3个
@@ -871,7 +871,7 @@ modification_part_forward,"最大持有3个
 Reduces Shock application cooldown","Acúmulo Máximo: 3
 Reduz o tempo de recarga da aplicação de Eletricidade","Tối đa 3 cái
 Giảm thời gian hồi khi áp dụng Nhiễm Điện"
-modification_part_negative, , , ,
+modification_part_negative,,,,
 stun_grenades_name,震撼弹,Stun Grenade,Granada de Atordoamento,Lựu Đạn Choáng
 stun_grenades_description,填装强光与高频电击的投掷物，敌人被感电的同时会短暂僵直。,A thrown device packed with blinding light and high-frequency shocks. Enemies are briefly paralyzed when shocked.,Um artefato arremessável com luz ofuscante e choques de alta frequência. Inimigos ficam brevemente paralisados ao serem eletrocutados.,Thiết bị ném chứa ánh sáng chói lòa và xung điện tần số cao. Kẻ địch bị tê liệt trong chốc lát khi bị nhiễm điện.
 stun_grenades_forward,"独特
@@ -879,7 +879,7 @@ stun_grenades_forward,"独特
 Stuns for 0.5s when Shock is applied","Único
 Atordoa por 0,5s ao aplicar Eletricidade","Độc Nhất
 Gây choáng 0,5 giây khi áp dụng Nhiễm Điện"
-stun_grenades_negative, ,,,
+stun_grenades_negative,,,,
 lace_pillow_name,蕾丝枕头,Lace Pillow,Travesseiro de Renda,Gối Ren
 lace_pillow_description,使用豪华原料制成的蕾丝枕头，子弹对满血的敌人造成200%伤害，使其快速入眠。,"A lace pillow made with luxurious materials. Bullets deal 200% damage to enemies at full HP, quickly lulling them to sleep.","Um travesseiro de renda feito com materiais luxuosos. As balas causam 200% de dano a inimigos com vida cheia, fazendo-os adormecer rapidamente.","Một chiếc gối ren làm từ nguyên liệu cao cấp. Đạn gây 200% sát thương lên kẻ địch còn đầy máu, khiến chúng nhanh chóng chìm vào giấc ngủ."
 lace_pillow_forward,"最大持有3个
@@ -887,4 +887,48 @@ lace_pillow_forward,"最大持有3个
 +100% Bonus Damage","Acúmulo Máximo: 3
 +100% Dano Adicional","Tối đa 3 cái
 +100% Sát Thương Cộng Thêm"
-lace_pillow_negative, ,,,
+lace_pillow_negative,,,,
+lucky_egg_name,幸运彩蛋,Lucky Egg,Ovo da Sorte,Trứng May Mắn
+lucky_egg_description,绘着幸运纹样的彩蛋，每次暴击都会让支援技能的能量悄悄增加。,An egg painted with lucky patterns. Every critical hit quietly adds energy to your support skill.,Um ovo pintado com padrões da sorte. Cada acerto crítico adiciona silenciosamente energia à habilidade de apoio.,Một quả trứng vẽ họa tiết may mắn. Mỗi đòn chí mạng lặng lẽ tiếp thêm năng lượng cho kỹ năng hỗ trợ.
+lucky_egg_forward,"最大持有 3 个
+暴击回复 5%/10%/15% 充能（0.5s 冷却）","Max Stack: 3
+Crit restores 5%/10%/15% charge (0.5s cooldown)","Máximo: 3
+Crítico restaura 5%/10%/15% de carga (recarga de 0.5s)","Tối đa 3 cái
+Chí mạng hồi 5%/10%/15% năng lượng (hồi 0.5s)"
+lucky_egg_negative,,,,
+air_box_charger_name,支援充电盒,Support Charging Case,Caixa de Carga de Apoio,Hộp Sạc Hỗ Trợ
+air_box_charger_description,与支援终端同频的充电盒，能量会随着时间自己慢慢涨回来。,A charging case synced with the support terminal; its energy slowly recovers over time.,Uma caixa de carga sincronizada com o terminal de apoio; a energia se recupera lentamente com o tempo.,Một hộp sạc đồng bộ với thiết bị hỗ trợ; năng lượng tự hồi dần theo thời gian.
+air_box_charger_forward,"最大持有 3 个
+每秒回复 5%/10%/15% 充能","Max Stack: 3
+Restore 5%/10%/15% charge per second","Máximo: 3
+Recupera 5%/10%/15% de carga por segundo","Tối đa 3 cái
+Hồi 5%/10%/15% năng lượng mỗi giây"
+air_box_charger_negative,,,,
+spreading_bamboo_name,蔓延竹笋,Spreading Bamboo Shoot,Broto de Bambu Espalhado,Măng Tre Lan Tỏa
+spreading_bamboo_description,一节会自己蔓延的竹笋，让 KEI 的光环与 AYANE 的轰炸都铺得更开。,"A bamboo shoot that spreads on its own, widening both KEI's aura and AYANE's barrage.","Um broto de bambu que se espalha sozinho, ampliando a aura da KEI e o bombardeio da AYANE.","Một măng tre tự lan tỏa, mở rộng hào quang của KEI và phạm vi oanh tạc của AYANE."
+spreading_bamboo_forward,"最大持有 3 个
+KEI 的 EX 光环范围 +30%/40%/50%
+AYANE 的 EX 单发爆炸范围 +30%/40%/50%","Max Stack: 3
+KEI EX aura range +30%/40%/50%
+AYANE EX blast radius +30%/40%/50%","Máximo: 3
+Alcance da aura EX da KEI +30%/40%/50%
+Raio de explosão EX da AYANE +30%/40%/50%","Tối đa 3 cái
+Phạm vi hào quang EX của KEI +30%/40%/50%
+Bán kính nổ EX của AYANE +30%/40%/50%"
+spreading_bamboo_negative,,,,
+cheering_teddy_name,应援玩偶,Cheering Doll,Boneco de Torcida,Búp Bê Cổ Vũ
+cheering_teddy_description,缝着支援徽章的应援玩偶，握着它支援技能会更有干劲。,A cheering doll stitched with a support badge; holding it makes support skills hit harder.,Um boneco de torcida com um emblema de apoio costurado; segurá-lo fortalece as habilidades de apoio.,Một búp bê cổ vũ có thêu huy hiệu hỗ trợ; cầm nó sẽ khiến kỹ năng hỗ trợ mạnh hơn.
+cheering_teddy_forward,"最大持有 3 个
+支援 EX 技能倍率 +30%/40%/50%","Max Stack: 3
+Support EX power +30%/40%/50%","Máximo: 3
+Potência de habilidade EX de apoio +30%/40%/50%","Tối đa 3 cái
+Hệ số kỹ năng EX hỗ trợ +30%/40%/50%"
+cheering_teddy_negative,,,,
+return_handkerchief_name,回礼手帕,Return Gift Handkerchief,Lenço de Retribuição,Khăn Tay Đáp Lễ
+return_handkerchief_description,印着回礼花纹的手帕，支援技能结束后会退回一部分能量。,A handkerchief with a return-gift pattern; part of the energy comes back after your support skill ends.,Um lenço com estampa de retribuição; parte da energia retorna após o fim da habilidade de apoio.,Một chiếc khăn tay in họa tiết đáp lễ; một phần năng lượng được hoàn lại sau khi kỹ năng hỗ trợ kết thúc.
+return_handkerchief_forward,"最大持有 3 个
+EX 结束后返还 30%/40%/50% 充能","Max Stack: 3
+Refund 30%/40%/50% charge after EX ends","Máximo: 3
+Devolve 30%/40%/50% de carga após o fim da EX","Tối đa 3 cái
+Hoàn lại 30%/40%/50% năng lượng sau khi kết thúc EX"
+return_handkerchief_negative,,,,

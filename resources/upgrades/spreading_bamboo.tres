@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://sprites/update_item/black_bamboo_shoot.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = "spreading_bamboo"
+icon = ExtResource("1_icon")
+name = "蔓延竹笋"
+rare = 1
+order_num = 3
+special_rules = 0
+description = "一节会自己蔓延的竹笋，让 KEI 的光环与 AYANE 的轰炸都铺得更开。"
+forward = "最大持有 3 个
+KEI 的 EX 光环范围 +30%/40%/50%
+AYANE 的 EX 单发爆炸范围 +30%/40%/50%"
+negative = ""
+item_tags = 0
+tags = Array[String](["支援"])
+weight = 1.0
+support_gate = 2
+support_ids = Array[String](["kei", "ayane"])

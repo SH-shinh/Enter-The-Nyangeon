@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://sprites/update_item/antique_egg_handicraft.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/upgrades/ability_upgrade.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = "lucky_egg"
+icon = ExtResource("1_icon")
+name = "幸运彩蛋"
+rare = 1
+order_num = 3
+special_rules = 0
+description = "绘着幸运纹样的彩蛋，每次暴击都会让支援技能的能量悄悄增加。"
+forward = "最大持有 3 个
+暴击回复 5%/10%/15% 充能（0.5s 冷却）"
+negative = ""
+item_tags = 0
+tags = Array[String](["支援"])
+weight = 1.0
+support_gate = 1

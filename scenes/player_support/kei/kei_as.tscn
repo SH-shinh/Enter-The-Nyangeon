@@ -158,6 +158,7 @@ offset_left = -100.0
 offset_top = -111.0
 offset_right = 100.0
 offset_bottom = 89.0
+pivot_offset = Vector2(100, 100)
 mouse_filter = 2
 color = Color(6, 0.6, 0.8, 1)
 

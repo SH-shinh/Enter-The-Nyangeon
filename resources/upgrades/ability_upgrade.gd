@@ -46,8 +46,30 @@ enum ItemType {
 ## 默认按 DEFENSE 标签统一门控；混搭道具若要豁免，在对应 .tres 里置 false。
 @export var defense_weight_gated: bool = true
 
+## 入池门控（支援 EX 类道具）：与防御门控不同，这是「资格」而不是权重乘区——
+## UpgradeManager 在算权重前直接过滤，不满足时道具根本不会进入候选/池。
+enum SupportGate {
+	NONE = 0,      # 不限制（默认，旧资源/旧 Mod 行为不变）
+	ANY = 1,       # 本局有出战支援（任意角色）才入池
+	SPECIFIC = 2,  # 本局出战支援在 support_ids 中才入池
+}
+@export_enum("不限制", "任意支援", "指定支援") var support_gate: int = SupportGate.NONE
+## SPECIFIC 时生效；空列表视为永不入池（UpgradeManager 启动时告警）。
+@export var support_ids: Array[String] = []
+
 func has_tag(tag: ItemType) -> bool:
 	return (item_tags & tag) != 0
+
+## 本局出战支援 id 是否满足入池条件；"null"/"" 表示没有可用支援（fail-closed）。
+func support_gate_ok(support_id: String) -> bool:
+	var active := support_id != "" and support_id != "null"
+	match support_gate:
+		SupportGate.ANY:
+			return active
+		SupportGate.SPECIFIC:
+			return active and support_ids.has(support_id)
+		_:
+			return true
 
 func get_tag_list() -> Array:
 	var tag_list = []

@@ -6,7 +6,6 @@ extends Node2D
 ## 子类覆写 _on_ready() / _on_skill_active() / _on_skill_end() 实现具体表现。
 
 var as_is_active: bool = false
-var emit_ready: bool = false
 
 func _ready() -> void:
 	GameEvents.round_upgrade.connect(skill_end)
@@ -35,11 +34,7 @@ func _on_score_owned(_score: int, owner_peer: int) -> void:
 func cost_count(_score: int) -> void:
 	if SupportData.ex_cost <= 0:
 		return
-	if SupportData.now_cost < SupportData.ex_cost:
-		SupportData.now_cost += 1
-	elif not emit_ready:
-		emit_ready = true
-		GameEvents.emit_support_ex_ready()
+	SupportData.add_ex_charge(SupportData.get_ex_charge_gain())
 
 func _unhandled_input(event: InputEvent) -> void:
 	if SupportData.ex_cost > 0 and event.is_action_pressed("EX_skill") \
@@ -59,7 +54,7 @@ func skill_end() -> void:
 	if not as_is_active:
 		return
 	as_is_active = false
-	emit_ready = false
+	SupportData.reset_ex_charge_fraction()
 	SupportData.now_cost = 0
 	_on_skill_end()
 	GameEvents.emit_support_ex_end()

@@ -10,10 +10,11 @@ extends BuffAura
 
 
 func aura_value_for(body: Node) -> Array:
+	var power: float = SupportData.get_ex_power_mult()
 	if body != null and body.is_in_group("Summoned"):
-		return [buff_layer_2, buff_value_2, buff_erase_timer_2]
-	return [buff_layer, buff_value, buff_erase_timer]
+		return [buff_layer_2, buff_value_2 * power, buff_erase_timer_2]
+	return [buff_layer, buff_value * power, buff_erase_timer]
 
 
 func network_aura_value() -> Array:
-	return [buff_layer_2, buff_value_2, buff_erase_timer_2]
+	return [buff_layer_2, buff_value_2 * SupportData.get_ex_power_mult(), buff_erase_timer_2]

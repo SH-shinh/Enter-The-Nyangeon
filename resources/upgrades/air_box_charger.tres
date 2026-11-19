@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" format=3 uid="uid://pr7yhwgik5bh"]
+
+[ext_resource type="Texture2D" uid="uid://cxl7srpjcvslp" path="res://sprites/update_item/airboox_rare.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://cvlwfck2jbhvs" path="res://resources/upgrades/ability_upgrade.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = "air_box_charger"
+icon = ExtResource("1_icon")
+name = "支援充电盒"
+order_num = 3
+description = "与支援终端同频的充电盒，能量会随着时间自己慢慢涨回来。"
+forward = "最大持有 3 个
+每秒回复 5%/10%/15% 充能"
+tags = Array[String](["支援"])
+support_gate = 1

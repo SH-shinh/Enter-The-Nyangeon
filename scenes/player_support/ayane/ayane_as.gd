@@ -2,8 +2,16 @@ extends SupportAS
 
 signal explosion_end
 
+# 轰炸发数基础值/上限：EX 持续时间倍率按此缩放序列长度。
+const BASE_EXPLOSION_COUNT: int = 50
+const MAX_EXPLOSION_COUNT: int = 200
+# 落点覆盖椭圆半径（相对地图中心）。固定设计值：不接倍率、不受玩家数值影响。
+const BASE_COVERAGE: Vector2 = Vector2(888, 440)
+
 @export var explosion_pack: PackedScene
 @export var explosion_damage: int = 500
+## 单发爆炸半径基础值（explosion_range 单位，1 单位 = 10px 碰撞半径）。只受支援 EX 范围倍率影响。
+@export var blast_range_base: float = 7.0
 
 @onready var timer: Timer = $Timer
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
@@ -32,10 +40,10 @@ func explosion_to_map():
 	player = PlayerRef.ensure(self, player)
 	
 	var center = Vector2(704, 448)
-	var rx = 888  # 从中心到右顶点距离
-	var ry = 440  # 从中心到上/下顶点距离
+	var rx := int(BASE_COVERAGE.x)  # 从中心到右顶点距离（固定，不接倍率）
+	var ry := int(BASE_COVERAGE.y)  # 从中心到上/下顶点距离（固定，不接倍率）
 
-	var explosion_points = generate_explosion_positions(50, rx, ry, center, 2.0)
+	var explosion_points = generate_explosion_positions(_explosion_count(), rx, ry, center, 2.0)
 	
 	for i in explosion_points.size():
 		add_explosion(explosion_points[i])
@@ -45,6 +53,14 @@ func explosion_to_map():
 			timer.start()
 			await timer.timeout
 	explosion_end.emit()
+
+## 本次轰炸发数：持续时间倍率只缩放序列长度（duration_add 对序列型 EX 不适用）。
+func _explosion_count() -> int:
+	return clampi(int(round(float(BASE_EXPLOSION_COUNT) * SupportData.get_ex_duration_mult())), 1, MAX_EXPLOSION_COUNT)
+
+## 单发爆炸半径：支援范围倍率 × 支援基础值，与玩家 stats.explosion_range 解耦。
+func _blast_range() -> float:
+	return maxf(0.1, blast_range_base * SupportData.get_ex_range_mult())
 
 func add_explosion(point: Vector2):
 	ProjectileSpawner.spawn_core(
@@ -68,13 +84,14 @@ func _configure_explosion(node: Node) -> void:
 		"node": self,
 	})
 	var luck = randf_range(0, 100)
+	var base_damage: float = float(explosion_damage) * SupportData.get_ex_power_mult()
 	if luck < p.stats.critical_luck:
-		node.damage_data.base_damage = max(1, (explosion_damage + p.stats.bullet_damage * 0.6) * p.stats.global_damage * p.stats.critical_damage * p.stats.equip_damage)
+		node.damage_data.base_damage = max(1, (base_damage + p.stats.bullet_damage * 0.6) * p.stats.global_damage * p.stats.critical_damage * p.stats.equip_damage)
 		node.damage_data.is_crit = true
 	else:
-		node.damage_data.base_damage = max(1, (explosion_damage + p.stats.bullet_damage * 0.6) * p.stats.global_damage * p.stats.equip_damage)
+		node.damage_data.base_damage = max(1, (base_damage + p.stats.bullet_damage * 0.6) * p.stats.global_damage * p.stats.equip_damage)
 		node.damage_data.is_crit = false
-	node.explosion_range = 7 * max(1, p.stats.explosion_range * 0.3)
+	node.explosion_range = _blast_range()
 
 func _pre_activate_explosion(node: Node) -> void:
 	node.damage_data.hit_box_center = node.global_position

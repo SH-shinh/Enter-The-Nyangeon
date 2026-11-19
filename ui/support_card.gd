@@ -26,7 +26,8 @@ func get_card():
 		weapon_name.text = support_card.weapon_name
 
 func update_bar():
-	cost_bar.value = float(SupportData.now_cost) / float(SupportData.ex_cost)
+	# 有效 EX 费用可能被道具降低；0 费（无支援）时避免除零。
+	cost_bar.value = float(SupportData.now_cost) / maxf(1.0, float(SupportData.ex_cost))
 
 func hurt_anim(_hurt_hp: int):
 	face_anim(0)

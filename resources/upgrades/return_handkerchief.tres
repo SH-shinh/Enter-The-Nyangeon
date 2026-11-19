@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" format=3 uid="uid://bqh8yl45c4gsk"]
+
+[ext_resource type="Texture2D" uid="uid://dhg7ctq8il31h" path="res://sprites/update_item/embroidered_handkerchief.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://cvlwfck2jbhvs" path="res://resources/upgrades/ability_upgrade.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = "return_handkerchief"
+icon = ExtResource("1_icon")
+name = "回礼手帕"
+rare = 2
+order_num = 3
+description = "印着回礼花纹的手帕，支援技能结束后会退回一部分能量。"
+forward = "最大持有 3 个
+EX 结束后返还 30%/40%/50% 充能"
+tags = Array[String](["支援"])
+support_gate = 1

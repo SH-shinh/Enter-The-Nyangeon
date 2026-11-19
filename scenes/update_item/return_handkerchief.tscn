@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/update_item/return_handkerchief.gd" id="1_script"]
+
+[node name="ReturnHandkerchief" type="Node2D"]
+script = ExtResource("1_script")
