@@ -141,7 +141,8 @@ func _tooltip_content() -> Array:
 		return []
 	return [
 		{"text": up_c.id + "_name", "role": "title"},
-		{"text": up_c.id + "_description"},
-		{"text": up_c.id + "_forward", "role": "positive"},
-		{"text": up_c.id + "_negative", "role": "negative"},
+		# 描述/正效果/负效果允许有意留空：optional 段无译文时整段跳过，不显示键名。
+		{"text": up_c.id + "_description", "optional": true},
+		{"text": up_c.id + "_forward", "role": "positive", "optional": true},
+		{"text": up_c.id + "_negative", "role": "negative", "optional": true},
 	]

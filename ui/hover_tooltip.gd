@@ -243,7 +243,14 @@ func _layout(segments: Array, width: float, max_height: float) -> void:
 	for segment in segments:
 		var text := String(segment.get("text", ""))
 		if not segment.get("translated", false):
-			text = tr(text)
+			if segment.get("optional", false):
+				# 允许有意留空的字段（道具的 _description/_forward/_negative 等）：
+				# 空译文会回退成键名，必须整段跳过，否则浮层直接显示 lucky_egg_negative。
+				text = LocaleText.resolve(text)
+				if text.is_empty():
+					continue
+			else:
+				text = tr(text)
 		if text.strip_edges().is_empty():
 			continue
 		if used.size() >= MAX_SEGMENTS:

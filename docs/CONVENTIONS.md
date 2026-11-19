@@ -18,7 +18,7 @@
 ### 2.1 CSV 格式
 - 逗号分隔，**首行为表头**，**第 0 列是键（表头为空）**，其余列为语言代码，固定顺序：
   `,zh_CN,en,pt,vi_VN`，**5 个文件（含 `ETN_item_localization.csv`）表头一致**。
-- 空值语义：`label_negative` 等整行 ` , , , `（各值字段为单个空格）或 `,,,` = 有意留空（无该行文本），非缺译。
+- 空值语义：值字段**留空**（`<key>,,,,`）= 有意留空（无该行文本），非缺译。⚠️ Godot 不会把空值当空文本：`.translation` 里存的是空 message，`TranslationServer.translate()` 会跳过它**回退成键名**（`tr(key) == key`），所以展示层必须过滤 —— 浮层段落标 `"optional": true`、Label 走 `LocaleText.resolve()`（`script/locale_text.gd`），否则玩家直接看到 `lucky_egg_negative`。旧的「单空格占位」（` , , , `）2026-11-19 已全部清理为真留空（`ETN_item_localization.csv` 331 处 + `ETN_localization.csv` 8 处），代码仍兼容，但新条目不要再写空格。
 - ⚠️ 已知数据坑：`ETN_localization.csv` 的 `vi_VN` 列曾整体错位（键对不上译值），已于 2026-09-27 按 `zh_CN` 重译修正；如再出现键值不匹配优先怀疑此列。
 - 键命名模式：`option_*`/`controls_*`（全局）、`<item>_name|_description|_forward|_negative`（道具/升级）、`<char>_ps_0.._ps_3`（玩家 PS）、`<char>_ps|_ex`（支援）、`arona_head_N|_work_*|plana_*`（商店对白）、`shop_purchase`。
 
@@ -112,11 +112,11 @@ layer N = bit `1<<(N-1)`：
 ### 5.1 Hover tooltips / 悬浮提示浮层
 
 - 信息型悬停说明只有一套实现：宿主 `ui/hover_tooltip.tscn`（脚本 `ui/hover_tooltip.gd`）+ 目标绑定 `ui/hover_tooltip_binding.gd`（`class_name HoverTooltipBinding`）。卡片不再自建 `Node2D/Text` 提示树，旧式 `%ItemText*` 结构已全部删除。
-- 绑定统一走 `HoverTooltipBinding.bind(control, provider, available, on_preview_closed?)`。`provider` 返回段落数组，每段 `{text, role?, translated?}`；`role` 取 `title`/`section`/`body`/`positive`/`negative`/`muted`（缺省 `body`），`available` 留空表示总是可用。业务操作仍归卡片，浮层只读。
+- 绑定统一走 `HoverTooltipBinding.bind(control, provider, available, on_preview_closed?)`。`provider` 返回段落数组，每段 `{text, role?, translated?, optional?}`；`role` 取 `title`/`section`/`body`/`positive`/`negative`/`muted`（缺省 `body`），`available` 留空表示总是可用。`optional: true` 表示该段允许有意留空：键无译文（含 CSV 留空回退成键名）或只有空白时整段跳过，不显示键名；只有"传本地化键"的段落才能标，硬编码字面量（`PS`、`EX 费用`）不要标。业务操作仍归卡片，浮层只读。
 - 宿主按「最近的 CanvasLayer」复用（`_hover_tooltip_host` 弱引用 meta），同层多个目标共用一个宿主；全视口只允许一个可见浮层，跨 CanvasLayer 由 `ui/hover_tooltip.gd:27` 的 `_viewports` 静态弱引用协调，最后 `_display` 的宿主胜出并清掉其它层。
 - 交互：鼠标悬停 0.2 s 后显示；已显示时换目标不再等待；位置用 `InputEventMouseMotion.position` 缓存并当帧更新。键盘/手柄焦点经 `focus_entered` 立即显示，锚在目标右侧。触屏分两种语义：可确认的卡片（测试房角色/道具/敌人、商店卡）首点预览、二次点按执行、拖动即收起，`bind()` 的 `on_preview_closed` 回调回写卡片确认态；单次操作的卡片（模式卡、局内升级卡）点按只预览，不进入确认态。商店卡没有焦点，摇杆/键盘导航由 `preview_from_navigation()` 直接预览，切页签时 `ability_shop.gd:_clear_preview()` 统一收起。宿主 `process_mode=3`，暂停期间仍可显示。触屏确认态的「按下归属区」默认等于目标控件矩形（`HoverTooltipBinding.visible_rect()`）：目标只盖住卡片局部时（如能力商店装备卡只把成本条当目标），第二次点按落在同卡图标上会被宿主当成「点别处」而清掉确认态，卡片就永远确认不了；需要整卡确认的卡片用 `HoverTooltipBinding.press_bounds`（返回画布坐标 `Rect2`）扩到整卡，宿主按 `owns_press()` 判定，`ui/ability_shop_card_base.gd` 已按卡面 `Node2D/ColorRect3` 接入。
 - 视觉：0.6 倍像素字，`title` 20 / `section` 与正文 18；行距按层级收紧——`title` 3、其余 4，同层段间距 4（同级内容连成一块），`title` 后 10、`section` 前额外 8（`SECTION_LEADING`）后 4；内边距 12；面板宽按最长行自适应（下限 140、上限 350），短提示不留空盒；标题用暖金 `#FFEFC2`，`section` 用暗金 `#C9A86A`（弱于标题、强于白正文），正文白、正/负效果沿用卡片绿 `#B0ED47` / 红 `#E4384C`、未解锁用 `muted` 灰；底板为 `ui.png` 的 1px 白框 + α=0.8235 黑填充，再垫 α=0.72 的黑色 `Back`，合成约 95% 不透明（垫层直接设 0.95 会变 99%）；黑描边 2、阴影偏移 1（不透明黑底上不糊字）；`ui.png` 像素边框 expand 5；`top_level` + `z_index=4095`，缩放按 `get_canvas_transform().get_scale()` 反算，不继承业务卡片的动画缩放。
-- 文案默认传本地化键，交给 Label 自动翻译（`LocaleFont` 据此识别本地化文本）；已 `tr()` 过的段落传 `translated: true`。首段惯例用 `role: "title"` 显示名称：测试房角色卡为「`player_card.name` + PS0 说明」（名称循 HUD 口径直接用 `player_card.name`，可能是翻译键），测试房支援卡为「`support_name` + PS + EX」（池内未必拥有，不显示存档等级）；小节标题（`PS`、`EX 费用`）用 `section`。超长内容按可用像素高度截断并补省略号，段数上限 16，不缩字号。测量前先 `LocaleFont.apply_control(label)`（`script/locale_font.gd:99`），否则切换语言后首帧尺寸错误。被动百分比统一走 `SupportData.percent_text()`（整数百分比，与支援商店一致）。
+- 文案默认传本地化键，交给 Label 自动翻译（`LocaleFont` 据此识别本地化文本）；已 `tr()` 过的段落传 `translated: true`。首段惯例用 `role: "title"` 显示名称：测试房角色卡为「`player_card.name` + PS0 说明」（名称循 HUD 口径直接用 `player_card.name`，可能是翻译键），测试房支援卡为「`support_name` + PS + EX」（池内未必拥有，不显示存档等级）；小节标题（`PS`、`EX 费用`）用 `section`。超长内容按可用像素高度截断并补省略号，段数上限 16，不缩字号。测量前先 `LocaleFont.apply_control(label)`（`script/locale_font.gd:99`），否则切换语言后首帧尺寸错误。被动百分比统一走 `SupportData.percent_text()`（整数百分比，与支援商店一致）。可能有意留空的字段（`_description` / `_forward` / `_negative`）必须传 `optional: true`；`_name` / `_id` / `_ps` / `_ex` 保持必填，缺译仍显示键名，作为数据缺失信号（`_ps` 另有「回退到资源自身 `description`」的既有逻辑，见 `ui/player_card.gd:167-170`）。
 - 不扩展到：设置页导航页签（用户要求保持无 tooltip，长标题直接裁切）、MOD 管理页（已改为右侧常驻详情）。
 
 ## 6. Rendering & misc / 渲染与杂项

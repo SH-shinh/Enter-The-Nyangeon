@@ -16,7 +16,8 @@ func touch_show(event: InputEvent) -> void:
 func _tooltip_content() -> Array:
 	return [
 		{"text": card_id + "_id", "role": "title"},
-		{"text": card_id + "_description"},
+		# 说明允许有意留空：optional 段无译文时整段跳过，不显示键名。
+		{"text": card_id + "_description", "optional": true},
 	]
 
 func set_gamemode_card(card: GameMode) -> void:

@@ -187,4 +187,4 @@ func gamemode_selected(event: InputEvent):
 func _tooltip_content() -> Array:
 	if gamemode_card == null:
 		return []
-	return [{"text": str(gamemode_card.game_mode_name) + "_id", "role": "title"}, {"text": str(gamemode_card.game_mode_name) + "_description"}]
+	return [{"text": str(gamemode_card.game_mode_name) + "_id", "role": "title"}, {"text": str(gamemode_card.game_mode_name) + "_description", "optional": true}]

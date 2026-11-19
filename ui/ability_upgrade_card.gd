@@ -27,6 +27,9 @@ var color_group: Array = AbilityUpgrade.RARITY_COLORS
 @onready var negative = $ContentScroll/VBoxContainer/Negative
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
 
+## 允许有意留空的 Label → 本地化键；语言切换时必须重算可见性。
+var _optional_labels: Dictionary = {}
+
 func _ready():
 	gui_input.connect(on_gui_input)
 	mouse_entered.connect(on_mouse_entered)
@@ -74,9 +77,25 @@ func set_ability_upgrade(upgrade:AbilityUpgrade):
 		SSR.visible = true
 	texture_rect.texture = upgrade.icon
 	name_label.text = upgrade.id + "_name"
-	description_label.text = upgrade.id + "_description"
-	forward.text = upgrade.id + "_forward"
-	negative.text = upgrade.id+ "_negative"
+	_set_optional_label(description_label, upgrade.id + "_description")
+	_set_optional_label(forward, upgrade.id + "_forward")
+	_set_optional_label(negative, upgrade.id + "_negative")
+
+## CSV 里留空的字段在 Godot 侧会回退成键名，只有拿到译文时才显示该行（隐藏即被 VBox 排除出布局）。
+func _set_optional_label(label: Label, key: String) -> void:
+	_optional_labels[label] = key
+	label.text = key
+	label.visible = not LocaleText.resolve(key).is_empty()
+
+func _refresh_optional_labels() -> void:
+	for entry in _optional_labels:
+		if is_instance_valid(entry):
+			(entry as Label).visible = not LocaleText.resolve(String(_optional_labels[entry])).is_empty()
+
+func _notification(what: int) -> void:
+	# set_locale 可能在 _ready 之前触发（同 docs/LEARNINGS.md 记的 credits 坑），必须守卫。
+	if what == NOTIFICATION_TRANSLATION_CHANGED and is_node_ready() and not _optional_labels.is_empty():
+		_refresh_optional_labels()
 
 func on_gui_input(event: InputEvent):
 	if event is InputEventScreenTouch:

@@ -84,4 +84,5 @@ func _on_button_gui_input(event: InputEvent):
 func _tooltip_content() -> Array:
 	if enemy_card == null:
 		return []
-	return [{"text": enemy_card.id + "_name", "role": "title"}, {"text": enemy_card.id + "_description"}]
+	# 说明允许有意留空（如 goliath/erosion_tower）：optional 段无译文时整段跳过。
+	return [{"text": enemy_card.id + "_name", "role": "title"}, {"text": enemy_card.id + "_description", "optional": true}]

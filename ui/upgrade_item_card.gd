@@ -18,9 +18,10 @@ func touch_show(event: InputEvent) -> void:
 func _tooltip_content() -> Array:
 	return [
 		{"text": card_id + "_name", "role": "title"},
-		{"text": card_id + "_description"},
-		{"text": card_id + "_forward", "role": "positive"},
-		{"text": card_id + "_negative", "role": "negative"},
+		# 描述/正效果/负效果允许在 CSV 里有意留空：optional 段无译文时整段跳过，不显示键名。
+		{"text": card_id + "_description", "optional": true},
+		{"text": card_id + "_forward", "role": "positive", "optional": true},
+		{"text": card_id + "_negative", "role": "negative", "optional": true},
 	]
 
 func set_up_item_card(upgrade: AbilityUpgrade) -> void:
