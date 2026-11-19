@@ -7,6 +7,7 @@
 [ext_resource type="Resource" uid="uid://x3fjyfrwkayo" path="res://resources/game_mode/havoc_mode.tres" id="4_havoc"]
 [ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="5_gj5yh"]
 [ext_resource type="Theme" uid="uid://hn8wfogubms0" path="res://ui/pixel_scrollbar_theme.tres" id="5_y47hx"]
+[ext_resource type="Script" uid="uid://cxexg1p6wvaks" path="res://script/ScrollBox.gd" id="6_scrollbox"]
 
 [node name="gamemode_button" type="Node2D" unique_id=1405035326]
 script = ExtResource("1_ry6c0")
@@ -29,6 +30,7 @@ layout_mode = 2
 custom_minimum_size = Vector2(0, 110)
 layout_mode = 2
 theme = ExtResource("5_y47hx")
+script = ExtResource("6_scrollbox")
 
 [node name="game_mod_box" type="GridContainer" parent="MarginContainer/ScrollContainer/VBoxContainer/ScrollContainer" unique_id=1870640693]
 unique_name_in_owner = true
@@ -57,6 +59,7 @@ color = Color(0.7176471, 0.7176471, 0.7176471, 1)
 custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
 theme = ExtResource("5_y47hx")
+script = ExtResource("6_scrollbox")
 
 [node name="enemy_mod_box" type="GridContainer" parent="MarginContainer/ScrollContainer/VBoxContainer/ScrollContainer2" unique_id=1626042050]
 unique_name_in_owner = true
