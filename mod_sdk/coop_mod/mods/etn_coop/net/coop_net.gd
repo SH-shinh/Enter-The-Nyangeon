@@ -34,7 +34,7 @@ const DEFAULT_BATTLE_SCENE: String = "res://scenes/main/main.tscn"
 const MENU_SCENE: String = "res://scenes/main/menu_screen.tscn"
 # 协议/版本握手：不一致直接拒绝。RPC 契约变更时必须递增 PROTOCOL_VERSION。
 const PROTOCOL_VERSION: int = 11
-const MOD_VERSION: String = "0.1.20"
+const MOD_VERSION: String = "0.1.21"
 const HELLO_TIMEOUT_MSEC: int = 30000
 # 客机：发出 _client_hello 后等待 _hello_accept 的上限；超时视为握手失败（旧房主/版本不匹配）
 const HELLO_ACCEPT_TIMEOUT_MSEC: int = 30000
@@ -705,6 +705,10 @@ var _remote_sfx_last_global_ms: int = -1000000000
 var _replaying_feedback: bool = false
 # 应用"远端镜像 buff"期间置位：让 enemy_buff_apply_gate 放行（避免再次转发）
 var _applying_remote_buff: bool = false
+# 正在回放的远端 buff id：回放期间只有「同一个 buff」允许本地应用；
+# 回放期间因本体事件（如震撼弹监听 enemy_shock_applied）嵌套施加的**其它** buff
+# 必须照常转发 host 权威应用，否则只在本地镜像生效（host 完全不知道）。
+var _remote_buff_id: String = ""
 # host 在敌人注册 net_id 前收到的词条/生成期 Buff，待 _on_enemy_spawned 后补发。
 var _pending_enemy_buff_events: Dictionary = {}
 var _chip_manager: Node = null
@@ -2270,9 +2274,10 @@ func _gate_enemy_proc_owner_suppress(damage_data) -> bool:
 	return op != 0 and op != multiplayer.get_unique_id()
 
 # 客机给带 net_id 的敌人镜像加 buff → 转发 host 权威应用；本地不应用（由 host 广播回镜像表现）
+# 例外：正在回放的就是同一个 buff 时放行本地（否则镜像永远加不上）；回放期间嵌套的其它 buff 仍转发。
 func _gate_enemy_buff_apply(manager, buff, value, source_id) -> bool:
 	if _applying_remote_buff:
-		return false
+		return buff != null and str(buff.id) != _remote_buff_id
 	if not is_lan_game or multiplayer.is_server():
 		return false
 	if manager == null or buff == null:
@@ -2604,7 +2609,9 @@ func _remote_enemy_buff(net_id: int, buff_path: String, value: Array, source_id:
 	if str(buff.id) == "converted_buff":
 		return
 	_applying_remote_buff = true
+	_remote_buff_id = str(buff.id)
 	manager.call("apply_buff", buff, value, source_id, stats)
+	_remote_buff_id = ""
 	_applying_remote_buff = false
 	# Maki 颜料标记由 host 驱动过期：host 在颜料上持续 refresh 不广播，
 	# 客机镜像若按本地 2 秒过期会比 host 提前掉图标；这里把镜像 erase_time 置大，
