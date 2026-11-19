@@ -1,0 +1,22 @@
+[Unit]
+Description=ETN Coop Relay Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=relay
+Group=relay
+WorkingDirectory=/opt/etn-relay
+Environment=PORT=7716
+Environment=RELAY_BIND_ADDRESS=0.0.0.0
+ExecStart=/usr/bin/python3 /opt/etn-relay/relay_server.py
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+LimitNOFILE=8192
+
+[Install]
+WantedBy=multi-user.target
