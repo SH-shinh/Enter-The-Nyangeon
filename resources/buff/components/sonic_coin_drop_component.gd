@@ -9,7 +9,7 @@ const MAX_PICKUPS: int = 12
 @export var min_distance: float = 80.0
 @export var max_distance: float = 260.0
 @export var map_clearance: float = 16.0
-@export var drop_duration: float = 1.2
+@export var drop_duration: float = 0.7
 
 var _active: bool = false
 var _stats: Stats
@@ -82,6 +82,7 @@ func _spawn_burst(total: int) -> void:
 		true
 	)
 
+## fall_duration = 抛出→首次落地；落地后另有 2 次小弹跳（约再 0.53s）。
 static func spawn_burst_at(
 	root: Node,
 	origin: Vector2,
@@ -90,7 +91,7 @@ static func spawn_burst_at(
 	min_distance: float = 80.0,
 	max_distance: float = 260.0,
 	map_clearance: float = 16.0,
-	fall_duration: float = 1.2,
+	fall_duration: float = 0.7,
 	sound: bool = true
 ) -> void:
 	if root == null or total <= 0:

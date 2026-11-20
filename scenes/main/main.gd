@@ -132,7 +132,7 @@ func coin_clear_unit():
 		if coins.is_in_group("PickItem"):
 			PoolManager.erase_pool("coins")
 			coins.coin_clear()
-		elif coins is Path2D and coins.has_method("clear_uncollected"):
+		elif coins.has_method("clear_uncollected"):
 			coins.clear_uncollected()
 
 func item_clear_unit():

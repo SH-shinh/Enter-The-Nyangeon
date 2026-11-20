@@ -9,4 +9,4 @@ max_pickups = 12
 min_distance = 80.0
 max_distance = 260.0
 map_clearance = 16.0
-drop_duration = 1.2
+drop_duration = 0.7

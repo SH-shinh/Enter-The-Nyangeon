@@ -1,13 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://exapj48xcnge"]
+[gd_scene load_steps=2 format=3 uid="uid://exapj48xcnge"]
 
 [ext_resource type="Script" path="res://scenes/item/parabola_path.gd" id="1_8abci"]
 
-[sub_resource type="Curve2D" id="Curve2D_325m7"]
-
-[node name="parabola_path" type="Path2D"]
-position = Vector2(50, 50)
-curve = SubResource("Curve2D_325m7")
+[node name="parabola_path" type="Node2D"]
 script = ExtResource("1_8abci")
-
-[node name="PathFollow2D" type="PathFollow2D" parent="."]
-rotates = false
