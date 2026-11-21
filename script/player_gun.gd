@@ -198,9 +198,12 @@ func _shoot_bullet():
 ## **不消耗子弹（`bullet_cost <= 0`，UI 显示 "∞"）的武器不抛壳**——没有弹壳概念。
 ## 纯本地表现：不参与伤害/碰撞，不做联机同步。挂在 FloorLayer（在 YSort 之前），
 ## 飞行期把 z_index 抬到世界层之上（不会被角色挡住），落地静止后 z 归 0 回到地板层；
-## 数量上限由 PoolManager.IDLE_LIMITS["casing"] 给，满额时环状复用最旧弹壳。
+## 数量上限是玩家设置项（`Game.casing_level`，0=关），满额时环状复用最旧弹壳。
 func _eject_casing() -> void:
 	if eject_casings == false:
+		return
+	# 设置项「弹壳上限」拉到 0 = 关闭：不抛壳（PoolManager.get_pool 也会拒发）。
+	if Game.casing_cap() <= 0:
 		return
 	# 读运行时值：PlayerData 会按 base_bullet_cost * bullet_cost_mult 重算，不能读场景快照。
 	# 0 消耗的实例见 scenes/player/aris/aris.tscn（HUD 显示 "∞"）。

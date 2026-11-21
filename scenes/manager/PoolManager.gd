@@ -101,7 +101,8 @@ const IDLE_LIMITS := {
 	"floor_paint": 20,
 	"anomaly_paint": 24,
 	# 弹壳：俯视角抛壳后长期躺地，上限即「全场弹壳数」；满额环状复用最旧者。
-	# 6 发/秒下约 10s 才轮换一圈；想要留更久只需调大这个值。
+	# 实际上限由玩家设置项决定（Game.casing_level → Game.casing_cap()，0=关），
+	# 这里的 64 只是默认档（档位 2）的参考值 / Game 不可用时的兜底。
 	"casing": 64,
 	"maki_paintball": 4,
 	# 感电链真实并发 ≤5：_spawn_arc 受 fx_allowed("shock_chain", 80ms) 全局节流，
@@ -440,6 +441,34 @@ func _fx_follow_allowed(body_name: String, body: Node) -> bool:
 				return false
 	return fx_allowed_body(StringName(body_name), body, FX_FOLLOW_BASE_MS)
 
+# 池上限：casing 由玩家设置项动态决定（0=关），其余仍走常量表。
+func _pool_limit(body_name: String) -> int:
+	if body_name == "casing":
+		return Game.casing_cap()
+	return int(IDLE_LIMITS.get(body_name, -1))
+
+## 设置项变更后调用：同步弹壳上限，并把超出的活跃弹壳回收（最旧的先走）。
+## 从数组尾部向前保留最新 cap 个活跃节点，其余 idle_state；cap=0 时清空全部。
+func apply_casing_limit() -> void:
+	var entry = pool.get("casing")
+	if entry == null:
+		return
+	var cap: int = Game.casing_cap()
+	entry["limit"] = cap
+	if cap < 0:
+		return
+	var body: Array = entry["body"]
+	var keep: int = cap
+	for i in range(body.size() - 1, -1, -1):
+		var n = body[i]
+		if n == null or not is_instance_valid(n) or int(n.get("is_idle")) == 1:
+			continue
+		if keep > 0:
+			keep -= 1
+			continue
+		if n.has_method("idle_state"):
+			n.idle_state()
+
 func add_pool(body_name: String, body: Node):
 	if body == null:
 		return
@@ -449,7 +478,7 @@ func add_pool(body_name: String, body: Node):
 			"resource": body_name,
 			"body": [body],
 			"index": 0,
-			"limit": IDLE_LIMITS.get(body_name, -1),
+			"limit": _pool_limit(body_name),
 			"set": {body: true},
 			"idle": ([body] if body.get("is_idle") == 1 else [])
 		}
@@ -594,6 +623,13 @@ func get_pool(body_name: String):
 	var body: Array = entry["body"]
 	if body.is_empty():
 		return null
+	# 可配置上限（弹壳）：0=关闭，必须在这里直接返回 —— 否则会先弹空闲节点、
+	# 或在后面的 cap 判定里走「满额回收」分支返回一个节点。
+	var cap: int = _pool_limit(body_name)
+	if cap != int(entry["limit"]):
+		entry["limit"] = cap
+	if cap == 0:
+		return null
 	var n = _pop_idle(entry)
 	if n != null:
 		return n
@@ -601,7 +637,6 @@ func get_pool(body_name: String):
 	n = _pop_idle(entry)
 	if n != null:
 		return n
-	var cap: int = int(entry["limit"])
 	if cap < 0 or body.size() < cap:
 		return null
 	var idx: int = wrapi(int(entry["index"]), 0, body.size())

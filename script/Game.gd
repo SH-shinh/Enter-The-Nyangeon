@@ -34,6 +34,11 @@ var effect_freq: int = 4
 # 受击闪白频率上限（设置项）：0=关 / 1=×4间隔 / 2=×3 / 3=×2 / 4=×1(最高,默认)。独立于 effect_freq。
 var hit_flash_freq: int = 4
 
+# 弹壳数量上限（设置项）：档位索引 → CASING_CAP_LEVELS，0=关，默认 2(=64)，最高 4(=256)。
+# 静止弹壳每帧零开销（已关物理、同纹理合批），上限主要影响池内节点数与长期留存量。
+const CASING_CAP_LEVELS := [0, 32, 64, 128, 256]
+var casing_level: int = 2
+
 # 2D 物理插值（设置项，默认关）：高刷屏下让物理体在物理 tick 间平滑、消除 judder；
 # 迁移期部分视觉仍有错位风险，故默认关，运行期经 SceneTree.physics_interpolation 生效。
 var physics_interp: bool = false
@@ -82,6 +87,10 @@ func apply_physics_interp():
 	var tree := get_tree()
 	if tree != null:
 		tree.physics_interpolation = physics_interp
+
+# 当前弹壳上限（0 = 关闭抛壳）。设置项越界时 clamp 到档位表范围。
+func casing_cap() -> int:
+	return int(CASING_CAP_LEVELS[clampi(casing_level, 0, CASING_CAP_LEVELS.size() - 1)])
 
 func pause_press():
 	var event = InputEventAction.new()
@@ -270,6 +279,7 @@ func save_config():
 	config.set_value("game", "damage_text_freq", damage_text_freq)
 	config.set_value("game", "effect_freq", effect_freq)
 	config.set_value("game", "hit_flash_freq", hit_flash_freq)
+	config.set_value("game", "casing_level", casing_level)
 	config.set_value("game", "developer_mode", dev_mode)
 	
 	config.set_value("audio", "master", SoundManager.get_volume(SoundManager.Bus.MASTER))
@@ -300,6 +310,7 @@ func load_config():
 	damage_text_freq = config.get_value("game", "damage_text_freq", 4)
 	effect_freq = config.get_value("game", "effect_freq", 4)
 	hit_flash_freq = config.get_value("game", "hit_flash_freq", 4)
+	casing_level = int(config.get_value("game", "casing_level", 2))
 	dev_mode = config.get_value("game", "developer_mode", false)
 	
 	# 桌面端的全屏/分辨率/垂直同步设置不能作用到移动端：

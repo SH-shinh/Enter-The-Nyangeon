@@ -9,6 +9,8 @@ extends OptionMenu
 @onready var effect_freq_value: Label = %EffectFreqValue
 @onready var hit_flash_freq: HSlider = %HitFlashFreq
 @onready var hit_flash_freq_value: Label = %HitFlashFreqValue
+@onready var casing_cap: HSlider = %CasingCap
+@onready var casing_cap_value: Label = %CasingCapValue
 @onready var resolutions_block: Control = %ResolutionsTouchBlock
 @onready var mobile_notice = %MobileNotice
 @onready var resolutions: OptionButton = %Resolutions
@@ -38,6 +40,7 @@ func _ready():
 	damage_freq.value_changed.connect(_on_damage_freq_value_changed)
 	effect_freq.value_changed.connect(_on_effect_freq_value_changed)
 	hit_flash_freq.value_changed.connect(_on_hit_flash_freq_value_changed)
+	casing_cap.value_changed.connect(_on_casing_cap_value_changed)
 	max_fps.value_changed.connect(_on_max_fps_value_changed)
 	resolutions_block.gui_input.connect(_on_resolutions_touch_block_gui_input)
 	resolutions_block.mouse_filter = (
@@ -135,6 +138,8 @@ func setting_status():
 	effect_freq_value.text = _effect_freq_text(Game.effect_freq)
 	hit_flash_freq.set_value_no_signal(Game.hit_flash_freq)
 	hit_flash_freq_value.text = _effect_freq_text(Game.hit_flash_freq)
+	casing_cap.set_value_no_signal(Game.casing_level)
+	casing_cap_value.text = _casing_cap_text(Game.casing_level)
 	max_fps.set_value_no_signal(Game.max_fps_index)
 	max_fps_value.text = _max_fps_text(Game.max_fps_index)
 
@@ -226,3 +231,21 @@ func _max_fps_text(idx: int) -> String:
 	if idx <= 0:
 		return tr("fps_unlimited")
 	return str(Game.FPS_CHOICES[idx])
+
+# 弹壳数量上限滑条（设置项）：0=关 / 32 / 64(默认) / 128 / 256。
+# 写入档位后立即同步池上限，并把超出的（最旧的）弹壳回收；0 时清空全部且不再抛壳。
+func _on_casing_cap_value_changed(value: float):
+	var idx: int = clampi(int(round(value)), 0, Game.CASING_CAP_LEVELS.size() - 1)
+	if idx == Game.casing_level:
+		return
+	Game.casing_level = idx
+	Game.save_config()
+	casing_cap_value.text = _casing_cap_text(idx)
+	PoolManager.apply_casing_limit()
+
+func _casing_cap_text(idx: int) -> String:
+	var level: int = clampi(idx, 0, Game.CASING_CAP_LEVELS.size() - 1)
+	var cap: int = int(Game.CASING_CAP_LEVELS[level])
+	if cap <= 0:
+		return "0 · " + tr("damage_freq_off")
+	return str(cap)

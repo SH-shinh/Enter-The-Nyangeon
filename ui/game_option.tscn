@@ -673,6 +673,43 @@ horizontal_alignment = 2
 clip_text = true
 vertical_alignment = 1
 
+[node name="RowCasingCap" type="HBoxContainer" parent="Scroll/Content/FeedbackCard/VBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="Scroll/Content/FeedbackCard/VBox/RowCasingCap"]
+custom_minimum_size = Vector2(126, 22)
+layout_mode = 2
+theme = SubResource("Theme_row")
+text = "option_casing_cap"
+horizontal_alignment = 2
+vertical_alignment = 1
+clip_text = true
+script = ExtResource("5_autotext")
+base_font_size = 15
+base_size_y = 22.0
+base_size_x = 126.0
+min_font_size = 7
+
+[node name="CasingCap" parent="Scroll/Content/FeedbackCard/VBox/RowCasingCap" instance=ExtResource("7_slider")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(132, 16)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+
+[node name="CasingCapValue" type="Label" parent="Scroll/Content/FeedbackCard/VBox/RowCasingCap"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 22)
+layout_mode = 2
+theme = SubResource("Theme_row")
+theme_override_font_sizes/font_size = 12
+text = "64"
+horizontal_alignment = 2
+clip_text = true
+vertical_alignment = 1
+
 [node name="AudioCard" type="PanelContainer" parent="Scroll/Content" unique_id=1398412543]
 layout_mode = 2
 mouse_filter = 2

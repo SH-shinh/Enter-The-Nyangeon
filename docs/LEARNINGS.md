@@ -4877,3 +4877,9 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - Notes / 说明: `aggro_override` 的默认语义是关闭 EnemyAI/导航场并直线追；全息沿用它时，复杂地形会直接撞墙。修法是给全息加 `is_threat_nav_target()` 标记，并在 `EnemyNavField.complex_path_enabled` 为真时让带标记的 override 进入 `_is_candidate`/`_resolve_target`，`ai_steer` 对这类目标不再早退；普通场景和外部无标记 taunt 仍保持直线。全息/残影是静态目标，`EnemyNavField` 的场可复用；容量 `MAX_FIELDS=8` 覆盖 4 玩家 + 4 全息/残影，超出仍按 LRU 淘汰并退回直线。外部嘲讽/技能不实现该标记，语义不变。
 - Source / 来源: code + test
 - Date / 日期: 2026-11-17
+
+### [Pool] 池上限做成玩家设置项：`entry["limit"]` 和 `get_pool` 判定都要运行期取值，0 必须当"禁用"
+- Evidence / 证据: `scenes/manager/PoolManager.gd`（`_pool_limit()`、`get_pool()` 顶部同步 `entry["limit"]` 且 `cap == 0` 先 `return null`、`apply_casing_limit()` 主动裁剪）、`script/Game.gd`（`CASING_CAP_LEVELS` / `casing_level` / `casing_cap()`）、`script/game_option.gd`（`_on_casing_cap_value_changed` → `apply_casing_limit()`）。
+- Notes / 说明: 只把 `IDLE_LIMITS` 常量改成可变量是**不够**的——池条目创建时已经把 `limit` 固化进 `entry["limit"]`，后面的增长/回收判定读的是它，所以 `add_pool` 与 `get_pool` 都要走同一个运行期取值函数。**0 必须当"禁用"处理**：`get_pool` 的满额分支是 `size >= limit`，`limit=0` 时恒真，会先弹空闲节点、否则"回收并返回"一个节点，等于没关掉；必须在取空闲之前 `if cap == 0: return null`。**调低不会自动缩容**：`get_pool` 只在"取用时"回收，已有节点会一直留在池里，需要像 `apply_casing_limit()` 那样主动从数组尾部向前保留最新 N 个活跃节点、其余 `idle_state()`（数组顺序≈插入顺序，最旧先走）。设置项改档要顺手 `Game.save_config()`，否则重启回退。
+- Source / 来源: code
+- Date / 日期: 2026-11-18
