@@ -41,8 +41,12 @@ func melee_shake():
 	GameEvents.emit_shake_screen( 3, 35, 0.025 )
 
 func control_reset():
-	if player.can_control == false:
-		player.can_control = true
+	# 回合边界对称复位：旧实现只恢复 can_control，can_jump/计时器残留会把下一回合的跳跃锁住。
+	player.can_control = true
+	player.can_jump = true
+	now_time = 0
+	reset_time = 0
+	can_comboo = true
 
 func time_count():
 	if now_time > 0:

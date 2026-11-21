@@ -34,6 +34,7 @@ func _ready():
 	GameEvents.ui_visible.connect(game_ui_visible)
 	Game.game_mode_changed.connect(check_game_mode)
 	GameEvents.round_start.connect(check_game_mode)
+	GameEvents.ui_visible.connect(_on_ui_visible)
 	update_hp()
 	update_coin()
 	update_ammo()
@@ -47,6 +48,11 @@ func check_game_mode():
 		virtual_joypad.visible = true
 		var has_support: bool = SupportData.game_support != null and SupportData.game_support.support_id != "null"
 		$VirtualJoypad/Actions/TouchScreenButton4.visible = has_support
+
+# HUD 被演出/转场隐藏后再显示时，按当前模式重新求值（信号可能在那期间丢失）。
+func _on_ui_visible(now_visible: bool):
+	if now_visible:
+		check_game_mode()
 
 func get_player_card():
 	player_icon.texture = LazyTexture.load_uncached(player.player_card.sprite_path)

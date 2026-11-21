@@ -177,6 +177,9 @@ func reset_control_flags():
 		can_control = true
 		can_move = true
 		can_jump = true
+		# 商店/演出把 gun.can_shoot 关掉后若没走回开火分支，下一回合会「能走不能射」。
+		if gun != null and gun.get("can_shoot") != null:
+			gun.can_shoot = true
 
 func _is_on_floor():
 	if sprite_2d.position.y == -17:

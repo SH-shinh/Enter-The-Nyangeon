@@ -59,7 +59,7 @@ Declared in `project.godot:25-44`. **Order = `_ready()` order** (relevant: `Game
 
 ### 1.5 Game
 - 生命周期：`_ready` → `process_mode = ALWAYS` → `load_config()` → `apply_max_fps()`（`script/Game.gd:58-63`）；读档由后置 `ModManager._ready` 在挂载/支援注册完成后同步调用（`script/mod_manager.gd:101`）。2026-10-13 开启物理插值后，原移动端硬编码 60 FPS 改为全平台可配置上限，默认 60、索引 0 为无限制；2026-10-14 核对。旧移动端对齐 60Hz 的原因保留于 `LEARNINGS.md` 历史记录。2026-10-14：2D 物理插值改为设置项（`Game.physics_interp`，默认关、运行期设 `SceneTree.physics_interpolation`，UI 在 Graphics 页 `RowPhysicsInterp`），`project.godot` 默认 `false`；逐帧 `_process` 驱动的视觉须关插值（准星/指示器等，见 `CONVENTIONS.md` §6）。
-- `_unhandled_input` 由输入设备推断 `control_mode`（0 鼠标/键盘 / 1 触屏 / 2 手柄）并 emit `game_mode_changed`：`InputEventMouseButton|InputEventKey`→0、`InputEventScreenTouch`→1、`InputEventJoypadButton|InputEventJoypadMotion(>0.5)`→2。`reset_control_mode()`（连 `round_start`）按平台复位（移动端=1、桌面=0），避免设备事件把模式永久锁死。
+- 操作模式识别（2026-11-21 重构）：`Game._input` + `_unhandled_input` 双通道推断 `control_mode`（0 键鼠 / 1 触屏 / 2 手柄）。触摸无条件优先并保留 400ms 优先窗口；鼠标/键盘只看真实按下沿（忽略 `echo`、`InputEvent.DEVICE_ID_EMULATION`）；手柄按钮立即判手柄，轴 `>=0.9` 立即、`0.75~0.9` 保持 150ms 才判；`Input.joy_connection_changed` 断连回退；触屏设备上外接设备静默 5s 自动回落触屏；`NOTIFICATION_APPLICATION_FOCUS_OUT` / `WM_WINDOW_FOCUS_OUT` 在移动端单机自动暂停并清理输入，回前台只重发 UI 同步、不自动解除暂停；`reset_control_mode()` 仍连 `round_start`。`input_debug_snapshot()`、控制态看门狗与移动端三指恢复用于定位 `player_stop` / `paused` / 失焦类锁死。UI 侧 `ui/game_ui.gd` 仍按 `control_mode != 1` 隐藏 `VirtualJoypad`（用户确认保留该策略）。
 
 ### 1.6 PoolManager（对象池）
 - `pool: Dictionary` 每项 `{resource, body[], index, limit, set, idle}`；节点 `_ready` 时 `PoolManager.add_pool(id, self)` 自注册；约定 `is_idle: int`（1=空闲）+ `idle_state()`。旧的并行池 `FloatingPool` 已删除（空壳、`add_*` 无调用者，2026-10-08）。

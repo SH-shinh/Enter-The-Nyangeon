@@ -2,6 +2,8 @@ extends Node2D
 
 @export var mouse_mode: bool = true
 
+const TOUCH_AIM_HOLD_MSEC := 250
+
 @onready var player: Node
 @onready var sprite_2d = $Sprite2D
 
@@ -9,6 +11,8 @@ var target_pos: Vector2
 
 var x_movement: float
 var y_movement: float
+
+var _last_touch_aim_msec: int = -100000
 
 func _ready():
 	add_to_group("crosshair")
@@ -33,6 +37,7 @@ func control_mode_changed():
 
 func get_target_pos(target_position: Vector2):
 	target_pos = target_position * get_canvas_transform()
+	_last_touch_aim_msec = Time.get_ticks_msec()
 
 func touch_mode_show():
 	# 回合开始：释放鼠标所有权；没有其它全屏 UI 持有时才真正隐藏指针。
@@ -68,16 +73,24 @@ func joypad_aim_get(delta):
 		target_pos = Vector2(x_movement, y_movement) * get_canvas_transform()
 
 func _process(delta):
-	if Game.control_mode == 0:
-		global_position = get_global_mouse_position()
-		GameEvents.emit_crosshair_position(self.global_position)
-	elif Game.control_mode == 1:
+	# 触摸拖动优先（不论 control_mode 被误判成什么），避免一次误切把触屏瞄准锁死；
+	# 其后再按实际输入源回落，鼠标只在键鼠模式下接管。
+	var now := Time.get_ticks_msec()
+	var gx := Input.get_axis("aim_left", "aim_right")
+	var gy := Input.get_axis("aim_up", "aim_down")
+	var gamepad_aim := absf(gx) > 0.2 or absf(gy) > 0.2
+	if now - _last_touch_aim_msec <= TOUCH_AIM_HOLD_MSEC:
 		global_position = Vector2(320,180) + target_pos * 5
-		GameEvents.emit_crosshair_position(self.global_position)
-	elif Game.control_mode == 2:
+	elif gamepad_aim:
 		joypad_aim_get(delta)
 		global_position = Vector2(320,180) + target_pos * 150
-		GameEvents.emit_crosshair_position(self.global_position)
+	elif Game.control_mode == 0:
+		global_position = get_global_mouse_position()
+	elif Game.control_mode == 2:
+		global_position = Vector2(320,180) + target_pos * 150
+	else:
+		global_position = Vector2(320,180) + target_pos * 5
+	GameEvents.emit_crosshair_position(self.global_position)
 
 func _shock(_shot_position: Vector2, _bullet_body: Node):
 	var tween = get_tree().create_tween().set_parallel(true)

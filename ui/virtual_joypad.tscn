@@ -1,9 +1,10 @@
-[gd_scene load_steps=21 format=3 uid="uid://c7nl2ikg66rdb"]
+[gd_scene load_steps=22 format=3 uid="uid://c7nl2ikg66rdb"]
 
 [ext_resource type="Texture2D" uid="uid://dgmhl0jy3t8tg" path="res://ui/joypad.png" id="1_erftb"]
 [ext_resource type="Script" path="res://ui/Knob.gd" id="2_a63ri"]
 [ext_resource type="Script" path="res://ui/AutoButton.gd" id="2_p0kwq"]
 [ext_resource type="Script" path="res://ui/MouseKnob.gd" id="3_v5eq4"]
+[ext_resource type="Script" path="res://ui/virtual_joypad.gd" id="4_vjoypad"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_stppb"]
 atlas = ExtResource("1_erftb")
@@ -95,6 +96,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+script = ExtResource("4_vjoypad")
 
 [node name="Actions" type="Control" parent="."]
 layout_mode = 1
@@ -258,7 +260,6 @@ texture_normal = SubResource("GradientTexture2D_xph8g")
 [node name="Knob" type="TouchScreenButton" parent="Stick2"]
 position = Vector2(-87, -33)
 texture_normal = SubResource("GradientTexture2D_rklyg")
-action = "fire"
 script = ExtResource("3_v5eq4")
 
 [connection signal="timeout" from="Actions/AutoButton/Timer" to="Actions/AutoButton" method="_on_timer_timeout"]

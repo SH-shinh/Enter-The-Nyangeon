@@ -6,12 +6,25 @@ const DRAG_RADIS := 25.0
 var finger_index := -1
 var drag_offset: Vector2
 
-@onready var rest_pos := global_position
+var rest_pos: Vector2
+var _rest_local: Vector2
 
 func _ready():
+	_rest_local = position
+	rest_pos = global_position
 	GameEvents.round_start.connect(reset_position)
 	Game.game_mode_changed.connect(_release_all)
 	visibility_changed.connect(_on_visibility_changed)
+	get_viewport().size_changed.connect(_refresh_rest_pos)
+	call_deferred("_refresh_rest_pos")
+
+# 旋转/分屏后父 Control 的锚点位置会变，归位点必须按父节点当前变换重算，不能只缓存一次。
+func _refresh_rest_pos():
+	var parent_item := get_parent() as CanvasItem
+	if parent_item != null:
+		rest_pos = parent_item.get_global_transform() * _rest_local
+	else:
+		rest_pos = global_position
 
 func reset_position():
 	_release_all()
@@ -27,13 +40,18 @@ func _release_all():
 func _on_visibility_changed():
 	if not is_visible_in_tree():
 		_release_all()
+	else:
+		_refresh_rest_pos()
 
 func _notification(what):
 	if what == NOTIFICATION_EXIT_TREE or what == NOTIFICATION_APPLICATION_FOCUS_OUT or what == NOTIFICATION_APPLICATION_PAUSED or what == NOTIFICATION_PAUSED:
 		_release_all()
 
 func _input(event: InputEvent):
-	
+	if not is_visible_in_tree():
+		_release_all()
+		return
+
 	var st := event as InputEventScreenTouch
 	
 	if st:
