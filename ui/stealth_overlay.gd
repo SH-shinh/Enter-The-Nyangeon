@@ -2,6 +2,7 @@ extends CanvasLayer
 
 ## 隐身屏幕滤镜宿主：只做边缘折射/冷色，中心与 HUD 保持清晰。
 ## 关闭时 BackBufferCopy 与 Filter 都隐藏，无每帧 shader 成本。
+## 由 Game.screen_filters（屏幕读取滤镜总开关）门控。
 
 @onready var back_buffer: BackBufferCopy = $BackBufferCopy
 @onready var filter: ColorRect = $Filter
@@ -14,6 +15,7 @@ var _active: bool = false
 
 
 func _ready() -> void:
+	add_to_group("ScreenFilterOverlay")
 	_sync_resolution()
 	_hide_now()
 
@@ -24,8 +26,19 @@ func set_active(on: bool) -> void:
 	_active = on
 	if not on and not filter.visible:
 		return
-	if OS.has_feature("mobile"):
-		# 与 HareOptic/CRTOverlay 一致：移动端不启用 hint_screen_texture。
+	_apply(on)
+
+
+## 总开关切换时即时刷新（由 game_option 遍历 ScreenFilterOverlay 组调用）。
+func refresh_filter() -> void:
+	if not _active:
+		_hide_now()
+		return
+	_apply(true)
+
+
+func _apply(on: bool) -> void:
+	if not Game.screen_filters:
 		_hide_now()
 		return
 	var mat := filter.material as ShaderMaterial

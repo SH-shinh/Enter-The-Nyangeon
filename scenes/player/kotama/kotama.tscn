@@ -514,13 +514,15 @@ script = ExtResource("14_rbk2a")
 
 [node name="Stats" type="Node" parent="." unique_id=2122875524]
 script = ExtResource("15_6napx")
-max_hp = 72
-MAX_SPEED = 155
-bullet_damage = 9
-bullet_speed = 950
-bullet_recoil = 60
-bullet_knockback = 80
-fire_dot_layer = 10
+max_hp = 56
+critical_luck = 10
+critical_damage = 3.0
+MAX_SPEED = 160
+max_ammo = 10
+bullet_damage = 8
+bullet_speed = 1200
+bullet_recoil = 80
+shake_mult = 1.2
 
 [node name="RunSounds" type="AudioStreamPlayer2D" parent="." unique_id=302917896]
 process_mode = 3

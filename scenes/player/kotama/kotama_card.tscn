@@ -1,12 +1,12 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://bnashaaepy35y"]
 
 [ext_resource type="Script" uid="uid://i3blwu0hrvpt" path="res://ui/player_card.gd" id="1_0wsue"]
-[ext_resource type="Resource" path="res://resources/player/kotama.tres" id="2_in0du"]
+[ext_resource type="Resource" uid="uid://wryekeh1b5ok" path="res://resources/player/kotama.tres" id="2_in0du"]
 [ext_resource type="Texture2D" uid="uid://bieybnat8nive" path="res://ui/point_line.png" id="3_8s6cb"]
 [ext_resource type="Shader" uid="uid://d3frxix26ovel" path="res://shaders/scrolling_bkgd.gdshader" id="4_xctsp"]
-[ext_resource type="Texture2D" path="res://sprites/player/kotama/kotama_text_1.png" id="5_ge1m1"]
-[ext_resource type="Texture2D" path="res://sprites/player/kotama/kotama_text_2.png" id="6_otl57"]
-[ext_resource type="Texture2D" path="res://sprites/player/kotama/kotama_picture_halo.png" id="7_68vq4"]
+[ext_resource type="Texture2D" uid="uid://bdr4v44ahpm5g" path="res://sprites/player/kotama/kotama_text_1.png" id="5_ge1m1"]
+[ext_resource type="Texture2D" uid="uid://end6hhh6x23t" path="res://sprites/player/kotama/kotama_text_2.png" id="6_otl57"]
+[ext_resource type="Texture2D" uid="uid://dne1ce5ylik22" path="res://sprites/player/kotama/kotama_picture_halo.png" id="7_68vq4"]
 [ext_resource type="Shader" uid="uid://bqypa5578tm8a" path="res://shaders/sprite_outline.gdshader" id="8_3o0wx"]
 [ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="10_ycaxs"]
 [ext_resource type="Script" uid="uid://dkwqr377cp5yf" path="res://script/auto_text.gd" id="11_pfltr"]
@@ -41,6 +41,24 @@ shader_parameter/outline_color = Color(1, 1, 1, 1)
 shader_parameter/flash_opacity = 1.0
 shader_parameter/corruption_tint = Color(1, 1, 1, 1)
 shader_parameter/corruption_amount = 0.0
+shader_parameter/hologram_amount = 0.0
+shader_parameter/hologram_tint = Color(0.55, 0.9, 1, 1)
+shader_parameter/hologram_alpha = 0.65
+shader_parameter/hologram_scan_speed = 2.0
+shader_parameter/glitch_start = -1000.0
+shader_parameter/glitch_duration = 0.3
+shader_parameter/glitch_strength = 1.0
+shader_parameter/glitch_seed = 0.0
+shader_parameter/glitch_tear = 1.0
+shader_parameter/glitch_pixel = Vector2(0, 0)
+shader_parameter/glitch_uv_rect = Vector4(0, 0, 1, 1)
+shader_parameter/glitch_row_gate = 0.66
+shader_parameter/glitch_row_shift = 3.0
+shader_parameter/glitch_block_size = 8.0
+shader_parameter/glitch_block_shift = 6.0
+shader_parameter/glitch_rgb_split = 1.0
+shader_parameter/glitch_scanline = 0.16
+shader_parameter/glitch_junk_gate = 0.972
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_0eryl"]
 
@@ -66,7 +84,7 @@ player_card = ExtResource("2_in0du")
 [node name="ColorRect2" type="ColorRect" parent="." unique_id=1217016027]
 layout_mode = 2
 mouse_filter = 2
-color = Color(0.94902, 0.427451, 0.529412, 1)
+color = Color(0.98451024, 0.8585446, 0.23520333, 1)
 
 [node name="Sprite2D2" type="Sprite2D" parent="." unique_id=1788744687]
 position = Vector2(83, 104)
@@ -151,7 +169,7 @@ offset_top = 4.0
 offset_right = 201.0
 offset_bottom = 143.0
 mouse_filter = 2
-color = Color(0.73296386, 0.8636002, 0.20075276, 1)
+color = Color(0.90643245, 0.7992609, 0.0053452086, 1)
 
 [node name="ColorRect2" type="ColorRect" parent="ColorRect/Node2D/Node2D/ColorRect" unique_id=1905772446]
 show_behind_parent = true
@@ -185,7 +203,7 @@ offset_left = 16.7095
 offset_top = -20.4608
 offset_right = 166.7095
 offset_bottom = -2.46085
-theme_override_colors/font_color = Color(0.94902, 0.686275, 0.752941, 1)
+theme_override_colors/font_color = Color(0.8496017, 0.76176894, 0, 1)
 theme_override_colors/font_shadow_color = Color(0.2627451, 0, 0.12941177, 1)
 theme_override_colors/font_outline_color = Color(0.2627451, 0, 0.12941177, 1)
 theme_override_constants/shadow_offset_x = 0
