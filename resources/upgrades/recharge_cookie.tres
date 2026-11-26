@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" format=3 uid="uid://d1x0xjfv1kgpw"]
+
+[ext_resource type="Texture2D" uid="uid://cb1k54tk8inj1" path="res://sprites/update_item/recharge_cookie.png" id="1_wktwt"]
+[ext_resource type="Script" uid="uid://cvlwfck2jbhvs" path="res://resources/upgrades/ability_upgrade.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = "recharge_cookie"
+icon = ExtResource("1_wktwt")
+name = "能量饼干"
+rare = 1
+order_num = 5
+description = "用来恢复消耗的体力的饼干，大家都有份，每个召唤物+15%召唤伤害。"
+forward = "最大持有 5 个
++5%每个召唤物伤害"
+item_tags = 2048
+tags = Array[String](["召唤"])

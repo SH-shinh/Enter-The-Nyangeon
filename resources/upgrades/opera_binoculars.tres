@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="AbilityUpgrade" format=3 uid="uid://bsl2apcjp2dtp"]
+
+[ext_resource type="Texture2D" uid="uid://conma58oppxc1" path="res://sprites/update_item/opera_binoculars.png" id="1_uvoxe"]
+[ext_resource type="Script" uid="uid://cvlwfck2jbhvs" path="res://resources/upgrades/ability_upgrade.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = "opera_binoculars"
+icon = ExtResource("1_uvoxe")
+name = "歌剧望远镜"
+rare = 2
+order_num = 1
+description = "在远处也能把舞台状况看得一清二楚的望远镜，视野被压缩到只剩最亮的那一幕。"
+forward = "独特
+召唤物暴击伤害×200%"
+negative = "召唤物非暴击伤害×50%"
+item_tags = 2064
+tags = Array[String](["召唤"])
