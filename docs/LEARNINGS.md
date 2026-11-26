@@ -241,6 +241,7 @@
 - Date / 日期: 2026-09-26
 - SUPERSEDED: 2026-09-28 「追加用 LF」改定为 **CRLF**（来源：user；规则见 `AGENTS.md` / `docs/CONVENTIONS.md` §2.4）。各文件既有行尾仍按实况保留，避免整文件转换。
 - SUPERSEDED: 2026-10-13 5 组源文件已规范为 UTF-8 BOM/CRLF，`.gitattributes` 为 CSV 单独覆盖 eol，旧“既有行尾保留”说明不再描述当前状态。格式防护见 `tests/check_localization.py`（来源：test）。
+- SUPERSEDED: 2026-11-19 「值留空」的规范写法改为**直接留空** `<key>,,,,`（来源：user）；本条里的 `key, , , ,` 是旧的「单空格占位」，2026-11-19 已全部清理，展示层也已能正确处理真留空。
 
 ### [Time] `process_mode` 只绕开 paused，不绕开 `Engine.time_scale`
 - Evidence / 证据: `ui/transition.tscn:733,1004`（`process_mode=3`）, `scenes/enemies/boss/goliath.tscn:2704,2740`, `scenes/game_camera/gamecamera.gd:41`
@@ -765,6 +766,7 @@
 - Notes / 说明: **现象**——Boss 死掉 100 枚 `coin_box` 金币（`add_coin()` 每 0.03s 掉一枚、每枚抛物线 3s 落地），在没掉完时拾取青辉石，**只自动拾取了已掉完的金币**。**根因**：`coin.gd` 原先每枚金币各自在 `_ready` 连 `GameEvents.pyroxenes_pick_up.connect(auto_pick)`，而该信号是**一次性**的——信号发射后才由 `coin_box` 生成的金币在连接前信号已成过去式，永远收不到。**修法**：① 用持久「全局状态」（`CoinManager.auto_pick`）替代逐枚订阅，`coin.active_state()`/`absorb()` 时读取并置 `can_pick/pick_up`；② 活跃集生命周期登记（`CoinManager._active`）让事件发射时能遍历到已存在对象（含抛物线飞行中金币）；③ `coin_box` 对同一事件置 `_flushed`，把**异步节流循环**（`await timer.timeout`）改为 `if _flushed: continue` 立即补发剩余；④ `round_start` 复位状态。**通用教训**：凡「某一次性事件要让**事件之后陆续生成**的对象也生效」，不要用逐对象订阅该信号（必然漏新对象），要用持久状态位 + 生命周期登记在对象激活时读取；异步生成器（带 `await` 的循环）在需要「立即全量」时要提供 flush 通道。
 - Source / 来源: user + code + test
 - Date / 日期: 2026-10-02
+- UPDATE: 2026-11-20 金币改为代码弹道：`coin_box` 每枚约 0.95s 首落 + 2 次弹跳（总约 1.66s），不再是 3s 贝塞尔；`_flushed` 立即补发与 `CoinManager.auto_pick` 状态位逻辑不变。
 
 ### [Input] 移动端外接键鼠/手柄：`control_mode` 与虚拟摇杆脚本态会跨设备/回合残留，导致触屏 UI 消失且全部输入失效
 - Evidence / 证据: `script/Game.gd`（`_unhandled_input` 事件推断 `control_mode`、新增 `reset_control_mode()` 连 `round_start`）、`ui/game_ui.gd:40-47`（`control_mode != 1` 隐藏 `VirtualJoypad`）、`ui/Knob.gd`/`ui/MouseKnob.gd`（新增 `_release_all()`、`event.canceled`、`visibility_changed`、`NOTIFICATION_APPLICATION_FOCUS_OUT|SUSPENDED|PAUSED|EXIT_TREE`、`game_mode_changed`、`round_start` 清理）、`script/player.gd:97`（`reset_control_flags()` 连 `round_start`）、`scenes/manager/upgrade_manager.gd:54-59`、`scenes/manager/round_manager.gd:98,116`、`ui/UpgradeScreen.gd`（`_closed` 幂等）。
@@ -772,6 +774,26 @@
 - Source / 来源: user + code
 - Date / 日期: 2026-10-02
 - UPDATE: 2026-11-21 用户补充复现：外接键鼠/手柄**一直用着**时会途中突然全设备失效、游戏世界继续跑；纯触屏从不发生。重新审查后的关键结论：**`control_mode` 只能解释"用哪种瞄准/显示哪套触摸 UI"，解释不了"所有设备都推不动"**——故障时模式多为 0/2（触摸 UI 按设计隐藏），真正候选是 ①窗口/App 失焦（系统通知栏、蓝牙配对弹窗、游戏助手浮层等）②玩家控制态残留（`player_stop`/`can_control`/`can_move`/`can_jump`/`gun.can_shoot`）③树被暂停但暂停页不可见。旧实现的确定缺陷：`_unhandled_input` 推断会漏掉被 GUI 消费的触摸；单事件锁存、无按下沿/`echo`/`DEVICE_ID_EMULATION` 过滤；无手柄断连与静默回落；**完全没有失焦处理**（游戏继续跑但 OS 不再给输入）；`TouchScreenButton` 不处理 `APPLICATION_FOCUS_OUT`，失焦时按着 JUMP/MELEE/RELOAD/EX 会永久卡住；`AutoButton` 隐藏后 Timer 仍发 `fire`。已核实 `scenes/main/main.tscn:198` 的全屏背景 `TextureRect` 默认是 **PASS**（不是 STOP，不吞点击）；`vending_machine.gd`/`game_tv.gd` 的 `on_chose` 全仓无写入点，商店当前不可用，排除"商店锁"。本次修法：`Game` 用 `_input`+`_unhandled_input` 双通道；触摸无条件优先并保留 400ms 窗口；鼠标/键盘只看真实按下沿（忽略 `echo` 与模拟设备）；手柄按钮立即判、轴 `>=0.9` 立即、`0.75~0.9` 保持 150ms；`Input.joy_connection_changed` 断连回退；触屏设备上外设静默 5s 自动回落触屏；失焦在移动端单机自动暂停并清理输入（有 `pause_lock`/`pause_visibility` hook 时不抢），回前台只重发 UI 同步；新增 `input_debug_snapshot()` + 控制态看门狗 + 移动端三指恢复；新增 `ui/virtual_joypad.gd` 统一清理引擎触摸按钮残留；`AutoButton` 隐藏/失焦停表；准星改"触摸拖动 250ms 优先"；`player.reset_control_flags()` 补 `gun.can_shoot`；Hoshino `control_reset()` 对称复位。验证：`tests/_input_mode_probe.gd`（本地）0 失败；`tests/run_hare_lock_input_probe.py`、`tests/run_kotama_touch_fire_checks.py` 通过；真机失焦/蓝牙睡眠待用户复测。
+
+### [Input] 桌面触屏 + 多手柄：触摸默认值与无条件 action_release 会让键盘"失灵"
+- Evidence / 证据: `script/Game.gd`（`_detect_touch_device()` 把 `DisplayServer.is_touchscreen_available()` 当移动端 → `_default_control_mode()` 返回 TOUCH、`reset_control_mode()`/`round_start` 复位到 1；`_tick_external_idle_fallback()`/三指恢复同样按触摸设备启用）、`ui/virtual_joypad.gd:32-45`（旧实现对**每个** `TouchScreenButton` 无条件 `Input.action_release(action)`）、`ui/Knob.gd:33-37`（旧 `_release_all()` 无条件释放 `move_left/right/up/down`）、`ui/AutoButton.gd:35-41`（`auto_close()` 无条件补 `fire=false`）；用户 PC 的 HID 设备表含 3 个触摸屏与多个 Xbox/HID 手柄；日志 `ETN_debug.log` 含 `[etn_coop]` 与 `Embedded window can't be resized.`，**无 GDScript 错误**。
+- Notes / 说明: **现象（user）**：PC 上按键后出现鼠标、鼠标可点可移，但键盘无反应；游戏世界仍跑。**根因**：桌面触屏使 `is_mobile_platform` 缺失、默认模式变成 TOUCH，摇杆显示；第一次按键切 MOUSE、摇杆隐藏；触摸清理把 `move_jump/kick/reload/EX_skill/pause` 等**键盘/鼠标共享**动作全部释放，`Knob` 把 `move_*` 释放，`AutoButton` 把 `fire` 补发 false；多个手柄/模式切换会让这个清理反复发生，于是键盘像死了一样，而鼠标点击/移动不受动作释放影响。**修法**：新增 `Game.is_mobile_platform = OS.has_feature("mobile")`，`touch_device_available` 只表示能接收触摸；`_default_control_mode()`、静默回落、三指恢复都按移动端；`_on_joy_connection_changed()` 不再全量释放动作；`virtual_joypad._release_touch_state()` 只切换 `is_pressed()` 的按钮（引擎内部 `_release()` 只释放它自己按下的 action）；`Knob` 用 `_owned_actions` 只释放自己按过的方向键；`AutoButton.auto_close()` 只在 `on_press` 时补 `fire=false`。**通用教训**：共享 InputMap 动作只能由实际按下它的输入源释放；"桌面有触摸屏"不等于"移动端"，默认模式必须按平台而不是按设备能力决定。验证：`tests/_input_mode_probe.gd`（本地）0 失败；`run_hare_lock_input_probe.py`、`run_kotama_touch_fire_checks.py`、`run_ui_ux_checks.py` 全通过；PC 真机待复测（若键盘仍完全无响应，优先排查编辑器嵌入窗口焦点——`Embedded window can't be resized.` 提示，改用独立窗口/exe 并点击游戏窗口）。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-22
+
+### [Input] 关卡内鼠标指针：Game._input 的鼠标按下不得写 MOUSE_MODE_VISIBLE
+- Evidence / 证据: `script/Game.gd`（`_track_input_device()` 鼠标分支，2026-11-21 重写后每次真实鼠标按下都 `Input.mouse_mode = VISIBLE`）、`scenes/crosshair/crosshair.gd:18`（关卡 `_ready` 设 `CONFINED_HIDDEN`）、`scenes/manager/round_manager.gd:118,145`（回合边界设 `CONFINED_HIDDEN`）、`script/ui_cursor.gd` / `ui/pause_screen.gd` / `ui/UpgradeScreen.gd` / `ui/game_over_page.gd`（菜单类显式显示指针）。
+- Notes / 说明: 旧 `_unhandled_input` 仅在从非键鼠切到键鼠时 `VISIBLE`；重写后变成**每次真实鼠标按下**都 `VISIBLE`，PC 关卡内用鼠标瞄准/开火就弹出系统指针。修法：删除该写入，鼠标按下只 `_apply_control_mode(MOUSE)`；关卡内保持 `CONFINED_HIDDEN`，准星即指针；不新增全局强制隐藏，避免误伤暂停/升级/菜单/联机聊天。headless 的 `DisplayServer` 会把 `Input.mouse_mode` 强制成 `VISIBLE`，探针改用源码断言 `Game.gd` 不含 `Input.mouse_mode = Input.MOUSE_MODE_VISIBLE`，真机由人工验收。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-22
+- UPDATE: 2026-11-22 后续升级为 `UIMode` 模式栈（见下一条），不再由 crosshair/暂停各自写鼠标。
+
+### [Input] 指针改为 UI 模式栈（UIMode）：唯一真源、鼠标与准星都派生
+- Evidence / 证据: `script/ui_mode.gd`（`Mode`/`_base`/`_entries`/`apply()`/`bind_visibility()`/`register_crosshair()`）；`scenes/crosshair/crosshair.gd`（`_ready` register+enter_gameplay、`_notification` 回前台 apply、`set_view_visible` 仅视图）；`ui/pause_screen.gd`、`ui/cheat_menu.gd`、`ui/game_over_page.gd`、`ui/player_up_screen_date.gd`、`ui/test_menu.gd`、`ui/character_test_menu.gd`、`ui/enemy_test_menu.gd`（`UIMode.bind_visibility`）；`scenes/manager/round_manager.gd` / `upgrade_manager.gd`、`ui/UpgradeScreen.gd`、`scenes/main/menu_screen.gd`（移除直写）；`script/ui_cursor.gd`（兼容门面）；`Game.input_debug_snapshot()` 的 `ui_mode` / `ui_cursor_visible` / `ui_entries`。
+- Notes / 说明: 旧 `UICursor` 只是鼠标引用计数、不知道准星；暂停/升级/结算/cheat/round 各自直写，顺序与生命周期难保证。主流做法是输入/UI 模式栈：UI 只 push/pop 模式，`apply()` 统一输出鼠标和准星；场景根设基底，UI `bind_visibility` 自动注册，回前台重放。`GAMEPLAY` 鼠标隐藏/准星显示，`MENU/UI` 鼠标显示/准星隐藏，`CINEMATIC` 两者隐藏。`UICursor` 仅门面；coop mod 聊天仍直写，已知例外。验证：`tests/test_ui_mode.gd` 8/8（含 `test_zz` 恢复编辑器鼠标）、`tests/test_ui_cursor.gd` 4/4、输入探针 0 失败（含直写审计）、UI 套件 147/0。
+- Source / 来源: code + test + user
+- Date / 日期: 2026-11-22
+- UPDATE: 2026-11-22 MCP `ui_mode` 套件运行在编辑器进程，曾把编辑器 `Input.mouse_mode` 留在 `CONFINED_HIDDEN`（编辑器鼠标消失）；测试已加 `prev` 保存/还原 + `test_zz_restore_editor_mouse` 兜底恢复 `VISIBLE`（`tests/` 本地，不提交）。
 
 ### [Combat] 玩家侧爆炸「爆炸伤害」加成统一收口在 `ExplosionDamage`（不再各创建点手写）
 - Evidence / 证据: `script/explosion_damage.gd:103-142`（`add_damage_data()` 调 `apply_player_explosion_bonus`；静态 `should_apply_player_explosion_bonus`/`apply_player_explosion_bonus`）；`scenes/bullet/yuzu_bullet.gd:95-99`（爆炸本身打 `EXPLOSION_DAMAGE` 标签）；已删除手写乘算：`scenes/update_item/ink_cartridge.gd`、`scenes/update_item/matcha_ramune.gd`、`scenes/update_item/cherino_matryoshka.gd`、`scenes/player/kasumi/kasumi_drill.gd`、`scenes/player_support/ayane/ayane_as.gd`、`scenes/update_item/shiroko_drone_icon_2.gd`；PS 不再全局打标：`scenes/player/yuzu/YuzuPS.gd`、`scenes/player/hibiki/HibikiPS.gd`；测试 `tests/test_explosion_bonus.gd`。
@@ -823,9 +845,15 @@
 
 ### [Perf] 玩家子弹 rotation 改「初始化 + 变向」更新；子弹拖尾 `line.gd` 空闲停物理
 - Evidence / 证据: `script/player_bullet.gd`（`active_state` 末尾 `rotation = direction.angle()`；`_physics_process` 删除每帧 `rotation = velocity.normalized().angle()`；反弹分支与 `r_move` 补 rotation；`flight_time` 保留）、`scenes/bullet/megu_bullet.gd`（自反弹后补 rotation）、`scenes/line.gd`（`is_idle` setter → `set_physics_process(not v)`）。
-- Notes / 说明: Profiler 见 `PlayerBullet._physics_process 1.60ms×755`（Nonomi 弹数放大）与拖尾 `_physics_process 1.65ms×212`（每弹 2 条 `Line2D`）。① 原实现每弹每帧 `rotation = velocity.normalized().angle()`（normalize+atan2+写 transform），直线弹纯浪费；改为 `active_state()` 定型一次、仅在 `r_move()`（追踪/`can_r`）与反弹时更新。`flight_time += delta` 保留（`mint_chocolate_parfait.gd:22-24` 依赖）。② 拖尾 `line.gd` 空闲子弹仍每帧回调（原只靠 `is_idle` 早退）；`is_idle` 改带 setter，空闲 `set_physics_process(false)`、激活开，去掉池中空闲拖尾空转（**未改更新频率**）。`game_eval` 验证：`line.is_idle=true` → `is_physics_processing()==false`、`false`→`true`；子弹 `active_state` 后 `rotation==direction.angle()`、直线帧 `_physics_process` 不改 rotation、`r_move` 后 rotation 随速度更新。⚠️ `megu_bullet` 自写 `active_state`（不调 super）且反弹在自身闭包，需自行补 rotation；`yuzu_bullet`/`normal_bullet` 各有 `_physics_process`，不受影响。
+- Notes / 说明: Profiler 见 `PlayerBullet._physics_process 1.60ms×755`（Nonomi 弹数放大）与拖尾 `_physics_process 1.65ms×212`（每弹 2 条 `Line2D`）。① 原实现每弹每帧 `rotation = velocity.normalized().angle()`（normalize+atan2+写 transform），直线弹纯浪费；改为 `active_state()` 定型一次、仅在 `r_move()`（追踪/`can_r`）与反弹时更新。`flight_time += delta` 保留（`mint_chocolate_parfait.gd:22-24` 依赖）。② 拖尾 `line.gd` 空闲子弹仍每帧回调（原只靠 `is_idle` 早退）；`is_idle` 改带 setter，空闲 `set_physics_process(false)`、激活开，去掉池中空闲拖尾空转（**当时未改更新频率**；2026-11-18 已由 `update_hz` / 距离剔除 / 内线降级接管，见下方条目）。`game_eval` 验证：`line.is_idle=true` → `is_physics_processing()==false`、`false`→`true`；子弹 `active_state` 后 `rotation==direction.angle()`、直线帧 `_physics_process` 不改 rotation、`r_move` 后 rotation 随速度更新。⚠️ `megu_bullet` 自写 `active_state`（不调 super）且反弹在自身闭包，需自行补 rotation；`yuzu_bullet`/`normal_bullet` 各有 `_physics_process`，不受影响。
 - Source / 来源: code + test
 - Date / 日期: 2026-10-02
+
+### [Perf] 玩家子弹双 Line2D 拖尾：每条线是独立 draw call，降采样/降级/单线合并各自解决不同问题
+- Evidence / 证据: `scenes/line.gd`（`update_hz=60` 默认、`<38fps` 降到 30；`max_points=3` / `min_step_px=2` / `cull_radius=520` / `cull_hysteresis=60` / `_refresh_visibility`；`points = _buf` 单次赋值；材质为 `ShaderMaterial` 时每线 duplicate 并写 `tail_pos/head_pos/core_half_*`）、`resources/vfx/bullet_trail_core.tres`（14 场景共享）+ `shaders/bullet_trail_core.gdshader`（局部坐标胶囊内芯）、`scenes/line.tscn`、14 个角色/支援弹场景（已删除全部 `Line2` 与 `texture_mode=2`）、`script/player_bullet.gd` / `scenes/bullet/normal_bullet.gd` 的可选 `line_2` 判空、`PoolManager.get_fps_ema()`；本地探针 `tests/_trail_probe.gd`（窗口渲染，150 发：双线基线 301 draw call / 450 objects；全量单线 151/300；全部剔除 1/150）、`tests/_trail_check.gd`（headless：60Hz/30Hz 节奏、剔除、降级、idle/reset、14 场景结构，共 75 项全过）、`tests/_trail_visual.gd`（并排截图）。
+- Notes / 说明: ① `Line2D` 不是可合批对象：300 条拖尾 = **301 draw call**（`RENDER_TOTAL_DRAW_CALLS_IN_FRAME` 实测），所以**只降更新频率不降绘制**；真正减少条数要靠单线合并，屏幕外靠距离剔除。② 原实现每帧 `add_point` +（满点后）`remove_point`，稳态只有 **3 个点**（`timer` 加满即减），等价 2 个采样间隔：60Hz×3 点 ≈33ms（旧观感）；30Hz×3 点 ≈66ms 且头部滞后 `speed/30`（600px/s 约 20px），**实机被用户判为明显卡顿**，故默认回 60Hz（满池约 +1ms/帧，draw call 不变）。③ 隐藏后再恢复必须先清点，否则旧世界坐标点会连出跨屏长线（`_refresh_visibility` 首次隐藏时 `_buf.clear()`）。④ 距离剔除以屏幕中心为准（相机优先、玩家兜底），520px 覆盖 640×360 可见半对角线（≈367px）；无相机/玩家时不做剔除。⑤ 低帧降级只保留 `<38fps → 30Hz`（恢复 45 滞回，`fps<=0` 按健康处理）；双线时代的 `<50fps 隐藏内芯` 已随 Line2 删除。⑥ 空闲池仍走 `is_idle` 停物理（2026-10-02 已做）。⑦ **单线胶囊（B）**：`Line2D` 只有在 `texture_mode != NONE` 时才写 UV，但 **cap 里的 UV 映射的是圆弧、不是横向 0→1**，所以 `UV.y` 只能画直条内芯，圆头处会变成平头（user 截图反馈）。圆头必须按**局部坐标到拖尾弦的距离**画胶囊：顶点传 `v_local = VERTEX`，片元用 `tail_pos/head_pos` 求最近点，半宽 `core_half`；端点/半宽只能**每条线独立材质 + 每采样写 uniform**（共享材质会互相覆盖）。半宽用旧内线还原：`width_f*scale_mult*0.5*(7/12)*curve`（curve 0.527→0.670），kei 的 10.5/18 同比例；150 线 × 60Hz × 2 次 ≈1.8 万次/秒（估算 0.05–0.3ms/帧）。单线 60Hz 的采样量 = 双线 30Hz（150×60 = 300×30），但 draw call 减半（301→151）。⑧ 全量后已删除 `secondary`/`enabled`/`life_timer`/`texture_mode` 与全部 `Line2` 节点；共享材质放在 `resources/vfx/`，`player_bullet`/`normal_bullet` 的 `line_2` 只作为双线基线探针的可选路径保留。⑨ 探针注意：窗口模式首轮 `fps` 被启动/编译拖慢，必须加一轮重复 `on2` 复核；CPU 时间噪声大，验收优先看 draw call / objects / 点节奏。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-18
 
 ### [Enemy] 恶寒把 `MAX_SPEED` 压低会让加速度归零 → 击退后持续滑行
 - Evidence / 证据: `script/EnemyStats.gd`（`MAX_SPEED = base_MAX_SPEED * max(0.1, MAX_SPEED_mult)` `:167`；新增 `move_acceleration()` `:172`）；7 处原 `ACCELERATION = stats.MAX_SPEED / stats.SPEED_TIME` 改为 `stats.move_acceleration()`（`automaton.gd:78` / `sweeper.gd:47` / `tester_automaton_shield.gd:94` / `enemy_tank.gd:168` / `sandbag.gd:124` / `boss/goliath.gd:136` / `boss/erosion_tower.gd:70`）；`entity_ENEMY.move()` `:171-172`；恶寒 `CHILL_SPEED_PENALTY=-0.02`（`enemy_buff_manager.gd`）改 `MAX_SPEED_mult`。
@@ -1402,6 +1430,7 @@
 - Notes / 说明: **① 抛物线金币**：`drop()` 里 `body.active_state()`（触发 `on_coin_spawned`）**早于** `curve` 构建，故只能按 `net_id` 延后一帧读 `parabola.curve` 转世界坐标广播；客机按折线+**墙钟**驱动 `coin_traj` 飞行、落地才 `can_pick`（拾取仍走 host 共享）。**② 角色状态**：`cstate` 是 int 且 `player.gd` 对直接子节点 OR 聚合；**`apply_network_character_state` 只准写视觉节点**——Aris 若写 `gun_heat.k` 会触发 `k_changed`→`add_heat_critical`/`gun_ammo_count` 玩法；Hoshino 若写 `melee_rank/shot_rank` setter 会 emit `*_rank_change`→`enhancement_shot_count`。**③ Kasumi 钻头是瞬态**（`kasumi_melee` 临时实例化、非持续状态、且无 `on_player_melee` 调用点）→ 用预留的 M5 角色事件通道广播、镜像生成 `set_script(null)` 的纯视觉钻头。**④ Hina QTE**：`Engine.time_scale=0.07` 是**每进程**的；客机只慢自己、房主会连同 mod 的 delta 发送节奏（`_state_timer`/`_snapshot_timer`）一起饿死→全场卡顿，且客机镜像跳帧、敌人仍常速（子弹时间手感失效）。联机改为**等比慢放 QTE 动画**（`qte_bar/AnimationPlayer.speed_scale=0.07`；bar 本就由 `qte_anim` 的 `bar:position` 轨道驱动），世界不减速。**通用教训**：跨端回放"角色持续状态"一律只动视觉、别碰会发 gameplay 信号的 setter；会改 `Engine.time_scale` 的本地机制在联机下要么改动画慢放、要么 host 权威广播。
 - Source / 来源: user + code
 - Date / 日期: 2026-10-07
+- SUPERSEDED: 2026-11-20 金币弹道重做：`drop()` 先建代码弹道状态再 `active_state()`，host 经 `get_trajectory()` 同步读世界折线并随包下发 `duration`（协议 v12 / mod 0.1.25），不再延后一帧读 `curve`；本条其余角色状态/QTE 结论仍有效。
 
 ### [Mod] 聊天室「发送即释放」：控件占用/释放与窗口淡出解耦
 - Evidence / 证据: `mod_sdk/coop_mod/mods/etn_coop/ui/coop_chat.gd`（`_acquire_controls`/`_release_controls`/`_controls_held`；`_open_chat`/`_refocus` 占用、`_submit`/`_hide_now` 释放）。
@@ -3281,6 +3310,8 @@
 - Notes / 说明: 旧实现里 `parabola_path` 自带 coin body，且 `body.free_self -> queue_free` 会把整条路径销毁，无法复用。现改为路径根入 `parabola_coins`，body 入 `coins`。关键顺序：`idle_state()` 先让 body 发 `idled`，再在 `_release_body()` 里把 body `reparent` 回 `CoinRoot`、补 `PoolManager.add_pool("coins", body)`，最后才把路径标记 `is_idle=1`；否则路径池可能返回仍挂着 body 的路径。`coin_box` 末尾会 `erase_pool("coins")`，所以释放 body 时必须重新 `add_pool`。路径池跨索尼克/coin_box 共用，idle 时重置为 coin_box 默认参数，避免索尼克配置泄漏；`is_idle`/`PathFollow2D` 与 `coin.idled` 是这套回收协议。`main.coin_clear_unit()` 只遍历 `CoinRoot` 直接子节点，必须单独处理 `Path2D`，否则未拾取路径会一直留着。
 - Source / 来源: code + user
 - Date / 日期: 2026-10-23
+- SUPERSEDED: 2026-11-20 `parabola_path` 改为 Node2D + `CoinBallistic` 代码弹道（无 `PathFollow2D`/`Curve2D`/`Tween`）；双池化与回收顺序不变，`main.coin_clear_unit` 改为按 `has_method("clear_uncollected")` 识别未拾取节点。
+- UPDATE: 2026-11-20 `coin_box` 不再在 `add_coin()` 末尾 `erase_pool("coins")`——`erase_pool` 只删池条目、不回收节点，会把共用金币池里未被盒子复用的空闲币变成 `CoinRoot` 下的隐藏孤儿（详见下方 `[Coin/Pool] coin_box 不能 erase_pool` 条）；`_release_body()` 的 `add_pool("coins", ...)` 保留作兜底。
 
 ### [Coop/Chip] B1 索尼克掉币：客户端上报、host 生成、拾取者独得
 - Evidence / 证据: `resources/buff/components/sonic_coin_drop_component.gd`（`player_coin_drop_interceptor`、`spawn_burst_at`）、`script/extension_hooks.gd`（`player_coin_drop_interceptor`）、`scenes/item/coin.gd` / `scenes/item/parabola_path.gd`（`personal_pickup`）、`mods/etn_coop/net/coop_net.gd`（`_gate_player_coin_drop`、`_server_player_coin_drop`、`_remote_parabola_coin`、`_server_pickup_coin`、`_do_shared_coin_pickup`）
@@ -3299,6 +3330,7 @@
 - Notes / 说明: `coin_box` 默认落点在 `30~120` 内且不 clamp；索尼克 360° 且 `80~260`，可能落到墙外。`clamp_to_walkable=true` 时每枚最多重采样 `target_attempts=8`，最终用 `nearest_inside(world, 16)` 兜底；默认关闭，避免改变旧掉落。
 - Source / 来源: code
 - Date / 日期: 2026-10-23
+- SUPERSEDED: 2026-11-20 用户要求 coin_box 与索尼克金币都必须落在可行走区：`clamp_to_walkable` 默认改 `true`；`MapBounds` 只覆盖外边界，还必须排除壁垒 `NavObstacle` 内部墙（`EnemyNavField.is_solid/is_body_safe`，仅 `has_blocks()` 为真时启用），兜底 `EnemyNavField.safe_pickup_point()`。
 
 ### [Coop/Field] 场地伤害的“房主结算”是房主计算、客机落地
 - Evidence / 证据: `mod_sdk/coop_mod/mods/etn_coop/net/coop_net.gd`（`_on_host_orbital_blast`、`_remote_orbital_damage`）；`scenes/field_mods/orbital_barrage.gd`（`strike_blast_fired`）；`script/player_health_component.gd`（`TRUE_DAMAGE`）
@@ -3689,10 +3721,16 @@
 - Date / 日期: 2026-11-05
 
 ### [Enemy/AI] 每敌成本降不下去时，用「战术分层人数上限」把尖峰与人数解耦
-- Evidence / 证据: `script/enemy_ai.gd` 的 `TACTICAL_LIMIT = 60` 与 `_trim_group()`、`script/entity_ENEMY.gd` 的 `_ai_tactical`；`tests/ai_probe.gd::_run_perf_checks()` 实测 n=40/89/150 → 1411/2677/3652µs，其中 slots+queue（战术部分）在 89 与 150 时分别是 1192+354 / 1212+366（**基本不变**）。
-- Notes / 说明: 当一个 AI 系统的单次求解成本主要由「~1µs 的引擎调用 × 每敌次数 × 人数」决定时，继续抠写法收益 <5%（见上一条），真正的杠杆是**限制参与量**。做法是按目标分组、只保留最近 K 只进入战术层（角色/槽位/反排队），其余清空意图退回纯场流——`_steer_intent()` 对 `INTENT_NONE` 已经直接返回 `flow`，所以"降级"是零成本的既有路径，不需要新分支。两个必须做对的细节：① 被裁掉的敌人要**主动清** `_ai_intent/_ai_slot_valid/_ai_flow_direct`，否则会带着上一轮的意图和陈旧的直线判定继续被塑形；② 上限按**目标**而非全局计（联机两个玩家各 60），否则一个玩家会把另一个的份额吃光。⚠️ 该上限只约束战术层，`_collect`/密度/离墙仍随人数线性增长——要彻底封顶得连 `_candidates` 一起裁，代价是远处敌人失去离墙逃生。
+- Evidence / 证据: `script/enemy_ai.gd` 的 `TACTICAL_LIMIT = 60`（2026-11-18 起是 L0 基线，实际上限由 `tactical_limit()` 按性能档位给出 60/44/30）与 `_trim_group()`、`script/entity_ENEMY.gd` 的 `_ai_tactical`；`tests/ai_probe.gd::_run_perf_checks()` 实测 n=40/89/150 → 1411/2677/3652µs，其中 slots+queue（战术部分）在 89 与 150 时分别是 1192+354 / 1212+366（**基本不变**）。
+- Notes / 说明: 当一个 AI 系统的单次求解成本主要由「~1µs 的引擎调用 × 每敌次数 × 人数」决定时，继续抠写法收益 <5%（见上一条），真正的杠杆是**限制参与量**。做法是按目标分组、只保留最近 K 只进入战术层（角色/槽位/反排队），其余清空意图退回纯场流——`_steer_intent()` 对 `INTENT_NONE` 已经直接返回 `flow`，所以"降级"是零成本的既有路径，不需要新分支。两个必须做对的细节：① 被裁掉的敌人要**主动清** `_ai_intent/_ai_slot_valid/_ai_flow_direct`，否则会带着上一轮的意图和陈旧的直线判定继续被塑形；② 上限按**目标**而非全局计（联机两个玩家各一份；L0 各 60，性能自适应可降到 44/30），否则一个玩家会把另一个的份额吃光。⚠️ 该上限只约束战术层，`_collect`/密度/离墙仍随人数线性增长——要彻底封顶得连 `_candidates` 一起裁，代价是远处敌人失去离墙逃生。
 - Source / 来源: code + test
-- Date / 日期: 2026-11-05
+- Date / 日期: 2026-11-05（2026-11-18 更新：上限改为性能驱动的动态值）
+
+### [Enemy/AI] 自适应 AI 预算用「档位 + 滞回 + 确认时间」，且先削上限再拉间隔
+- Evidence / 证据: `script/enemy_ai.gd`（`QUALITY_*` 常量、`_evaluate_quality()`、`tactical_limit()`、`solve_interval_ms()`、`decision_stale_ms()`）、`scenes/manager/PoolManager.gd` 的 `get_fps_ema()`、`script/entity_ENEMY.gd`（`_ai_decision_ms` 过期判定、`_ai_stuck_since_ms`）、`tests/ai_probe.gd::_run_adaptive_checks()`。
+- Notes / 说明: ① 单帧 FPS/耗时不能直接当输入：AI 降频会反过来抬帧率，直接反馈会「降→恢复→升→再掉」。必须用滞回（50/55、38/45、6/4.5ms、9/7.5ms）+ 升档 1.2s / 退档 3s 确认 + 一次只退一档。② 杠杆顺序：先削**参与量**（战术层 cap，slots/queue 成本随它近似线性下降），再拉**间隔**（降总量，但槽位延迟 ×3 相）。实测 n=89：L0 5343µs → L2 3910µs（约 -27%）；该机比二十期记录慢约 2×，只看相对值。③ 降频会连带改变依赖「求解次数」的语义：`_update_stuck()` 的「4 次求解」必须改墙钟（否则脱困 1.44s→3.6s），决策过期阈值在 L0 必须保持 2000ms（逐值不变）、降频后按 `max(2000, 4×间隔)` 放大（无场 L2=2560ms、壁垒场 L2=4000ms；槽位周期 1.92s、壁垒场 3s，否则会被 2000ms 误判过期、频繁退回简单追踪）。④ 采样要放在求解门控**之前**，否则降频后永远读不到恢复信号；空闲 5s 回 L0，避免把上一回合的瞬时降档带进下一回合。⑤ 自测必须在 headless 用注入信号（`perf_override`）+ 直接调 `_evaluate_quality(t, …)`，不要依赖真实帧率或 sleep。⑥ `fps<=0`（headless/未知）按健康处理，否则无渲染环境会永远停在最低档。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-18
 
 ### [Enemy/AI] 给敌人加 AI 状态前先问"客机要不要"：镜像不模拟 AI，两个拦截点缺一不可
 - Evidence / 证据: `mod_sdk/coop_mod/mods/etn_coop/net/coop_enemy_proxy.gd`（`network_remote_enemy` meta、`disable_mirror_ai()`）、`mod_sdk/coop_mod/mods/etn_coop/net/coop_net.gd`（`_send_enemy_snapshot()` 打包 `pos/vel/hp/state/converted/gauge`）、`script/enemy_ai.gd` 的 `_is_candidate()`、`script/entity_ENEMY.gd` 的 `ai_active()` 与 `ai_steer()` 顺序、`tests/ai_probe.gd` 的 `_run_coop_mirror_checks()`。
@@ -4390,6 +4428,7 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - Notes / 说明: ① `kick` 已绑定右键，hare 用右键切形态时必须 `allow_kick=false`（hare.tscn 根节点），否则同键触发踢击；② `Crosshair` 挂在 `CanvasLayer` 下发出屏幕系坐标，`player.crosshair_pos` 已转世界系，锁定框直接用它；③ 无人机护卫弹要独立构造 `DamageData`（近战级击退），不能 emit `player_shot_position`——`Player.bullet_hit_damage` 会把 `knockback` 覆盖成普通子弹击退。
 - Source / 来源: test
 - Date / 日期: 2026-11-13
+- SUPERSEDED: 2026-11-20 Hare 删除通用 Kick/Kick 动画/`allow_kick`，改由 `HarePS` 直接处理 `kick`（并保留 `hare_aim` 给手柄 R3）；详见本文件末 `[Hare/Mobile] 移动端 MELEE 无反应` 条目。旧结论「必须 allow_kick=false」只适用于当时保留 Kick 节点的做法。
 ### [Hare] 跟随滞后的前提是世界坐标：玩家子节点会吞掉 lerp 拖尾
 - Evidence / 证据: `scenes/player/hare/hare_ps.gd`（`_squad.top_level = true`）；`scenes/player/hare/hare_drone.gd`（`lerp(desired, 1-exp(-smooth*delta))`）；对照 `scenes/player/chihiro/chihiro_drone_body.gd:16,91`
 - Notes / 说明: 无人机挂在玩家下时，父节点位移会 100% 带给子节点，`global_position.lerp` 只影响环绕相位，玩家移动时看不到拖尾。要 Chihiro 式跟随滞后，编队必须世界层化（`Node2D.top_level = true` 或挂 `EquipLayer`）；IDLE 平滑 4.0 与 Chihiro `FOLLOW_SMOOTH` 一致，稳态落后约 `v/smooth`。
@@ -4448,6 +4487,7 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - Source / 来源: test
 - Date / 日期: 2026-11-13
 - 2026-11-13 锁定战术目镜边缘强度试调（约 ×1.8）：`tint_strength 0.35→0.63`、`scanline_strength 0.22→0.40`、`vignette_strength 0.35→0.63`、`rain_strength 0.7→1.0`、`edge_inner 0.30→0.26`、数字雨叠加系数 `0.55→0.80`。中心仍由 `edge_mask=0` 保持原画。
+- SUPERSEDED: 2026-11-20 移动端不再一律禁用：新增 `Game.screen_filters` 总开关（PC 默认开 / 移动端默认关）；关闭时 Hare 目镜改走不读屏幕的安全 overlay（`MobileShade`/`MobileGlow`），详见文件末 `[Rendering] 屏幕读取型全屏滤镜统一总开关` 条目。
 ### [Gameplay] Hare 电池条 / 锁定冷却 / 标记 10s / 无人机伤害
 - Evidence / 证据: `scenes/player/hare/hare_ps.gd`（`ENERGY_MAX/DRAIN/REGEN/HIT_REGEN`、`AIM_COOLDOWN`、`_apply_mark` duration 10.0）、`ui/hare_battery.gd`（`heat_bar.png` 旋转 2× + 10 格）、`scenes/player/hare/hare_drone.gd`（`_current_ratio` 0.24/0.40/0.64、`_pre_bullet` 的 `on_damage_dealt` 回电）
 - Notes / 说明: 电池条复用 Aris 的 `ui/heat_bar.png`，`draw_set_transform(0, PI/2, 2x)` 横躺、黄绿 modulate；内部 10 格按电量点亮（每格 10 电）。`hare_mark` duration 10s（`erase_time=100`，`TICKS_PER_SECOND=10`）。锁定开关冷却在 `_unhandled_input` 入口判断 `_aim_cd`，进入/退出后置 1s。无人机命中回电用子弹 `damage_data.on_damage_dealt` 回调（victim 带 `hare_mark` 时 `ps.add_energy`）。电量耗尽会强制 `_exit_locked`。
@@ -4755,6 +4795,7 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - Notes / 说明: 屏幕效果放在 `CanvasLayer layer=3`（高于 `gamecamera` layer2/GameUI layer1，低于暂停5与弹窗4；只做边缘，不整体遮黑）；`ColorRect.mouse_filter=IGNORE`。shader 只对屏幕边缘 `edge` mask 做 UV 折射/色差/青色 tint/扫描线/暗角，中心保持 `SCREEN_UV` 原画；`hint_screen_texture` 用 `BackBufferCopy copy_mode=2`，像素画用 `filter_nearest`，不要照搬参考 shader 的 `filter_linear_mipmap`。关闭时 `BackBufferCopy` 和 `Filter` 都隐藏，无每帧成本；移动端 `OS.has_feature("mobile")` 直接跳过，避免机型和兼容风险。不要把整屏 blur/重噪点/全屏 tint 直接搬过来，会伤害战斗可读性。
 - Source / 来源: user + web + code
 - Date / 日期: 2026-11-16
+- SUPERSEDED: 2026-11-20 移动端不再硬跳过：改为 `Game.screen_filters` 总开关门控（PC 默认开 / 移动端默认关），总开关关闭时不渲染；设置页开启时提示机型风险，详见文件末 `[Rendering] 屏幕读取型全屏滤镜统一总开关` 条目。
 
 ### [FX/Kotama] 全息光感：箱体不挂 shader，Figure 白色扫描 + ADD 环绕粒子
 - Evidence / 证据: `scenes/player/kotama/kotama_hologram.tscn`（Box 无 material、`ProjectionGlow`/`GroundGlow`、`OrbitParticles`、`GradientTexture2D`）、`scenes/player/kotama/kotama_hologram_orbit.gd`、`shaders/kotama_hologram.gdshader`（`white_scan`/`white_scan_speed`/`white_scan_width`）、`scenes/player/kotama/kotama_hologram.gd`（`_glow_energy`、orbit alpha、淡出）。
@@ -4879,8 +4920,303 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - Source / 来源: code + test
 - Date / 日期: 2026-11-17
 
+### [Support/Items] 支援门控判据用 `game_support`，不能用 `selected_support_id`
+- Evidence / 证据: `script/support_data.gd:20-24`（`game_support` setter 同步 `selected_support_id`）、`:39-41`（`restore_progress()` 缺资源时把 `game_support` 归一到 `null_support`，随后又写回旧 `selected_support_id`）、`:80-89`（`reset_game_support()` / `game_add_support()` 对 `null` 与 `support_id == "null"` 都早退）、`scenes/manager/upgrade_manager.gd`（`_current_support_id()` / `_support_id_from_context()`）。
+- Notes / 说明: `selected_support_id` 只是「上次选择」的残留记忆（Mod 卸载、资源缺失时仍保留），`game_support` 才代表本局真的有可用支援与 EX。任何「有支援才……」的判定（入池门控、EX UI、支援相关数值）都必须走 `game_support`，并同时把 `null` 与 `support_id == "null"` 当作无支援（fail-closed）；否则会出现「没有 EX 却发 EX 道具/显示 EX」的错配。`context` 里的 `support_id` 只做显式覆盖（测试/外部调用），不得替代实时状态作为唯一来源。
+- Source / 来源: code
+- Date / 日期: 2026-11-17
+
+### [Support/EX] 支援 EX 数值修正按来源注册、每局重置；`ex_cost` 是缓存的有效值
+- Evidence / 证据: `script/support_data.gd:72-190`（`ex_modifier_sources` / `set_ex_modifiers` / `refresh_ex_values` / `ex_cost_base` / `add_ex_charge` / `_announce_ex_ready`）、`:201-208`（`game_add_support` 重置）、`:295-348`（`get_card` / `count_exp`）、`script/support_as.gd:34-57`（`cost_count` / `skill_end`）、`ui/support_card.gd:29`（充能条分母）。
+- Notes / 说明: 本局修正用 `source_id`（道具 id）注册、`_exit_tree` 清除；`*_add` 求和、`*_mult` 连乘，不写存档。`ex_cost` 现在是 `ex_cost_base + cost_add × cost_mult` 的**有效值缓存**，所有改卡面值的地方必须写 `ex_cost_base` 后调 `refresh_ex_values()`；直接写 `ex_cost = card.ex_cost` 会覆盖掉道具修正，并让 HUD/`SupportAS` 读到错误需求。`refresh_ex_values()` 要重发 `cost_changed`（即使 `now_cost` 未变），否则充能条比例不刷新。`game_add_support()` 顶部先 `reset_ex_modifiers()` 并清 `ex_charge_fraction`/`ex_ready_announced`（无支援早退分支之前），否则上一局/测试房残留会带进新局。击杀/暴击/自动/返还的充能统一走 `SupportData.add_ex_charge()`：小数 `floor` 累积、clamp，充满时用 `ex_ready_announced` 去重后发 `support_ex_ready`（**充满即发**，旧实现要等下一杀）；`SupportAS.cost_count()` 直接调用它，`skill_end()` 调 `reset_ex_charge_fraction()`。
+- Source / 来源: code
+- Date / 日期: 2026-11-17
+
+### [Support/EX] 范围倍率同时作用于 KEI 光环与 AYANE 单发爆炸；`BASE_COVERAGE` 固定
+- Evidence / 证据: `scenes/player_support/ayane/ayane_as.gd:9,14,43-44,58-63,94`（`BASE_COVERAGE` / `blast_range_base` / `_blast_range()` / `_explosion_count()` / `_configure_explosion`）、`scenes/player_support/kei/kei_as.gd:18,23-25,35,48,51-59`（`_aura_radius_base` / `_set_aura_radius` / `_on_skill_active` / `_on_skill_end`）、`scenes/player_support/kei/kei_aura.gd`（光环值 ×power）、`script/explosion_damage.gd:75-76,100`（`explosion_range ×10` 碰撞半径、`×0.2` 视觉）、User: 2026-11-17「不修改 BASE_COVERAGE 的值，只影响单发的爆炸范围」「提高范围可以加成给 kei 的技能范围吗」→ 允许。
+- Notes / 说明: AYANE 单发 `7 × max(1, stats.explosion_range × 0.3)` 已解耦为 `blast_range_base(7.0) × range_mult`，玩家数值不再影响。KEI 光环半径同样乘 `range_mult`：`_on_ready` 缓存场景半径并 duplicate `CircleShape2D`（避免共享 sub-resource），EX 开始先设半径再 `set_active(true)`，结束还原；`BuffAura.network_summon_aura_info()` 读形状半径，远端镜像自动同步。SERINA 无范围，因此范围道具门控只给 `["kei","ayane"]`。`BASE_COVERAGE=(888,440)` 只决定 50 发落点覆盖（圆心固定 704,448），**保持固定、不接倍率**：调大它不会增加发数（`step ∝ √面积` 同步变大），只会降低密度并增加界外落点；要更多发请用 `duration_mult`。
+- Source / 来源: user
+- Date / 日期: 2026-11-17
+
+### [Support/EX] KEI 光环视觉必须跟碰撞半径一起缩放（ColorRect 缩放 + 粒子发射环复制）
+- Evidence / 证据: `scenes/player_support/kei/kei_as.gd`（`color_rect`/`particles`、`_setup_aura_visual`、`_set_aura_visual_scale`、`_on_skill_active` 的 `radius / _aura_radius_base`、`_on_skill_end` 注释）、`scenes/player_support/kei/kei_as.tscn`（`ColorRect` 200×200 + `pivot_offset=(100,100)`；`ParticleProcessMaterial.emission_ring_radius=100/inner=50`）、`shaders/shock_wave_2.gdshader:7-14`（环半径 = `size(0..0.5)` × 矩形边长）、`script/explosion_damage.gd:75-76`（AYANE 视觉缩放的正面例子）、`tests/support_ex_values_checks.gd:_test_kei_scene`（本地测试，不入库）。
+- Notes / 说明: **现象**：`range_mult` 只改 `CircleShape2D.radius`，地面环与粒子环写死 100px，碰撞 150 但显示 100。**修法**：按 `实际半径 / 基础半径` 同时缩放 `ColorRect` 与复制后的 `ParticleProcessMaterial.emission_ring_*`。**坑**：① 环半径 = shader `size(0..0.5)` × `ColorRect` 边长（200 → 100px）；缩放 `ColorRect` 会同时放大绘制区域，只改 shader 半径会让 150px 环超出 200px 矩形被裁（改矩形又要重调动画 `size` 关键帧），所以选节点缩放。② `Control.scale` 绕 `pivot_offset`：必须把枢轴设到矩形中心（`(-100,-111)+(100,100)=(0,-11)` = 碰撞中心），否则环心随倍率上移。③ `ParticleProcessMaterial` 是场景共享 sub-resource（同 `CircleShape2D`），必须 `duplicate()` 后本实例再改，否则多实例/联机镜像串改。④ EX 结束不要立刻复位视觉缩放：`as_anim` 倒放会把 `size` 收 0（不可见），此处复位会让环从 1.5× 硬跳 1× 再收缩；下次 `_on_skill_active` 重设即可。⑤ 视觉与碰撞必须由同一个 `radius` 推导，否则以后加减范围 debuff 又会漏。**联机边界**：远端 EX 视觉代理 `_apply_support_aura_visual` 是 `set_script(null)` 的纯视觉克隆，不跑本脚本 → 仍画基础半径；要一致需在 `_remote_support_ex` 增加 `range_mult` 并升 `PROTOCOL_VERSION`/`MOD_VERSION`。验证：headless `SUPPORT_EX_VALUES_RESULT failures=0`；实机截图 1.0/1.5 对比环半径 100/150px、环心不偏。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-20
+
+### [Support/Items] 5 件支援 EX 增强道具（user 数值）：暴击/自动/返还充能、范围、倍率
+- Evidence / 证据: `resources/upgrades/{lucky_egg,air_box_charger,spreading_bamboo,cheering_teddy,return_handkerchief}.tres`、`scenes/update_item/` 同名 `.gd`/`.tscn`、`scenes/manager/upgrade_manager.tscn`（`125_lucky_egg`…`129_return_handkerchief`）、`script/support_data.gd:163-190`（`add_ex_charge` / READY）。
+- Notes / 说明: 5 件统一 `order_num=3`、`rare=1`，1/2/3 件对应档位：暴击充能 5/10/15%（按 `ex_cost` 百分比，0.5s 内置 CD，监听 `enemy_damage_taken` 且伤害类型限 `bullet/melee/explosion/equip`，排除 DOT/异常类以避开共享 `DamageData` 的 `is_crit` 残留）；自动充能 5/10/15%/s（1s Timer）；EX 结束返还 30/40/50%（`support_ex_end`，`skill_end` 已先把 `now_cost` 归零）；技能倍率 `power_mult` 1.3/1.4/1.5；范围 `range_mult` 1.3/1.4/1.5（KEI 光环 100→130/140/150、AYANE 单发 7→9.1/9.8/10.5）。前 4 件 `support_gate=1`；范围件 `support_gate=2` + `support_ids=["kei","ayane"]`（SERINA 无范围）。图标复用此前未被引用的 5 张 `sprites/update_item/*.png`。充能类充满时由 `add_ex_charge` 发一次 `support_ex_ready`。
+- Source / 来源: user
+- Date / 日期: 2026-11-17
+
+### [Buff/DOT] 燃烧/中毒光环会自释放：`_dot_auras` 读取必须用 Variant + `is_instance_valid`
+- Evidence / 证据: `script/status_aura_fx.gd:101-114`（目标失效或敌人回池 `is_idle==1` 时 `idle_state()` + `queue_free()`）；`scenes/manager/enemy_buff_manager.gd:237-297`（`_ensure_dot_aura` / `_on_dot_aura_tree_exiting` / `_apply_aura_strength` / `_flare_dot_aura` / `_drop_dot_aura`）；实测错误栈：`enemy_buff_manager.gd:240 @ _ensure_dot_aura()` ← `:189 @ _tick_fire_dot()` ← `:99 @ _tick_entry()` ← `buff_manager_base.gd:342 @ buff_count()` ← `GameEvents.gd:580 @ emit_global_time_count()` ← `test_room.gd:131 @ _on_timer_timeout()`，报错 `Trying to assign invalid previously freed instance.`。
+- Notes / 说明: DOT 光环是「自管理生命周期」的视觉节点，目标失效/回池会自行 `queue_free`，而 `_dot_auras` 字典仍留着引用；`var aura: Node = _dot_auras.get(id)` 这种**带类型读取**会在执行 `is_instance_valid` 之前先校验 freed 实例，直接抛错（与 `PlayerRef.ensure` 注释记录的是同一类 Godot 行为）。修法：所有读取改 `var aura = ...`（Variant）后判 `is_instance_valid`，无效就 `_dot_auras.erase(id)`；创建新光环时连 `tree_exiting`（ONE_SHOT + instance_id 比对）主动清字典；敌人 `is_idle==1` 时不重建，避免每跳被自释放→重建的 churn。**通用规则**：凡是字典/数组持有「可能自行 queue_free」的节点，读取时不要写 `: Node`，先 `var x = ...` 再 `is_instance_valid`，并顺手清残留；否则就可能在 `is_instance_valid` 之前被类型校验打断。验证：`tests/run_dot_aura_stale_checks.py` 构造「freed 引用残留 / 光环自释放 / 回池 / 管理器退出」四种路径，`DOT_AURA_STALE_RESULT failures=0` 且无 `SCRIPT ERROR`。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-18
+
+### [Player/Kotama] 移动端右摇杆在隐身时改为「松手补破隐一枪」
+- Evidence / 证据: `ui/MouseKnob.gd`（`_begin_fire_hold`/`_end_fire_hold`/`_fire_break_shot_once`/`_defer_fire`）、`ui/virtual_joypad.tscn`（`Stick2/Knob` 移除 `action = "fire"`，改由脚本手动管理）、`scenes/player/kotama/kotama_ps.gd`（`_on_player_shot` 在 `Phase.STEALTH` 开火即破隐）。
+- Notes / 说明: 原 `Stick2/Knob` 是 `TouchScreenButton` 且 `action="fire"`，手指一按下就先开火，移动端想用右摇杆瞄准会直接破隐。现移除内置 action，由 `MouseKnob` 手动 `Input.parse_input_event(InputEventAction)`（**不能用 `Input.action_press`：它只改动作状态，不会触发 `player.gd` 的事件驱动 `_unhandled_input`**）：普通状态不变（按住持续开火）；`player.is_stealthed()` 时按下只记住 `_defer_fire` 并继续拖动瞄准，松手时若仍在隐身则直接驱动 `gun.is_shoot=true` 两个物理帧补一发破隐射击（不经过 fire action，避免与 AutoButton 状态互相干扰）；按住期间隐身自然结束则恢复持续开火；隐藏/暂停/重置统一 `_release_all()` 释放。桌面/手柄（VirtualJoypad 隐藏）与 AutoButton 行为不变。验证：`tests/run_kotama_touch_fire_checks.py` 用 fire 事件监听器覆盖「隐身按住不开火/松手一发」「非隐身按住开火」「隐身中途结束恢复开火」「取消释放」，`KOTAMA_TOUCH_FIRE_RESULT failures=0`。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-18
+
 ### [Pool] 池上限做成玩家设置项：`entry["limit"]` 和 `get_pool` 判定都要运行期取值，0 必须当"禁用"
 - Evidence / 证据: `scenes/manager/PoolManager.gd`（`_pool_limit()`、`get_pool()` 顶部同步 `entry["limit"]` 且 `cap == 0` 先 `return null`、`apply_casing_limit()` 主动裁剪）、`script/Game.gd`（`CASING_CAP_LEVELS` / `casing_level` / `casing_cap()`）、`script/game_option.gd`（`_on_casing_cap_value_changed` → `apply_casing_limit()`）。
 - Notes / 说明: 只把 `IDLE_LIMITS` 常量改成可变量是**不够**的——池条目创建时已经把 `limit` 固化进 `entry["limit"]`，后面的增长/回收判定读的是它，所以 `add_pool` 与 `get_pool` 都要走同一个运行期取值函数。**0 必须当"禁用"处理**：`get_pool` 的满额分支是 `size >= limit`，`limit=0` 时恒真，会先弹空闲节点、否则"回收并返回"一个节点，等于没关掉；必须在取空闲之前 `if cap == 0: return null`。**调低不会自动缩容**：`get_pool` 只在"取用时"回收，已有节点会一直留在池里，需要像 `apply_casing_limit()` 那样主动从数组尾部向前保留最新 N 个活跃节点、其余 `idle_state()`（数组顺序≈插入顺序，最旧先走）。设置项改档要顺手 `Game.save_config()`，否则重启回退。
 - Source / 来源: code
 - Date / 日期: 2026-11-18
+
+### [Combat] Kasumi 改版：钻击标记 + 任意伤害引爆 + 原 `now_lv` 充能
+- Evidence / 证据: `script/game_tags.gd`（`KASUMI_DRILL_DAMAGE` / `KASUMI_DETONATION_DAMAGE`）、`scenes/player/kasumi/kasumi_drill.gd`（`_apply_mark`、`_mark_cap`、`lv_count(amount)`、`_sync_charge_effects`、钻头伤害标签）、`kasumi_ps.gd`（`enemy_damage_taken → _on_enemy_damage_taken`、`_configure_detonation`、0.1s 按目标 ICD、50%/25% 消耗、tier 充能/上限）、`resources/buff/enemy_buff/kasumi_drill_mark.tres`、`resources/player/PS/kasumi_ps.tres`、`scenes/player/kasumi/kasumi.tscn`/`kasumi_drill.tscn`；本地探针 `tests/_kasumi_probe.gd` 62/62（任意伤害触发、两种排除、0 伤害、0.1s ICD、T0/T1/T2/T3 上限与双倍、50%/25% 消耗、对数半径、成长、充能绑定、标记图标、升级顺序）。
+- Notes / 说明: ① **触发改为 `GameEvents.enemy_damage_taken`**，不再监听 `player_bullet_hit_enemy`；`final_damage > 0`、`body_path` 解析出的目标为 `ENEMY_SIDE`、带 `kasumi_drill_mark` 才消耗。② 只排除两个自定义 `damage_type` 标签：`KASUMI_DETONATION_DAMAGE`（引爆自身）与 `KASUMI_DRILL_DAMAGE`（钻头伤害）；**不按来源阵营过滤**（按“任意伤害”字面，敌方火焰/DOT 也能触发），道具/召唤/DOT/其他爆炸自然参与。③ 引爆伤害写 `[EXPLOSION_DAMAGE, EQUIP_DAMAGE, KASUMI_DETONATION_DAMAGE]`，钻头伤害写 `[MELEE_DAMAGE, EQUIP_DAMAGE, KASUMI_DRILL_DAMAGE]`；未知标签只用于排除，不影响阵营/乘区。④ 钻头命中**不再充能**：删除 `melee_lv_add` 的 `enemy_damage_taken` 连接与 `add_damage_data()` 暴击 `lv_count()`；`lv_count(amount)` 只由 PS 引爆调用，非暴击 `2`、T1+ 暴击 `4`（T0 暴击仍 2）；去掉 `now_t > 0` 门，T0 也能充。⑤ 充能沿用原 `now_lv`/`damage_count`/`PlayerData.critical_damage_add`/`LVNum`，**不新增 charge、不使用 `kasumi_drill_buff`、无 `ChargeNum`/`charge_cap`**；`now_lv`/`critical_damage_add` 不 clamp（无上限）。⑥ `_sync_charge_effects()` 以 `now_lv` 为唯一来源同时驱动：`self.scale = (scale_x×(1+now_lv×0.0015), 1+now_lv×0.0015)`、爆伤贡献 `now_lv×0.01`。爆伤用 `desired - damage_count` 的差值写入 `critical_damage_add`，`damage_count` 记录已写入的 Kasumi 贡献——**不能用 `=` 覆盖**，否则会清掉道具/其它角色的爆伤加成；`reset_lv` 只回滚该贡献。⑦ 引爆伤害 `max(5, bullet_damage×1.5×(1+0.10×stacks)) × global × equip`（暴击再乘 `critical_damage`），半径 `3.6 + 8.4×log(1+stacks/10)/log(4)`（1 单位=10px，**无硬上限**；30 层=120px、100 层≈181px、999 层≈316px）；T0~T2 消耗 `max(1, ceil(stacks×0.5))`，T3 消耗 `max(1, ceil(stacks×0.25))`；爆炸使用消耗前层数。⑧ 同一目标 0.1s 按目标 ICD（`DETONATE_ICD_MS=100`）：CD 内不消耗、不爆炸、不充能；不同目标独立；`round_start`/`round_end` 清空 `_detonate_cd`。⑨ T0/T1/T2/T3 标记上限 10/30/300/999；T2+ 钻头暴击一次叠 2 层；T1+ 暴击引爆 +4，T0 +2；T1/T2 各 +15% 射速（累计 +30%），T3 换弹 +30%。⑩ 风险：10%/层、对数半径（30 层 120px、999 层约 316px）后，高层伤害仍高但范围增长明显放缓；任意伤害 + DOT 仍可能高频，ICD 只限单目标 10 次/秒。⑪ 文案/本地化：`kasumi_ps.tres` 与 `ETN_player_localization.csv` 的 `kasumi_ps_0..3` 必须同步；CSV 为 UTF-8 BOM + CRLF，改后 reimport 生成 `.translation`。⑫ M5 钻头纯视觉、客机不叠标记/不引爆。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-19
+
+### [Localization] CSV 值留空在 Godot 侧不是空文本：`translate()` 会回退成键名，展示层必须过滤
+- Evidence / 证据: `script/locale_text.gd`（`LocaleText.resolve`）、`ui/hover_tooltip.gd`（`_layout` 的 `optional` 段）、`ui/ability_upgrade_card.gd`（`_set_optional_label` / `_refresh_optional_labels`）、`ui/upgrade_item_card.gd`、`ui/test_item_card.gd`、`ui/test_enemy_card.gd`、`ui/gamemode_card.gd`、`ui/gamemode_type.gd`；数据侧 `ETN_item_localization.csv`（如 `lucky_egg_negative,,,,`）、`ETN_localization.csv`（`goliath_description` / `erosion_tower_description`）。
+- Notes / 说明: csv_translation 会把空单元格导入成**空 message**（`Translation.get_message()` 返回 `""`），但 `TranslationServer.translate()` 把空 message 当"没有译文"并回退成键名本身 ⇒ `tr(key) == key`，UI 直接显示 `lucky_egg_negative`。旧做法是写单个空格，靠浮层既有的 `strip_edges().is_empty()` 判空才不显示（`ui/ability_upgrade_card.gd` 那条路径反而会显示空格/缩到极小的键名）。判定必须用 `TranslationServer.translate()` 而**不是** `Translation.get_message()`：同语言有 5 个 `.translation`（每个 CSV 一个），`TranslationServer.get_translation_object(locale)` 只返回其中一个会漏键，`translate()` 才走完整 locale → fallback 链。规则：允许有意留空的段落标 `optional: true` / Label 用 `LocaleText.resolve()`；`_name`/`_id`/`_ps`/`_ex` 不适用（缺译仍显示键名当数据缺失信号）。2026-11-19 已把 331 处（物品表）+ 8 处（全局表）单空格占位清理为真留空并重新导入，代码仍兼容空格写法。
+- Source / 来源: user + test
+- Date / 日期: 2026-11-19
+
+### [Localization] 编辑器进程里 `TranslationServer.translate()` 不解析项目译文，编辑器内断言要用 `Translation.get_message()`
+- Evidence / 证据: 本地探针 `tests/test_locale_text.gd`（验证后已删）：编辑器里 `TranslationServer.get_loaded_locales()` 已含 `en/zh_CN/pt/vi_VN`、`get_translations()` 有 20 个对象、`ETN_item_localization.zh_CN.translation` 的 `get_message("ap_bullet_name") == "贯通弹"`，但 `TranslationServer.translate("ap_bullet_name")`、`translate("option_full_screen")` 都返回键名；同一份代码在实机 `project_run` + `editor_manage(game_eval)` 里返回 `贯通弹`。
+- Notes / 说明: 别在 `test_run` 里用 `tr()` / `translate()` 断言译文是否存在，会得到"全都没翻译"的假结果。编辑器内验证导入结果用 `load(path).get_message(key)`（空值会得到 `""`），要验服务器级解析（以及 `LocaleText.resolve()`）必须起游戏后用 `editor_manage(game_eval)`；`game_eval` 里也能直接实例化 `ui/hover_tooltip.tscn` 调 `_layout()`、实例化 `ui/ability_upgrade_card.tscn` 调 `set_ability_upgrade()` 做集成验证。
+- Source / 来源: test
+- Date / 日期: 2026-11-19
+
+### [Coop/Relay] 中继「房间列表 / 密码」必须先改服务端，且 `MOD_VERSION` 精确相等是兼容红线
+- Evidence / 证据: `mod_sdk/coop_mod/server/relay_server.py`（控制帧只有 `create_room/join_room/client_ready/leave_room`，`Room` 无密码/无列表，房间只在进程内存 `rooms`）、`mods/etn_coop/net/coop_net.gd:1173`（`str(mod_ver) != MOD_VERSION` 精确比较）、`mods/etn_coop/net/coop_network_transport.gd:53`（中继建房把玩家名硬编码为 `"Player"`）、`mods/etn_coop/net/coop_relay_peer.gd`（`_on_control` 未知 type 静默丢弃）。
+- Notes / 说明: ① 房间列表/密码**都绕不开服务端**：现有协议只能按房间号回应，4 位房间码约 100 万，靠 `join_room` 枚举会被既有失败限速挡住（每连接 8 次/60s、每 IP 40 次/60s），也没有第二个服务能当公共登记簿。② 联机握手对 mod 版本是**精确字符串比较**，只要 bump `MOD_VERSION` 就切断所有旧版互连；要"新旧一起玩"就必须保持 `MOD_VERSION` 不动（当前 `0.1.20` / `PROTOCOL_VERSION=11`）。③ 旧端 `create_room` 不带房间名/版本，且玩家名恒为 `"Player"`，所以旧房在列表里只能显示 `Player` + 房间号，需要"旧版"标记与缺省可见策略（服务端缺 `public` 字段时默认公开，旧房才看得到）。④ 评估过的完整方案影响面：服务端约 80 行（`Room` 新字段、`list_rooms`、密码 sha256 校验、日志脱敏、`RELAY_DEFAULT_PUBLIC`）+ 客户端 5 个脚本 + 1 个新 `coop_relay_browser.gd` + UI（搜索框/公开开关/房间名/密码）+ 13 个 i18n 键；用户判断改动面过大，**2026-11-19 决定先不实装**，代码/服务端均未改动。⑤ 未来方向：房间列表/搜索/密码/公开开关做成独立「房间大厅」服务，对局中继只负责转发。
+- Source / 来源: user + code
+- Date / 日期: 2026-11-19
+
+### [Coop/Relay] 镜像 buff 回放期间「事件 → 再加 buff」的嵌套施加必须按 buff id 区分，否则只落本地镜像
+- Evidence / 证据: `mods/etn_coop/net/coop_net.gd`（`_gate_enemy_buff_apply` 的 `_applying_remote_buff` 分支新增 `_remote_buff_id` 判定；`_remote_enemy_buff` 置/清 `_remote_buff_id`）、`scenes/manager/buff_manager_base.gd:85`（gate 在 `apply_buff` 最前置，拦截即 `return`）、`:120/125/148`（`_notify_enemy_shock_applied` 只在本地真正应用后发出）、`scenes/update_item/stun_grenades.gd:14`（收到 `enemy_shock_applied` 立即再 `BuffRouter.apply_buff(enemy, stun)`）、`resources/buff/components/stun_component.gd:4`（眩晕星星为本地视觉，依赖 buff 广播）。
+- Notes / 说明: 客机命中镜像敌人加感电 → `enemy_buff_apply_gate` 转发 host、本地不应用 → host 应用后广播 → 客机在 `_applying_remote_buff` 窗口内重放 → **此时才**发出 `enemy_shock_applied` → 震撼弹立即加 `stun`。旧实现窗口内一律 `return false`（放行本地），于是 `stun` 只挂在携带者本地镜像，host 与其它客机完全不知道（表现为「只有拿震撼弹的人看到眩晕」）。修法（mod 0.1.21）：用 `_remote_buff_id` 记住正在回放的 buff id，窗口内**只有同一个 buff 放行本地**，其它 buff 照常转发 host 权威应用。**通用教训**：任何「收到 buff 事件后再施加另一个 buff」的道具/词条都会踩这个坑；不改 mod 的等价做法是把那次施加改成 `call_deferred`（代价是单机也晚一帧）。验证：`relay_items` PASS、`run_coop_recovery_checks.py` 13/13 PASS；`items` 的「镜像瞄准字段已回填」在改动前后都会偶发失败（用 HEAD 版 pck 做了 A/B：同样失败），与本改动无关。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-19
+
+### [Localization] 用户手改的 CSV 文案不要用 `.tres` 文本批量覆盖
+- Evidence / 证据: `tests/_update_localization.py`（上一会话的一次性脚本，已移出 `tests/` 备份到 `%TEMP%`）、`ETN_item_localization.csv` 的 `lucky_egg` / `air_box_charger` / `spreading_bamboo` / `cheering_teddy` / `return_handkerchief`；17:34 会话快照 vs 17:38 脚本输出。
+- Notes / 说明: 用户可能只维护 CSV（游戏内显示文案），`.tres` 是另一套文本（编辑器/兜底）；脚本把 CSV 按 `.tres` 重写会悄无声息地覆盖用户手改（本次 5 件支援 EX 道具的名称/描述/forward 被整体改回）。批量改 CSV 前先 diff 并向用户确认；一次性脚本用完即删（`tests/` 不入库）。
+- Source / 来源: user + code
+- Date / 日期: 2026-11-20
+
+### [Coin/Drop] 金币抛掷改为代码弹道：从地面抛出、弧顶必须高于弹壳、落点必过 MapBounds + 壁垒内部墙（来源：user + code + test）
+- Evidence / 证据: `script/coin_ballistic.gd`、`scenes/item/parabola_path.gd`（`_pick_landing`/`_landing_ok`/`_walls_available`/`get_trajectory`）、`scenes/item/parabola_path.tscn`（根节点 Node2D）、`scenes/item/coin_box.gd`、`resources/buff/components/sonic_coin_drop_component.gd`、`scenes/main/main.gd:135`、`script/enemy_nav_field.gd`（`has_blocks`/`ensure_topology`/`is_solid`/`is_body_safe`/`safe_pickup_point`）、`script/map_bounds.gd`、`tests/test_coin_ballistic.gd`。
+- Notes / 说明: 用户 2026-11-20 敲定：金币**从地面（`height=0`）抛出**、**落点随机**、**弧顶明显高于弹壳**（弹壳 `vz 183.8~268.7 / g 900` → 弧顶仅 18.8~40.1px；金币默认 `arc_height=96`）。实现为纯函数 `CoinBallistic`（`pos/vel/height/vz`，`gravity=8h/T²`、`vz=4h/T`，`_physics_process` 逐帧推进，无 Tween/Curve2D），首次触地水平速度清零 → 静止点严格等于选中的落点。**落点校验必须两层**：`MapBounds` 只有 4 条轴射线构成的外边界菱形，**看不见壁垒**——壁垒墙是 `NavObstacle` TileMapLayer，真源是 `EnemyNavField._solid`；所以先 `MapBounds.ensure_ready()+nearest_inside(16)`，再（仅 `has_blocks()` 为真时）`ensure_topology()` + `is_solid/is_body_safe`，兜底 `safe_pickup_point()`。`has_blocks()/ensure_topology` 按物理帧缓存一次，避免 `coin_box` 同帧补发 100 枚时重复扫组/建拓扑；普通地图无壁垒时完全跳过 `EnemyNavField`，不付拓扑构建成本。实机验证（test_room + `game_eval`）：无墙 24 枚 0 越界、全部 `can_pick`；人为 `EnemyNavField.add_block` 3 格后 30 枚 `solid_bad=0 / unsafe_bad=0`。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-20
+
+### [Coop/Coin] 金币折线广播改 `get_trajectory()` + `duration`：launch 状态必须早于 `active_state()`（来源：code + test）
+- Evidence / 证据: `mod_sdk/coop_mod/mods/etn_coop/net/coop_net.gd`（`_on_coin_spawned`、`_register_parabola_coin`、`_remote_parabola_coin`、`coin_traj`；`PROTOCOL_VERSION=12` / `MOD_VERSION="0.1.25"`）、`mods/etn_coop` 本地镜像、`scenes/item/parabola_path.gd`（`drop()` 顺序、`get_trajectory()`）。
+- Notes / 说明: 旧实现靠 `coin.get_parent() is PathFollow2D` + `parabola.curve`，且 `drop()` 里 `active_state()` 早于 curve 构建 → 只能 `call_deferred` 一帧。新节点在 `drop()` 里**先** `CoinBallistic.launch()` 再 `body.active_state()`，host 可在 `on_coin_spawned` 同步读 `get_trajectory()`（按 1/30s 预演并缓存世界折线 + 总时长），`rpc("_remote_parabola_coin", net_id, points, duration, ...)`。客机按广播时长播镜像（不再固定 3s，顺手修掉索尼克 1.2s 按 3s 播的旧偏差）；时长非法时用 `PARABOLA_DURATION` 兜底。RPC 契约变化 → 协议 v11→v12、mod 0.1.24→0.1.25，`mod_sdk` 源与 `mods/etn_coop` 镜像必须逐字节同步。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-20
+
+### [Coin/Drop] `coin_box` 投放音效必须逐枚播放，不能按枚抑制（来源：user）
+- Evidence / 证据: `scenes/item/coin_box.gd`（`add_coin()` 里 `play_drop_sound = true`）、`scenes/item/parabola_path.gd:104-105`（`play_sfx("ButtonSounds")`）、`scenes/manager/sound_manager.tscn`（`SFX/ButtonSounds` 单实例，pitch 1.5）。
+- Notes / 说明: 本次重做时曾为了"降噪"把 `coin_box` 改成 `play_drop_sound = i == 0`，用户实测反馈"coin_box 的音效没了"。根因：`SoundManager` 只有**单个** `SFX/ButtonSounds`，`play_sfx` 就是 `player.play()`，逐枚调用会互相打断——旧版听感是**连续点击串**，抑制后只剩开头 1 声，且与 Boss 死亡音效重叠，等同于没声音。结论：`coin_box` 必须每枚都播（显式写 `play_drop_sound = true`），索尼克保持每轮第 1 枚不变；若以后嫌 100 次重启太吵，只能改用 `play_sfx_throttled` 或独立多音源，**不要**按枚置 false。
+- Source / 来源: user
+- Date / 日期: 2026-11-20
+
+### [Coin/Pool] `coin_box` 不能 `erase_pool("coins")`：erase 不回收节点，空闲币会变成隐藏孤儿
+- Evidence / 证据: `scenes/item/coin_box.gd`（原 `add_coin()` 末尾 `PoolManager.erase_pool("coins")`，2026-11-20 删除）、`scenes/manager/PoolManager.gd`（`erase_pool`/`_remove_node_from_pool`：只删池条目与 `_node_pool` 映射，不 `idle_state`/`free`）、`scenes/item/parabola_path.gd`（`_release_body()` 的 `add_pool("coins", released)` 兜底）、`scenes/main/main.gd`（回合末 `coin_clear_unit` 的 `erase_pool` 属另一回事）。
+- Notes / 说明: `parabola_path` 是双池：弹道节点入 `parabola_coins`（单独池），金币 body 入与 `CoinManager`/索尼克共用的 `coins` 池；两者都不在 `IDLE_LIMITS`（一加就会在满额时回收活跃金币丢值）。`coin_box` 旧代码在出币循环末尾 `erase_pool("coins")` 删的是**共用 body 池**：`erase_pool` 只删池条目、不回收节点，于是池里未被盒子复用的空闲币仍挂在 `CoinRoot` 下隐藏，却不再属于任何池——`get_pool_idle("coins")` 永远取不到、`CoinManager.drop_coin` 只能不断实例化新币，隐藏节点随每个 Boss 盒累积。实机实测（test_room + `game_eval`）：先造 10 枚地面金币并全部 `idle_state()`（`pool_total=10`、`idle=10`），再跑 5 枚 `coin_box`，盒后 `PoolManager.pool.has("coins")==false`、`pool_total=0`，而 `CoinRoot` 下仍有 5 个隐藏空闲金币（盒子复用了 5 枚，其余 5 枚被 erase 孤儿化）。修法：删除 `coin_box` 的 `erase_pool`，`_release_body` 的 `add_pool` 保留兜底；其余池 id、双层池、`coin.idled` 回收协议不变。**不要**把这里改成"新开一个抛出金币专用 body 池"：那需要参数化 `coin.gd` 硬编码的 `add_pool("coins", self)`，且会让飞行币与地面币各留一份峰值节点。回合末 `main.coin_clear_unit()` 的 `erase_pool("coins")` 不同——它随后对空闲币 `coin_clear()` → `queue_free`，不会孤儿化，保持原样。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-20
+
+### [Item] 召唤物增伤乘区同时放大策反单位（summoned_damage）
+- Evidence / 证据: `script/PlayerData.gd:434`（`player.stats.summoned_damage = max(0.1, (base_summoned_damage + summoned_damage_add) * ability_mult)`）、`script/SummonedStats.gd:75`（`summoned_damage_mult = max(0.1, base + mult_add + player.stats.summoned_damage)`）、`script/damage_router.gd:16`（`converted_damage` 乘该值）、`scenes/update_item/samuela_the_beyond.gd`。
+- Notes / 说明: 「召唤物伤害」是全局乘区（1.0 = 100%），既进召唤物 `summoned_damage_mult`，也是策反单位伤害的乘数；新增召唤物增伤道具时不要假设只影响召唤物，反过来策反流也会吃这类道具。
+- Source / 来源: code
+- Date / 日期: 2026-11-20
+
+### [Item] `PlayerData.summoned_damage_add` 是共享加减账本：动态加成必须自记账并监听 `reset_done`
+- Evidence / 证据: `script/PlayerData.gd:180,278,434`；既有写入者 `scenes/player/ichika/ichika_ps.gd:39-43`（按 mobu 数量 +0.25/个）、`scenes/update_item/machine_part.gd`（加/减回滚）、`scenes/update_item/recharge_cookie.gd`（`_applied_delta` + `_on_player_reset`）。
+- Notes / 说明: `reset_date()` 会把 `summoned_damage_add` 清零；若道具仍按旧记账去减，会把它压成负数（`max(0.1, …)` 兜底后所有召唤物/策反伤害反而变低）。必须监听 `PlayerData.reset_done` 归零本地记账；测试房重置（`scenes/main/test_room.gd:71`）只清 `PlayerRoot` 直接子节点，挂在玩家下的旧道具节点会残留，所以「本局已不再记录该道具」时还要自清理，否则旧节点会在新一轮继续加算。
+- Source / 来源: code
+- Date / 日期: 2026-11-20
+
+### [Item] 召唤物开火的暴击/非暴击信号在此之前全仓零监听
+- Evidence / 证据: `script/GameEvents.gd:180-181,556-560`；发射点 `scenes/player_support/kei/luminous_nova.gd:115,119`、`script/turret_summoned.gd:150,154`；首个消费者 `scenes/update_item/opera_binoculars.gd`。
+- Notes / 说明: `summoned_shot_critical/not_critical(bullet_body)` 只在召唤物拥有者端发出，携带的子弹此时已写好 `damage_data.base_damage`（含暴击/全局/召唤乘区），道具可直接改写当发数值；镜像端不发、也不参与结算，因此这类道具无需联机改动。信号在 `ProjectileSpawner.spawn_core` 内同步发出，子弹可能刚激活但尚未参与物理命中，改写安全。
+- Source / 来源: code
+- Date / 日期: 2026-11-20
+
+### [Localization] 用户手改 CSV 后必须跑 check_localization.py：编辑器会折叠字段内 "" 并把多行换行写成 LF
+- Evidence / 证据: `ETN_item_localization.csv`（2026-11-20 用户改 `recharge_cookie` / `opera_binoculars` 文案后）：4 条无关 description（`jellies_cushion` / `sakura_daifuku` / `samuela_the_beyond` / `air_box_charger`）的 en/pt/vi 内部 `""` 被折叠成裸 `"`；多行引号字段内的换行从 CRLF 变成裸 LF（CRLF 938→517、裸 LF 423）；`python tests/check_localization.py` 报「存在非 CRLF 行尾；字段内双引号未按 CSV 规则转义」。
+- Notes / 说明: 一些编辑器保存 CSV 时会把 `""` 折叠为 `"`（Godot importer 会吞掉引号）并把字段内换行写成 LF。修法：`git show HEAD:ETN_item_localization.csv` 取回被误伤记录、用 Python csv 模块全文往返（`lineterminator="\r\n"`、`QUOTE_MINIMAL`、落盘 UTF-8 BOM），再 `reimport`+`scan` 重新生成 `.translation`；改完必须跑 `check_localization.py` 并确认 `git diff` 只剩预期记录。用户手改文案与「修复误伤」要分开核对，不能整文件按 `.tres` 覆盖。
+- Source / 来源: user + test
+- Date / 日期: 2026-11-20
+
+### [Hare/Mobile] 移动端 MELEE 无反应：kick 被 allow_kick 门控，Hare 已改为 HarePS 直接处理 kick
+- Evidence / 证据: `ui/virtual_joypad.tscn:130-144`（MELEE 按钮 `action="kick"`）、`script/player.gd:339`（`allow_kick` 门）、`scenes/player/hare/hare.tscn`（2026-11-20 前为 `allow_kick=false` + `Kick`/`AnimationPlayer2` 残留）、`scenes/player/hare/hare_ps.gd:189-205`（`kick` 或 `hare_aim` 都切锁定，每事件一次）、`project.godot:177-219`（`kick` 与 `hare_aim` 都绑鼠标右键）、Godot `scene/2d/touch_screen_button.cpp` 的 `_press()`（`Input.action_press` + push `InputEventAction`）。
+- Notes / 说明: 移动端 MELEE 只发 `kick`，而 Hare 因右键同键冲突把 `kick` 门控掉（旧结论要求 `allow_kick=false`），移动端又没有 `hare_aim` 入口 → 按键无反应。正解不是「只删 Kick 节点」（按钮仍发 kick、没人处理），而是删掉 Hare 的通用 Kick/动画/`allow_kick`，让 `HarePS` 直接处理 `kick`（同时保留 `hare_aim` 给 R3）：移动端零 UI 改动，桌面右键同一事件只切一次；删 Kick 后 `script/player.gd` 的 `$Kick`/`$AnimationPlayer2` 已改 `get_node_or_null`，联机 `p.get("kick")`/`kick_anim` 早已判空。注意 `TouchScreenButton` 的 action 会 push `InputEventAction`，事件驱动处理器能收到；不要再用 `Input.is_action_pressed` 轮询去绕。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-20
+
+### [Rendering] 屏幕读取型全屏滤镜统一总开关（CRT / Hare 目镜 / Kotama 隐身影屏）
+- Evidence / 证据: `script/Game.gd`（`screen_filters` 变量与 `[game] screen_filters` 缺省 `not OS.has_feature("mobile")`）、`ui/crt_overlay.gd`（`set_enabled` 读总开关 + `refresh_filter`）、`ui/stealth_overlay.gd`（`_apply` 读总开关 + `refresh_filter`）、`ui/hare_optic_overlay.gd`（`_use_screen_filter` = `Game.screen_filters`；`MobileShade`/`MobileGlow` 安全版；`refresh_filter`）、`ui/game_option.gd`（`RowScreenFilters`、移动端 `toggled` 弹 `option_screen_filters_mobile_notice`、遍历 `ScreenFilterOverlay` 组即时刷新）、`shaders/hare_optic_mobile_shade.gdshader` / `hare_optic_mobile_glow.gdshader`。
+- Notes / 说明: 三件滤镜均使用 `hint_screen_texture` + `BackBufferCopy`，此前在移动端各自硬跳过（机型/HDR 有前科）。现统一由 `Game.screen_filters` 门控：缺省值 PC=true、移动端=false（旧 config 无键也按平台）；关闭时 Hare 目镜仍显示不读屏幕的安全 overlay（压暗+加色两层，中央保持原画），CRT/隐身影屏完全不渲染；开启时三者走屏幕读取版。选项页一个“屏幕滤镜”开关（两端可见），移动端切到开启会弹 `MobileNotice` 提示黑屏/闪退风险但不阻止；切换后遍历 `ScreenFilterOverlay` 组调 `refresh_filter()` 立即生效。**不要把安全 overlay 纳入 `BackBufferCopy`**：它只画边缘、不采样屏幕；CRT 自身 `crt_filter` 仍是二级开关，CRT 行移动端仍隐藏。验证：headless 探针（`screen_filters=false` 时 Hare 走 Mobile 节点、CRT/隐身隐藏；`true` 时切回；`refresh_filter` 即时切换；`tr()` 两语言命中）+ `run_ui_ux_checks.py` + `check_localization.py`。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-20
+
+### [联机/RPC] RPC 处理函数里绝不能用 call_deferred 重排自己：同一次 MessageQueue flush 内会无限重入 -> signal 11
+- Evidence / 证据: `mods/etn_coop/net/coop_net.gd` 旧实现在 `ChipManager` 不存在时 `call_deferred("_remote_chip_round_state", ...)` 自递归（`_remote_chip_counts` 同构）；玩家日志 `ETN_debug2026-11-21T01.05.41.log` 末尾为 `CrashHandlerException: Program crashed with signal 11` + `GDScript backtrace [0] _remote_chip_round_state (coop_net.gd:3328)`；`ChipManager` 只在 `scenes/main/main.tscn` 中存在（`scenes/manager/chip_manager.gd:46` 入组），菜单/准备房/test_room 都没有该节点。
+- Notes / 说明: `call_deferred` 追加到的是当帧同一条消息队列，`MessageQueue::flush()` 会在本次调用中再次取出刚追加的调用；只要条件仍不满足，就会在同一帧内无限重入，最终栈/队列爆掉并崩溃（玩家看到的是“访客过几秒直接闪退”，且与网络指标无关）。触发矩阵：host 有词条数据（玩过单机 / 上一局残留）→ 客机握手或结算广播时推送 chip 状态 → 客机正处于没有 ChipManager 的场景 → 崩溃；这解释了“单人后开房必崩、结算崩、第二次开房必崩、测试房不崩”。修复：改为 pending 缓存 + 0.2s × 15 次上限的 timer 重试，场景就绪（`first_round`、`_remote_change_scene` 的 `process_frame` 之后）立即 flush，超时丢弃并 `Trail.mark("chip_drop")`。规则：凡“目标节点可能尚未创建”的 RPC 处理，一律用 timer + 次数上限，禁止 defer 自调用。
+- Source / 来源: test
+- Date / 日期: 2026-11-21
+
+### [Pooling] Hare / 无人机子弹共用 `player_bullet` 池：节点有上限、不会无限堆积；逐发状态必须在回池时清
+- Evidence / 证据: `script/projectile_spawner.gd:17-26,45-92`、`scenes/manager/PoolManager.gd:623-650`（`player_bullet` 上限 150 见 `:78`）、`scenes/player/hare/hare_drone.gd:210-292`（`_shoot`/`_configure_bullet`/`_pre_bullet`）、`scenes/weapon/auto_aimer/auto_aimer.gd:31-91`、`script/player_bullet.gd:6-11,121-153`（`LOCKED_SHOT_META`、`idle_state`）、`scenes/update_item/player_bullet_launcher.gd:72-95` / `shrapnel_bullet.gd:58-75`（共用同池、不清 meta）、`scenes/main/main.gd:143-150`（回合清场）。
+- Notes / 说明: ① **不会无限堆积**：Hare/无人机子弹全部走 `spawn_core`，池 id 都是 `player_bullet`（`nonomi_bullet`）；`get_pool` 语义是「有空闲=复用 / 未满=返回 null 让调用方新建 / 满 150=环状强收最旧活跃节点」，因此池节点数封顶。回收出口（撞墙、穿透耗尽、`kill_time` 10Hz tick、回合清场、换场）齐全，节点不会只进不出。峰值估算：锁定齐射 24 发/s（4 扳机/s × `MAX_VOLLEY=6`，电量 2.5s）、释放期 6 台 12 发/s、玩家 4 发/s；封闭菱形竞技场下在飞 1–4s → 常态约 30–60、极端约 120，低于 150，正常不触发强收；真到 150 也只是「在飞子弹被静默回收」，节点数仍不增长。② **逐发 meta/闭包是池污染风险点**：`hare_locked_shot` 只由 Hare 自己的两个 configure 入口清，而道具分裂弹（`player_bullet_launcher`/`shrapnel_bullet`）共用同一池且不清 → 复用锁定弹节点会被 `hare_ps._on_bullet_hit` 误判；无人机 `_pre_bullet` 每次往 `on_damage_dealt` 追加 `mark_regen` 闭包，正常路径靠 `Player.bullet_hit_damage` 的 `DamageData.fill` 重置，监听缺失（换角色窗口 / `--script` 探针）时会逐发累积。已改为 `player_bullet.idle_state()` 单点清 `LOCKED_SHOT_META`（与既有 `REFUND_PENETRATE_META` 同模式），无人机 `_configure_bullet` 逐发清 `on_damage_dealt` 并给 `EQUIP_DAMAGE` 去重。验证：`tests/_hare_bullet_pool_probe.gd`（本地探针，不入库）40 发池增量=40、全部 idle 后 active=0、回池后再开火不新建；负向对照（临时去掉两处修复）3 项断言失败（meta 残留、`on_damage_dealt` 累积到 22）。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-21
+
+### [Gameplay] Hare 锁定：道具弹参与标记，但无人机触发的道具弹链不参与
+- Evidence / 证据: `script/player_gun.gd`（`extra_shot_allows_mark` / `configure_extra_bullet` 两个虚钩子、基类 `_configure_bullet` 清 `DRONE_ORIGIN_META`）、`scenes/update_item/player_bullet_launcher.gd`（`set_trigger_bullet` / `allow_extra_mark` / `_configure_bullet` 调钩子）、`scenes/update_item/pratt_helmet.gd:24-46`（把触发弹传进 `shoot_bullet(trigger)`）、`scenes/update_item/shrapnel_bullet.gd:58-77`（父弹作触发源）、`scenes/weapon/auto_aimer/auto_aimer.gd`（`extra_shot_allows_mark` / `configure_extra_bullet` / `_configure_locked` 清来源标记）、`scenes/player/hare/hare_drone.gd:234-238`（无人机弹打 `DRONE_ORIGIN_META`）、`script/player_bullet.gd:11-16,124-131`（两个逐发标记 + idle 清理）、`scenes/player/hare/hare_ps.gd:389-397`（meta 门控）。
+- Notes / 说明: ① 锁定形态（`HarePS.Phase.LOCKED`）下，`player_bullet_launcher` 系道具弹（pratt helmet 齐射 / shrapnel 分裂弹）默认继承锁定标记 → 命中照常 `_apply_mark`、LOCKED 中按 T1/T2/T3 规则叠 `hare_aim`、RELEASE 中可延长；只继承“标记语义”，不复制锁定弹的 0.4x 伤害 / 900 限速 / 追踪曲线。② **触发源在触发瞬间解析**：道具调 `launcher.set_trigger_bullet(触发弹)`，launcher 立刻问 `player.gun.extra_shot_allows_mark(trigger)` 存成 `allow_extra_mark`，避免 pratt `call_deferred` 与池复用时序（无人机弹在延迟期间回池会丢标记）。③ 无人机弹（`hare_drone._configure_bullet`）打 `DRONE_ORIGIN_META`；被它触发的 volley 判定为不允许继承标记 → 不打锁定标记，且产物继续带 `DRONE_ORIGIN_META`，使下一层派生 volley 同样被排除（链式传播）。④ 无人机弹仍会通过 `player_shot_position` 推进 pratt helmet 计数并触发 volley（本轮不改“触发”本身，只排除产物的标记）。⑤ 池卫生：两个逐发标记都在 `player_bullet.idle_state()` 清；枪/锁定/无人机/道具四条 spawn 路径各自重写或清除来源标记。⑥ 平衡：锁定中道具弹叠层会加速 `hare_aim`（T3 每次命中 +1）与无人机回电，属需求内变化。验证：`tests/_hare_bullet_pool_probe.gd`（本地探针，不入库）用例 (a) 锁定+枪触发 → 2 发带锁定标记、命中 `apply_buff` +1 且 `_sync` +1；(b) 锁定+无人机触发 → 2 发无锁定标记、带来源标记、命中不标记不叠层；(c) 无人机来源道具弹再触发的 volley 仍被排除；(d) 普通态两种标记都不带；(e) `idle_state()` 清两种标记。负向对照（`extra_shot_allows_mark` 恒 true）4 项断言失败。
+- Source / 来源: user + code + test
+- Date / 日期: 2026-11-21
+
+### [联机/中继] 中继服务端看不到 mod 版本，带宽/踢人无法按版本归因
+- Evidence / 证据: 客户端 create_room/join_room 原本只发 `{type, player_name, token}`（`coop_relay_peer.gd`）；服务端 `[code] created by` / `[PROBE] join_room` / `[STATS]` / `[BACKPRESSURE]` 都没有版本字段（`relay_server.py`）。版本协商是 host↔client 的应用层握手，根本不经过 relay，所以 2 天的 `[STATS]` 只能整体聚合、无法拆分新旧版本。
+- Notes / 说明: 现已在 create_room/join_room 增加可选 `ver`/`proto`（由 `coop_net._ready()` 写入 `coop_relay_peer.client_ver/client_proto` 静态字段），服务端把它们写进 `[STATS]`/`[BACKPRESSURE]`/`[PROBE]`/`created by`/`[DISCONNECT]`；老客户端不带该字段时记 `-`，行为不变。聚合脚本 `mod_sdk/coop_mod/server/relay_stats_by_version.py` 支持 journalctl 管道 / 日志文件 / `--since` 三种输入。注意 `over=20.0s` 里含 `ver=` 子串，解析正则必须加词边界（`(?<![A-Za-z0-9_])ver=`），否则会把 `over=20.0s` 当成版本。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-21
+
+### [联机/中继] 建房即断不是空房泄漏：remove_peer 在房主断开时立即删除房间
+- Evidence / 证据: `relay_server.py` 的 `remove_peer()`：`if room.host is peer:` 分支会关闭房间内所有 client 并 `rooms.pop(room.code)`；同一函数末尾还有 `if not room.host and clients/pending 全空: rooms.pop`。2026-11-22 线上日志里 01:19:20–21 连续 10 个 `created by Host`，每个后面紧跟 `[DISCONNECT] peer=1 role=host room=<同一房间>`，房间随即消失，`[ROOM LIMIT]` 从未触发。
+- Notes / 说明: 我之前按「空房要等 30 分钟 ROOM_TIMEOUT 才回收」推断会有名额堆积，是错的——那只在房主仍连着但长时间无数据时才适用。真正的问题是某客户端在 **建房→断开→再建房** 循环（同一 IP 120.33.38.14 每 ~0.5s 一次），服务端为此新增了 `[CREATE LIMIT]`（每 IP 5 房/分、并发 3 房）与 `[ROOM CHURN]`（存活 <5s 的房间单独记一条）用于发现这类客户端循环；另外 `cleanup_rooms()` 里加了一条防御性 `[ROOM GC]`（无主且无 peer 的房间），正常路径不该触发，触发即说明有未覆盖的泄漏路径。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-22
+
+### [FX/Reference] pixelfx 快照里两个移植版共用 244 个 id 与 27 套 palette，可按同 id 交叉对照
+- Evidence / 证据: `third_party/pixelfx-godot/godot-particle/addons/pixelfx_particles/core/palettes.gd:1-2`（注释 "Copied from the pixel port"）、`godot-particle/addons/pixelfx_particles/fx/registry.gd`（244 条 id → `.tscn`）、`godot/addons/pixelfx/fx/registry.gd`（同名 244 条）、`third_party/pixelfx-godot/SNAPSHOT.md`（两版对比表）
+- Notes / 说明: 选型时先读像素版（配方更密、带 tags、CATALOG 有标签），落地再决定用哪种写法：像素版给逐帧像素配方（可烘焙 SpriteFrames），粒子版给 `particles()/shape()/glow()` 参数（可实时播放，0.42ms/效果）。粒子版独有价值是 `actor_node()` 的 body flash/tint、`shape()` 自写 shader 场、`cue()` 链式组合。两版同名 id 的 CATALOG 一句话描述几乎一致，可直接互查。
+- Source / 来源: code
+- Date / 日期: 2026-11-22
+
+### [FX/Reference] 粒子版工程的渲染设置与 ENN 相反：nearest + 像素吸附 vs ENN 的 linear+mipmap、无吸附
+- Evidence / 证据: `project.godot:257`（ENN `textures/canvas_textures/default_texture_filter=3`）、`third_party/pixelfx-godot/godot-particle/project.godot`（`default_texture_filter=0`、`2d/snap/snap_2d_transforms_to_pixel=true`、`snap_2d_vertices_to_pixel=true`）、`godot-particle/addons/pixelfx_particles/nodes/pixel_fx_particles_2d.gd:111-131`（`pixel_view` 走 SubViewport + `TEXTURE_FILTER_NEAREST`）
+- Notes / 说明: 把粒子场景/贴图直接搬进 ENN 会糊（linear+mipmap）并出现半像素抖动。两条对策：① 逐节点/材质改 `texture_filter=NEAREST`（推荐，零额外成本）；② 用节点自带的 `pixel_view`（每实例一个 SubViewport + render target，640×360 下实例一多就贵，ENN 不要用）。粒子发射器坐标同样建议取整。
+- Source / 来源: code
+- Date / 日期: 2026-11-22
+
+### [FX/Reference] pixelfx 的时间轴按 30fps 键，ENN 烘焙按 45fps 出帧：帧数要按 45 算
+- Evidence / 证据: `third_party/pixelfx-godot/godot-particle/tools/lib/render.gd:3,41`（`--fixed-fps 30`、`round(duration * fps)` 帧）、`third_party/pixelfx-godot/godot-particle/docs/AUTHORING.md`（原版按 120Hz 子步、按 30fps 帧读）、`.agents/skills/pixelfx-effect-authoring/SKILL.md`（ENN 一律 45fps）
+- Notes / 说明: 抄 `duration` 没错，但**帧数不能照搬**：库的渲染帧数是 `duration×30`，ENN 烘焙是 `duration×45`（1.2s→54、1.6s→72）。粒子版若整包实时播放则无所谓帧数，但 `key()` 的节拍点仍是 30fps 采样的，`speed`/`take` 是现成换算旋钮。
+- Source / 来源: code
+- Date / 日期: 2026-11-22
+
+### [Enemy/AI] 多人寻路性能：常驻成本 > 求解尖峰，且 attack/拓扑/流场有整块冗余
+- Evidence / 证据: `tests/ai_probe.gd`（本地，不入库）headless 实测：`ai_steer` 单次 **71µs**（89 敌 ≈ 6.3ms/帧）远大于 `solve_now_full` 5.6ms/600ms；`_choose_attack_index` 的结果在 `safe_valid` 时被 `target_safe_cell` 覆盖（`enemy_nav_field.gd` 复用分支 + 重建分支各一次）→ 多数情况纯浪费；`_measure_clearance` 每格 8 次二分 `nearest_inside`（729×8）；`_rebuild_solid` 每格每层新建 `[-1,0,1]` 数组（729×3 次分配，实测 9.3ms）；`_scan_static_obstacles` 递归整棵场景树（含 UI）；`_rebuild_flow` 每个邻居重跑 3 次 `_flow_passable`；`_field_side_step` 失败路径不设 `_ai_side_until` → 卡墙每帧 8 次 body_clear（每次 4 段 `is_solid`）；`_ai_dir_body_clear` 单槽缓存在 toward/dir/field_dir 交替调用时必然全 miss，且循环末段已等于 probe 却又重复查一次；FIELD_STRATEGY（默认模式）分支没有 `_ai_flow_*` 缓存而 LEGACY 有；`_field_reusable` 命中不刷新 `built_ms`，导致 `_evict_one` 把静止玩家的场当最旧淘汰后立刻重建；`_build_density` 只 splat `_ai_tactical`；`_trim_group` 的上限是**每组** 60（N 人 = 60×N）。
+- Notes / 说明: 落地顺序按"先砍常驻、再削尖峰、最后调容量"：① 常驻——FIELD_STRATEGY 补场流缓存（键 = 格 + `EnemyNavField.field_epoch(target)` 单场版本 + target id）、`_ai_target_anchor` 缓存（target 位移 <8px 且 `topology_epoch` 不变）、`_ai_dir_body_clear` 改**本帧多槽** Dictionary 缓存并删掉与循环末段重复的 `is_solid(probe)`、`_field_side_step` 失败也提交半量窗口、`MapChunks._world_to_cell/_cell_world` 按 `TileMapLayer/TileMap` 静态调用（去掉 `map.call` 的 Variant 分派）→ `ai_steer` **71→23µs**。② 尖峰——`ensure_rebuilt` 先判复用（命中只用 O(1) `target_safe_cell` 刷新 attack）、`_choose_attack_index` 只在 safe 无效时跑；body 层增量（只重算旧/新 pocket 差集）；`safe_cell` 并入 `_rebuild_flow`；`_measure_clearance` 改解析（点到凸 hull 各边）；`_rebuild_solid` 用常量偏移表 + 从 solid 格反向标记 `_near_solid`；`_scan_node` 跳过 Control/CanvasLayer 并用 `get_child_count/get_child`；`_rebuild_flow` 先建 passable 表再读写；墙距走 `_solid` 分块索引 → 单次拓扑 48.6ms → **10.9ms**（分段 `scan 3.4 / solid 7.3 / wall≈0`），`rebuild_all`（invalidate + 全部目标重建）1 人 **48.6→23.4ms**、4 人 **123.0→57.5ms**。③ 容量——`tactical_budget_total(N)=clamp(60+12(N-1),60,96)` + 单组保底 12（≈半圈），`_collect` 只在组集合变化时全量、成员变化只补脏组；`_assign_groups` 本地组每轮必算、远端组每轮最多 `groups_per_solve` 个，并把 `_ai_stale_budget_ms`（远端组 `3×interval×远端组数+500`）写进敌人——**不写就会踩 `decision_stale_ms` 误判过期、退回简单追踪**（比卡顿更难看）。④ `ai_probe` 247/2，失败集与改动前一致（「贴边槽位合法 3」「方位偏离横向修正」两条预存边缘用例，两数在改动前后都是 2）。⑤ **教训**：优化多人 AI 时先量"每帧每敌 × 敌人数"，再量 600ms 一次的求解；后者是尖峰、前者才是持续卡顿。单槽缓存对"交替调用"等于没有缓存。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-22
+
+### [Barricade/Summoned] 壁垒建墙晚于 round_start：回合开始时的墙体查询看不到本回合新墙
+- Evidence / 证据: 时序 `enemy_manager.gd`（`round_start` 处理器）→ `chip_manager.prepare_round()` → `field_mod_manager.gd` 的 `apply_field_chips()` 只 `call_deferred("_apply_pending")` → `field_mod_effect.gd:start()` 先 `await` `MapBounds`/`MapChunks` 就绪（最多 60 物理帧）→ `barricade.gd:on_start()`；`barricade_layout.gd:carve_out()` 用建墙**那一刻**的玩家 64px / 召唤物 80px 坐标做减法。
+- Notes / 说明: 在 `round_start` 里查 `EnemyNavField.is_solid` 对“本回合新墙”没有意义（旧墙已随 `round_upgrade` 清掉、新墙还没建）。召唤物落点必须同时做两件事：① 落点上限小于玩家避让半径（本实现取 ≤56px，玩家 carve 是 64px）；② 建墙完成后 `GameEvents.terrain_blocks_changed` 再复检一次。只做①会遇到客机镜像墙先到、或中途生成炮台的时序；只做②会先让召唤物在墙里待 1 帧（炮台可能被物理挤出/卡死）。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-23
+
+### [Summoned/Coop] `"Summoned"` 组包含联机远端镜像：核心搬动/计数逻辑必须跳过 `is_local_summoned==false`
+- Evidence / 证据: `mod_sdk/coop_mod/mods/etn_coop/net/coop_summoned_proxy.gd:63-70`（代理挂在召唤物节点下并写 `is_local_summoned` meta）；召唤物场景根自带 `groups=["Summoned"]`；本体先例 `scenes/update_item/recharge_cookie.gd:60` 已按该 meta 跳过镜像。
+- Notes / 说明: `SummonedManager` 用组遍历做回合归位/出墙复检时，若不跳过镜像，客户端会本地搬动队友召唤物并与其拥有者的快照/权威位置打架。镜像识别统一走 `has_meta("is_local_summoned") and not bool(...)`，单机没有该 meta 时按本地处理。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-23
+
+### [Summoned] 炮台定位分散在三条生成路径 + 回合重定位：改落点必须全改
+- Evidence / 证据: 装备 `scenes/update_item/utaha_turret.gd`、UtahaPS `scenes/player/utaha/UtahaPS.gd` 的 `add_turret()`/`add_turret_mk_3()`、旧 `script/turret_summoned.gd:round_rand_position()`（`round_start` 直连，2026-11-23 已删）；另 `scenes/player/ichika/ichika_ps.gd` 每回合新增 mobu 也用写死中心。
+- Notes / 说明: 只改回合重定位会漏掉战斗中途装备/触发 PS 生成的炮台（此时壁垒墙已在场，写死中心可能直接生成在墙里）。统一收口到 `TurretSummoned.spawn_point_for()` / `SummonedFollower.spawn_point_for()`，内部走 `SummonSpawn` 的“玩家附近 + 非 solid + body-safe”校验。
+- Source / 来源: code
+- Date / 日期: 2026-11-23
+
+### [Bullet/Pool] `enemy_bullet_3` 的 `pool_id` 不在 `IDLE_LIMITS`，该池实际无上限
+- Evidence / 证据: `scenes/bullet/enemy_bullet_3.tscn:108`（`pool_id = "enemy_bullet_3"`）、`scenes/manager/PoolManager.gd:77-123`（`IDLE_LIMITS` 只有 `enemy_bullet_1/2`）
+- Notes / 说明: `get_pool` 的 `limit = -1` 表示不设限，节点只进不出；`enemy_gun_7` 等阵型弹数量由阵型控制所以没暴露。做弹幕不要选它；要补限流需先确认阵型弹（`formation_launcher`，`speed=0`）不会被满额强收打断。
+- Source / 来源: code
+- Date / 日期: 2026-11-25
+
+### [Bullet] `EnemyBullet.kill_time` 的单位是 0.1s tick，不是秒
+- Evidence / 证据: `scenes/bullet/enemy_bullet.gd:16`（默认 `kill_time=110` ≈ 11s）、`:157-166`（`GameEvents.global_time_count` 每 tick 自减）
+- Notes / 说明: 数据里写「秒」，发射器统一 `int(round(lifetime * 10.0))` 再写入；直接按秒写会变成 0.1s 级寿命。
+- Source / 来源: code
+- Date / 日期: 2026-11-25
+
+### [Bullet/Spawner] `spawn_core` 的 `configure` 发生在入树前，`corruption_power` 在 configure 之后补
+- Evidence / 证据: `script/projectile_spawner.gd:51-59`（configure → 写 transform → 激活；ENEMY 侧随后写 `corruption_power`）、`:66-92`（入树/激活顺序）
+- Notes / 说明: configure 里只能碰数据字段（`damage_data`/`speed`/`kill_time`/自定义导出），不能访问 `@onready` 子节点或 `get_path()`；`source_node` 要放在 `post`。弹幕发射器据此拆成 `_configure_bullet` / `_post_bullet`。
+- Source / 来源: code
+- Date / 日期: 2026-11-25
+
+### [Enemy] `_interrupt_weapons()` 是「组件停火」的隐式契约：只找后代、只认 `stop_firing` / `stop_shoot`
+- Evidence / 证据: `script/entity_ENEMY.gd:300-305`（`find_children("*", "", true, false)` → `stop_firing`/`stop_shoot`）、`:295`（`idle_state` 调用）
+- Notes / 说明: 挂到敌人身上的持续发射组件把停火方法命名为 `stop_firing()` 即可自动在死亡/退场/回池时停机，无需改 `Enemy`；反之改名就会「Boss 死了弹幕还在出」。组件必须挂在敌人子树内。
+- Source / 来源: code
+- Date / 日期: 2026-11-25
+
+### [Tooling/UI] 游戏内工具场景的 Control 按 640×360 canvas 设计；`Label` 的 autowrap+clip 会塌成 1px 高
+- Evidence / 证据: `project.godot` 的 `stretch/mode=canvas_items`、base 640×360（窗口 1280×720）；`scenes/danmaku/danmaku_editor.gd` 的 `LEFT_WIDTH/TIMELINE_HEIGHT` 是 canvas 单位；本地实测 `Label` 同时开 `autowrap_mode` + `clip_text` 时 `get_combined_minimum_size().y == 1`、`get_visible_line_count() == 0`（整行文字不显示）
+- Notes / 说明: 工具面板宽高按 canvas 单位算（想占屏幕 1/4 就是 160，不是 320）；VBox 里的小标签不要同时 autowrap+clip（用 `SIZE_SHRINK_CENTER` + 固定字号），需要换行的说明文字单独设 `custom_minimum_size.y`。
+- Source / 来源: test
+- Date / 日期: 2026-11-25
+
+### [Perf/Pooling] 已回池的敌弹仍会响应回合清场
+- SUPERSEDED: 2026-11-27 已修复下述重复处理。用同一探针复测，120 枚待机弹的物理处理开启数、一次 `round_end` 产生的额外 `bullet_idle` 通知数和新增烟雾节点数均为 0。清场信号仍连接，待机守卫会跳过副作用（来源：test）。
+- Evidence / 证据: `scenes/bullet/enemy_bullet.gd:42`、`:73`、`:146`，`scenes/bullet/enemy_bullet_2.gd:14`。Godot 4.7 + Rapier2D 无头探针实例化 120 枚 `DanmakuBullet`，逐枚回池后仅发一次 `round_end`，观察到 120 次额外的 `bullet_idle` 通知，烟雾池从 0 增至 2 个节点，120 枚待机弹的物理处理仍开启。
+- Notes / 说明: `idle_state()` 断开寿命和衰减计时，清场信号仍连着 `bullet_clear()`。烟雾的频率门控在取池后执行。分裂弹另外覆写了清场函数并调用 `bullet_shoot()`，修复时应单独验证已有分裂数的待机弹。
+- Source / 来源: test
+- Date / 日期: 2026-11-26
+
+### [Coop/Mod] mod 必须自包含：自建资源放 res://mods/<id>/，放本体目录会在导出包断编译链
+- Evidence / 证据: `mods/etn_coop/net/coop_revive_fx.gd`（preload `res://mods/etn_coop/effects/coop_revive_frames.res`）、`mod_sdk/build_coop_mod.ps1` 自包含校验；导出包日志 `Preload file "res://scenes/effects/coop_revive_frames.res" does not exist`
+- Notes / 说明: 工程目录跑正常、导出包本体 pck 没有新增文件 → fx 脚本编译失败 → 依赖它的 `coop_net`/`coop_menu` 一起失败，表现为「换角色没反应、主机看不到客机子弹」。构建脚本现已拦截 `res://scenes/effects/coop_*` 这类引用。
+- Source / 来源: test
+- Date / 日期: 2026-11-26
+
+### [Coop/Net] `_server_player_selected` 在 battle 中会触发 `_remote_change_scene`，重试会造成场景重载循环
+- Evidence / 证据: `coop_net.gd` 的 mid-run 分支与 `midrun_skip`/`remote_scene_skip`；修复前日志 `client battle start`/`first_round_add` 重复、fps 3–12
+- Notes / 说明: 选人/换人重试每发一次就让客机重载一次场景，玩家被反复重建，表现为「换角色无效、子弹全丢」；host 侧按 `scene_ready_peers`/`_midrun_scene_sent` 幂等，client 侧按 ready/loading 幂等。
+- Source / 来源: test
+- Date / 日期: 2026-11-26
+
+### [Perf/Visual] 全局存活视觉计数必须按 instance_id 去重，池化复用会虚高并卡死配额
+- Evidence / 证据: `coop_visual_sync.gd` 的 `_live_map`/`_register_live`/`sweep_idle_visuals`；修复前主机 diag `vcap` 51→263 单调上涨
+- Notes / 说明: 旧实现每次生成都 append weakref，同一池化节点复用多次被重复计数 → 永久顶满 240，子弹被拒（主机只偶尔看到客机子弹），`_live_count()` 还是 O(n²) 卡顿源。
+- Source / 来源: test
+- Date / 日期: 2026-11-26
+
+### [Coop/Net] 单次可靠 RPC 不等于可靠送达：关键交互要走 ack + 重试
+- Evidence / 证据: `coop_net.gd` 的 `_req_send/_req_tick/_req_ack`、`_change_ack`/`_select_ready_ack`/`_selection_ack(token)`；`req_ack/req_fail/req_timeout` trail
+- Notes / 说明: 未握手/通道拥塞时 `rpc_id` 会静默丢失；选人/就绪/换人曾因此「点了没反应」。统一为 pending + 500ms 重发 + 8s 超时 + 紧急窗口让路（`buff/coin/char/visual/follow` 让路，`hit` 不丢）。
+- Source / 来源: test
+- Date / 日期: 2026-11-26
+
+### [Coop/Net] buff 合并必须保留「施加次数/层数」语义；dropable=false 只记账会无限增长
+- Evidence / 证据: `coop_net.gd` 的 `_pending_buffs.count` 与 host 循环 `apply_buff`；`scenes/manager/buff_manager_base.gd:127` 每次施加 `layer += 1`；曾出现 `buff_tx` 1835 KB/s
+- Notes / 说明: 0.2.8 首版按目标去重导致标记/易伤丢层；不设上限的中继 buff 曾把中继单条 TCP 塞满（连换角色与子弹一起被堵）。合并要带次数、要有队列上限与过期、要能在满层时停发。
+- Source / 来源: test
+- Date / 日期: 2026-11-26
+
+### [Perf/Nav] 普通壁垒建成后的首个拓扑尖峰主要来自全图墙距计算
+- Evidence / 证据: `tests/barricade_frame_probe.tscn`（本地探针），`scenes/field_mods/terrain_field_effect.gd:77`、`:93`，`script/enemy_nav_field.gd:350`、`:423`、`:431`。Godot 4.7 + Rapier2D，headless 限 60 FPS，24 个 sweeper，单目标及四目标离线分组各三次。正常帧间隔中位数约 16.7 ms；建墙调用 22.0–26.1 ms，建成后最长主循环帧间隔 64.7–70.5 ms，首次拓扑构建 62.1–67.4 ms。四组目标场随后按同一帧 3 个、另帧 1 个重建。另两次按代码段取时，墙距分别为 58.26/63.63 ms、57.23/62.43 ms（墙距/拓扑总耗时）。
+- Notes / 说明: 此处通过实际 `BarricadeEffect.start()/stop()` 和常规 AI 调度观测，目标使用节点桩，四目标各分配 6 敌。普通建立/撤除各触发一次失效；撤墙后目标场重建为 0，仍可观察到无墙拓扑再次构建。`topology_profile["clear"]` 对应 `_rebuild_wall_clearance()`，计时边界见 `_build_topology()`。后续优化需同时校验距离与最近墙格，局部墙过滤会读取两者。
+- Source / 来源: test
+- Date / 日期: 2026-11-27
+
+### [Combat/Bullet] RayCast2D 的碰撞结果是上一物理帧缓存：命中对象被释放时 `is_colliding()` 仍为 true、`get_collider()` 为 null
+- Evidence / 证据: `script/player_bullet.gd:213-217`（判空守卫）、`scenes/bullet/normal_bullet.gd:156-160`、`scenes/field_mods/terrain_field_effect.gd:85-90`（`on_stop` 对 overlay `queue_free()`）；本文件 `:3761`（独立 TileMapLayer 的物理 body instance id 即 layer 自身）
+- Notes / 说明: RayCast2D 是子弹子节点，父节点 `_physics_process` 先于子节点的 internal 物理更新执行，因此读到的是上一物理帧结果。壁垒每轮 `on_stop` 会释放 `ObstacleWall`（`BulletWall` 组 TileMapLayer），下一物理帧射线缓存仍报碰撞、但 collider 的 ObjectID 已失效 → `get_collider()` 返回 null；未判空直接 `is_in_group` 就是 `Attempt to call function 'is_in_group' in base 'null instance'`，编辑器调试器会把游戏停在 break。`is_colliding()` 为 true 后访问 collider 必须 `collider != null and is_instance_valid(collider)`，无效视为本帧无墙。同类只读 `get_collision_point()/get_collision_normal()` 的分支（`laser_bullet`/`sniper_bullet`/`player_laser_beam`）不会 null 崩，但可能有一帧旧端点。无头复现见 `tests/_bullet_guard_checks.gd`（本地临时，不入库）：命中后 `free()` 墙，缓存 `true/null`，恢复旧写法即报同一行错误。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-27
+
+### [Bullet/Prop] 子弹 `on_damage_dealt` 的 victim 可能是 SceneProp 根节点（没有 `stats`/`enemy_buff_manager`）
+- Evidence / 证据: `script/props/prop_health.gd:24-31`（`i.call(owner, 0)`，owner 为场景根）、`scenes/props/oil_barrel.tscn`（`PropStats` 是子节点，`penetrate_resis=999`）、`script/player_bullet.gd:104-108`、`scenes/bullet/normal_bullet.gd:133-138`、`scenes/bullet/megu_bullet.gd:35-48`
+- Notes / 说明: 可破坏道具走 `PropHurtBox` → `PropHealth._on_hit_received` 回调，传入的 victim 是 `SceneProp` 根；根节点只有 `prop_id/faction/is_idle`，`stats` 在 `PropStats` 子节点上、`enemy_buff_manager` 根本不存在。原先直接 `victim.stats.penetrate_resis` / `victim.enemy_buff_manager.apply_buff(...)`，用玩家或召唤物子弹打油桶会报 `Invalid access to property or key 'stats'`。修法：`victim.get("stats")` 为空且属于 `SceneProp` 时回退 `get_node_or_null("PropStats")`（取不到按 0），`enemy_buff_manager` 判空后跳过 buff。新增可破坏道具时记得挂 `PropStats` 子节点，否则子弹/召唤物命中会走「无穿透抗性」分支。
+- Source / 来源: code + test
+- Date / 日期: 2026-11-27
