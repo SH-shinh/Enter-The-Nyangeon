@@ -1,8 +1,12 @@
 # PixelFX 参考手册 / pixel-art effects made of code
 
 > 上游：<https://github.com/winkidney/pixelfx-godot>（MIT；Godot 4 移植版，原作者 patch-gg / Patch）
-> 本地快照：`third_party/pixelfx-godot/`（621 文件 ≈ 3 MB，带 `.gdignore`，不进本体包）。
-> 本文回答两件事：**能不能当特效制作参考**（能，见 §3–§7），**怎么用进 ENN**（见 §8–§11）。
+> 本地快照：`third_party/pixelfx-godot/`（4269 文件 ≈ 86 MB，commit `620f7556`，带 `.gdignore`，不进本体包）。
+> 快照里有**两个移植版**：`godot/`（像素版，逐帧写像素）与 `godot-particle/`（粒子版，原生 GPU 粒子）。
+> 本文回答两件事：**能不能当特效制作参考**（能，见 §3–§7、§15），**怎么用进 ENN**（见 §8–§11、§15.5）。
+>
+> 可执行版 skill：`.agents/skills/pixelfx-catalog/`（选型）、`pixelfx-effect-authoring/`（像素版落地管线）、
+> `pixelfx-particles/`（粒子版：配方读法 / 复刻 / 实时播放）。
 
 ---
 
@@ -17,6 +21,9 @@
 
 规模：**244 个效果 / 21 个分类**；一次性 136，循环 108；带"演出"（act，角色动作 + 命中定格）73 个。
 
+> 2026-11-22 起另有**粒子版**（`godot-particle/`）：同 244 个 id，用 Godot 原生粒子 + shader 重建，
+> 不是像素拷贝。见 §15。
+
 ## 2. 许可与署名（先看这条）
 
 - 代码与效果均为 **MIT**：可改、可商用、可闭源再分发，保留版权与许可声明即可。
@@ -29,6 +36,8 @@
   ```
 
   库内样例见 `third_party/pixelfx-godot/godot/addons/pixelfx/fx/fire/torch.gd:1-2`。
+- 粒子版（§15）里角色 / 靶子 / critters / 静物复用原版像素，其余一律在库里重做；改编同样要按
+  `third_party/pixelfx-godot/godot/docs/AUTHORING.md` 署两行 credit。
 
 ## 3. 两种写法（这是它最有参考价值的部分）
 
@@ -167,6 +176,9 @@ $fx = 'third_party\pixelfx-godot\godot\addons\pixelfx\fx'
 > `explosions/small-explosion`，按俯视重写）+ 共用件 `pixelfx_explosion_lib.gd` → `explosion_{small,big}_frames.res`
 > （0.55s/160×160/18 帧、0.85s/224×224/27 帧，30fps），由 `script/explosion.tscn` / `small_explosion.tscn` 的
 > `AnimatedSprite2D` 播放；原 4 路 GPUParticles2D + 6–9 个物理碎片节点已删。
+>
+> **追加（2026-11-22）**：快照并入上游**粒子版**（`godot-particle/`，§15）。**只作参考，未接入**：
+> `res://addons/` 与 `scenes/` 无改动；要用时按 §15.5 的 A/B/C 三种方式之一来。
 
 **A. 纯读（0 代码）**
 把本快照当教程与配方库，用来改 ENN 现有的 `GPUParticles2D` / `AnimationPlayer` / `shaders/` 特效。适合只想学"相位编排 + 光逻辑"。
@@ -250,9 +262,13 @@ Baker.save_sprite_frames(baked, "res://fx/spark_pop.res")   # 或 to_sprite_fram
   - 对策：长特效/大特效改烘焙成 `SpriteFrames`（占磁盘不占堆）、或切场景/回合间调 `PixelFx2D.clear_cache()`、或对小特效自定义限制 `duration`。
 - **导出**：`.gdignore` 的目录不会进导包；但整包使用时 581 个脚本会被导入，注意首启与包体。
 - 只在需要时开 `additive_light`：它是第二个 `Sprite2D` 加一层加法 blend。
+- **粒子版（§15）参照**（RTX 4070 SUPER / 1280×720 / Compatibility）：单效果 0.42 ms、64 个同时 52.7 ms；
+  作为对照，像素版 LIVE 9.75 ms / 64 个 997 ms，BAKED 0.28 ms / 0.45 ms。即：常驻/多实例场景里，
+  粒子版比 LIVE 便宜约 20 倍，但**比烘焙帧贵**（烘焙帧是纯贴图重放）。
 
 ## 13. 244 个效果地图（按分类挑蓝本）
 
+两版 id 完全相同（像素版 = 逐帧拷贝，粒子版 = 原生重建），下表对两版都成立。
 | 分类 | 数量 | 画布范围 | 时长 s | 循环 | 代表效果 |
 |---|---|---|---|---|---|
 | `moves` | 12 | 252×74–480×266 | 1.9–6.8 | 0 | Arrow shot / Dash strike / Sword combo |
@@ -294,8 +310,95 @@ Baker.save_sprite_frames(baked, "res://fx/spark_pop.res")   # 或 to_sprite_fram
 | 跑一阵内存涨 | BAKED 静态缓存；见 §12 |
 | 编辑器变慢 | 整包导入 581 脚本；只拷 core + nodes + bake（方案 B） |
 
-## 15. 参考链接
+## 15. 粒子重制版（`godot-particle/`）
+
+上游 2026-11-22 的第二个移植：同 244 个 id，用 Godot 自己的工具重建 —— **GPU 粒子打头**，
+canvas shader、Line2D、Sprite、AnimationPlayer 补足。它不是像素拷贝，而是"同相位、同配色、同位置、
+同运动"，并按覆盖率/位置/颜色/运动对原版逐帧打分。
+
+| 项 | 值 |
+|---|---|
+| 体积 / 版本 | 3645 文件 ≈ 83 MB；插件 `pixelfx_particles` 0.1.0 |
+| 与 JS 原版相似度 | 0.954（effects）/ 0.920（acts） |
+| 成本（RTX 4070S / 1280×720） | 0.42 ms/帧；64 个同时 52.7 ms（LIVE 是 9.75 / 997） |
+| 工程设置 | `gl_compatibility`、`default_texture_filter=0`（nearest）、像素吸附开、**30fps 时间基准** |
+| 入口 | 配方 `build/fx/<分类>/<id>.gd`；产物 `addons/pixelfx_particles/fx/<分类>/<id>.tscn`；目录 `docs/CATALOG.md` |
+
+### 15.1 一个场景长什么样
+
+- 根是 `PfxEffect`（`core/pfx_effect.gd`），摆在效果的 **origin**（脚底 / 命中点 / 火把底座），带着原版 meta
+  （duration、loop、canvas、origin、backdrop、ramp、source）。
+- 一条 `fx` 动画（`AnimationPlayer`）驱动一切随时间变的东西：发射器开关、`amount_ratio`、shader uniform、
+  位置、可见性、缩放。
+- 坐标系是**原版画布的像素**，相对 origin，y 向下；角度是度，0 向右、90 向下。
+- 四个层：`color`（抖动开/关 alpha）、`soft`（32 级抖动真半透明）、`light`（加法，永远叠在 color 上）、
+  `prop`（原样像素，不参与调色）。`back: true` 把节点挪到 stand-in 之后。
+
+### 15.2 哪些像素是原版的，哪些是重做的
+
+- **复用原版像素**：`prop()`（火把铁架、喷泉水池、雨的薄雾湿地面这类静物）与 `frames()`（critters、
+  金币、宝箱、宝石这类"作为整体移动/翻转的身体"）—— 用 `port/props.py` / `port/frames.py` 从原版帧里抠出来。
+- **必须重做**：火、烟、光、魔法、环、挥砍、闪电、雨雪。**抄了 `frames()` 就不算移植。**
+
+### 15.3 写效果的 API（`core/build.gd`）
+
+配方是"摆节点"而不是"写像素"：`particles()`（发射器，参数几乎覆盖 ParticleProcessMaterial 全部字段）、
+`twin()`（同 seed 的 light 副本）、`ramp()/gradient()/color()/curve()`、`ring()/glow()/arc()/fog()/shape()`
+（一律是 canvas shader 铺在矩形上）、`bolt()/line()/ellipse()/text()`、`actor_node()/actor_points()/prop()/frames()`、
+`key()/emit()/show()/loop_t()/cue()`。时间一律靠**键**（shader 里禁止读 `TIME`），随机一律固定 seed。
+完整表见 `.agents/skills/pixelfx-particles/references/build-api.md` 与 `third_party/pixelfx-godot/godot-particle/docs/AUTHORING.md`。
+
+### 15.4 运行时节点
+
+| 节点 | 关键属性 |
+|---|---|
+| `PixelFxParticles2D` | `effect`（走 `fx/registry.gd`）、`palette_preset` / `palette`、`flip`、`take`、`light`、`speed`（0 = 定格）、`show_actor`、`pixel_view`（默认 **true**，SubViewport 整像素放大）、`zoom`、`free_when_done`、`finished` |
+| `PixelFxParticlesAct2D` | 73 个带演出的效果：`show_target`、`shake`、`hit(index)`、`timing(id)` → `{windup, recovery, hits}` |
+
+### 15.5 怎么接进 ENN（本次**未接**，只留路径）
+
+| 方式 | 做法 | 代价 |
+|---|---|---|
+| A 纯读 | 把 `particles()` 的参数翻成 ENN 自己的 `GPUParticles2D`（`scenes/bullet/*` 已有现成写法），`key()` 翻成 AnimationPlayer 轨道 | 零依赖，最贴合现有代码 |
+| B 借 helper | 拷 `core/nodes/shaders/textures` 到 `res://addons/pixelfx_particles/`（目录名不能改），自己写 build 脚本生成场景 | +8 MB 级资源、多一套并行管线 |
+| C 整包实时 | `PixelFxParticles2D` 按 id 播 | 见下三处必改 |
+
+C 的三处必改：① `pixel_view = false`（ENN 已按 640×360 像素渲染，否则每实例一套 SubViewport/render target）；
+② **纹理过滤改 nearest**（ENN `default_texture_filter=3` 是 linear+mipmap，粒子贴图会糊）；
+③ `show_actor = false` + 用 `HurtBoxMeasure` 自己量脚底。另外：粒子工程时间基准 30fps（ENN 烘焙是 45fps，
+跨管线要换算）；ENN 开了 `viewport/hdr_2d=true`，`light` 先调低；地面环要从侧视压扁改正圆。
+
+### 15.6 在 Windows 上跑粒子版工具
+
+```powershell
+$G    = 'H:\Godot_v4.7-stable_win64.exe'
+$PART = 'third_party\pixelfx-godot\godot-particle'
+& $G --headless --no-header --path $PART --import                                  # 首次：生成 .godot/（跑完删）
+& $G --headless --no-header --path $PART -s res://tools/cli.gd -- list poison
+& $G --headless --no-header --path $PART -s res://tools/cli.gd -- check status/poisoned
+& $G --no-header --path $PART --rendering-driver opengl3 --fixed-fps 30 `
+    -s res://tools/cli.gd -- render holy/heal-aoe                                  # 原生尺寸帧序列
+```
+
+`render/smoke/perf` 需要真渲染器（上游 Linux 用 `xvfb-run`，Windows 直接省掉）；`compare` 要先生成
+**像素版的参考渲染**（`godot/records/gallery/`）才能打分。产物在 `records/`，看完删。
+
+### 15.7 坑（详版见 `pixelfx-particles` 的坑表）
+
+| 现象 | 原因 / 处理 |
+|---|---|
+| 粒子糊成色块 | ENN 是 linear 过滤；改 nearest |
+| 上不去/飘得怪 | `turbulence.influence` > 0.03 吃掉速度；保持 0.005–0.03 |
+| 换色后仍发灰 | 只换了 `palette_preset` 里没有的自混色；调色只替换"正好等于 ramp 颜色"的颜色 |
+| 光洗白火焰 | light 层加法叠在最上；`light` 与 glow alpha 调低 |
+| 实例一多就卡 | `pixel_view = true` 每实例一个 SubViewport；关掉 |
+| 首帧空白（循环） | 连续发射器缺 `preprocess` |
+| Compatibility 报错 | 无 sub-emitter / 无 trails；落点溅射另起发射器 |
+
+## 16. 参考链接
 
 - 上游（JS 原版）：<https://github.com/patch-gg/pixelfx> ／ 作者 <https://patch.gg>
-- 写法手册：`third_party/pixelfx-godot/godot/docs/AUTHORING.md`；效果目录 `.../CATALOG.md`；移植规则 `.../PORTING.md`、`.../UPSTREAM.md`
+- 像素版写法手册：`third_party/pixelfx-godot/godot/docs/AUTHORING.md`；效果目录 `.../CATALOG.md`；移植规则 `.../PORTING.md`、`.../UPSTREAM.md`
+- 粒子版写法手册：`third_party/pixelfx-godot/godot-particle/docs/AUTHORING.md`；目录 `.../CATALOG.md`；工具 `.../tools/cli.gd`
+- 快照说明（两版目录、命令、清理）：`third_party/pixelfx-godot/SNAPSHOT.md`
 - 质量基准与灵感：Sprite Fusion 开源像素特效 <https://www.spritefusion.com/pixel-art-vfx>；方法文 <https://www.spritefusion.com/blog/how-to-make-good-pixel-art-effects-with-claude>

@@ -20,6 +20,17 @@ description: >
 - **用**：要新增/重做敌人光环、范围提示、状态贴花、命中/拾取反馈，且希望沿用参考库的像素表现。
 - **不用**：纯 `GPUParticles2D` 调参、纯 shader 手写、或只改数值不碰视觉。
 
+## 另一条路：粒子版（`pixelfx-particles`）
+
+同 244 个 id 还有一套**原生粒子**实现（`third_party/pixelfx-godot/godot-particle/`，GPUParticles2D +
+canvas shader + 按 30fps 的关键帧，0.42 ms/效果、可实时换色/镜像/定格）。分岔点：
+
+- **仍是烘焙 SpriteFrames**（本 skill 的管线）——ENN 现行默认。理由：池化 + z 分层 + 运行时零成本 +
+  与现有 `pixelfx_*` 一致。
+- **改走原生粒子**——目标是实时播放、要频繁换色/镜像、或觉得烘焙帧数与显存吃紧时。读配方看
+  `build/fx/<分类>/<id>.gd`，落地方式（纯读 / 借 helper / 整包 `PixelFxParticles2D`）见 `pixelfx-particles`。
+  注意三处必改：`pixel_view = false`、纹理过滤改 nearest（ENN 默认 linear）、`show_actor = false`。
+
 ## 硬约束（踩过的坑，别重犯）
 
 | 约束 | 取值 | 原因 |
@@ -132,5 +143,6 @@ func _ready() -> void:
 
 - `references/recipes.md`：5 个已落地配方的逐项参数。
 - `references/commands.md`：选型/烘焙/抓帧/校验命令。
-- `docs/REFERENCE_PIXELFX.md`：库的设计、尺度、许可与 244 效果地图。
-- 相关 skill：`pixelfx-catalog`（选型）、`godot-baked-vfx`（运行时通用写法）。
+- `docs/REFERENCE_PIXELFX.md`：库的设计、两版对比（§16 粒子版）、尺度、许可与 244 效果地图。
+- 相关 skill：`pixelfx-catalog`（选型）、`pixelfx-particles`（粒子版：原生粒子写法/实时播放）、
+  `godot-baked-vfx`（运行时通用写法）。

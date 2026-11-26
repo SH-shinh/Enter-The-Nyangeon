@@ -6,39 +6,61 @@ description: >
   pick a blueprint for a target look (heal, poison, rage, hit spark, pickup, UI,
   ground hazard), select by use case (enemy status / hit feedback / AoE / projectile /
   pickup / UI / weather / spawn / heal), render a contact sheet, and know the
-  licensing + quality bar before forking it. Use when choosing which pixelfx effect
-  to port, asking "参考库里有没有…/ 哪个效果像…", or before handing off to
-  pixelfx-effect-authoring.
+  licensing + quality bar before forking it. Covers BOTH ports that share the 244 ids:
+  the pixel-exact godot/ (逐帧像素配方, bakes to SpriteFrames) and the native-particle
+  godot-particle/ (GPUParticles2D + shaders, plays live). Use when choosing which
+  pixelfx effect to port, asking "参考库里有没有…/ 哪个效果像…", or before handing off to
+  pixelfx-effect-authoring (像素版) or pixelfx-particles (粒子版).
 ---
 
-# pixelfx 效果选型（244 个蓝本）
+# pixelfx 效果选型（244 个蓝本，两个移植版）
 
-`third_party/pixelfx-godot/` 是只读快照（MIT）。本 skill 负责**挑蓝本**；
-挑完怎么落地见 `pixelfx-effect-authoring`。
+`third_party/pixelfx-godot/` 是只读快照（MIT），里面有**同一 244 个 id 的两种做法**：
+
+| | 像素版 `godot/` | 粒子版 `godot-particle/` |
+|---|---|---|
+| 配方 | `addons/pixelfx/fx/<分类>/<id>.gd`（逐帧写像素） | `build/fx/<分类>/<id>.gd`（摆发射器/shader/线） |
+| 像原版的程度 | 1.0（逐帧对拍） | 0.954（相位/配色/位置一致，非像素拷贝） |
+| 用在哪 | 要像素级配方、要烘焙成 SpriteFrames | 要原生粒子写法、要实时播放 |
+
+本 skill 负责**挑蓝本**；怎么落地见 `pixelfx-effect-authoring`（像素版烘焙管线）与
+`pixelfx-particles`（粒子版：找配方 / 复刻 / 实时播放）。
 
 ## 何时用 / 不用
 
 - **用**：要"像治疗/中毒/狂怒/受击/拾取/升级"这类效果，需要从库里找同族参考。
 - **不用**：已经指定了某个 id（直接去 fork），或者只想调数值。
 
+## 先决定看哪一版
+
+| 你的目标 | 看哪版 | 为什么 |
+|---|---|---|
+| 要"这个效果具体每一帧怎么画" | 像素版 | 相位、抖色、1px 线、光逻辑全在 `.gd` 里 |
+| 要烘焙成 SpriteFrames 接进 ENN | 像素版 | 现成 `Baker` + `script/bake_pixelfx_fx.gd` 管线 |
+| 要"这个效果用原生粒子怎么写" | 粒子版 | `particles()/shape()/glow()` 的参数就是答案 |
+| 要实时播放、可换色/镜像/定格 | 粒子版 | 0.42 ms/效果，且不用预渲染 |
+| 只是想知道"长什么样、像不像" | 任一版 | 同 id 的 CATALOG 描述几乎一致 |
+
 ## 三种找法
 
 ```powershell
-$SNAP = 'third_party\pixelfx-godot\godot'
+$SNAP = 'third_party\pixelfx-godot\godot'                 # 像素版
+$PART = 'third_party\pixelfx-godot\godot-particle'        # 粒子版
 
-# 1) 按 id / 名称 / 标签 / 描述搜（CLI 会打印 meta 摘要）
+# 1) 按 id / 名称 / 标签 / 描述搜（CLI 会打印 meta 摘要；两版同 id，任选一版搜）
 & $G --headless --no-header --path $SNAP -s res://tools/cli.gd -- list poison
-& $G --headless --no-header --path $SNAP -s res://tools/cli.gd -- list shock hit
+& $G --headless --no-header --path $PART -s res://tools/cli.gd -- list shock hit
 
 # 2) 直接 grep 源码（最快，能看 options/tags 全貌）
 Select-String -Path "$SNAP\addons\pixelfx\fx\status\*.gd" -Pattern '"tags"|"desc"'
 Get-ChildItem "$SNAP\addons\pixelfx\fx" -Recurse -Filter *.gd | Select-String -Pattern 'rage|enrag|frenzy'
+Get-ChildItem "$PART\build\fx" -Recurse -Filter *.gd | Select-String -Pattern 'enrag|frenzy'   # 粒子版配方
 
-# 3) 渲染对照图（--zoom 4 --bg dark；产物在快照 records/，看完删）
+# 3) 渲染对照（像素版：--zoom 4 --bg dark；粒子版：原生尺寸帧序列，见 pixelfx-particles）
 & $G --headless --no-header --path $SNAP -s res://tools/cli.gd -- render status/rage --zoom 4 --bg dark
 ```
 
-完整清单：`$SNAP\docs\CATALOG.md`（每个效果的描述与标签）。
+完整清单：`$SNAP\docs\CATALOG.md`（像素版，带 tags）与 `$PART\docs\CATALOG.md`（粒子版，244 条一句话描述）。
 
 ## 先按用途选（推荐入口）
 
@@ -60,6 +82,8 @@ Get-ChildItem "$SNAP\addons\pixelfx\fx" -Recurse -Filter *.gd | Select-String -P
 
 ## 21 个分类（题材清单）
 
+**两版 id 完全相同**，下表对像素版与粒子版都成立（分类/数量/画布/时长/循环数一致；
+粒子版的逐条一句话描述在 `$PART\docs\CATALOG.md`）。
 | 分类 | 数量 | 画布 | 时长 s | 循环 | 代表 |
 |---|---|---|---|---|---|
 | `moves` | 12 | 252×74–480×266 | 1.9–6.8 | 0 | Arrow shot / Dash strike |
@@ -93,13 +117,14 @@ Get-ChildItem "$SNAP\addons\pixelfx\fx" -Recurse -Filter *.gd | Select-String -P
 `fire ember lava smoke dust ice water electric volt poison holy heal arcane shadow blood earth stone gold leaf wood metal bone neon cyber matrix candy night`
 
 用法：`options.palette = Px.PAL.gold`（或自定义 `PackedColorArray`）。
-**必须走 `Px.fit(o.palette, n)`**，否则换色发灰。
+**必须走 `Px.fit(o.palette, n)`**，否则换色发灰。粒子版是同一份 ramp（`core/palettes.gd`），
+节点上给 `palette_preset` 或 `palette`。
 
 ## 许可与署名
 
 - 库为 **MIT**；移植/改写后在文件头写清来源（如 `# 参考 pixelfx status/rage（MIT）`），
-  成品发布时带 credit。已落地的 5 个效果都是这个格式。
-- 快照**只读**：不要改 `third_party/` 里的文件；实验产物（`records/`）看完删。
+  成品发布时带 credit。已落地的 5 个效果都是这个格式。粒子版复用原版角色/静物像素，同样要署名。
+- 快照**只读**：不要改 `third_party/` 里的文件；实验产物（`records/`、`.godot/`）看完删。
 
 ## 质量条（判断蓝本值不值得抄）
 
@@ -111,6 +136,7 @@ Get-ChildItem "$SNAP\addons\pixelfx\fx" -Recurse -Filter *.gd | Select-String -P
 ## 参考
 
 - `references/by-use-case.md`：**按用途选型**（10 类场景 → 首选/备选/已落地/锚定方式/误区）。
-- `references/categories.md`：ENN 相关分类的完整 id 清单（按题材）。
-- `docs/REFERENCE_PIXELFX.md`：库的整体说明、尺度对齐、接入方式、常见坑。
-- 相关 skill：`pixelfx-effect-authoring`（落地管线）、`godot-baked-vfx`（运行时）。
+- `references/categories.md`：ENN 相关分类的完整 id 清单（按题材，两版通用）。
+- `pixelfx-particles`：粒子版的选型（`references/by-use-case-particles.md`）、配方读法、API、命令。
+- `docs/REFERENCE_PIXELFX.md`：库的整体说明、两版对比、尺度对齐、接入方式、常见坑。
+- 相关 skill：`pixelfx-effect-authoring`（像素版落地管线）、`pixelfx-particles`（粒子版）、`godot-baked-vfx`（运行时）。

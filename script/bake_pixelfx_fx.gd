@@ -58,6 +58,7 @@ const BBOX_LIMIT := {
 	# 爆炸两档：画布 160/208，留 2px 余量
 	"explosion_small_frames.res": 156,
 	"explosion_big_frames.res": 220,
+	"coop_revive_frames.res": 188,
 	# 状态光环：画布 80，留 2px 余量；循环效果，每帧都必须有像素
 	"burning_aura_frames.res": 78,
 	"poison_aura_frames.res": 78,
@@ -95,6 +96,7 @@ const ONESHOT := {
 	"explosion_big_frames.res": true,
 	"hare_lock_in_frames.res": true,
 	"snowflake_burst_frames.res": true,
+	"coop_revive_frames.res": true,
 	
 }
 
@@ -120,6 +122,7 @@ func _initialize() -> void:
 	var burst: Script = load("res://scenes/effects/pixelfx_serina_burst.gd")
 	var dust: Script = load("res://scenes/effects/pixelfx_serina_dust.gd")
 	var beam_in: Script = load("res://scenes/effects/pixelfx_serina_beam_in.gd")
+	var coop_revive: Script = load("res://scenes/effects/pixelfx_coop_revive.gd")
 	
 	var heal: Script = load("res://scenes/effects/pixelfx_serina_heal.gd")
 	var chill: Script = load("res://scenes/effects/pixelfx_chill_frozen.gd")
@@ -197,6 +200,12 @@ func _initialize() -> void:
 		maki_checks.append([bp, "maki_paintball_pop_%d.res" % i])
 		print("BAKE maki[%d] bolt n=%d trim=%d err=%s | pop n=%d trim=%d err=%s" % [
 			i, bb.n, tb, str(eb), bp.n, tp, str(ep)])
+
+	# 联机复活：光柱 + 羽翼 + 羽毛 + 粒子，0.45s / 45fps / 192×160（无本体/光池/光环）
+	var bcr: Dictionary = Baker.bake(coop_revive, {"seed": 5.0})
+	var tcr := _trim_tail(bcr)
+	var ecr := Baker.save_sprite_frames(bcr, "res://mods/etn_coop/effects/coop_revive_frames.res", "combined")
+	print("BAKE coop_revive n=%d trim=%d err=%s" % [bcr.n, tcr, str(ecr)])
 
 	# 子弹命中烟：6 帧 / 30fps / 0.2s（1:1 像素，淡出烘进抖动）
 	var bs: Dictionary = Baker.bake(smoke, {"seed": 13.0})
@@ -288,6 +297,7 @@ func _initialize() -> void:
 		[bc, "hare_lock_cursor_frames.res"],
 		[bm, "hare_mark_idle_frames.res"],
 		[bfz, "snowflake_burst_frames.res"],
+		[bcr, "coop_revive_frames.res"],
 	]:
 		ok = _check_frames(pair[0], pair[1]) and ok
 	for pair in maki_checks:
