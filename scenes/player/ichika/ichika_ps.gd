@@ -48,12 +48,6 @@ func update_mobu_fire_rate(rate_value: int):
 			i.stats.summoned_shoot_time_mult += now_rate_value
 			i.stats.update_body_ability()
 
-func round_start_rand_mobu_position():
-	var center_position: Vector2 = Vector2(704, 448)
-	if !mobu_group.is_empty():
-		for i in mobu_group:
-			i.global_position = Vector2(randf_range(-50,50), randf_range(-50,50)) + center_position
-
 func player_revive_hp():
 	PlayerData.add_player_revive(revive_hp)
 	SoundManager.play_sfx("PowerUp1")
@@ -64,13 +58,13 @@ func player_revive_hp():
 
 func round_start_add_mobu():
 	var ins = mobu_pack.instantiate()
-	ins.global_position = Vector2(704, 448)
+	# 生成点跟着玩家走（而不是写死地图中心），壁垒回合也不会埋在墙里。
+	ins.global_position = MobSummoned.spawn_point_for(self)
 	ins.stats.summoned_shoot_time_mult += now_rate_value
 	get_tree().get_first_node_in_group("PlayerRoot").add_child(ins)
 	mobu_group.append(ins)
 	mobu_group_changed.emit()
 	PlayerData.life_num_add += 1
 	PlayerData.update_player_ability()
-	round_start_rand_mobu_position()
 	if !GameEvents.deal_damage_to_player.is_connected(player.health_component.take_damage):
 		GameEvents.deal_damage_to_player.connect(player.health_component.take_damage)

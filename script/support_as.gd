@@ -27,8 +27,12 @@ func network_disable() -> void:
 # 击杀分归属门：只统计"归本机"的击杀（owner_peer=0 单机/本地；联机下等于本机 peer）。
 # 联机时 host 会把客机归属的击杀转回客机本机发此信号，故各端只为自己击杀充能。
 func _on_score_owned(_score: int, owner_peer: int) -> void:
-	if owner_peer != 0 and owner_peer != multiplayer.get_unique_id():
-		return
+	# 无 peer 时不能调 get_unique_id()（引擎会刷 "No multiplayer peer is assigned"）：离线视为本机
+	if owner_peer != 0:
+		if multiplayer == null or multiplayer.multiplayer_peer == null:
+			return
+		if owner_peer != multiplayer.get_unique_id():
+			return
 	cost_count(_score)
 
 func cost_count(_score: int) -> void:

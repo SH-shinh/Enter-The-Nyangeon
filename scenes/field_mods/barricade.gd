@@ -66,6 +66,8 @@ var _rng := RandomNumberGenerator.new()
 ## 本次建墙要避让的 Boss 位置（已在场 / 当前遭遇计划）。
 var _build_boss_positions: Array = []
 var _boss_events_connected := false
+# 客机镜像"本地剔除重叠墙格"只警告一次，后续降级为普通 print
+var _local_evict_warned := false
 
 func on_start() -> void:
 	if wall_tile_set == null:
@@ -101,6 +103,8 @@ func on_start() -> void:
 	_clear_boss_positions(_collect_boss_positions())
 	_connect_boss_events()
 	EnemyNavField.complex_path_enabled = true
+	# 墙体与 NavObstacle 拓扑已生效：通知召唤物等实体复检是否被新墙埋住。
+	GameEvents.emit_terrain_blocks_changed()
 
 # ---------------- 模板解析 ----------------
 
@@ -419,6 +423,12 @@ func _build_carve_ctx(player: Node2D, all_cells: Array) -> Dictionary:
 		summoned_positions.append((summoned as Node2D).global_position)
 	var player_position := player.global_position if player != null else Vector2.ZERO
 	var player_cell := MapChunks.world_to_cell(player_position) if player != null else INVALID_CELL
+	# 联机：把远端玩家位置一并纳入避让（镜像在 RemotePlayer 组；单机为空）。
+	var extra_player_positions: Array = []
+	for rp in get_tree().get_nodes_in_group("RemotePlayer"):
+		if rp == null or not is_instance_valid(rp) or not (rp is Node2D):
+			continue
+		extra_player_positions.append((rp as Node2D).global_position)
 	var center_node := get_tree().get_first_node_in_group("CenterPosition")
 	var center_position := (center_node as Node2D).global_position if center_node is Node2D else Vector2.ZERO
 	return {
@@ -426,6 +436,7 @@ func _build_carve_ctx(player: Node2D, all_cells: Array) -> Dictionary:
 		"player_cell": player_cell,
 		"has_player": player != null,
 		"avoid_player_radius": avoid_player_start_radius,
+		"extra_player_positions": extra_player_positions,
 		"center_position": center_position,
 		"has_center": center_node is Node2D,
 		"avoid_center_radius": avoid_center_radius,
@@ -605,6 +616,15 @@ func _allow_chunk(chunk: MapChunk, player: Node2D) -> bool:
 	var blocked_cells: Dictionary = {}
 	if player != null:
 		blocked_cells[MapChunks.world_to_cell(player.global_position)] = true
+	# 联机：远端玩家（镜像在 RemotePlayer 组）同样不能被砌进墙里，否则客机会被
+	# MapBounds 每秒拽回一次（表现为"移动被传回去"）。单机该组为空，零影响。
+	var remote_player_positions: Array[Vector2] = []
+	for rp in get_tree().get_nodes_in_group("RemotePlayer"):
+		if rp == null or not is_instance_valid(rp) or not (rp is Node2D):
+			continue
+		var rp_pos: Vector2 = (rp as Node2D).global_position
+		remote_player_positions.append(rp_pos)
+		blocked_cells[MapChunks.world_to_cell(rp_pos)] = true
 	var enemy_positions: Array[Vector2] = []
 	for enemy in PoolManager.get_active_enemies():
 		if enemy == null or not is_instance_valid(enemy) or not (enemy is Node2D):
@@ -631,6 +651,9 @@ func _allow_chunk(chunk: MapChunk, player: Node2D) -> bool:
 				return false
 		for summoned_pos in summoned_positions:
 			if world.distance_to(summoned_pos) < avoid_summoned_radius:
+				return false
+		for rp_pos in remote_player_positions:
+			if world.distance_to(rp_pos) < avoid_player_start_radius:
 				return false
 	return true
 
@@ -728,9 +751,40 @@ func apply_network_walls(cells: PackedVector2Array, variants: PackedByteArray) -
 	active = true
 	_on_start_done = true
 	_build_overlay()
+	# 客机兜底：host 生成时若没避开远端玩家（旧版布局），镜像落地后本机玩家会卡在墙格里，
+	# 随后被 MapBounds 每秒拽回一次（表现为移动被传回去）。这里只在本端剔掉玩家所在格及 4 邻格。
+	_evict_local_player_cells()
 	# 客机镜像没有走 TerrainFieldEffect.on_start 的 invalidate，必须在这里刷新 NavObstacle 拓扑，
 	# 否则 MapBounds/医疗包安全查询会继续使用旧阻挡集。
 	EnemyNavField.invalidate()
+	# 镜像墙已落地：本机召唤物若被 host 的墙覆盖，立刻挪出（不等 MapBounds 1s 拉回）。
+	GameEvents.emit_terrain_blocks_changed()
+
+
+# 仅在客机镜像使用：本机玩家若与墙格重叠，本地剔除该格与 4 邻格（不回传，避免两端分叉扩大）。
+func _evict_local_player_cells() -> void:
+	if _overlay == null or not is_instance_valid(_overlay):
+		return
+	var players := get_tree().get_nodes_in_group("Player")
+	if players.is_empty():
+		return
+	var player := players[0] as Node2D
+	if player == null or not is_instance_valid(player):
+		return
+	var cell: Vector2i = MapChunks.world_to_cell(player.global_position)
+	var evicted: int = 0
+	for c in [cell, cell + Vector2i(1, 0), cell + Vector2i(-1, 0), cell + Vector2i(0, 1), cell + Vector2i(0, -1)]:
+		if int(_overlay.get_cell_source_id(c)) != -1:
+			_overlay.erase_cell(c)
+			_cells.erase(c)
+			_variants.erase(c)
+			evicted += 1
+	if evicted > 0:
+		if not _local_evict_warned:
+			_local_evict_warned = true
+			push_warning("[barricade] mirror cell overlapped local player; evicted %d cells locally" % evicted)
+		else:
+			print("[barricade] mirror evicted %d cells locally" % evicted)
 
 # ---------------- Boss 延后避让 / 淡出 ----------------
 
@@ -844,6 +898,7 @@ func _clear_walls_in_radius(center: Vector2, radius: float, reason: String) -> i
 	_spawn_fade_ghost(removed_cells, removed_variants, alpha, z, y_origin, self)
 	EnemyNavField.invalidate()
 	_emit_walls_built()
+	GameEvents.emit_terrain_blocks_changed()
 	if OS.is_debug_build():
 		print("[Barricade] boss clearance (%s) at %s r=%.0f removed %d wall cell(s)" % [
 			reason, str(center), radius, removed_cells.size(),

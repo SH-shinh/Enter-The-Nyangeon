@@ -6,6 +6,14 @@ signal summon_level_changed(state: Dictionary)
 
 const LEVEL_DISPLAY_PATH := "res://scenes/summoned/summon_level_display.tscn"
 const LEVEL_DISPLAY_ANCHOR := "%LevelDisplayAnchor"
+# 安全落点工具（静态）。用 preload 引用，避免依赖全局 class 缓存是否已刷新。
+const SummonSpawnScript = preload("res://script/summon_spawn.gd")
+
+## 回合开始回到玩家身边的落点环（px）。
+## 上限必须小于壁垒的玩家避让半径 64px（barricade.tscn），保证落点落在壁垒给玩家让出的空地内。
+const HOME_RADIUS := Vector2(32.0, 52.0)
+## 同批归位时召唤物之间的最小间距（本体碰撞半径约 20）。
+const HOME_MIN_SEPARATION := 44.0
 
 @export var stats: SummonedStats
 @export var gun: Node
@@ -23,6 +31,7 @@ var _level_display: Node = null
 var can_move: bool = true
 var ACCELERATION: float
 var player: Node
+## 旧版固定出生点：现在只作为 SummonSpawn.player_anchor 的兜底锚点（找不到玩家/场景中心时）。
 var spawn_point: Vector2 = Vector2(704, 448)
 var enemy_body: Array = []
 var hurt_dir: Vector2
@@ -49,6 +58,8 @@ func _ready():
 	player = PlayerRef.resolve(self)
 	_setup_level_display()
 	ExtensionHooks.notify_named("on_summoned_spawned", [self, str(scene_file_path)])
+	# 防御：任何来源生成时若已落在壁垒墙格里，先挪出墙格（等 next deferred 时 coop 代理 meta 已就绪）。
+	_snap_out_of_terrain.call_deferred()
 
 func idle_state():
 	reset_physics_interpolation()
@@ -62,6 +73,52 @@ func idle_state():
 	_release_level_display()
 	_reset_summon_level()
 	process_mode = Node.PROCESS_MODE_DISABLED
+
+# ---------------- 回合开始归位 / 安全落点 ----------------
+
+## 回到玩家（或指定锚点）附近：由 SummonedManager 在 round_start / 场地墙变化时统一调用。
+func home_to_player(anchor: Vector2, avoid: Array = []) -> void:
+	if is_idle == 1 or not is_inside_tree():
+		return
+	teleport_to(SummonSpawnScript.near_anchor(anchor, home_radius(), avoid, home_min_separation()))
+
+## 瞬移到世界坐标：清速度 + 重置物理插值 + 丢弃旧索敌；表现层收尾交给 on_teleported()。
+func teleport_to(pos: Vector2) -> void:
+	if not pos.is_finite():
+		return
+	global_position = pos
+	reset_physics_interpolation()
+	velocity = Vector2.ZERO
+	# 瞬移后旧位置的索敌列表作废，等 Area2D 下一物理帧重新探测。
+	enemy_body.clear()
+	on_teleported()
+
+## 子类瞬移后的状态收尾（落地/解除携带/炮台朝向等）。
+func on_teleported() -> void:
+	pass
+
+## 当前位置是否被场地阻挡覆盖（落在墙格 / 贴墙放不下身体）。
+func is_blocked_by_terrain() -> bool:
+	return SummonSpawnScript.is_blocked(global_position)
+
+## 归位环半径（px）；体型偏大的子类可放大。
+func home_radius() -> Vector2:
+	return HOME_RADIUS
+
+## 同批归位的最小间距（px）。
+func home_min_separation() -> float:
+	return HOME_MIN_SEPARATION
+
+# 生成时若已落在墙里（中途召唤 / 客机镜像墙先到）：立刻挪到玩家附近的安全点，不等 MapBounds 1s 拉回。
+func _snap_out_of_terrain() -> void:
+	if not is_inside_tree() or is_idle == 1 or is_queued_for_deletion():
+		return
+	# 联机远端镜像由拥有者权威，本机不搬。
+	if has_meta("is_local_summoned") and not bool(get_meta("is_local_summoned")):
+		return
+	if not is_blocked_by_terrain():
+		return
+	home_to_player(SummonSpawnScript.player_anchor(self))
 
 func _exit_tree():
 	_release_level_display()

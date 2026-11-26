@@ -192,6 +192,10 @@ signal floor_layer_group_add(floor_node: Node)
 
 signal gamemode_conflicting(gamemode_group: Array)
 
+# 场地阻挡布局变化：壁垒建墙/清墙、客机镜像墙落地后发出。
+# 召唤物据此复检自己是否被新墙埋住（terrain_blocks_changed 不带参数，监听方自行查询 EnemyNavField）。
+signal terrain_blocks_changed
+
 func change_scene(path: String, player: String):
 	clear_slow()
 	if ExtensionHooks.intercept_named("change_scene_gate", [path, player]):
@@ -658,6 +662,10 @@ func emit_map_s_warring():
 
 func emit_map_w_warring():
 	map_w_warring.emit()
+
+# 场地阻挡布局已生效（发信号前调用方必须已 invalidate EnemyNavField，保证监听方查到的是新墙）
+func emit_terrain_blocks_changed():
+	terrain_blocks_changed.emit()
 
 #镜头信号
 func emit_camera_move(mark: Marker2D, black_frame: bool):

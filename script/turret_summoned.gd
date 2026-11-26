@@ -11,6 +11,11 @@ enum State {
 @export var rotate_sprites: bool = false
 @export var shoot_flash: PackedScene = preload("res://scenes/weapon/Unique_Idea/shoot_flash.tscn")
 
+## 炮台生成/归位落点环（px）：比跟随型召唤物略远，避免挡在玩家脚底。
+const SPAWN_RADIUS := Vector2(40.0, 56.0)
+## 炮台之间以及炮台与其它召唤物的最小间距（px）。
+const SPAWN_MIN_SEPARATION := 48.0
+
 @onready var shoot = %Shoot
 @onready var turret = %Sprite2D
 @onready var shoot_r = $ShootR
@@ -35,11 +40,16 @@ var _recoil_base: Dictionary = {}
 func _ready():
 	super._ready()
 	GameEvents.screen_changed.connect(outline_changed)
-	GameEvents.round_start.connect(round_rand_position)
 	shoot_bullet.connect(bullet_hit_damage)
 	get_rand_rotation()
 	summoned_ammo = stats.summoned_max_ammo
 	stats.is_hurt.connect(_on_hurt)
+
+## 炮台生成落点：玩家附近的安全点（避开其它召唤物）。
+## 装备/PS 被动/回合归位共用同一套半径，避免三处各写一份。
+static func spawn_point_for(from: Node) -> Vector2:
+	return SummonSpawnScript.near_player(from, SPAWN_RADIUS,
+		SummonSpawnScript.summon_positions(from), SPAWN_MIN_SEPARATION)
 
 func outline_changed(n: float):
 	$CanvasGroup.material.set_shader_parameter("outline_width", n)
@@ -49,9 +59,16 @@ func rand_turret():
 		idle_timer.start()
 		v = randf_range(-PI, PI)
 
-func round_rand_position():
-	var turret_position = spawn_point + Vector2(randf_range(-80, 80), randf_range(-50, 50))
-	global_position = turret_position
+# 炮台归位/生成共用落点半径（见 SPAWN_RADIUS）。
+func home_radius() -> Vector2:
+	return SPAWN_RADIUS
+
+func home_min_separation() -> float:
+	return SPAWN_MIN_SEPARATION
+
+# 瞬移后清掉残余位移目标并重掷一次视觉朝向。
+func on_teleported() -> void:
+	move_target = Vector2.ZERO
 	get_rand_rotation()
 
 func tick_physics(state: int, delta: float):

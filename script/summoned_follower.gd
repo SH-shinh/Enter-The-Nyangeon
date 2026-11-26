@@ -45,6 +45,11 @@ func _ready():
 	if long_hair:
 		GameEvents.screen_changed.connect(hair_line_changed)
 
+## 跟随型召唤物生成落点：玩家附近的安全点（避开其它召唤物）。
+static func spawn_point_for(from: Node) -> Vector2:
+	return SummonSpawnScript.near_player(from, Summoned.HOME_RADIUS,
+		SummonSpawnScript.summon_positions(from), Summoned.HOME_MIN_SEPARATION)
+
 func time_count():
 	direction = get_direction_to_player()
 
@@ -178,6 +183,18 @@ func on_stun_start() -> void:
 		jump_anim.stop()
 	sprite_2d.position.y = -17
 	velocity = Vector2.ZERO
+	if hurt_box != null:
+		hurt_box.set_dodge(false)
+
+## 瞬移（回合开始归位 / 出墙复检）后强制落地并清跳跃闪避，避免在新位置悬空或残留无敌表现。
+func on_teleported() -> void:
+	is_jump_request = false
+	if jump_dely != null:
+		jump_dely.stop()
+	if jump_anim != null:
+		jump_anim.stop()
+	if sprite_2d != null:
+		sprite_2d.position.y = -17
 	if hurt_box != null:
 		hurt_box.set_dodge(false)
 

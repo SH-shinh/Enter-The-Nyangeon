@@ -18,8 +18,6 @@ extends Node2D
 @onready var gpu_particles_2d = $Node2D/GPUParticles2D
 
 
-var spawn_point: Vector2 = Vector2(704, 448)
-
 var value_2: Array
 var now_t:int
 
@@ -57,15 +55,13 @@ func show_progress(max_v: int, value: int, lv: int):
 	timer.start()
 
 func add_turret():
-	var turret_position = spawn_point + Vector2( randf_range(-80,80), randf_range(-50,50)  )
 	var ins = turret.instantiate()
-	ins.global_position = turret_position
+	ins.global_position = TurretSummoned.spawn_point_for(self)
 	get_tree().get_first_node_in_group("PlayerRoot").add_child(ins)
 
 func add_turret_mk_3():
-	var turret_position = spawn_point + Vector2( randf_range(-80,80), randf_range(-50,50)  )
 	var ins = turret.instantiate()
-	ins.global_position = turret_position
+	ins.global_position = TurretSummoned.spawn_point_for(self)
 	ins.scale = Vector2(1, 1)
 	ins.stats.summoned_damage = 25
 	ins.stats.summoned_shoot_time = 350

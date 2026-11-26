@@ -102,3 +102,9 @@ func _carry_target(delta: float) -> Vector2:
 	if carry_follow_speed > 0.0:
 		return global_position.lerp(target, clampf(carry_follow_speed * delta, 0.0, 1.0))
 	return target
+
+## 瞬移（回合开始归位 / 出墙复检）前先解除 aris 携带，避免把“被带着飞”的状态带到新位置。
+func on_teleported() -> void:
+	if is_carried:
+		_release()
+	super.on_teleported()

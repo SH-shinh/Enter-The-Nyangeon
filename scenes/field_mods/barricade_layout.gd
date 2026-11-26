@@ -47,6 +47,8 @@ static func carve_out(wall_set: Dictionary, world_of: Callable, ctx: Dictionary)
 	var player_cell: Vector2i = ctx.get("player_cell", INVALID_CELL)
 	var has_player: bool = bool(ctx.get("has_player", true))
 	var player_radius: float = float(ctx.get("avoid_player_radius", 0.0))
+	# 联机：远端玩家位置（与本地玩家同等避让；单机为空数组）
+	var extra_player_positions: Array = ctx.get("extra_player_positions", [])
 	var center_position: Vector2 = ctx.get("center_position", Vector2.ZERO)
 	var has_center: bool = bool(ctx.get("has_center", false))
 	var center_radius: float = float(ctx.get("avoid_center_radius", 0.0))
@@ -69,6 +71,8 @@ static func carve_out(wall_set: Dictionary, world_of: Callable, ctx: Dictionary)
 		if reserved_cells.has(cell):
 			reason = "reserved"
 		elif has_player and (cell == player_cell or world.distance_to(player_position) < player_radius):
+			reason = "player"
+		elif _within_any(world, extra_player_positions, player_radius):
 			reason = "player"
 		elif _within_any(world, boss_positions, center_radius):
 			reason = "boss"

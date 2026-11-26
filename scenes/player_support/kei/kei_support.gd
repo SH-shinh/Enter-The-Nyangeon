@@ -8,5 +8,5 @@ func _special_effect() -> void:
 	if summoned_pack == null:
 		return
 	var ins = summoned_pack.instantiate()
-	ins.global_position = global_position
+	ins.global_position = KeiSummoned.spawn_point_for(self)
 	get_tree().get_first_node_in_group("PlayerRoot").add_child(ins)
