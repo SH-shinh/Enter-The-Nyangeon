@@ -41,6 +41,8 @@ func center_position():
 		color_rect_2.material.set_shader_parameter("center", Vector2(0.5 + n1, 0.5 + n2))
 
 func _on_area_2d_area_entered(body: Area2D):
+	if body == null or not is_instance_valid(body):
+		return
 	if body.is_in_group("EnemyBullet") and body.has_method("bullet_clear"):
 		body.bullet_clear()
 		SoundManager.play_sfx("EquipSounds1")

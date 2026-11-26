@@ -33,13 +33,21 @@ func active_state():
 
 func apply_penetrate_dealt():
 	var cb: Callable = func(victim: Node, _actual_damage: float):
-		victim.enemy_buff_manager.apply_buff(enemy_buff, value)
+		if victim == null or not is_instance_valid(victim):
+			return
+		# 道具（SceneProp）没有 enemy_buff_manager/stats：跳过 buff，穿透按 PropStats 子节点取。
+		var manager = victim.get("enemy_buff_manager")
+		if manager != null and enemy_buff != null:
+			manager.apply_buff(enemy_buff, value)
 		var p := _ensure_player()
 		if p != null:
 			damage_data.knockback_direction = (victim.global_position - p.global_position).normalized()
 		bulletSmoke(global_position)
 		if can_block:
-			penetrate -= victim.stats.penetrate_resis
+			var vstats = victim.get("stats")
+			if vstats == null and victim.is_in_group("SceneProp"):
+				vstats = victim.get_node_or_null("PropStats")
+			penetrate -= 0 if vstats == null else maxi(0, int(vstats.penetrate_resis))
 			if penetrate <= 0:
 				if collision_num > 0:
 					direction = Vector2.RIGHT.rotated(global_rotation + randf_range(0.7, 1.3) * PI)

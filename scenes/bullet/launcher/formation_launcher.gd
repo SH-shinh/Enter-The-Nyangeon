@@ -240,7 +240,7 @@ func _physics_process(delta):
 			target_positions[i] += velocity * delta
 			
 			var bullet = bullets[i]
-			if bullet != null:
+			if bullet != null and is_instance_valid(bullet):
 				bullets[i].global_position = target_positions[i]
 	
 	# 整体旋转
@@ -248,7 +248,7 @@ func _physics_process(delta):
 		# 更新子弹的相对位置（考虑旋转）
 		for i in range(bullets.size()):
 			var bullet = bullets[i]
-			if bullet != null:
+			if bullet != null and is_instance_valid(bullet):
 				var rotated_offset = (target_positions[i] - center_position).rotated(rotation_speed * delta)
 				target_positions[i] = rotated_offset + center_position
 				bullets[i].global_position = target_positions[i]

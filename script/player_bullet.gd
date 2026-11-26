@@ -92,10 +92,16 @@ func does_direct_hit() -> bool:
 
 func apply_penetrate_dealt():
 	var cb: Callable = func(victim: Node, _actual_damage: float):
+		if victim == null or not is_instance_valid(victim):
+			return
 		var is_prop: bool = victim.is_in_group("SceneProp")
-		var spent: int = maxi(0, int(victim.stats.penetrate_resis))
+		# SceneProp 的 PropStats 是子节点（根节点没有 stats）；取不到按 0，避免打道具时崩。
+		var vstats = victim.get("stats")
+		if vstats == null and is_prop:
+			vstats = victim.get_node_or_null("PropStats")
+		var spent: int = 0 if vstats == null else maxi(0, int(vstats.penetrate_resis))
 		# 先返还，再扣减：击杀时子弹回到命中前的穿透值，避免这次击杀把自己回收。
-		if not is_prop and has_meta(REFUND_PENETRATE_META) and victim.stats.hp <= 0:
+		if not is_prop and has_meta(REFUND_PENETRATE_META) and vstats != null and vstats.hp <= 0:
 			penetrate += spent
 		if not is_prop:
 			GameEvents.emit_player_bullet_hit_enemy(self, victim)
@@ -194,7 +200,9 @@ func _physics_process(delta):
 	
 	if ray_cast_2d.is_colliding():
 		var collider = ray_cast_2d.get_collider()
-		if collider.is_in_group("BulletWall"):
+		# RayCast2D 缓存的是上一物理帧结果；命中的墙层可能已被 Barricade.on_stop
+		# → overlay.queue_free() 释放，此时 get_collider() 返回 null。无效视为本帧无墙。
+		if collider != null and is_instance_valid(collider) and collider.is_in_group("BulletWall"):
 			var collision_position: Vector2 = ray_cast_2d.get_collision_point()
 			global_position = collision_position
 			if collision_num > 0:

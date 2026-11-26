@@ -47,6 +47,8 @@ func _on_area_entered(hitbox: Area2D):
 		hit_received.emit(hitbox.damage_data)
 
 func _on_body_entered(entered_body: Node):
+	if entered_body == null or not is_instance_valid(entered_body):
+		return
 	if not entered_body.is_in_group("Enemy"):
 		return
 	_contacts[entered_body] = true
@@ -90,6 +92,8 @@ func _physics_process(delta: float):
 func _poll_probe():
 	var seen: Dictionary = {}
 	for entered_body in _contact_probe.get_overlapping_bodies():
+		if entered_body == null or not is_instance_valid(entered_body):
+			continue
 		if not entered_body.is_in_group("Enemy"):
 			continue
 		seen[entered_body] = true

@@ -123,11 +123,17 @@ func active_state():
 
 func apply_penetrate_dealt():
 	var cb: Callable = func(victim: Node, _actual_damage: float):
+		if victim == null or not is_instance_valid(victim):
+			return
 		var p := _ensure_player()
 		if p != null:
 			damage_data.knockback_direction = (victim.global_position - p.global_position).normalized()
 		bulletSmoke(global_position)
-		penetrate -= victim.stats.penetrate_resis
+		# SceneProp 的 PropStats 是子节点（根节点没有 stats）；取不到按 0。
+		var vstats = victim.get("stats")
+		if vstats == null and victim.is_in_group("SceneProp"):
+			vstats = victim.get_node_or_null("PropStats")
+		penetrate -= 0 if vstats == null else maxi(0, int(vstats.penetrate_resis))
 		if penetrate <= 0:
 			if collision_num > 0:
 				direction = Vector2.RIGHT.rotated(global_rotation + randf_range(0.7, 1.3) * PI)
@@ -147,7 +153,8 @@ func _physics_process(delta):
 	
 	if ray_cast_2d.is_colliding():
 		var collider = ray_cast_2d.get_collider()
-		if collider.is_in_group("BulletWall"):
+		# RayCast2D 缓存的是上一物理帧结果；命中的墙层可能已被释放，get_collider() 返回 null。
+		if collider != null and is_instance_valid(collider) and collider.is_in_group("BulletWall"):
 			var collision_position: Vector2 = ray_cast_2d.get_collision_point()
 			global_position = collision_position
 			if collision_num > 0:

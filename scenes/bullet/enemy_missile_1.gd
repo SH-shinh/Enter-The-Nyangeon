@@ -117,6 +117,10 @@ func _physics_process(delta):
 	marker_2d.rotation = enemy_missile.v
 
 func _resolve_target_position() -> Vector2:
+	# 目标可能已被击杀/换角色重建，body_exited 不保证补发；先剔除失效项再取首项。
+	for i in range(track_targets.size() - 1, -1, -1):
+		if track_targets[i] == null or not is_instance_valid(track_targets[i]):
+			track_targets.remove_at(i)
 	if track_targets.is_empty():
 		if source_faction == Faction.PLAYER_SIDE:
 			has_target = false
@@ -157,6 +161,8 @@ func _on_track_box_body_exited(body: Node):
 
 func _on_hit_box_area_entered(hurt_box: Area2D):
 	if is_idle == 1:
+		return
+	if hurt_box == null or not is_instance_valid(hurt_box):
 		return
 	if hurt_box is HurtBox:
 		if damage_data == null:

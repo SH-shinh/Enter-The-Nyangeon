@@ -37,6 +37,8 @@ func _on_timer_timeout():
 		sprite_2d.scale.x = -1
 
 func _on_area_2d_area_entered(body:Area2D):
+	if body == null or not is_instance_valid(body):
+		return
 	if body.is_in_group("EnemyBullet") and body.has_method("bullet_clear"):
 		body.bullet_clear()
 		animation_player_2.play("new_animation")
