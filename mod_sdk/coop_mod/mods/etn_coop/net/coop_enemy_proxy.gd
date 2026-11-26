@@ -12,6 +12,10 @@ const SNAPSHOT_INTERVAL: float = 0.066
 const SnapshotBuffer := preload("res://mods/etn_coop/net/coop_snapshot_buffer.gd")
 const CoopNetScript := preload("res://mods/etn_coop/net/coop_net.gd")
 const DashGhost := preload("res://mods/etn_coop/net/coop_dash_ghost.gd")
+# 15Hz 快照下的渲染平滑：只移动"节点本身"（碰撞体随节点走），
+# 因此"看到哪就打到哪"，不影响命中判定（主机侧只校验存活，不看位置）。
+const SMOOTH_K: float = 22.0            # 误差约 30ms 减半
+const SMOOTH_MAX_SPEED: float = 5000.0  # px/s，避免追不上导致的滞后堆积
 
 var net_id: int = -1
 var target_position: Vector2
@@ -19,6 +23,10 @@ var target_velocity: Vector2
 var last_snapshot_time: float = 0.0
 var _buffer = SnapshotBuffer.new()
 var _last_extrap: bool = false
+var _render_pos: Vector2
+var _render_vel: Vector2 = Vector2.ZERO
+var _smooth_ready: bool = false
+var _facing_anchor: Vector2
 
 var enemy: Node = null
 var enemy_body: CharacterBody2D = null
@@ -26,6 +34,10 @@ var enemy_stats = null
 var has_velocity_property: bool = false
 
 var auth_hp: int = -1
+# BOSS / 多部件敌人：关闭本地血量预测（host 有减伤/伤害上限，预测会来回跳）
+var boss_like: bool = false
+var stat_hresync: int = 0
+var bpk: int = 0
 var pending_damage: int = 0
 var display_hp: int = -1
 var _pending_at_msec: PackedInt64Array = PackedInt64Array()
@@ -51,9 +63,15 @@ func setup(p_net_id: int, server_owned: bool) -> void:
 	has_velocity_property = enemy_body == null and enemy.get("velocity") != null
 	net_id = p_net_id
 	target_position = enemy.global_position
+	_render_pos = enemy.global_position
+	_render_vel = Vector2.ZERO
+	_smooth_ready = false
+	_facing_anchor = enemy.global_position
 	_buffer.clear()
-	_buffer.push(Time.get_ticks_msec(), target_position, Vector2.ZERO)
+	_buffer.push_mono(Time.get_ticks_msec(), target_position, Vector2.ZERO)
 	enemy.set_meta("net_id", net_id)
+	var _sp: String = str(enemy.scene_file_path)
+	boss_like = enemy.is_in_group("BOSS") or _sp.contains("/boss/") or enemy.get("body_part") != null
 	reset_prediction_state()
 	if not server_owned:
 		enemy.set_meta("network_remote_enemy", true)
@@ -107,6 +125,10 @@ func reset_prediction_state() -> void:
 func note_predicted_damage(amount: int) -> int:
 	if enemy_stats == null:
 		return 0
+	if boss_like:
+		# BOSS 有伤害上限/阶段减伤：本地预测必然与权威值不一致，直接跟随快照
+		bpk += 1
+		return int(enemy_stats.get("hp"))
 	_expire_pending()
 	if auth_hp < 0:
 		auth_hp = maxi(1, int(enemy_stats.get("hp")))
@@ -118,6 +140,11 @@ func note_predicted_damage(amount: int) -> int:
 	_write_display(false)
 	return auth_hp - pending_damage
 
+
+func _clear_pending() -> void:
+	pending_damage = 0
+	_pending_at_msec.clear()
+	_pending_amount.clear()
 
 func _compute_display() -> int:
 	if auth_hp < 0:
@@ -206,13 +233,17 @@ func apply_snapshot(position: Vector2, velocity: Vector2, hp: int, state: int = 
 	target_state = state
 	var now_ms: int = Time.get_ticks_msec()
 	last_snapshot_time = now_ms * 0.001
-	_buffer.push(now_ms, position, velocity)
+	_buffer.push_mono(now_ms, position, velocity)
 	# 策反态（纯镜像表现；仅在变化时应用）
 	if gauge != _applied_gauge or converted != _applied_converted:
+		var was_converted: bool = _applied_converted
 		_applied_gauge = gauge
 		_applied_converted = converted
 		if enemy.has_method("apply_network_conversion"):
 			enemy.call("apply_network_conversion", gauge, converted)
+		# 客机也要看到策反瞬间的故障特效（本体只在 apply_conversion_power 里触发）
+		if converted and not was_converted and enemy.has_method("_start_convert_glitch"):
+			enemy.call("_start_convert_glitch")
 	var revived: bool = false
 	if enemy.has_meta("predicted_dead") and enemy.get_meta("predicted_dead"):
 		if hp > 0:
@@ -224,6 +255,10 @@ func apply_snapshot(position: Vector2, velocity: Vector2, hp: int, state: int = 
 	if auth_hp < 0:
 		auth_hp = hp
 	elif hp > auth_hp:
+		# 血量"回涨"：治疗/复活，或 BOSS 减伤导致的预测偏差 → 清空未确认预测，安静对齐
+		if pending_damage > 0 and not revived:
+			_clear_pending()
+			stat_hresync += 1
 		auth_hp = hp
 	else:
 		var confirmed: int = auth_hp - hp
@@ -289,13 +324,28 @@ func _physics_process(_delta: float) -> void:
 	if _buffer.sample(render_msec):
 		var p: Vector2 = _buffer.sample_pos
 		vel = _buffer.sample_vel
-		if enemy.global_position.distance_squared_to(p) > HARD_CORRECT_DISTANCE_SQUARED:
+		if not _smooth_ready or tele or enemy.global_position.distance_squared_to(p) > HARD_CORRECT_DISTANCE_SQUARED:
+			# 首次/传送/大跳变：直接吸附，避免平滑把传送拖成"滑行"
+			_render_pos = p
+			_render_vel = vel
+			_smooth_ready = true
 			enemy.global_position = p
-			_buffer.clear()
-			_inc_hard_snap()
-			snapped = true
+			if tele or enemy.global_position.distance_squared_to(p) > HARD_CORRECT_DISTANCE_SQUARED:
+				_buffer.clear()
+				_inc_hard_snap()
+				snapped = true
 		else:
-			enemy.global_position = p
+			# 15Hz 快照的台阶感在这里抹平：节点（含碰撞体）跟着平滑后的位置走
+			var dt: float = get_physics_process_delta_time()
+			_render_pos += _render_vel * dt
+			var err: Vector2 = p - _render_pos
+			var step: Vector2 = err * clampf(1.0 - exp(-SMOOTH_K * dt), 0.0, 1.0)
+			step = step.limit_length(SMOOTH_MAX_SPEED * dt)
+			_render_pos += step
+			_render_vel = vel
+			if CoopNetScript.instance != null and is_instance_valid(CoopNetScript.instance):
+				CoopNetScript.instance.note_enemy_smooth_err(err.length())
+			enemy.global_position = _render_pos
 		if _buffer.extrapolating and not _last_extrap:
 			_inc_extrap()
 		_last_extrap = _buffer.extrapolating
@@ -310,10 +360,13 @@ func _physics_process(_delta: float) -> void:
 	elif has_velocity_property:
 		enemy.set("velocity", vel)
 	# 朝向：本体敌人靠自身 move() 按移动方向翻转 graphics.scale.x；镜像物理已关，故按快照速度补翻
-	if absf(vel.x) > 1.0:
+	# 朝向按【实际位移】判定：快照速度可能为 0（敌人用 direction 驱动移动），旧逻辑会一直不翻面
+	var moved_x: float = enemy.global_position.x - _facing_anchor.x
+	if absf(moved_x) > 0.5:
 		var g = enemy.get("graphics")
 		if g is Node2D:
-			(g as Node2D).scale.x = absf((g as Node2D).scale.x) * signf(vel.x)
+			(g as Node2D).scale.x = absf((g as Node2D).scale.x) * signf(moved_x)
+		_facing_anchor = enemy.global_position
 	# 动画状态：镜像 AI 已停，由 host 快照的 state 驱动 transition_state（纯表现）
 	if target_state >= 0 and target_state != _applied_state:
 		if enemy.has_method("transition_state"):

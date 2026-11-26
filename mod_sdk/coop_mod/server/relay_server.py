@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 import random
+import socket
 import struct
 import time
 from dataclasses import dataclass, field
@@ -26,9 +27,16 @@ ROOM_TIMEOUT_MS = int(os.environ.get("ROOM_TIMEOUT_MS", str(30 * 60 * 1000)))
 HEADER_SIZE = 4
 MAX_PLAYERS_PER_ROOM = 4
 # 分级背压水位：软水位先给宽限并继续写可靠帧，硬水位或宽限超时再断开慢端。
-WRITE_SOFT_WATER = 256 * 1024
-WRITE_HARD_WATER = int(os.environ.get("RELAY_WRITE_HARD_WATER", str(4 * 1024 * 1024)))
-WRITE_GRACE_SEC = float(os.environ.get("RELAY_WRITE_GRACE_SEC", "5"))
+# 2026-11-19 现网实测：256KB / 5s 会把下行较慢的客户端反复踢掉——房间 X7CH 一局内被踢 18 次，
+# 积压 0.65–2.5MB，每次重连 5–8s 后又被踢；房间 863Y 的主机也因 650KB 积压被踢，房间直接销毁。
+# 故放宽默认值，并全部改为环境变量可调（内存代价：4 人房最坏 4×16MB）。
+WRITE_SOFT_WATER = int(os.environ.get("RELAY_WRITE_SOFT_WATER", str(2 * 1024 * 1024)))
+WRITE_HARD_WATER = int(os.environ.get("RELAY_WRITE_HARD_WATER", str(16 * 1024 * 1024)))
+WRITE_GRACE_SEC = float(os.environ.get("RELAY_WRITE_GRACE_SEC", "20"))
+# host 卡顿时整房都会断：给 host 更长的宽限期，避免一次 20s 停顿直接毁掉房间
+WRITE_GRACE_SEC_HOST = float(os.environ.get("RELAY_WRITE_GRACE_SEC_HOST", "60"))
+# 带宽遥测打印间隔（秒）：定位「谁在灌、灌多少」，用于后续降低同步量。
+STATS_INTERVAL_SEC = float(os.environ.get("RELAY_STATS_INTERVAL_SEC", "60"))
 COMPACT_THRESHOLD = 65536
 DEBUG = os.environ.get("RELAY_DEBUG", "").strip().lower() in ("1", "true", "yes", "on")
 # 连接级心跳：客户端约每 1s 有游戏数据/心跳包，超过该阈值无任何数据即判定半开连接并回收。
@@ -60,11 +68,44 @@ JOIN_FAIL_WINDOW_SEC = float(os.environ.get("JOIN_FAIL_WINDOW_SEC", "60"))
 MAX_JOIN_FAILS_PER_PEER = int(os.environ.get("MAX_JOIN_FAILS_PER_PEER", "8"))
 MAX_JOIN_FAILS_PER_IP = int(os.environ.get("MAX_JOIN_FAILS_PER_IP", "40"))
 JOIN_BLOCK_SEC = float(os.environ.get("JOIN_BLOCK_SEC", "30"))
+# 汇总日志：每 SUMMARY_INTERVAL_SEC 一条 [SUMMARY]（房间/连接/总流量/踢人次数）
+SUMMARY_INTERVAL_SEC = float(os.environ.get("RELAY_SUMMARY_INTERVAL_SEC", "300"))
+# 建房限速：正常玩家一局只建一次；下列上限只挡"建房重试死循环"与脚本
+CREATE_WINDOW_SEC = float(os.environ.get("RELAY_CREATE_WINDOW_SEC", "60"))
+MAX_CREATE_PER_IP = int(os.environ.get("RELAY_MAX_CREATE_PER_IP", "5"))
+MAX_ROOMS_PER_IP = int(os.environ.get("RELAY_MAX_ROOMS_PER_IP", "3"))
+# 软水位持续该秒数后先下发 shed 劝降（新客户端可据此降载），而不是直接等宽限超时踢人
+SHED_ADVISE_SEC = float(os.environ.get("RELAY_SHED_ADVISE_SEC", "5"))
+SHED_TTL_MS = int(os.environ.get("RELAY_SHED_TTL_MS", "3000"))
+# 房间存活不足该秒数即被销毁 → 记 [ROOM CHURN]，用于发现客户端"建房即断"重试循环
+ROOM_CHURN_SEC = float(os.environ.get("RELAY_ROOM_CHURN_SEC", "5"))
+# 服务端公网带宽声明：客户端据此计算自身发送预算（LAN 不走中继，不受影响）。
+# 按控制台实际带宽填 RELAY_LINK_MBPS；REL.../1000/8/1.024 换算成 KiB/s，再留 reserve 给重传与控制帧。
+LINK_MBPS = float(os.environ.get("RELAY_LINK_MBPS", "3"))
+LINK_RESERVE_PCT = float(os.environ.get("RELAY_LINK_RESERVE_PCT", "12"))
+LINK_EGRESS_KIB = LINK_MBPS * 1000.0 / 8.0 / 1.024 * (1.0 - LINK_RESERVE_PCT / 100.0)
+# 每个房间能分到的最小出口；房间数变化时按房间数分摊，避免多房各自按整条链路抢带宽
+MIN_ROOM_EGRESS_KIB = float(os.environ.get("RELAY_MIN_ROOM_EGRESS_KIB", "80"))
+# 最低协议版本：旧客户端（无预算/压缩）会把共享链路打满，直接拒绝入境
+MIN_PROTO = int(os.environ.get("RELAY_MIN_PROTO", "13"))
+_last_budget_kib = 0.0
+
+
+def room_egress_kib() -> float:
+    n = max(1, len(rooms))
+    return max(MIN_ROOM_EGRESS_KIB, LINK_EGRESS_KIB / n)
 
 rooms = {}
 connected_peers: set["Peer"] = set()
 # 每 IP 的 join 失败时间戳（滑动窗口）；仅保留窗口内的记录，条目在无近期失败时被回收。
 ip_join_fails: dict[str, list[float]] = {}
+# 每 IP 的建房时间戳（滑动窗口），用于建房限速
+ip_create_times: dict[str, list[float]] = {}
+# 汇总窗口计数器（[SUMMARY] 输出后清零）
+stat_rx_bytes = 0
+stat_tx_bytes = 0
+stat_kicks_bp = 0
+stat_kicks_timeout = 0
 
 
 def debug_log(*args):
@@ -96,6 +137,21 @@ class Peer:
     # join 失败时间戳（滑动窗口）与冷却截止点（monotonic），用于每连接限速
     join_fails: list[float] = field(default_factory=list)
     join_blocked_until: float = 0.0
+    # 带宽遥测：累计收发字节 + 每个统计窗口的基线（用于算 KB/s）+ 写缓冲峰值
+    rx_bytes: int = 0
+    tx_bytes: int = 0
+    buffered_max: int = 0
+    stats_at: float = 0.0
+    stats_rx: int = 0
+    stats_tx: int = 0
+    # 客户端上报的 mod 版本（create_room/join_room 携带；老客户端不带时保持 "-"）。
+    # 写进 [STATS]/[BACKPRESSURE]/[DISCONNECT]，用于按版本聚合带宽与踢人率。
+    ver: str = "-"
+    proto: int = 0
+    # 已下发的劝降档位（0=未劝降；1/2 对应 shed level）
+    shed_level: int = 0
+    # 已通告给房主的拥塞档位（0/1/2）；房主据此对该客机停发视觉
+    congest_level: int = 0
 
 
 @dataclass
@@ -106,6 +162,11 @@ class Room:
     pending: set[Peer] = field(default_factory=set)
     next_peer_id: int = 2
     last_active: float = field(default_factory=lambda: time.time() * 1000)
+    # 建房者 IP（每 IP 并发房间配额用）与创建时刻（[ROOM CHURN] 用）
+    owner_ip: str = ""
+    created_at: float = field(default_factory=time.monotonic)
+    # 房主离开且无客机时置位；cleanup_rooms 用它兜底回收（正常情况下 remove_peer 已立即删除）
+    empty_since: float = 0.0
 
 
 def ws_accept_key(key: str) -> str:
@@ -186,6 +247,12 @@ def compact_buffer(peer: Peer):
         peer.read_pos = 0
 
 
+def peer_avg_rate_kb(peer: Peer) -> tuple[float, float]:
+    """连接建立以来的平均收发速率（KB/s），用于背压/断开时归因是谁在灌。"""
+    elapsed = max(0.001, time.monotonic() - peer.connected_at)
+    return peer.rx_bytes / elapsed / 1024.0, peer.tx_bytes / elapsed / 1024.0
+
+
 async def send(peer: Peer, opcode: int, payload: bytes = b"") -> bool:
     """写入一帧，且绝不等待 drain（避免慢 peer 拖住广播/心跳）。
 
@@ -197,32 +264,66 @@ async def send(peer: Peer, opcode: int, payload: bytes = b"") -> bool:
     writer = peer.writer
     if writer.is_closing():
         return False
+    global stat_tx_bytes, stat_kicks_bp
     transport = writer.transport
     if transport is not None:
         buffered = transport.get_write_buffer_size()
+        if buffered > peer.buffered_max:
+            peer.buffered_max = buffered
         if buffered >= WRITE_HARD_WATER:
+            rx_kb, tx_kb = peer_avg_rate_kb(peer)
+            stat_kicks_bp += 1
             print(
-                f"[BACKPRESSURE] closing peer={peer.id or '?'} role={peer.role or '?'} "
-                f"buffered={buffered} hard",
+                f"[BACKPRESSURE] closing peer={peer.id or '?'} role={peer.role or '?'} ver={peer.ver} "
+                f"buffered={buffered} hard rx={rx_kb:.1f}KB/s tx={tx_kb:.1f}KB/s",
                 flush=True,
             )
+            print_backpressure_ctx(peer)
             writer.close()
             return False
         if buffered >= WRITE_SOFT_WATER:
             now = time.monotonic()
+            grace = WRITE_GRACE_SEC_HOST if peer.role == "host" else WRITE_GRACE_SEC
             if peer.over_since == 0.0:
                 peer.over_since = now
-            elif now - peer.over_since >= WRITE_GRACE_SEC:
+
+            held: float = now - peer.over_since
+            if held >= grace:
+                rx_kb, tx_kb = peer_avg_rate_kb(peer)
+                stat_kicks_bp += 1
                 print(
-                    f"[BACKPRESSURE] closing peer={peer.id or '?'} role={peer.role or '?'} "
-                    f"buffered={buffered} over={now - peer.over_since:.1f}s",
+                    f"[BACKPRESSURE] closing peer={peer.id or '?'} role={peer.role or '?'} ver={peer.ver} "
+                    f"buffered={buffered} over={now - peer.over_since:.1f}s "
+                    f"rx={rx_kb:.1f}KB/s tx={tx_kb:.1f}KB/s",
                     flush=True,
                 )
+                print_backpressure_ctx(peer)
                 writer.close()
                 return False
+            elif held >= SHED_ADVISE_SEC:
+                # 软水位持续：先劝降（新客户端据此下调视觉发送量），宽限期到点才踢。
+                # 5s → level1；10s（两倍）→ level2。只在档位提升时下发，避免刷帧。
+                if peer.role == "host" and not getattr(peer, "host_stall_logged", False):
+                    peer.host_stall_logged = True
+                    print(
+                        f"[HOST STALL] room={peer.room.code if peer.room else '-'} buf={buffered} "
+                        f"held={held:.1f}s",
+                        flush=True,
+                    )
+                want_level = 2 if held >= SHED_ADVISE_SEC * 2.0 else 1
+                if want_level > peer.shed_level:
+                    # 先置位避免 send_control 递归进入本分支再次下发
+                    peer.shed_level = want_level
+                    await send_control(peer, {"type": "shed", "level": want_level, "ttl_ms": SHED_TTL_MS})
+                await _notify_peer_congested(peer, want_level)
         else:
             peer.over_since = 0.0
-    writer.write(encode_frame(opcode, payload))
+            peer.shed_level = 0
+            await _notify_peer_congested(peer, 0)
+    frame = encode_frame(opcode, payload)
+    writer.write(frame)
+    peer.tx_bytes += len(frame)
+    stat_tx_bytes += len(frame)
     return True
 
 
@@ -238,6 +339,45 @@ async def send_control(peer: Peer, message: dict):
 async def send_data(peer: Peer, sender_id: int, payload: bytes):
     packet = struct.pack("<i", sender_id) + payload
     await send(peer, 0x2, packet)
+
+
+async def _notify_peer_congested(peer: "Peer", level: int) -> None:
+    """把慢客机的拥塞档位通告给房主：host 对 level>=2 的 peer 停发视觉，状态/事件照发。
+    只对客机通告、档位变化才发，避免刷帧。"""
+    if peer.role != "client" or peer.room is None or peer.room.host is None:
+        return
+    host = peer.room.host
+    if host is peer or host.writer.is_closing():
+        return
+    if peer.congest_level == level:
+        return
+    peer.congest_level = level
+    print(f"[PEER_STATE] room={peer.room.code} peer={peer.id or '?'} level={level}", flush=True)
+    await send_control(host, {"type": "peer_congested", "peer": peer.id or 0, "level": level})
+
+
+def print_backpressure_ctx(kickee: Peer) -> None:
+    """踢人前打印同房间**所有** peer 的实时状态。
+
+    排查经验：如果同房其它 peer 的 buf 接近 0，说明是"被踢者自己的链路慢"；如果所有 peer
+    同时堆积，才是服务器出口打满。没有这条对照，日志里只看得到被踢者。
+    """
+    room = kickee.room
+    if room is None:
+        return
+    parts = []
+    for peer in sorted(room_peers(room), key=lambda p: p.id or 0):
+        transport = peer.writer.transport
+        buffered = transport.get_write_buffer_size() if transport is not None else 0
+        rx_kb, tx_kb = peer_avg_rate_kb(peer)
+        parts.append(
+            f"peer={peer.id or '?'} ver={peer.ver} role={peer.role or '?'} "
+            f"tx={tx_kb:.1f}KB/s rx={rx_kb:.1f}KB/s buf={buffered // 1024}KB"
+        )
+    print(
+        f"[BACKPRESSURE_CTX] room={room.code} kickee={kickee.id or '?'} | " + " | ".join(parts),
+        flush=True,
+    )
 
 
 def room_peers(room: Room) -> list[Peer]:
@@ -383,11 +523,38 @@ async def handle_control(peer: Peer, payload: bytes):
     )
     name = str(message.get("player_name") or "Player")[:24]
     token = str(message.get("token") or "")[:64]
+    # 版本上报（可选字段，老客户端不带）：只用于日志聚合，不参与任何准入判断
+    ver = str(message.get("ver") or "-")[:16]
+    try:
+        proto = int(message.get("proto") or 0)
+    except (TypeError, ValueError):
+        proto = 0
 
     if msg_type == "create_room":
+        if proto < MIN_PROTO:
+            print(f"[REJECT] outdated create_room ver={ver} proto={proto} min={MIN_PROTO} ip={peer.ip or '-'}", flush=True)
+            await send_control(peer, {"type": "error", "message": f"Outdated mod: require proto>={MIN_PROTO}"})
+            return
         if peer.room:
             await send_control(peer, {"type": "error", "message": "Already in room"})
             return
+
+        # 建房限速：正常玩家一局只建一次。窗口内超频或并发房间过多 → 拒绝
+        # （复用既有 error 类型，不关连接，客户端可自行退避重试）。
+        ip = peer.ip or "-"
+        now_mono = time.monotonic()
+        stamps = [t for t in ip_create_times.get(ip, []) if now_mono - t <= CREATE_WINDOW_SEC]
+        ip_create_times[ip] = stamps
+        active_rooms = sum(1 for r in rooms.values() if r.owner_ip == ip)
+        if len(stamps) >= MAX_CREATE_PER_IP or active_rooms >= MAX_ROOMS_PER_IP:
+            print(
+                f"[CREATE LIMIT] reject create_room ip={ip} window={len(stamps)}/{MAX_CREATE_PER_IP} "
+                f"active={active_rooms}/{MAX_ROOMS_PER_IP}",
+                flush=True,
+            )
+            await send_control(peer, {"type": "error", "message": "Too many rooms"})
+            return
+        stamps.append(now_mono)
 
         # 房间总数上限：防止无限建房把 rooms 撑爆（空房回收逻辑保持不变）。
         if len(rooms) >= MAX_ROOMS:
@@ -400,6 +567,7 @@ async def handle_control(peer: Peer, payload: bytes):
 
         code = generate_room_code()
         room = Room(code=code, host=peer)
+        room.owner_ip = ip
         rooms[code] = room
         peer.room = room
         peer.role = "host"
@@ -407,12 +575,16 @@ async def handle_control(peer: Peer, payload: bytes):
         peer.name = name
         peer.token = token
         peer.admitted = True
+        peer.ver = ver
+        peer.proto = proto
 
-        print(f"[{code}] created by {name}; host peer_id=1", flush=True)
+        print(f"[{code}] created by {name} ver={ver} proto={proto}; host peer_id=1", flush=True)
         await send_control(peer, {
             "type": "room_created",
             "room_code": code,
             "peer_id": 1,
+            "link_mbps": LINK_MBPS,
+            "egress_kib": round(room_egress_kib(), 1),
         })
         return
 
@@ -435,6 +607,10 @@ async def handle_control(peer: Peer, payload: bytes):
                 peer.writer.close()
             return
 
+        if proto < MIN_PROTO:
+            print(f"[REJECT] outdated join_room ver={ver} proto={proto} min={MIN_PROTO} ip={peer.ip or '-'}", flush=True)
+            await send_control(peer, {"type": "error", "message": f"Outdated mod: require proto>={MIN_PROTO}"})
+            return
         code = str(message.get("room_code") or "").strip().upper()
         room = rooms.get(code)
         if not room or not room.host:
@@ -470,6 +646,8 @@ async def handle_control(peer: Peer, payload: bytes):
         peer.name = name
         peer.token = token
         peer.admitted = False
+        peer.ver = ver
+        peer.proto = proto
         room.pending.add(peer)
         # 准入兜底计时起点：从「已被接受进 pending」起算，而不是从 client_ready 起算。
         peer.joined_at = time.monotonic()
@@ -482,7 +660,7 @@ async def handle_control(peer: Peer, payload: bytes):
 
         print(
             f"[PROBE] join_room accepted: room={code} "
-            f"assigned_peer_id={peer.id} existing_peers={peers}",
+            f"assigned_peer_id={peer.id} ver={ver} proto={proto} existing_peers={peers}",
             flush=True,
         )
         print(
@@ -495,6 +673,8 @@ async def handle_control(peer: Peer, payload: bytes):
             "room_code": code,
             "peer_id": peer.id,
             "peers": peers,
+            "link_mbps": LINK_MBPS,
+            "egress_kib": round(room_egress_kib(), 1),
         })
         return
 
@@ -534,7 +714,11 @@ async def handle_control(peer: Peer, payload: bytes):
             f"[PROBE] peer={peer.id} formally admitted; sending join_admitted",
             flush=True,
         )
-        await send_control(peer, {"type": "join_admitted"})
+        await send_control(peer, {
+            "type": "join_admitted",
+            "link_mbps": LINK_MBPS,
+            "egress_kib": round(room_egress_kib(), 1),
+        })
 
         for room_peer in room_peers(peer.room):
             if room_peer is not peer:
@@ -583,6 +767,13 @@ async def remove_peer(peer: Peer):
     peer.room = None
 
     if room.host is peer:
+        lived = time.monotonic() - room.created_at
+        if lived < ROOM_CHURN_SEC:
+            # 建房即断：多见于客户端建房重试死循环，单独记一条便于定位
+            print(
+                f"[ROOM CHURN] code={room.code} lived={lived:.1f}s ip={room.owner_ip} ver={peer.ver}",
+                flush=True,
+            )
         for client in list(room.clients) + list(room.pending):
             await send_control(client, {"type": "peer_disconnected", "peer_id": peer.id})
             await send(client, 0x8)
@@ -710,6 +901,9 @@ async def handle_websocket(reader: asyncio.StreamReader, writer: asyncio.StreamW
                     break
 
                 opcode, payload = frame
+                peer.rx_bytes += len(payload)
+                global stat_rx_bytes
+                stat_rx_bytes += len(payload)
                 peer.frame_started = time.monotonic() if len(peer.buffer) > peer.read_pos else None
                 if DEBUG:
                     opcode_name = {0x0: "CONTINUATION", 0x1: "TEXT", 0x2: "BINARY", 0x8: "CLOSE", 0x9: "PING", 0xA: "PONG"}.get(opcode, f"UNKNOWN({opcode})")
@@ -739,7 +933,7 @@ async def handle_websocket(reader: asyncio.StreamReader, writer: asyncio.StreamW
         writer.close()
     finally:
         connected_peers.discard(peer)
-        print(f"[DISCONNECT] peer={peer.id or '?'} role={peer.role or '?'} room={peer.room.code if peer.room else '-'} admitted={peer.admitted}", flush=True)
+        print(f"[DISCONNECT] peer={peer.id or '?'} role={peer.role or '?'} ver={peer.ver} room={peer.room.code if peer.room else '-'} admitted={peer.admitted}", flush=True)
         await remove_peer(peer)
         writer.close()
         try:
@@ -750,6 +944,14 @@ async def handle_websocket(reader: asyncio.StreamReader, writer: asyncio.StreamW
 
 
 async def handle_connection(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
+    # 关掉 Nagle：游戏数据是 20Hz 左右的小帧，Nagle 会把小段合并/延迟最多一个 RTT，
+    # 表现为所有人的抖动底噪（与 mod 版本无关，属服务端可消除项）。
+    try:
+        _sock = writer.get_extra_info("socket")
+        if _sock is not None:
+            _sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+    except (OSError, AttributeError):
+        pass
     try:
         _, headers = await read_http_headers(reader)
     except Exception:
@@ -776,7 +978,24 @@ async def cleanup_rooms():
     while True:
         await asyncio.sleep(30)
         now = time.time() * 1000
+        mono = time.monotonic()
+        # 建房限速表的过期条目回收（长期运行不留每个 IP 的无限增长列表）
+        for ip in list(ip_create_times.keys()):
+            kept = [t for t in ip_create_times[ip] if mono - t <= CREATE_WINDOW_SEC]
+            if kept:
+                ip_create_times[ip] = kept
+            else:
+                ip_create_times.pop(ip, None)
         for room in list(rooms.values()):
+            # 兜底泄漏检测：正常情况下 remove_peer 已即时删除无主空房，
+            # 走到这里说明有未覆盖的路径，记一条 [ROOM GC] 便于发现。
+            if room.host is None and not room.clients and not room.pending:
+                print(
+                    f"[ROOM GC] code={room.code} reason=hostless ip={room.owner_ip}",
+                    flush=True,
+                )
+                rooms.pop(room.code, None)
+                continue
             if now - room.last_active <= ROOM_TIMEOUT_MS:
                 continue
             for peer in all_peers(room):
@@ -785,9 +1004,13 @@ async def cleanup_rooms():
 
 
 async def heartbeat_peers():
+    global stat_rx_bytes, stat_tx_bytes, stat_kicks_bp, stat_kicks_timeout, _last_budget_kib
     # 主动发 WebSocket PING，客户端 WebSocketPeer 会自动回 PONG；无任何数据超过
     # PEER_TIMEOUT_MSEC 即判定半开连接并关闭（finally -> remove_peer 回收名额）。
     # 每轮并发发送：peer 多时不再让心跳周期被逐个 await 拉长（send 本身已不阻塞）。
+    # 同一循环里每 STATS_INTERVAL_SEC 打一次带宽统计，用于定位「谁在灌、灌多少」。
+    stats_elapsed = 0.0
+    summary_elapsed = 0.0
     while True:
         await asyncio.sleep(HEARTBEAT_INTERVAL_SEC)
         now = time.time()
@@ -795,6 +1018,7 @@ async def heartbeat_peers():
         for peer in list(connected_peers):
             if peer.last_seen > 0 and (now - peer.last_seen) * 1000 > PEER_TIMEOUT_MSEC:
                 print(f"[HEARTBEAT] timeout peer={peer.id or '?'}; closing", flush=True)
+                stat_kicks_timeout += 1
                 peer.writer.close()
                 continue
             alive.append(peer)
@@ -802,6 +1026,67 @@ async def heartbeat_peers():
             await asyncio.gather(
                 *(send(peer, 0x9) for peer in alive), return_exceptions=True
             )
+
+        # 房间数变化时按房间数重新分摊出口预算，并下发 budget 给所有房内连接
+        cur_budget = room_egress_kib()
+        if _last_budget_kib <= 0.0:
+            _last_budget_kib = cur_budget
+        elif abs(cur_budget - _last_budget_kib) > _last_budget_kib * 0.05:
+            _last_budget_kib = cur_budget
+            print(f"[BUDGET] rooms={len(rooms)} egress={cur_budget:.0f}KiB/s", flush=True)
+            await asyncio.gather(
+                *(
+                    send_control(p, {"type": "budget", "egress_kib": round(cur_budget, 1), "link_mbps": LINK_MBPS})
+                    for p in list(connected_peers)
+                    if p.room is not None
+                ),
+                return_exceptions=True,
+            )
+
+        stats_elapsed += HEARTBEAT_INTERVAL_SEC
+        if stats_elapsed >= STATS_INTERVAL_SEC:
+            stats_elapsed = 0.0
+            mono = time.monotonic()
+            for peer in list(connected_peers):
+                if peer.room is None:
+                    continue
+                base_at = peer.stats_at if peer.stats_at > 0.0 else peer.connected_at
+                dt = max(0.001, mono - base_at)
+                rx_kb = (peer.rx_bytes - peer.stats_rx) / dt / 1024.0
+                tx_kb = (peer.tx_bytes - peer.stats_tx) / dt / 1024.0
+                peer.stats_at = mono
+                peer.stats_rx = peer.rx_bytes
+                peer.stats_tx = peer.tx_bytes
+                print(
+                    f"[STATS] room={peer.room.code} peer={peer.id or '?'} role={peer.role or '?'} "
+                    f"ver={peer.ver} proto={peer.proto} "
+                    f"rx={rx_kb:.1f}KB/s tx={tx_kb:.1f}KB/s buffered_max={peer.buffered_max // 1024}KB",
+                    flush=True,
+                )
+                peer.buffered_max = 0
+
+        summary_elapsed += HEARTBEAT_INTERVAL_SEC
+        if summary_elapsed >= SUMMARY_INTERVAL_SEC:
+            elapsed = summary_elapsed
+            summary_elapsed = 0.0
+            max_buf = 0
+            for peer in connected_peers:
+                if peer.buffered_max > max_buf:
+                    max_buf = peer.buffered_max
+            congested = sum(1 for p in connected_peers if p.congest_level > 0)
+            print(
+                f"[SUMMARY] rooms={len(rooms)} peers={len(connected_peers)} "
+                f"rx={stat_rx_bytes / elapsed / 1024.0:.1f}KB/s "
+                f"tx={stat_tx_bytes / elapsed / 1024.0:.1f}KB/s "
+                f"kicks_bp={stat_kicks_bp} kicks_timeout={stat_kicks_timeout} "
+                f"buffered_max={max_buf // 1024}KB congested={congested} "
+                f"link={LINK_MBPS:.1f}Mbps egress={LINK_EGRESS_KIB:.0f}KiB/s",
+                flush=True,
+            )
+            stat_rx_bytes = 0
+            stat_tx_bytes = 0
+            stat_kicks_bp = 0
+            stat_kicks_timeout = 0
 
 
 async def main():

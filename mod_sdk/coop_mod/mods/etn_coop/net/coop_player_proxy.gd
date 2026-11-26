@@ -75,7 +75,7 @@ func setup(p_peer_id: int, p_is_local: bool) -> void:
 	target_look_position = player.global_position + Vector2.RIGHT
 	render_look_position = target_look_position
 	_buffer.clear()
-	_buffer.push(Time.get_ticks_msec(), target_position, Vector2.ZERO, target_look_position)
+	_buffer.push_mono(Time.get_ticks_msec(), target_position, Vector2.ZERO, target_look_position)
 	player.set_meta("peer_id", peer_id)
 	player.set_meta("is_local_player", is_local_player)
 	if player_stats != null:
@@ -134,7 +134,7 @@ func apply_state(
 	target_state = state
 	target_character_state = character_state
 	target_heading = heading
-	_buffer.push(Time.get_ticks_msec(), position, velocity, look_position)
+	_buffer.push_mono(Time.get_ticks_msec(), position, velocity, look_position)
 	if is_local_player or player_stats == null:
 		return
 	player.set_meta("net_hp", hp)
@@ -165,6 +165,10 @@ func _physics_process(delta: float) -> void:
 		return
 	if player == null or not is_instance_valid(player):
 		return
+	# 缓存的子节点引用只在 setup 抓一次：游戏侧换装/重建节点后会变成「非 null 但已 freed」，
+	# 该镜像会停更，恢复时一次跳到位（玩家感知为"卡住然后瞬移"）。任一失效即整体重建。
+	if not _cache_is_valid():
+		_cache_references()
 	var old_pos: Vector2 = player.global_position
 	var tele: bool = _buffer.consume_teleport()
 	var render_msec: int = Time.get_ticks_msec() - int(_interp_delay() * 1000.0)
@@ -174,10 +178,15 @@ func _physics_process(delta: float) -> void:
 		var p: Vector2 = _buffer.sample_pos
 		vel = _buffer.sample_vel
 		render_look_position = _buffer.sample_look
-		if player.global_position.distance_squared_to(p) > HARD_CORRECT_DISTANCE_SQUARED:
+		var dist: float = player.global_position.distance_to(p)
+		# 阈值按速度自适应：高速冲刺下固定 96px 会把「正常的 60~120ms 位移」误判成硬校正，
+		# 实测一局触发 1976 次（≈2 次/秒）。低于阈值一律走正常插值。
+		var hard_limit: float = maxf(HARD_CORRECT_DISTANCE, maxf(vel.length(), target_velocity.length()) * 0.12)
+		if dist > hard_limit:
 			player.global_position = p
-			_buffer.clear()
-			_inc_hard_snap()
+			# 不再 _buffer.clear()：位移 >220px 时 push 已自行清过缓冲；这里再清会让随后 1~2 帧
+			# 只能从单条快照采样，产生一次回跳并可能再次触发硬校正（正反馈）。
+			_inc_hard_snap(dist)
 			snapped = true
 		else:
 			player.global_position = p
@@ -186,7 +195,8 @@ func _physics_process(delta: float) -> void:
 		_last_extrap = _buffer.extrapolating
 	if (tele or snapped) and old_pos.distance_squared_to(player.global_position) > 64.0:
 		_spawn_ghost(old_pos)
-	if CoopNetScript.instance != null and CoopNetScript.instance.sim_report_enabled:
+	# 计数不再受 sim_report_enabled 门控：否则 diag 里的 extrap 永远是 0，无法判读。
+	if CoopNetScript.instance != null and is_instance_valid(CoopNetScript.instance):
 		CoopNetScript.instance.net_remote_frames += 1
 		if _buffer.extrapolating:
 			CoopNetScript.instance.net_extrap_frames += 1
@@ -278,6 +288,27 @@ func _play_remote_animation(sprite: AnimatedSprite2D, state: int) -> void:
 
 
 # ---------------- 禁用本地控制 / 信号 ----------------
+
+# 缓存的引用是否仍全部有效（悬垂引用表现为「非 null 但已 freed」）。
+func _cache_is_valid() -> bool:
+	if player_sprite != null and not is_instance_valid(player_sprite):
+		return false
+	if player_gun != null and not is_instance_valid(player_gun):
+		return false
+	if halo_root != null and not is_instance_valid(halo_root):
+		return false
+	if halo != null and not is_instance_valid(halo):
+		return false
+	if graphics != null and not is_instance_valid(graphics):
+		return false
+	if graphics_gun != null and not is_instance_valid(graphics_gun):
+		return false
+	if graphics_halo != null and not is_instance_valid(graphics_halo):
+		return false
+	if player_stats != null and not is_instance_valid(player_stats):
+		return false
+	return true
+
 
 func _cache_references() -> void:
 	player_body = player as CharacterBody2D
@@ -413,7 +444,14 @@ func _inc_extrap() -> void:
 		coop.net_extrap_events += 1
 
 
-func _inc_hard_snap() -> void:
+func _inc_hard_snap(dist: float = 0.0) -> void:
 	var coop = CoopNetScript.instance
 	if coop != null and is_instance_valid(coop):
 		coop.net_hard_snaps += 1
+		# 分档：用来区分「真瞬移」与「高速移动被误判」。只有 >160 档才接近可见的跳跃。
+		if dist > 320.0:
+			coop.net_snap_gt320 += 1
+		elif dist > 160.0:
+			coop.net_snap_160_320 += 1
+		else:
+			coop.net_snap_96_160 += 1

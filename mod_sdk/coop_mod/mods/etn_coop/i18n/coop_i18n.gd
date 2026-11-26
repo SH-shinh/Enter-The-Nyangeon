@@ -173,6 +173,22 @@ const MESSAGES: Dictionary = {
 	"coop_chat_placeholder": {"zh_CN": "输入消息…", "en": "Type a message...", "pt": "Digite uma mensagem...", "vi_VN": "Nhập tin nhắn..."},
 	# MOD 面板描述（以中文原句为键；pt/vi 未给，install() 自动回落 en）
 	"由荻某人的ETN联机版移植，SH移植并添加部分内容。": {"zh_CN": "由荻某人的ETN联机版移植，SH移植并添加部分内容。", "en": "Ported from 荻某人's ETN co-op version; ported and partially extended by SH."},
+	# mod 构建/版本不一致警告（同版本号不同构建很常见：改过内容重打包）
+	# 加入时的 mod 不一致弹窗（进入 / 退出）
+	# 选人保险弹窗
+	"coop_relay_outdated": {"zh_CN": "服务端要求更新 mod 后才能联机", "en": "Server requires a newer mod version", "pt": "O servidor exige uma versão mais nova do mod", "vi_VN": "Máy chủ yêu cầu phiên bản mod mới hơn"},
+	"coop_selected_character": {"zh_CN": "已选择：%s", "en": "Selected: %s", "pt": "Selecionado: %s", "vi_VN": "Đã chọn: %s"},
+	"coop_selection_mismatch_title": {"zh_CN": "角色选择不一致", "en": "Character mismatch", "pt": "Personagem diferente", "vi_VN": "Nhân vật không khớp"},
+	"coop_selection_mismatch_body": {"zh_CN": "主机记录的角色：%s\n你选择的角色：%s", "en": "Host recorded: %s\nYour choice: %s", "pt": "Registrado no host: %s\nSua escolha: %s", "vi_VN": "Chủ phòng ghi nhận: %s\nBạn chọn: %s"},
+	"coop_selection_resend": {"zh_CN": "以我的选择重新上报", "en": "Report my choice", "pt": "Enviar minha escolha", "vi_VN": "Gửi lựa chọn của tôi"},
+	"coop_selection_follow": {"zh_CN": "跟随主机记录", "en": "Follow host", "pt": "Seguir o host", "vi_VN": "Theo chủ phòng"},	"coop_join_warn_title": {"zh_CN": "mod 不一致", "en": "Mod mismatch", "pt": "Mod diferente", "vi_VN": "Mod không khớp"},
+	"coop_join_warn_intro": {"zh_CN": "与主机的 mod 不一致，继续联机可能出现异常：", "en": "Your mods differ from the host; issues may occur:", "pt": "Seus mods diferem do host; podem ocorrer problemas:", "vi_VN": "Mod của bạn khác chủ phòng; có thể gặp lỗi:"},
+	"coop_join_warn_build": {"zh_CN": "联机 mod 构建不一致（主机 %s / 你 %s）", "en": "Co-op mod build mismatch (host %s / you %s)", "pt": "Build do mod co-op diferente (host %s / você %s)", "vi_VN": "Bản dựng mod co-op khác (chủ phòng %s / bạn %s)"},
+	"coop_join_warn_mods": {"zh_CN": "mod 列表不一致：%s", "en": "Mod list mismatch: %s", "pt": "Lista de mods diferente: %s", "vi_VN": "Danh sách mod khác: %s"},
+	"coop_join_enter": {"zh_CN": "进入", "en": "Enter", "pt": "Entrar", "vi_VN": "Vào"},
+	"coop_join_exit": {"zh_CN": "退出", "en": "Leave", "pt": "Sair", "vi_VN": "Thoát"},	"coop_mod_build_mismatch": {"zh_CN": "你的 mod 与主机构建不一致（主机 %s / 你 %s），可能出现异常，建议使用同一安装包", "en": "Your mod build differs from the host (%s / you %s). Issues may occur; use the same package.", "pt": "Seu mod é diferente do host (%s / você %s). Pode haver problemas; use o mesmo pacote.", "vi_VN": "Mod của bạn khác chủ phòng (%s / bạn %s). Có thể gặp lỗi; hãy dùng cùng gói."},
+	"coop_mod_build_mismatch_host": {"zh_CN": "玩家 %s 的 mod 构建与主机不一致", "en": "Player %s has a different mod build than the host", "pt": "O jogador %s tem um mod diferente do host", "vi_VN": "Người chơi %s có mod khác chủ phòng"},
+	"coop_version_mismatch_detail": {"zh_CN": "mod 版本不一致（主机 %s / 你 %s），请更新到同一版本", "en": "Mod version mismatch (host %s / you %s). Update to the same version.", "pt": "Versão do mod diferente (host %s / você %s). Atualize para a mesma versão.", "vi_VN": "Phiên bản mod không khớp (chủ phòng %s / bạn %s). Hãy cập nhật cùng phiên bản."},
 }
 
 

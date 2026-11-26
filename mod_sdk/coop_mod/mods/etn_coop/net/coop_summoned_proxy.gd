@@ -59,7 +59,7 @@ func setup(p_net_id: int, p_owner_peer_id: int, p_is_local_owner: bool) -> void:
 	target_position = summoned.global_position
 	target_rotation = summoned.global_rotation
 	_buffer.clear()
-	_buffer.push(Time.get_ticks_msec(), target_position, Vector2.ZERO)
+	_buffer.push_mono(Time.get_ticks_msec(), target_position, Vector2.ZERO)
 	summoned.set_meta("summoned_net_id", net_id)
 	summoned.set_meta("owner_peer_id", owner_peer_id)
 	summoned.set_meta("is_local_summoned", is_local_owner)
@@ -89,7 +89,7 @@ func apply_state(position: Vector2, velocity: Vector2, rotation: float, state: i
 	target_rotation = rotation
 	target_state = state
 	target_facing = facing
-	_buffer.push(Time.get_ticks_msec(), position, velocity)
+	_buffer.push_mono(Time.get_ticks_msec(), position, velocity)
 
 
 func _physics_process(delta: float) -> void:

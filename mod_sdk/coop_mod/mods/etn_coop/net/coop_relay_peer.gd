@@ -7,9 +7,32 @@ extends MultiplayerPeerExtension
 signal relay_room_created(room_code: String)
 signal relay_room_joined(peer_id: int)
 signal relay_error(message: String)
+# 服务端声明的带宽预算（建/入房时下发；老服务端不发则保持 0）
+signal relay_link_budget_changed(egress_kib: float, mbps: float)
+# 服务端软水位劝降：level 1=轻度、2=重度，ttl_ms 后自动恢复
+signal relay_shed(level: int, ttl_ms: int)
+# 服务端告知「某个客机拥塞」：host 据此对该 peer 停发视觉（状态/事件照发）
+signal relay_peer_congested(peer_id: int, level: int)
 
 const JOIN_HANDSHAKE_TIMEOUT_MSEC: int = 30000
 const CONNECT_TIMEOUT_MSEC: int = 30000
+# 版本上报：随 create_room/join_room 一起发给中继服务端，服务端写进 [STATS]/[BACKPRESSURE] 等日志，
+# 用于「按 mod 版本聚合带宽与踢人率」。由 coop_net._ready() 写入（- 表示老客户端/未设置）。
+static var client_ver: String = "-"
+static var client_proto: int = 0
+# 服务端声明的公网带宽预算（KiB/s 与 Mbps）。0 = 未声明（老服务端），由 coop_net 用兜底值。
+var link_egress_kib: float = 0.0
+var link_mbps: float = 0.0
+# 背压：每帧最多从 WS 取这么多帧，剩余留在 WS 内部缓冲下一帧再取。
+# 服务端对慢端不丢帧（软水位 256KB / 宽限 5s），客户端一卡就是几百帧积压；
+# 若在一帧内全部消化，会产生该帧 CPU 尖峰 + 多个快照同帧压入插值缓冲（表现=卡一下然后瞬移）。
+const MAX_WS_PACKETS_PER_POLL: int = 256
+# 待交给 SceneMultiplayer 的队列上限。超限丢**最旧**、保最新（最新状态才有价值）。
+const MAX_QUEUED_PACKETS: int = 2048
+const MAX_QUEUED_BYTES: int = 16 * 1024 * 1024
+# 连续发送失败达到该次数即判定中继链路已坏：WS 出缓冲满时 send() 会直接失败，
+# 而引擎不会重试 → 可靠 RPC 静默丢失 → 两端状态永久分叉。宁可不丢不报，也不能静默。
+const MAX_SEND_FAILS: int = 32
 
 var _ws := WebSocketPeer.new()
 var _unique_id: int = 0
@@ -19,6 +42,7 @@ var _transfer_mode: MultiplayerPeer.TransferMode = MultiplayerPeer.TRANSFER_MODE
 var _transfer_channel: int = 0
 var _refuse_connections: bool = false
 var _incoming: Array[Dictionary] = []
+var _incoming_bytes: int = 0
 var _current_pkt_peer: int = 0
 var _current_pkt_channel: int = 0
 var _current_pkt_mode: MultiplayerPeer.TransferMode = MultiplayerPeer.TRANSFER_MODE_RELIABLE
@@ -38,6 +62,16 @@ var _relay_debug: bool = OS.is_debug_build()
 # 发送失败诊断：WebSocket 出缓冲满等导致 send() 失败时计数（不再静默当作成功）
 var send_fail_count: int = 0
 var _send_fail_warn_msec: int = 0
+var _send_fail_streak: int = 0
+# 收发字节累计（诊断：算客户端侧的实际带宽 KB/s）。
+var tx_bytes: int = 0
+var rx_bytes: int = 0
+# 队列溢出丢弃计数（只作诊断，不参与逻辑）；backlog_peak 供上层判断落后程度峰值。
+var _overload_dropped: int = 0
+var _overload_warn_msec: int = 0
+var backlog_peak: int = 0
+# 最近一次弹出帧的入队时刻（msec）；仅诊断用。
+var _current_arrival_msec: int = 0
 
 
 # 排入待接入列表（去重 + 跳过自身/0）。真正 emit 在 _poll 末尾统一做。
@@ -116,6 +150,8 @@ func _poll() -> void:
 				"type": "create_room",
 				"player_name": _pending_name,
 				"token": _pending_token,
+				"ver": client_ver,
+				"proto": client_proto,
 			}))
 		elif _pending_action == "join":
 			_ws.send_text(JSON.stringify({
@@ -123,15 +159,24 @@ func _poll() -> void:
 				"room_code": _pending_room_code,
 				"player_name": _pending_name,
 				"token": _pending_token,
+				"ver": client_ver,
+				"proto": client_proto,
 			}))
 		_pending_action = ""
 
-	while _ws.get_available_packet_count() > 0:
+	# 分帧取包：把积压摊到多帧，避免"恢复那一帧一次性消化几百帧"的尖峰。
+	var packets_processed: int = 0
+	while _ws.get_available_packet_count() > 0 and packets_processed < MAX_WS_PACKETS_PER_POLL:
 		var packet := _ws.get_packet()
+		packets_processed += 1
 		if _ws.was_string_packet():
 			_on_control(packet.get_string_from_utf8())
 		else:
 			_on_data(packet)
+
+	var now_backlog: int = backlog_count()
+	if now_backlog > backlog_peak:
+		backlog_peak = now_backlog
 
 	_flush_peer_events()
 
@@ -149,12 +194,27 @@ func _flush_peer_events() -> void:
 			emit_signal("peer_connected", peer_id)
 	_peers_to_connect.clear()
 
+# 服务端带宽预算（KiB/s 与 Mbps）：只声明一次，变化时发信号。老服务端不带字段 → 保持 0。
+func _read_link_budget(data: Dictionary) -> void:
+	var egress := float(data.get("egress_kib", 0.0))
+	if egress <= 0.0:
+		return
+	var mbps := float(data.get("link_mbps", 0.0))
+	if is_equal_approx(egress, link_egress_kib) and is_equal_approx(mbps, link_mbps):
+		return
+	link_egress_kib = egress
+	link_mbps = mbps
+	relay_link_budget_changed.emit(egress, mbps)
+
+
 func _on_control(text: String) -> void:
 	var data = JSON.parse_string(text)
 	if not (data is Dictionary):
 		return
 	if _relay_debug:
 		print("[etn_coop][relay] <- %s" % text)
+	# 服务端带宽预算可能挂在 room_created / join_prepared / join_admitted 任意一条上，统一读取
+	_read_link_budget(data)
 	match data.get("type", ""):
 		"room_created":
 			_unique_id = int(data.get("peer_id", 1))
@@ -162,6 +222,16 @@ func _on_control(text: String) -> void:
 			_status = MultiplayerPeer.CONNECTION_CONNECTED
 			_join_handshake_started_msec = 0
 			relay_room_created.emit(str(data.get("room_code", "")))
+		"shed":
+			# 服务端软水位劝降：level 1=轻度、2=重度；ttl 到期自动恢复。老客户端会忽略本分支。
+			var shed_level: int = clampi(int(data.get("level", 1)), 0, 2)
+			var shed_ttl: int = clampi(int(data.get("ttl_ms", 3000)), 0, 30000)
+			relay_shed.emit(shed_level, shed_ttl)
+		"peer_congested":
+			var c_peer: int = int(data.get("peer", 0))
+			var c_level: int = clampi(int(data.get("level", 0)), 0, 2)
+			if c_peer > 0:
+				relay_peer_congested.emit(c_peer, c_level)
 		"join_prepared":
 			_unique_id = int(data.get("peer_id", 0))
 			_join_handshake_started_msec = Time.get_ticks_msec()
@@ -206,6 +276,10 @@ func _on_control(text: String) -> void:
 			_known_peers.erase(disconnected_peer_id)
 			# SceneMultiplayer 会在 _poll 返回后才取包；不能先移除 sender 再交付旧包。
 			_incoming = _incoming.filter(func(packet): return int(packet.peer) != disconnected_peer_id)
+			# filter 重建了整表：字节记账必须重算，否则会一直偏大直至误触发上限。
+			_incoming_bytes = 0
+			for q in _incoming:
+				_incoming_bytes += (q["data"] as PackedByteArray).size()
 			_peers_to_connect.erase(disconnected_peer_id)
 			if _admitted.has(disconnected_peer_id) and not _peers_to_disconnect.has(disconnected_peer_id):
 				_peers_to_disconnect.append(disconnected_peer_id)
@@ -227,6 +301,7 @@ func _send_control_json(message: Dictionary) -> void:
 func _on_data(packet: PackedByteArray) -> void:
 	if packet.size() < 4:
 		return
+	rx_bytes += packet.size()
 	var source := packet.decode_s32(0)
 	# 服务端在允许转发前已发送 peer_pending/join_prepared。晚到的旧连接数据
 	# 不能凭二进制包重新接入；同 ID 的新连接必须先有明确的控制帧。
@@ -234,12 +309,29 @@ func _on_data(packet: PackedByteArray) -> void:
 		return
 	_queue_peer(source)
 	var payload := packet.slice(4)
+	# 队列封顶：丢最旧、保最新。超限说明本机已严重落后，此时只有最新数据有意义；
+	# 丢旧包而不是拒收新包，避免"越卡越只拿到旧状态"。不断链——中继上断链会走掉线重连流程，体感更差。
+	var dropped_now: int = 0
+	while not _incoming.is_empty() and (
+			_incoming.size() >= MAX_QUEUED_PACKETS
+			or _incoming_bytes + payload.size() > MAX_QUEUED_BYTES):
+		var dropped_packet: Dictionary = _incoming.pop_front()
+		_incoming_bytes = maxi(0, _incoming_bytes - (dropped_packet["data"] as PackedByteArray).size())
+		_overload_dropped += 1
+		dropped_now += 1
+	if dropped_now > 0:
+		var warn_now: int = Time.get_ticks_msec()
+		if warn_now - _overload_warn_msec > 5000:
+			_overload_warn_msec = warn_now
+			push_warning("[etn_coop][relay] incoming queue overload dropped=%d backlog=%d" % [_overload_dropped, _incoming.size()])
 	_incoming.append({
 		"data": payload,
 		"peer": source,
 		"channel": 0,
 		"mode": MultiplayerPeer.TRANSFER_MODE_RELIABLE,
+		"t": Time.get_ticks_msec(),
 	})
+	_incoming_bytes += payload.size()
 
 
 func _get_available_packet_count() -> int:
@@ -250,10 +342,13 @@ func _get_packet_script() -> PackedByteArray:
 	if _incoming.is_empty():
 		return PackedByteArray()
 	var packet: Dictionary = _incoming.pop_front()
+	var payload: PackedByteArray = packet["data"]
+	_incoming_bytes = maxi(0, _incoming_bytes - payload.size())
+	_current_arrival_msec = int(packet.get("t", 0))
 	_current_pkt_peer = packet["peer"]
 	_current_pkt_channel = packet["channel"]
 	_current_pkt_mode = packet["mode"]
-	return packet["data"]
+	return payload
 
 
 func _get_packet_peer() -> int:
@@ -288,10 +383,18 @@ func _put_packet_script(p_buffer: PackedByteArray) -> Error:
 	var err := _ws.send(header + p_buffer)
 	if err != OK:
 		send_fail_count += 1
+		_send_fail_streak += 1
 		var now: int = Time.get_ticks_msec()
 		if now - _send_fail_warn_msec > 5000:
 			_send_fail_warn_msec = now
-			push_warning("[etn_coop][relay] send failed err=%d total=%d" % [err, send_fail_count])
+			push_warning("[etn_coop][relay] send failed err=%d total=%d streak=%d" % [err, send_fail_count, _send_fail_streak])
+		# 连续失败 = 链路已坏：升级为会话错误交给上层重连，避免可靠 RPC 被静默吞掉。
+		if _send_fail_streak >= MAX_SEND_FAILS:
+			relay_error.emit("Relay send failed %d times in a row; reconnecting" % _send_fail_streak)
+			_close()
+	else:
+		_send_fail_streak = 0
+		tx_bytes += header.size() + p_buffer.size()
 	return err
 
 
@@ -301,6 +404,26 @@ func _get_unique_id() -> int:
 
 func _get_connection_status() -> MultiplayerPeer.ConnectionStatus:
 	return _status
+
+
+# 当前还有多少帧没被消费（本 peer 队列 + WS 内部缓冲）。供上层估计"落后程度"。
+func backlog_count() -> int:
+	var ws_pending: int = 0
+	if _ws.get_ready_state() == WebSocketPeer.STATE_OPEN:
+		ws_pending = _ws.get_available_packet_count()
+	return _incoming.size() + ws_pending
+
+
+# 最近一次弹出帧的入队时刻（msec）；仅诊断用（0 = 无）。
+func current_arrival_msec() -> int:
+	return _current_arrival_msec
+
+
+# 取出并清零「本窗口内的排队峰值」：诊断里报窗口增量才有意义（累计值看不出是哪一段卡）。
+func take_backlog_peak() -> int:
+	var v: int = backlog_peak
+	backlog_peak = 0
+	return v
 
 
 func _get_max_packet_size() -> int:
@@ -353,6 +476,9 @@ func _close() -> void:
 	_unique_id = 0
 	_known_peers.clear()
 	_incoming.clear()
+	_incoming_bytes = 0
+	_current_arrival_msec = 0
+	backlog_peak = 0
 	_peers_to_connect.clear()
 	_peers_to_disconnect.clear()
 	_pending_peers.clear()

@@ -7,6 +7,8 @@ extends Node
 ## 跨脚本访问：const Cooper = preload(...); Cooper.instance。
 
 const TransportScript := preload("res://mods/etn_coop/net/coop_network_transport.gd")
+# 中继 peer 的静态版本字段：只用于建/入房时上报版本（服务端按版本聚合带宽统计）
+const RelayPeerScript := preload("res://mods/etn_coop/net/coop_relay_peer.gd")
 const ExtensionsScript := preload("res://mods/etn_coop/net/coop_extensions.gd")
 var extensions = ExtensionsScript.new()
 const PlayerProxyScript := preload("res://mods/etn_coop/net/coop_player_proxy.gd")
@@ -20,6 +22,8 @@ const ItemState := preload("res://mods/etn_coop/net/coop_item_state.gd")
 const MotionDownScript := preload("res://mods/etn_coop/ui/motion_down_screen.gd")
 const ReconnectOverlayScript := preload("res://mods/etn_coop/ui/coop_reconnect_overlay.gd")
 const SnapshotBuffer := preload("res://mods/etn_coop/net/coop_snapshot_buffer.gd")
+const ModSetScript := preload("res://mods/etn_coop/net/coop_mod_set.gd")
+const JoinWarningScript := preload("res://mods/etn_coop/ui/coop_join_warning.gd")
 const SonicDropScript := preload("res://resources/buff/components/sonic_coin_drop_component.gd")
 const LanDiscoveryScript := preload("res://mods/etn_coop/net/coop_lan_discovery.gd")
 const UpnpScript := preload("res://mods/etn_coop/net/coop_upnp.gd")
@@ -33,8 +37,10 @@ const LOBBY_SCENE: String = "res://scenes/main/test_room.tscn"
 const DEFAULT_BATTLE_SCENE: String = "res://scenes/main/main.tscn"
 const MENU_SCENE: String = "res://scenes/main/menu_screen.tscn"
 # 协议/版本握手：不一致直接拒绝。RPC 契约变更时必须递增 PROTOCOL_VERSION。
-const PROTOCOL_VERSION: int = 11
-const MOD_VERSION: String = "0.1.21"
+const PROTOCOL_VERSION: int = 13
+const MOD_VERSION: String = "0.2.8"
+# 构建指纹（由 build_coop_mod.ps1 写入 mod.json 的 build 字段；开发态为空）
+var _mod_build: String = ""
 const HELLO_TIMEOUT_MSEC: int = 30000
 # 客机：发出 _client_hello 后等待 _hello_accept 的上限；超时视为握手失败（旧房主/版本不匹配）
 const HELLO_ACCEPT_TIMEOUT_MSEC: int = 30000
@@ -125,10 +131,14 @@ const SAFE_VISUAL_SCENE_PREFIXES: Array[String] = [
 	"res://scenes/bullet/", "res://scenes/debuff/", "res://scenes/update_item/",
 	"res://scenes/item/", "res://scenes/effects/", "res://script/explosion", "res://script/small_explosion",
 	"res://script/floor_paint.tscn", "res://script/spawn_anim.tscn", "res://mods/",
+	# 武器/敌人开火火焰：客机→host 的枪口火焰走这条校验，没有它会被静默拒绝
+	"res://scenes/weapon/", "res://scenes/enemies/",
 	# 少数不在上述目录的合法视觉源（精确路径）
 	"res://scenes/player/mashiro/cross_bullet.tscn", "res://scenes/player/smoke.tscn",
 	"res://script/bullet_launcher.tscn", "res://script/bullet_launcher_2.tscn",
 ]
+# 纯本机表现、不参与联机广播的场景（弹壳只在自己屏幕可见，不需要同步别人的抛壳）
+const LOCAL_ONLY_VISUAL_SUFFIXES: Array[String] = ["bullet_casing.tscn"]
 # 视觉节点允许挂载的父组（排除 EnemiesRoot/PlayerRoot，避免客机把 gameplay 场景塞进逻辑根）
 const SAFE_VISUAL_GROUPS: Array[String] = [
 	"SELayer", "ForegroundLayer", "BulletRoot", "EquipLayer", "FloorLayer", "CoinRoot",
@@ -274,6 +284,8 @@ func _sanitize_effect_entry(e) -> Dictionary:
 		"m": m,
 		"pr": pr_out,
 		"eid": str(e.get("eid", "")).substr(0, MAX_NET_ID_LEN),
+		"ttl": clampi(int(e.get("ttl", 0)), 0, 60000),
+		"tn": clampi(int(e.get("tn", 0)), 0, 65534),
 		"nh": true,                      # 客机来源特效不开放"伤害洞"
 	}
 	if an > 0 and an < MAX_NET_STAT and _is_safe_anchor_path(ap):
@@ -284,6 +296,7 @@ func _sanitize_effect_entry(e) -> Dictionary:
 
 func _visual_reject() -> void:
 	_visual_reject_count += 1
+	vn_reject += 1
 
 
 # 仅保留字符串标签、去重并限制条数（防恶意超长数组）
@@ -310,8 +323,7 @@ func _sanitize_buff_value(value) -> Array:
 				out.append(clampi(v, -MAX_NET_STAT, MAX_NET_STAT))
 			elif v is float:
 				out.append(clampf(v, -float(MAX_NET_STAT), float(MAX_NET_STAT)))
-			else:
-				out.append(v)
+			# 其余类型一律丢弃：旧实现直接 append 任意值，等于让客机往 BuffRouter 注入任意数据
 	return out
 
 
@@ -572,6 +584,11 @@ var _reconnect_prev_downed: bool = false
 var _deferred_round_end: bool = false
 var _round_upgrade_active: bool = false
 var _in_round_upgrade: bool = false
+# chip 状态补应用（客机在无 ChipManager 的场景收到时先缓存，有界重试；绝不 call_deferred 自递归）
+var _pending_chip_round_state: Dictionary = {}
+var _pending_chip_counts: Array = []
+var _chip_retry_left: int = 0
+var _chip_retry_running: bool = false
 # 最近一次等待重连的名字（去重广播）
 var _wait_reconnect_name: String = ""
 var transport = null  # CoopNetworkTransport（未类型化，避免 class_name 依赖）
@@ -620,6 +637,8 @@ var _respawn_token: int = 0
 
 # ---------------- 敌人同步状态 ----------------
 const ENEMY_SNAPSHOT_INTERVAL: float = 0.066
+# 动态提频：带宽有余量时敌人快照走 30Hz，紧张时回落到 15Hz（ABR 再叠加降频）
+const ENEMY_SNAPSHOT_INTERVAL_FAST: float = 0.033
 const ENEMY_SNAPSHOT_HEARTBEAT_MSEC: int = 600
 const ENEMY_SNAPSHOT_POS_EPS2: float = 0.25
 const ENEMY_SNAPSHOT_VEL_EPS2: float = 0.25
@@ -658,11 +677,93 @@ var net_hits_rejected: int = 0
 
 # ---------------- 子弹/视觉同步状态 ----------------
 const BULLET_BATCH_LIMIT: int = 128
+# 中继（单条 TCP）下单包再按字节封顶：个别巨型视觉包会把同一条流上的位置包挡在后面。
+const VISUAL_BATCH_BYTES_MAX: int = 8192
+# 客机 chip 状态补应用：最多 15 次 × 0.2s ≈ 3s，之后丢弃并留痕
+const CHIP_APPLY_RETRY_MAX: int = 15
+const CHIP_APPLY_RETRY_SEC: float = 0.2
+# 协议 v13：视觉批二进制编解码（字符串表 + 量化，见 coop_visual_codec.gd）
+const VisualCodecScript := preload("res://mods/etn_coop/net/coop_visual_codec.gd")
+# 中继是单条可靠有序 TCP：一个包的大小 = 对端在此期间被阻塞的时间。实测中继房下行动作跟不上
+# 时服务端会按写水位把连接踢掉，故中继下把批上限收小（LAN/ENet 保持原值）。
+func _bullet_batch_limit() -> int:
+	return 32 if is_relay else BULLET_BATCH_LIMIT
 # 单帧待发纯表现队列上限：洪泛（Boss 弹幕/连环爆炸）时丢弃新条目，
 # 避免发送侧无限堆积抢占带宽（接收侧另有令牌桶限流）。
 const PENDING_VISUAL_MAX: int = 256
 const PENDING_VISUAL_RELIABLE_MAX: int = 512   # 关键投射物，容量放宽但仍封顶
 const PENDING_EFFECT_MAX: int = 256
+# 中继落后时丢弃纯表现包的阈值（排队帧数）。0 = 关闭本机制。
+# 中继是一条可靠有序 TCP：服务端对慢端不丢帧（软水位 256KB / 宽限 5s），客户端一卡就积压几百帧；
+# 恢复时若把几百个视觉克隆一次性实例化，会造成该帧尖峰并让积压继续恶化（正反馈）。
+# 落后时只追玩法状态、不追表现——等价于把中继丢失的 unreliable 语义补回来。
+const VISUAL_BACKLOG_DROP: int = 32
+# ---------------- 中继出口预算 / 自动降载（ABR） ----------------
+# 预算由中继服务端在建/入房时声明（RELAY_LINK_MBPS，默认 3 Mbps → ~322 KiB/s）。
+# 老服务端不下发时用兜底值；局域网（非 is_relay）预算视为无限，完全不参与降载。
+const DEFAULT_EGRESS_KIB: float = 322.0
+const BUDGET_HEADROOM: float = 0.8           # 总出口只用到 80%，余量留给协议开销/重传
+const CLIENT_BUDGET_MIN_KIB: float = 18.0
+const CLIENT_BUDGET_MAX_KIB: float = 45.0
+const BUDGET_PER_CLIENT_KIB: float = 30.0   # 每台客机上行的经验值
+const HOST_BUDGET_MIN_KIB: float = 60.0
+const HOST_BUDGET_MAX_KIB: float = 250.0
+const ABR_MIN_SCALE: float = 0.4
+const ABR_EVAL_INTERVAL_MSEC: int = 500
+const ABR_BAD_HOLD_MSEC: int = 2000
+const ABR_GOOD_HOLD_MSEC: int = 12000
+const ABR_DOWN_STEP: float = 0.75
+const ABR_UP_STEP: float = 1.08
+const ABR_RTT_BAD_SAMPLES: int = 3
+const ABR_LOW_VIS_SHARE: float = 0.6        # 视觉弹/特效占预算比例
+const ABR_LOW_SNAPSHOT_AT: float = 0.7      # abr 低于该值时降快照频率
+var _enemy_fast_mode: bool = false   # 敌人快照动态提频：true=30Hz，false=15Hz
+var _enemy_rate_timer: float = 0.0
+var _enemy_rate_prev_bytes: int = 0
+var _abr_scale: float = 1.0
+var _abr_rtt_baseline: float = 0.0
+var _abr_bad_since_msec: int = 0
+var _abr_good_since_msec: int = 0
+var _abr_last_eval_msec: int = 0
+var _abr_shed_level: int = 0
+var _abr_shed_until_msec: int = 0
+var _vis_bucket_bytes: float = 0.0
+var _vis_bucket_msec: int = 0
+var _abr_downshifts: int = 0
+var _abr_upshifts: int = 0
+var _abr_rtt_ewma: float = 0.0
+var _abr_rtt_bad_streak: int = 0
+var _abr_flood_streak: int = 0
+var _abr_tx_prev_bytes: int = 0
+var _abr_tx_prev_msec: int = 0
+var vis_drop_abr: int = 0
+var vis_overflow: int = 0
+var _delaycap: int = 0             # 诊断：降档次数
+var _relay_budget_bound: bool = false    # relay_shed / link_budget 信号是否已连接
+var _congested_peers: Dictionary = {}    # peer_id -> level（服务端通告的慢客机；host 对它停发视觉）
+var _last_items_sig: int = 0
+var _items_send_msec: int = 0
+const ITEMS_SEND_INTERVAL_MSEC: int = 200             # 道具视觉态签名（未变化时不重复发）
+var _vis_codec_out = null                # 视觉批编码器（本机发送方向）
+var _vis_codec_in: Dictionary = {}       # sender_id -> 解码器（每个对端一套字符串表）
+var net_vis_codec_err: int = 0           # 诊断：视觉批解码失败次数
+var vis_tx: int = 0                      # 诊断：编码发出的视觉条目数
+var vis_rx: int = 0                      # 诊断：解码收到的视觉条目数
+var vis_skip_throttle: int = 0           # 诊断：被 remote_effect_allowed 节流丢弃
+var vempty: int = 0                      # 诊断：弹道 scene_file_path 为空未能入队
+var vn_reject: int = 0                   # 诊断：视觉节点广播被白名单拒绝
+var vflash: int = 0                      # 诊断：池化火焰按激活补发的广播次数
+var rpush: int = 0                       # 诊断：host 推 roster 次数
+var rrx: int = 0                         # 诊断：收到 roster 次数
+var rsp: int = 0                         # 诊断：远端镜像重建次数
+var _roster_check_timer: float = 0.0
+var _roster_resend_timer: float = 0.0
+var _flash_watch_timer: float = 0.0
+var _flash_idle_state: Dictionary = {}
+var _vis_dump: bool = false              # 诊断：--coop-visdump 逐条打印（每场景首条）
+var _vis_dump_seen: Dictionary = {}
+var net_visual_dropped: int = 0        # 被丢弃的视觉条目数（诊断）
+var net_item_state_skipped: int = 0    # 落后时跳过的道具视觉刷新次数（诊断）
 var _visual = VisualSyncScript.new()
 var _pending_visual: Array = []
 var _pending_visual_reliable: Array = []   # 一次性关键投射物（打 coop_reliable_visual meta 的）
@@ -728,6 +829,20 @@ var _barricade_walls_cache: Dictionary = {}
 const NET_DIAG_INTERVAL: float = 0.5
 const NET_DIAG_TIMEOUT_MSEC: int = 2000
 const NET_DIAG_SAMPLE_LIMIT: int = 40
+# 诊断落盘：每 DIAG_INTERVAL 写一行 diag 到 coop_trail.log（玩家实测后据此判读）。
+# 必须带 fps / worst（帧时间），否则无法区分「网络积压」与「设备本身卡」。
+const DIAG_INTERVAL: float = 2.0
+var _diag_log_timer: float = 0.0
+var _worst_frame_ms: float = 0.0
+var hitch_n: int = 0
+var rejoin_ms: int = 0
+var _perf_phys_usec: int = 0
+var _perf_process_usec: int = 0
+var _perf_snap_usec: int = 0
+var _perf_vis_usec: int = 0
+var _perf_trail_bytes: int = 0
+var vis_defer: int = 0
+var _visual_drop_announced: bool = false
 var net_diag_enabled: bool = false
 var _diag_elapsed: float = 0.0
 var _diag_seq: int = 0
@@ -737,6 +852,38 @@ var _delivery_samples: Array = []
 # 网络补偿调试计数（供 F4 HUD）
 var net_extrap_events: int = 0
 var net_hard_snaps: int = 0
+var net_enemy_smooth_err: float = 0.0   # 窗口内敌人镜像的最大平滑误差（px）
+# 硬校正幅度分档：用于区分「真瞬移」与「高速移动被误判」
+var net_snap_96_160: int = 0
+var net_snap_160_320: int = 0
+var net_snap_gt320: int = 0
+# 分类发送字节（粗估，用于判断带宽大头；不要求精确到字节）：
+# state=玩家状态 / snap=敌人快照 / vis=视觉批 / follow=持续视觉 / evt=其余事件
+var send_state_bytes: int = 0
+var send_items_bytes: int = 0
+var send_fwd_bytes: int = 0
+var send_resync_bytes: int = 0
+var send_snap_bytes: int = 0
+var send_vis_bytes: int = 0
+var send_follow_bytes: int = 0
+var send_evt_bytes: int = 0
+var _diag_prev_state_b: int = 0
+var _diag_prev_snap_b: int = 0
+var _diag_prev_vis_b: int = 0
+var _diag_prev_follow_b: int = 0
+var _diag_prev_evt_b: int = 0
+var _diag_prev_items_b: int = 0
+var _diag_prev_fwd_b: int = 0
+# diag 窗口基线（每 DIAG_INTERVAL 重算一次）
+var _diag_prev_tx_bytes: int = 0
+var _diag_prev_rx_bytes: int = 0
+var _diag_prev_vis: int = 0
+var _diag_prev_mb: int = 0
+var _last_peak_win: int = 0
+# 断线瞬间 get_unique_id() 可能返回 0；缓存最后一次有效 id，避免把状态键写成 0。
+var _last_known_peer_id: int = 1
+# 镜像缺 InvincibleFrame 的告警去重（每个 peer 只打一条）
+var _missing_iframe_warned: Dictionary = {}
 # 压测：可配置网络模拟（延迟+抖动+丢包，作用于收到的敌人快照）
 var sim_latency_ms: float = 0.0
 var sim_jitter_ms: float = 0.0
@@ -770,7 +917,8 @@ var _rate_window_msec: int = 0
 # ---------------- 金币同步状态 ----------------
 var coin_by_net_id: Dictionary = {}
 var next_coin_net_id: int = 1
-# 抛物线金币（Boss coin_box）：客机按广播折线驱动镜像飞行（parabola_path tween 固定 3s）
+# 代码弹道金币（coin_box / 索尼克）：客机按广播折线 + 广播时长驱动镜像飞行。
+# PARABOLA_DURATION 只在轨迹缺失/时长非法时兜底（旧版固定 3s，已按节点实际时长下发）。
 const PARABOLA_DURATION: float = 3.0
 var coin_traj: Dictionary = {}   # net_id -> {points:PackedVector2Array, start:int, dur:float, pick_up:bool}
 # 医疗箱同步：host 权威生成，全端共享拾取
@@ -882,6 +1030,12 @@ func _ready() -> void:
 	Trail.configure(bool(settings.network_trail))
 	Trail.open()
 	Trail.mark("entry", "mod=%s proto=%d" % [MOD_VERSION, PROTOCOL_VERSION])
+	# 构建指纹：同版本号但不同构建（改过内容重打包）时用来提示双方，避免"能连但行为不一致"
+	_mod_build = _load_build_id()
+	Trail.mark("build_id", "build=%s" % _mod_build)
+	# 中继建/入房时上报版本，服务端日志据此按版本聚合（老客户端不带 → 服务端记 "-"）
+	RelayPeerScript.client_ver = MOD_VERSION
+	RelayPeerScript.client_proto = PROTOCOL_VERSION
 	room_address_mode = clampi(int(settings.room_address_mode), ADDR_LAN, ADDR_PUBLIC)
 	manual_public_ip = str(settings.manual_public_ip).strip_edges()
 	_discovery = LanDiscoveryScript.new()
@@ -947,6 +1101,7 @@ func _on_peer_connected(id: int) -> void:
 
 
 func _on_peer_disconnected(id: int) -> void:
+	_midrun_scene_sent.erase(id)
 	print("[etn_coop] peer disconnected: %d" % id)
 	Trail.mark("peer_off", "id=%d server=%s battle=%s phase=%d" % [id, str(multiplayer.is_server()), str(battle_active), _flow_phase])
 	# 客户端视角：peer 1（房主）离开 = 房间关闭 → 提示并过场回主菜单
@@ -1155,10 +1310,24 @@ func _on_connected_to_server() -> void:
 	_hello_sent_msec = Time.get_ticks_msec()
 	# 版本/协议握手：客户端主动上报，host 校验（附稳定 token 供重连识别）
 	var gv: String = Game.version_number if dev_fake_game_version == "" else dev_fake_game_version
-	rpc_id(1, "_client_hello", PROTOCOL_VERSION, MOD_VERSION, gv, _client_token())
+	rpc_id(1, "_client_hello", PROTOCOL_VERSION, MOD_VERSION, gv, _client_token(), _mod_meta_text())
 
 
 # 稳定客户端令牌（跨会话持久化）
+# 读取本机 mod 的构建指纹：安装态读 user://mods/<id>/mod.json，开发态退回 res://mods/<id>/mod.json。
+# 读不到/没有 build 字段 → 返回 ""（视为未知，不参与不一致判定，避免误报）。
+func _load_build_id() -> String:
+	for path in ["user://mods/etn_coop/mod.json", "res://mods/etn_coop/mod.json"]:
+		if not FileAccess.file_exists(path):
+			continue
+		var text: String = FileAccess.get_file_as_string(path)
+		if text == "":
+			continue
+		var data = JSON.parse_string(text)
+		if data is Dictionary and data.has("build"):
+			return str(data.get("build", "")).strip_edges().substr(0, 16)
+	return ""
+
 func _client_token() -> String:
 	if settings == null or not settings.has_method("ensure_client_token"):
 		return ""
@@ -1167,7 +1336,7 @@ func _client_token() -> String:
 
 # host：校验客机版本/协议；不一致 → 拒绝并尝试踢除
 @rpc("any_peer", "call_remote", "reliable")
-func _client_hello(proto: int, mod_ver: String, game_ver: String, token: String = "") -> void:
+func _client_hello(proto: int, mod_ver: String, game_ver: String, token: String = "", meta: String = "") -> void:
 	if not multiplayer.is_server():
 		return
 	var sender: int = multiplayer.get_remote_sender_id()
@@ -1180,9 +1349,11 @@ func _client_hello(proto: int, mod_ver: String, game_ver: String, token: String 
 		reason = "game_version"
 	if reason != "":
 		print("[etn_coop] handshake reject peer=%d reason=%s (proto=%d mod=%s game=%s)" % [sender, reason, proto, mod_ver, game_ver])
-		rpc_id(sender, "_hello_reject", reason)
+		rpc_id(sender, "_hello_reject", reason, MOD_VERSION)
 		_kick_peer_deferred(sender)
 		return
+	# 构建/其它 mod 不一致：不拒绝，把差异带给客机由它弹窗选择"进入 / 退出"
+	var warn_json: String = _evaluate_peer_mods(sender, meta)
 	token = token.substr(0, 64)
 	var old_id: int = _old_peer_for_rejoin(sender, token)
 	# 选人开始后只允许原身份恢复，不能把新加入者计入本局屏障。
@@ -1214,7 +1385,7 @@ func _client_hello(proto: int, mod_ver: String, game_ver: String, token: String 
 	if token != "":
 		_peer_token[sender] = token
 		_token_peer[token] = sender
-	_accept_peer(sender)
+	_accept_peer(sender, warn_json)
 	if old_id > 0:
 		# 重连：若 host 正处于升级页等待，补发清场 + 升级页，避免重连者错过本次升级
 		if _round_upgrade_active:
@@ -1333,7 +1504,7 @@ static func _versions_equal(a: String, b: String) -> bool:
 
 
 @rpc("authority", "call_remote", "reliable")
-func _hello_reject(reason: String = "") -> void:
+func _hello_reject(reason: String = "", host_mod: String = "") -> void:
 	if multiplayer.is_server():
 		return
 	# 默认参兼容旧房主的 0 参 reject（旧构建签名不同），避免该 RPC 自身解析失败后一直卡在「已加入」
@@ -1343,23 +1514,241 @@ func _hello_reject(reason: String = "") -> void:
 	_hello_sent_msec = 0
 	_hello_acked = false
 	_relay_connect_in_flight = false
-	var notice: String = "coop_session_started" if reason == "session_started" else "coop_version_mismatch"
-	connection_status_changed.emit("coop_session_started" if reason == "session_started" else "coop_status_host_version_old")
-	_show_session_closed_notice(notice)
+	if reason == "session_started":
+		connection_status_changed.emit("coop_session_started")
+		_show_session_closed_notice("coop_session_started")
+	elif reason == "mod_version" and str(host_mod) != "":
+		# 版本不一致：把双方版本写清楚，避免"为什么连不上"的反复询问
+		Trail.mark("mod_version_mismatch", "host=%s local=%s" % [host_mod, MOD_VERSION])
+		connection_status_changed.emit("coop_status_host_version_old")
+		show_coop_toast(tr("coop_version_mismatch_detail") % [str(host_mod), MOD_VERSION])
+		_show_session_closed_notice()
+	else:
+		connection_status_changed.emit("coop_status_host_version_old")
+		_show_session_closed_notice("coop_version_mismatch")
 	if _reconnecting:
 		_abort_reconnect_to_menu()
 		return
 	close_connection(true)
 
 
+# ---------------- 加入时的 mod 不一致警告（进入 / 退出） ----------------
+
+var _join_warning_acked: bool = false
+var _join_warning_open: bool = false
+var _join_warning_dialog: Node = null
+
+# ---------------- 选人正确性保险 ----------------
+# 选择时间戳 / 本机玩家节点生成时间戳：轮询只允许"比选择更新的节点"改记录，
+# 否则会把刚选好的角色回滚成转场前的旧角色（hoshino → aris_armed 的根因）。
+const SELECTION_GRACE_MSEC: int = 5000
+var _selection_set_msec: int = 0
+var _local_player_spawn_msec: int = 0
+var _selected_scene: String = ""
+var _selection_resync_count: int = 0
+var _selection_repair_done: bool = false
+var _selection_dialog: Node = null
+var _selection_dialog_open: bool = false
+
+
+# 本机 mod 快照（构建指纹 + 其它已挂载 mod），随握手带给 host
+func _mod_meta_text() -> String:
+	return ModSetScript.encode_meta(_mod_build, _host_mod_snapshot())
+
+
+func _host_mod_snapshot() -> Array:
+	if not is_instance_valid(ModManager):
+		return []
+	return ModSetScript.snapshot(ModManager.list_mods())
+
+
+# host：算差异，返回给客机的警告 JSON（空串=无差异）。只提示，不拒绝。
+func _evaluate_peer_mods(sender: int, meta: String) -> String:
+	var peer_meta: Dictionary = ModSetScript.decode_meta(meta)
+	var peer_build: String = str(peer_meta.get("build", ""))
+	var peer_mods: Array = peer_meta.get("mods", [])
+	var warn: Dictionary = {}
+	if peer_build != "" and _mod_build != "" and peer_build != _mod_build:
+		warn["build"] = [_mod_build, peer_build]
+		print("[etn_coop] mod build mismatch peer=%d host=%s peer=%s" % [sender, _mod_build, peer_build])
+		Trail.mark("mod_mismatch", "peer=%d host=%s peer=%s" % [sender, _mod_build, peer_build])
+		show_coop_toast(tr("coop_mod_build_mismatch_host") % str(sender))
+	var d: Dictionary = ModSetScript.diff(peer_mods, _host_mod_snapshot())
+	if not ModSetScript.is_empty(d):
+		var text: String = ModSetScript.summary(d)
+		warn["mods"] = text
+		print("[etn_coop] mod set mismatch peer=%d %s" % [sender, text])
+		Trail.mark("mod_set_mismatch", "peer=%d %s" % [sender, text])
+		show_coop_toast(tr("coop_mod_set_mismatch_host") % [str(sender), text])
+	Trail.mark("mod_set", "peer=%d entries=%d" % [sender, peer_mods.size()])
+	return JSON.stringify(warn) if not warn.is_empty() else ""
+
+
+# 客机：把警告 JSON 变成弹窗文案（构建段 + mod 段）
+func _format_join_warning(data: Dictionary) -> String:
+	var lines: Array[String] = []
+	var b = data.get("build", null)
+	if b is Array and b.size() >= 2:
+		lines.append(tr("coop_join_warn_build") % [str(b[0]), str(b[1])])
+	var mods_text: String = str(data.get("mods", ""))
+	if mods_text != "":
+		lines.append(tr("coop_join_warn_mods") % mods_text)
+	if lines.is_empty():
+		return ""
+	var body: String = tr("coop_join_warn_intro")
+	for line in lines:
+		body += "\n• " + line
+	return body
+
+
+func _ensure_join_warning_dialog() -> Node:
+	if _join_warning_dialog != null and is_instance_valid(_join_warning_dialog):
+		return _join_warning_dialog
+	# 复用 toast 的常驻 CanvasLayer；没有就先建一个独立的
+	if _toast_layer == null or not is_instance_valid(_toast_layer):
+		_build_toast()
+	var parent: Node = _toast_layer if (_toast_layer != null and is_instance_valid(_toast_layer)) else self
+	var dlg: Node = JoinWarningScript.new()
+	dlg.name = "CoopJoinWarning"
+	parent.add_child(dlg)
+	dlg.connect("confirmed", Callable(self, "_on_join_warning_enter"))
+	dlg.connect("canceled", Callable(self, "_on_join_warning_exit"))
+	_join_warning_dialog = dlg
+	return dlg
+
+
+func _show_join_warning(body: String) -> void:
+	if body == "":
+		return
+	Trail.mark("join_warning", body.replace("\n", " | "))
+	if DisplayServer.get_name() == "headless":
+		# 无头/回归环境不弹窗，直接视为"进入"，避免阻塞自动化
+		print("[etn_coop] join warning (headless, auto-enter): %s" % body.replace("\n", " | "))
+		_join_warning_acked = true
+		return
+	var dlg: Node = _ensure_join_warning_dialog()
+	if dlg == null or not is_instance_valid(dlg):
+		return
+	_join_warning_open = true
+	dlg.call("setup", tr("coop_join_warn_title"), body, tr("coop_join_enter"), tr("coop_join_exit"))
+
+
+func _on_join_warning_enter() -> void:
+	_join_warning_open = false
+	_join_warning_acked = true
+	Trail.mark("join_warning", "enter")
+
+
+func _on_join_warning_exit() -> void:
+	_join_warning_open = false
+	Trail.mark("join_warning", "exit")
+	_abort_join_to_menu()
+
+
+# 用户在警告弹窗里选择"退出"：断开并回主菜单（不走"房主已离开"提示）
+func _abort_join_to_menu() -> void:
+	var tree := get_tree()
+	close_connection(true)
+	if tree == null:
+		return
+	await tree.process_frame
+	await _play_scene_transition_start()
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	GameEvents.change_scene(MENU_SCENE, "")
+
+# ---------------- 选人保险：回执 + 对账弹窗 + 兜底修复 ----------------
+
+var _selection_host_scene: String = ""
+
+
+# host：把"我记录到的角色"回执给客机，客机据此校验（丢包/被覆盖时自愈）
+@rpc("authority", "call_remote", "reliable")
+func _selection_ack(scene: String, token: int = 0) -> void:
+	if multiplayer.is_server():
+		return
+	var ack: String = str(scene)
+	if ack != "" and ack == _selected_scene:
+		_req_ack(token, true)
+		return
+	if ack == "" or _selected_scene == "":
+		return
+	if _selection_resync_count >= 3:
+		Trail.mark("selection_ack_mismatch", "ack=%s local=%s limit" % [ack, _selected_scene])
+		return
+	_selection_resync_count += 1
+	Trail.mark("selection_ack_mismatch", "ack=%s local=%s n=%d" % [ack, _selected_scene, _selection_resync_count])
+	_req_send("select", {"path": _selected_scene})
+
+
+# 选人界面/就绪遮罩显示用：当前已选角色名（空 = 未选择）
+func get_selected_character_name() -> String:
+	if _selected_scene != "":
+		return _pretty_scene(_selected_scene)
+	return _pretty_scene(str(selected_player_scene_by_peer.get(multiplayer.get_unique_id(), "")))
+
+func _pretty_scene(path: String) -> String:
+	if path == "":
+		return "?"
+	return path.get_file().get_basename()
+
+
+func _ensure_selection_dialog() -> Node:
+	if _selection_dialog != null and is_instance_valid(_selection_dialog):
+		return _selection_dialog
+	if _toast_layer == null or not is_instance_valid(_toast_layer):
+		_build_toast()
+	var parent: Node = _toast_layer if (_toast_layer != null and is_instance_valid(_toast_layer)) else self
+	var dlg: Node = JoinWarningScript.new()
+	dlg.name = "CoopSelectionMismatch"
+	parent.add_child(dlg)
+	dlg.connect("confirmed", Callable(self, "_on_selection_dialog_resend"))
+	dlg.connect("canceled", Callable(self, "_on_selection_dialog_follow"))
+	_selection_dialog = dlg
+	return dlg
+
+
+func _show_selection_mismatch(host_scene: String) -> void:
+	_selection_host_scene = host_scene
+	Trail.mark("selection_mismatch", "host=%s local=%s" % [host_scene, _selected_scene])
+	if DisplayServer.get_name() == "headless":
+		# 无头/回归环境不弹窗：按"我的选择"重报一次，避免阻塞自动化
+		_on_selection_dialog_resend()
+		return
+	var dlg: Node = _ensure_selection_dialog()
+	if dlg == null or not is_instance_valid(dlg):
+		return
+	_selection_dialog_open = true
+	var body: String = tr("coop_selection_mismatch_body") % [_pretty_scene(_selection_host_scene), _pretty_scene(_selected_scene)]
+	dlg.call("setup", tr("coop_selection_mismatch_title"), body, tr("coop_selection_resend"), tr("coop_selection_follow"))
+
+
+func _on_selection_dialog_resend() -> void:
+	_selection_dialog_open = false
+	Trail.mark("selection_resend", "scene=%s" % _selected_scene)
+	if _selected_scene != "":
+		report_local_selection(_selected_scene)
+
+
+func _on_selection_dialog_follow() -> void:
+	_selection_dialog_open = false
+	if _selection_host_scene == "":
+		return
+	_selected_scene = _selection_host_scene
+	_selection_set_msec = Time.get_ticks_msec()
+	var uid: int = multiplayer.get_unique_id()
+	selected_player_scene_by_peer[uid] = _selected_scene
+	local_player_scene_path = _selected_scene
+	Trail.mark("selection_follow_host", "scene=%s" % _selected_scene)
+
+
 # 握手通过后：按当前阶段把新客机送进准备房 / 补发 roster 与已存在实体
-func _accept_peer(id: int) -> void:
+func _accept_peer(id: int, warn_json: String = "") -> void:
 	# 重连迁移后这些表已有该 id 的原值，不要覆盖为默认
 	if not selected_player_scene_by_peer.has(id):
 		selected_player_scene_by_peer[id] = DEFAULT_PLAYER_SCENE
 	if not player_scene_by_peer.has(id):
 		player_scene_by_peer[id] = DEFAULT_PLAYER_SCENE
-	rpc_id(id, "_hello_accept")
+	rpc_id(id, "_hello_accept", warn_json)
 	# 记分板：有玩家加入即建 0 行并广播（准备房即时可见）
 	_ensure_team_stat(id)
 	_broadcast_team_stats()
@@ -1368,24 +1757,49 @@ func _accept_peer(id: int) -> void:
 		return
 	if battle_active:
 		rpc_id(id, "_client_sync_roster", player_scene_by_peer)
-		_send_existing_enemies_to_peer(id)
-		_send_boss_visual_states_to_peer(id)
-		_send_existing_summons_to_peer(id)
-		_send_existing_medkits_to_peer(id)
-		_send_chip_state_to_peer(id)
-		_send_field_state_to_peer(id)
-		_send_orbital_state_to_peer(id)
-		_send_barricade_state_to_peer(id)
+		# 入场/重连补发：分帧串行（每帧一类），避免一次性把客机下行冲爆
+		_run_resync(id)
+
+
+# 补发排程：每帧发一类，类间让出一帧；重连风暴时不再产生 100+ KB/s 的洪峰
+func _run_resync(peer_id: int) -> void:
+	var tree := get_tree()
+	if tree == null:
+		return
+	Trail.mark("resync", "begin peer=%d" % peer_id)
+	var steps: Array = [
+		["enemies", Callable(self, "_send_existing_enemies_to_peer")],
+		["boss", Callable(self, "_send_boss_visual_states_to_peer")],
+		["summons", Callable(self, "_send_existing_summons_to_peer")],
+		["medkits", Callable(self, "_send_existing_medkits_to_peer")],
+		["chip", Callable(self, "_send_chip_state_to_peer")],
+		["field", Callable(self, "_send_field_state_to_peer")],
+		["orbital", Callable(self, "_send_orbital_state_to_peer")],
+		["barricade", Callable(self, "_send_barricade_state_to_peer")],
+	]
+	for step in steps:
+		if not _peer_online(peer_id):
+			return
+		var cb: Callable = step[1]
+		cb.call(peer_id)
+		send_resync_bytes += 512
+		await tree.process_frame
+	Trail.mark("resync", "done peer=%d" % peer_id)
 
 
 @rpc("authority", "call_remote", "reliable")
-func _hello_accept() -> void:
+func _hello_accept(warn: String = "") -> void:
 	if multiplayer.is_server():
 		return
 	print("[etn_coop] handshake accepted by host")
 	_hello_sent_msec = 0
 	_hello_acked = true
 	_relay_connect_in_flight = false
+	# host 带回的构建/其它 mod 差异：弹窗让玩家自己选"进入 / 退出"（不阻止进入）
+	if warn != "" and not _join_warning_acked:
+		var data = JSON.parse_string(warn)
+		if data is Dictionary:
+			_show_join_warning(_format_join_warning(data))
 	if _reconnecting:
 		_finish_reconnect()
 
@@ -1421,6 +1835,41 @@ func _net_connected() -> bool:
 # 是否有 multiplayer peer（不要求 CONNECTED）：供「离线也应可用的本地工具」避免 get_unique_id 报错
 func _has_peer() -> bool:
 	return multiplayer != null and multiplayer.multiplayer_peer != null
+
+
+# 发包前统一门控：peer 存在但未 CONNECTED 时调用 RPC，引擎会刷
+# "Trying to call an RPC via a multiplayer peer which is not connected"（实测一局 366 条），
+# 且这些包注定失败。所有周期性/每帧发送入口都应先过这一关。
+func _net_sendable() -> bool:
+	if multiplayer == null or multiplayer.multiplayer_peer == null:
+		return false
+	return multiplayer.multiplayer_peer.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED
+
+
+# 无 peer 时的 is_server() 静默替代（语义与引擎一致：peer 为空时返回 false）。
+# 直接调用会让引擎刷 "No multiplayer peer is assigned. Unable to get unique ID."（实测一局 28 条）。
+func _is_server_safe() -> bool:
+	if not _has_peer():
+		return false
+	return multiplayer.is_server()
+
+
+# 本机 peer id 的安全读取（别名，语义同 _local_peer_id_safe）：
+# 无 peer 时 get_unique_id() 会返回 0 并刷引擎错误，这里回退最近一次有效 id。
+func _uid_safe() -> int:
+	return _local_peer_id_safe()
+
+
+# 定向发包目标校验：会话已断 / 目标不在 get_peers（宽限期/已断）都返回 false。
+# 直接 rpc_id 会刷 "Trying to call an RPC ... not connected"，且这些包注定失败。
+func _rpc_target_ok(peer: int) -> bool:
+	if not _net_sendable():
+		return false
+	if peer <= 0:
+		return false
+	if peer == _uid_safe():
+		return true
+	return multiplayer.get_peers().has(peer)
 
 
 # 目标 peer 此刻是否还连着：会话已断 / peer 已在断线宽限里（已从 get_peers 移除）都返回 false。
@@ -1634,6 +2083,8 @@ func _add_team_coins(pid: int, amount: int) -> void:
 
 func _broadcast_team_stats() -> void:
 	if not _has_peer():
+		return
+	if not _net_sendable():
 		return
 	if not multiplayer.is_server():
 		return
@@ -1862,6 +2313,8 @@ func _finish_reconnect() -> void:
 	_show_reconnect_overlay(false)
 	_freeze_local_player_for_reconnect(false)
 	_refresh_local_peer_identity()
+	if _reconnect_started_msec > 0:
+		rejoin_ms = Time.get_ticks_msec() - _reconnect_started_msec
 	# 重连握手可能发生在旧场景或旧墙集上；先清 mirror，等 host 的快照/stop 重建。
 	_clear_barricade_mirror()
 	_last_sent_coin_multiplier = -1.0
@@ -2141,7 +2594,7 @@ func _gate_change_scene(path: String, player: String) -> bool:
 		return false
 	# client：上报选择，等待 host 广播
 	if player != "":
-		rpc_id(1, "_server_player_selected", player)
+		_req_send("select", {"path": player})
 	return true
 
 
@@ -2248,7 +2701,8 @@ func _gate_projectile_self_hit(bullet: Node, hb) -> bool:
 		if cb is Callable:
 			cb.call(enemy, predicted)
 	var victim_pos: Vector2 = (enemy as Node2D).global_position if enemy is Node2D else Vector2.ZERO
-	rpc_id(1, "_server_enemy_hit", net_id, hit_cfg, victim_pos)
+	# 命中合并：按目标累计到窗口内一条 RPC（高射速角色的主要带宽来源）
+	_queue_enemy_hit(net_id, hit_cfg, victim_pos)
 	return true
 
 
@@ -2287,8 +2741,195 @@ func _gate_enemy_buff_apply(manager, buff, value, source_id) -> bool:
 	var body: Node = manager.get("body")
 	if body == null or not is_instance_valid(body) or not body.has_meta("net_id"):
 		return false
-	rpc_id(1, "_server_apply_enemy_buff", int(body.get_meta("net_id")), str(buff.resource_path), value, str(source_id), _applier_stats())
+	# 满层就不再发：再施加也不会加层，纯浪费带宽
+	var cb = manager.get("current_buff")
+	if cb is Dictionary:
+		var ent = cb.get(buff.id)
+		if ent is Dictionary and int(ent.get("max_layer", 1)) > 0 and int(ent.get("layer", 0)) >= int(ent.get("max_layer", 1)):
+			buff_skip += 1
+			return true
+	# 合并到 100ms 窗口：同窗口内多次施加合并为「次数」，host 端循环应用（层数不变）
+	var key: String = "%d|%s" % [int(body.get_meta("net_id")), str(buff.resource_path)]
+	var rec = _pending_buffs.get(key)
+	if rec == null:
+		_pending_buffs[key] = {
+			"nid": int(body.get_meta("net_id")),
+			"path": str(buff.resource_path),
+			"value": value,
+			"src": str(source_id),
+			"stats": _applier_stats(),
+			"count": 1,
+			"sent": 0,
+			"born": Time.get_ticks_msec(),
+		}
+	else:
+		rec["count"] = mini(int(rec.get("count", 1)) + 1, 16)
+		rec["value"] = value
+		rec["src"] = str(source_id)
+		rec["stats"] = _applier_stats()
+		_pending_buffs[key] = rec
 	return true
+
+
+var _pending_drone: Dictionary = {}
+var _drone_flush_msec: int = 0
+var _cli_tx_check_msec: int = 0
+
+
+# Chihiro 无人机伤害合并：100ms 窗口内同目标求和（总量不变，RPC 数大幅下降）
+func _flush_client_procs() -> void:
+	if _pending_drone.is_empty():
+		return
+	var now: int = Time.get_ticks_msec()
+	if now - _drone_flush_msec < 100 and _pending_drone.size() < 8:
+		return
+	_drone_flush_msec = now
+	var sendable: bool = _net_sendable()
+	for k in _pending_drone.keys():
+		var key: String = str(k)
+		var total: int = int(_pending_drone[k])
+		_pending_drone.erase(k)
+		if not _tx_evt("proc", 80):
+			continue
+		if sendable:
+			var parts: PackedStringArray = key.split("|")
+			var nid: int = int(parts[1]) if parts.size() > 1 else -1
+			if nid >= 0:
+				rpc_id(1, "_server_chihiro_drone_damage", nid, clampi(total, 0, MAX_CHIHIRO_DRONE_DAMAGE * 4))
+
+
+# 客机上行自洪泛硬闸：自己发得太猛时（RTT 反馈滞后），主动再压一半配额
+func _tick_client_tx_flood() -> void:
+	if not is_relay or multiplayer.is_server():
+		return
+	var now: int = Time.get_ticks_msec()
+	if now - _cli_tx_check_msec < 1000:
+		return
+	_cli_tx_check_msec = now
+	if transport == null or transport.peer == null or transport.peer.get("tx_bytes") == null:
+		return
+	var txb: int = int(transport.peer.get("tx_bytes"))
+	if _cli_tx_prev_msec == 0:
+		_cli_tx_prev_bytes = txb
+		_cli_tx_prev_msec = now
+		return
+	var rate_kb: float = float(txb - _cli_tx_prev_bytes) / 1024.0 / (float(now - _cli_tx_prev_msec) / 1000.0)
+	_cli_tx_prev_bytes = txb
+	_cli_tx_prev_msec = now
+	var budget: float = _tx_budget_kib()
+	if budget > 0.0 and not is_inf(budget) and rate_kb > budget * 1.15:
+		_cli_flood_streak += 1
+	else:
+		_cli_flood_streak = 0
+	if _cli_flood_streak >= 2:
+		cli_flood_n += 1
+		_cli_flood_streak = 0
+		_cli_flood_until = now + 3000
+		Trail.mark("tx_flood", "rate=%.1fK budget=%.1fK top=%s" % [rate_kb, budget, tx_top_cat])
+
+var _pending_relay: Dictionary = {}
+var _relay_flush_msec: int = 0
+
+
+func _queue_relay_buff(key: String, rec: Dictionary) -> void:
+	var old = _pending_relay.get(key)
+	if old != null and bool(old.get("apply", false)) == bool(rec.get("apply", false)) and bool(rec.get("apply", false)):
+		old["count"] = mini(int(old.get("count", 1)) + 1, 16)
+		old["value"] = rec.get("value", [])
+		_pending_relay[key] = old
+	else:
+		rec["count"] = 1
+		rec["born"] = Time.get_ticks_msec()
+		_pending_relay[key] = rec
+
+
+func _flush_client_relay_buffs() -> void:
+	if _pending_relay.is_empty():
+		return
+	var now: int = Time.get_ticks_msec()
+	if now - _relay_flush_msec < 100 and _pending_relay.size() < 16:
+		return
+	_relay_flush_msec = now
+	var sendable: bool = _net_sendable()
+	for key in _pending_relay.keys():
+		var r0: Dictionary = _pending_relay[key]
+		var alive: bool = true
+		if bool(r0.get("summoned", false)):
+			alive = summoned_by_net_id.has(int(r0.get("nid", -1)))
+		else:
+			alive = _peer_online(int(r0.get("peer", 0)))
+		if not alive or now - int(r0.get("born", now)) > 1000:
+			_pending_relay.erase(key)
+	if _pending_relay.size() > 16:
+		for k4 in _pending_relay.keys().slice(0, _pending_relay.size() - 16):
+			_pending_relay.erase(k4)
+			buff_ovf += 1
+	for key in _pending_relay.keys():
+		var r: Dictionary = _pending_relay[key]
+		_pending_relay.erase(key)
+		var cnt: int = clampi(int(r.get("count", 1)), 1, 16)
+		if not bool(r.get("apply", false)):
+			cnt = 1
+		var bytes: int = 120 + str(r.get("path", "")).length()
+		if not _tx_evt("buff", bytes, false):
+			_pending_relay[key] = r
+			continue
+		buff_tx_bytes += bytes
+		if not sendable:
+			continue
+		if bool(r.get("summoned", false)):
+			rpc_id(1, "_server_relay_summoned_buff", int(r.get("owner", 0)), int(r.get("nid", -1)), bool(r.get("apply", false)), str(r.get("path", "")), r.get("value", []), str(r.get("src", "")), cnt)
+		else:
+			rpc_id(1, "_server_relay_player_buff", int(r.get("peer", 0)), bool(r.get("apply", false)), str(r.get("path", "")), r.get("value", []), str(r.get("src", "")), cnt)
+
+
+func _flush_client_buffs() -> void:
+	if _pending_buffs.is_empty():
+		return
+	var now: int = Time.get_ticks_msec()
+	if now - _buff_flush_msec < 100 and _pending_buffs.size() < 16:
+		return
+	_buff_flush_msec = now
+	var sendable: bool = _net_sendable()
+	if _buff_sent_msec.size() > 128:
+		for bk in _buff_sent_msec.keys():
+			if now - int(_buff_sent_msec[bk]) > 5000:
+				_buff_sent_msec.erase(bk)
+	# 修剪：敌人已消失 / 超过 1s 未发出 的登记一律丢弃，避免死 key 永久重发
+	for key in _pending_buffs.keys():
+		var r0: Dictionary = _pending_buffs[key]
+		var e0 = enemy_by_net_id.get(int(r0.get("nid", -1)))
+		var stale: bool = e0 == null or not is_instance_valid(e0)
+		if not stale and now - int(r0.get("born", now)) > 1000:
+			stale = true
+		if stale:
+			_pending_buffs.erase(key)
+	if _pending_buffs.size() > 32:
+		var keys_sorted: Array = _pending_buffs.keys()
+		keys_sorted.sort_custom(func(a, b): return int(_pending_buffs[a].get("born", 0)) < int(_pending_buffs[b].get("born", 0)))
+		for i3 in range(_pending_buffs.size() - 32):
+			_pending_buffs.erase(keys_sorted[i3])
+			buff_ovf += 1
+	# 每窗口最多 2 条"首次优先"，其余严格走预算；被拒就丢弃剩余，绝不堆队列
+	var prio_left: int = 2
+	for key in _pending_buffs.keys():
+		var r: Dictionary = _pending_buffs[key]
+		var st: Dictionary = r.get("stats", {})
+		var cnt: int = clampi(int(r.get("count", 1)), 1, 4)
+		var bytes: int = 160 + str(r.get("path", "")).length() + st.size() * 8
+		var allow: bool = _tx_evt("buff", bytes)
+		if not allow:
+			if prio_left <= 0:
+				_pending_buffs.erase(key)
+				continue
+			prio_left -= 1
+			_tx_cat_bytes["buff"] = int(_tx_cat_bytes.get("buff", 0)) + bytes
+		_pending_buffs.erase(key)
+		_buff_sent_msec[key] = now
+		buff_tx_bytes += bytes
+		if sendable:
+			rpc_id(1, "_server_apply_enemy_buff", int(r.get("nid", 0)), str(r.get("path", "")), r.get("value", []), str(r.get("src", "")), st, cnt)
+		# 不再回队：单个窗口最多补 4 层，多出的直接丢弃（层上限本来就低，避免队列长期占线）
 
 
 # 客机对敌人镜像 apply_conversion_power → 转发 host 权威结算（本端不累积）
@@ -2297,7 +2938,13 @@ func _gate_enemy_conversion(enemy, power) -> bool:
 		return false
 	if enemy == null or not is_instance_valid(enemy) or not enemy.has_meta("net_id"):
 		return false
-	rpc_id(1, "_server_enemy_conversion", int(enemy.get_meta("net_id")), int(power))
+	var ck: String = str(int(enemy.get_meta("net_id")))
+	var cnow: int = Time.get_ticks_msec()
+	if cnow - int(_buff_dedupe_msec.get(ck, 0)) < 100:
+		return true
+	_buff_dedupe_msec[ck] = cnow
+	if _tx_evt("proc", 72):
+		rpc_id(1, "_server_enemy_conversion", int(enemy.get_meta("net_id")), int(power))
 	return true
 
 
@@ -2311,6 +2958,11 @@ func _server_enemy_conversion(net_id: int, power: int) -> void:
 	if enemy == null or not is_instance_valid(enemy):
 		return
 	if enemy.has_method("apply_conversion_power"):
+		var _ck: String = str(net_id)
+		var _cnow: int = Time.get_ticks_msec()
+		if _cnow - int(_buff_dedupe_msec.get(_ck, 0)) < 100:
+			return
+		_buff_dedupe_msec[_ck] = _cnow
 		enemy.call("apply_conversion_power", clampi(power, 0, MAX_NET_CONVERT))
 
 
@@ -2335,7 +2987,7 @@ func _applier_stats() -> Dictionary:
 
 
 @rpc("any_peer", "call_remote", "reliable")
-func _server_apply_enemy_buff(net_id: int, buff_path: String, value: Array, source_id: String, stats: Dictionary) -> void:
+func _server_apply_enemy_buff(net_id: int, buff_path: String, value: Array, source_id: String, stats: Dictionary, count: int = 1) -> void:
 	if not multiplayer.is_server():
 		return
 	if not _server_sender_ok():
@@ -2351,9 +3003,14 @@ func _server_apply_enemy_buff(net_id: int, buff_path: String, value: Array, sour
 	var buff = load(buff_path)
 	if not (buff is Buff):
 		return
-	# 应用即会触发 _on_enemy_buff_applied（host）→ 统一广播，无需在此再 rpc（避免双播）
-	# applier_peer 用服务端可信 sender（不采信包内自报）：供 DOT"最后施加者持有"归属
-	manager.call("apply_buff", buff, _sanitize_buff_value(value), source_id.substr(0, MAX_NET_SOURCE_ID_LEN), _sanitize_applier_stats(stats), multiplayer.get_remote_sender_id())
+	# 客机已按窗口合并成 count：循环应用，层数与逐次施加完全一致
+	var loops: int = clampi(count, 1, 16)
+	var clean_value: Array = _sanitize_buff_value(value)
+	var clean_stats: Dictionary = _sanitize_applier_stats(stats)
+	var clean_src: String = source_id.substr(0, MAX_NET_SOURCE_ID_LEN)
+	var sender: int = multiplayer.get_remote_sender_id()
+	for _i in loops:
+		manager.call("apply_buff", buff, clean_value, clean_src, clean_stats, sender)
 
 
 # Chihiro 无人机放电：host 权威结算；客机转发 host（目标必须带 net_id）。
@@ -2366,7 +3023,8 @@ func _on_chihiro_drone_damage(target: Node, dmg: int, _applier: Dictionary) -> b
 	var net_id := _live_enemy_net_id(target)
 	if net_id < 0:
 		return false
-	rpc_id(1, "_server_chihiro_drone_damage", net_id, clampi(dmg, 0, MAX_CHIHIRO_DRONE_DAMAGE))
+	var dk: String = "drone|%d" % net_id
+	_pending_drone[dk] = clampi(int(_pending_drone.get(dk, 0)) + int(dmg), 0, MAX_CHIHIRO_DRONE_DAMAGE * 4)
 	return true
 
 
@@ -2409,7 +3067,8 @@ func _on_chihiro_refresh_shock(target: Node) -> bool:
 		return true
 	if net_id < 0:
 		return false
-	rpc_id(1, "_server_chihiro_refresh_shock", net_id)
+	if _evt_dedupe_allow("shock|%d" % net_id, 100) and _tx_evt("proc", 64):
+		rpc_id(1, "_server_chihiro_refresh_shock", net_id)
 	return true
 
 
@@ -2925,14 +3584,14 @@ func _on_host_field_wave(cells: PackedVector2Array, fog_points: PackedVector2Arr
 		return
 	if FIELD_NET_DEBUG:
 		print("[etn_coop][field] wave warning cells=%d points=%d" % [cells.size(), fog_points.size()])
-	rpc("_remote_field_wave", cells, fog_points, 1, 0)
+	rpc("_remote_field_wave", cells.slice(0, 256), fog_points.slice(0, 256), 1, 0)
 
 func _on_host_field_activated(cells: PackedVector2Array, fog_points: PackedVector2Array) -> void:
 	if not is_lan_game or not multiplayer.is_server():
 		return
 	if FIELD_NET_DEBUG:
 		print("[etn_coop][field] wave active cells=%d points=%d" % [cells.size(), fog_points.size()])
-	rpc("_remote_field_wave", cells, fog_points, 2, 0)
+	rpc("_remote_field_wave", cells.slice(0, 256), fog_points.slice(0, 256), 2, 0)
 
 func _on_host_field_ended() -> void:
 	if not is_lan_game or not multiplayer.is_server():
@@ -3239,21 +3898,68 @@ func _send_chip_state_to_peer(peer_id: int) -> void:
 func _remote_chip_round_state(active_ids: Array, cap: int, counts: Array) -> void:
 	if multiplayer.is_server():
 		return
-	var cm := get_tree().get_first_node_in_group("ChipManager")
-	if cm == null:
-		call_deferred("_remote_chip_round_state", active_ids, cap, counts)
+	_pending_chip_round_state = {"active_ids": active_ids, "cap": cap, "counts": counts}
+	if _apply_pending_chip():
 		return
-	cm.call("apply_network_round_state", active_ids, cap, counts)
+	_schedule_chip_apply()
 
 @rpc("authority", "call_remote", "reliable")
 func _remote_chip_counts(counts: Array) -> void:
 	if multiplayer.is_server():
 		return
-	var cm := get_tree().get_first_node_in_group("ChipManager")
-	if cm == null:
-		call_deferred("_remote_chip_counts", counts)
+	_pending_chip_counts = counts
+	if _apply_pending_chip():
 		return
-	cm.call("apply_network_counts", counts)
+	_schedule_chip_apply()
+
+
+# 客机在菜单/准备房/test_room 时没有 ChipManager（只有 main.tscn 才有，见 chip_manager.gd 入组），
+# 收到词条状态只能先缓存。这里**绝不能 call_deferred 自身**：那会在同一次 MessageQueue flush
+# 里无限重入（cm 仍为 null）→ 栈/队列爆掉 → signal 11。0.1.25 的「访客闪退」就是这样炸的，
+# 崩溃 backtrace 直指旧实现的 call_deferred 行。
+func _apply_pending_chip() -> bool:
+	var cm := get_tree().get_first_node_in_group("ChipManager")
+	if cm == null or not is_instance_valid(cm):
+		return false
+	if not _pending_chip_round_state.is_empty():
+		var st: Dictionary = _pending_chip_round_state
+		_pending_chip_round_state = {}
+		cm.call("apply_network_round_state", st.get("active_ids", []), int(st.get("cap", 0)), st.get("counts", []))
+	if not _pending_chip_counts.is_empty():
+		var counts: Array = _pending_chip_counts
+		_pending_chip_counts = []
+		cm.call("apply_network_counts", counts)
+	return true
+
+
+# 有界重试：每 CHIP_APPLY_RETRY_SEC 试一次，最多 CHIP_APPLY_RETRY_MAX 次（≈3s），超时丢弃并留痕。
+func _schedule_chip_apply() -> void:
+	if _chip_retry_running:
+		return
+	_chip_retry_running = true
+	_chip_retry_left = CHIP_APPLY_RETRY_MAX
+	var generation: int = _session_generation
+	while _chip_retry_left > 0 and is_inside_tree():
+		await get_tree().create_timer(CHIP_APPLY_RETRY_SEC).timeout
+		if not is_instance_valid(self) or generation != _session_generation:
+			break
+		_chip_retry_left -= 1
+		if _apply_pending_chip():
+			break
+	if not _pending_chip_round_state.is_empty() or not _pending_chip_counts.is_empty():
+		_pending_chip_round_state = {}
+		_pending_chip_counts = []
+		Trail.mark("chip_drop", "no ChipManager after %d retries" % CHIP_APPLY_RETRY_MAX)
+		push_warning("[etn_coop] chip state dropped: ChipManager never appeared")
+	_chip_retry_running = false
+
+
+# 场景就绪后立即补应用（不等 timer）
+func _flush_pending_chip() -> void:
+	if _pending_chip_round_state.is_empty() and _pending_chip_counts.is_empty():
+		return
+	if _apply_pending_chip():
+		_chip_retry_left = 0
 
 
 # 客户端：敌人受击 → 本地不结算，转交服务端权威处理（返回 true 跳过默认）。
@@ -3284,7 +3990,7 @@ func _intercept_enemy_damage(damage_data, owner) -> bool:
 			cb.call(owner, predicted)
 	# 附带客户端视角的受害者位置，供 host 做轻量回滚合理性校验
 	var victim_pos: Vector2 = (owner as Node2D).global_position if owner is Node2D else Vector2.ZERO
-	rpc_id(1, "_server_enemy_hit", net_id, hit_cfg, victim_pos)
+	_queue_enemy_hit(net_id, hit_cfg, victim_pos)
 	return true
 
 
@@ -3320,7 +4026,7 @@ func _handle_part_hit(part: Node, data) -> void:
 	for cb in d.on_damage_dealt:
 		if cb is Callable:
 			cb.call(part, predicted)
-	rpc_id(1, "_server_enemy_part_hit", int(part.get_meta("coop_owner_net_id")), int(part.get_meta("coop_part_index", -1)), hit_cfg)
+	_queue_part_hit(int(part.get_meta("coop_owner_net_id")), int(part.get_meta("coop_part_index", -1)), hit_cfg, (part as Node2D).global_position if part is Node2D else Vector2.ZERO)
 
 
 # host：把客机对部件的命中应用到真实部件的 HealthComponent（不抑制 → host 原生闪白/受击音 + damage_taken）
@@ -3473,7 +4179,10 @@ func _gate_coin_pickup(coin, player, coin_mult) -> bool:
 		_do_shared_coin_pickup(net_id, value, pos, coin)
 	else:
 		_sync_coin_multiplier(float(coin_mult))
-		rpc_id(1, "_server_pickup_coin", net_id, value, pos)
+		send_evt_bytes += 64
+		if _net_sendable():
+			_tx_evt("coin", 96, false)
+			rpc_id(1, "_server_pickup_coin", net_id, value, pos)
 	return true
 
 
@@ -3488,6 +4197,7 @@ func _gate_player_coin_drop(source, total: int, origin: Vector2) -> bool:
 		return false
 	if total <= 0 or not (is_finite(origin.x) and is_finite(origin.y)):
 		return false
+	_tx_evt("coin", 96, false)
 	rpc_id(1, "_server_player_coin_drop", int(total), origin)
 	return true
 
@@ -3677,7 +4387,10 @@ func _on_character_event(player: Node, event_name: StringName, event_data: Dicti
 	if multiplayer.is_server():
 		rpc("_remote_character_event", pid, ev, event_data)
 	else:
-		rpc_id(1, "_server_character_event", ev, event_data)
+		if _evt_dedupe_allow("chev|%s" % ev, 100) and _tx_evt("char", 96):
+			send_evt_bytes += 96
+			if _net_sendable():
+				rpc_id(1, "_server_character_event", ev, event_data)
 
 
 @rpc("any_peer", "call_remote", "reliable")
@@ -3691,6 +4404,9 @@ func _server_character_event(event_name: String, event_data: Dictionary) -> void
 	var sender: int = multiplayer.get_remote_sender_id()
 	var safe_data: Dictionary = _sanitize_event_data(event_data)
 	_apply_character_event(sender, event_name, safe_data)
+	if not _tx_evt("char", 96):
+		return
+	snd_char_bytes += 96
 	rpc("_remote_character_event", sender, event_name, safe_data)
 
 
@@ -3953,12 +4669,14 @@ func _ensure_ako_chain_visual(owner_peer: int, index: int) -> Dictionary:
 func _disable_ako_chain_visual_nodes(node: Node) -> void:
 	for n in node.find_children("*", "", true, false):
 		if n is Area2D:
-			n.monitoring = false
-			n.monitorable = false
+			# 可能在物理回调/flush 期间执行：monitoring 类必须 deferred，否则刷
+			# "Can't change this state while flushing queries"（实测一局 320 条）。
+			n.set_deferred("monitoring", false)
+			n.set_deferred("monitorable", false)
 			n.collision_layer = 0
 			n.collision_mask = 0
 		elif n is CollisionShape2D:
-			n.disabled = true
+			n.set_deferred("disabled", true)
 
 
 func _tick_ako_chain_visuals(delta: float) -> void:
@@ -4179,6 +4897,10 @@ func _on_projectile_spawned(bullet: Node, _owner: Node, _source_faction: int) ->
 	bullet.set_meta("_coop_ps_broadcast", true)
 	var scene_path: String = bullet.scene_file_path
 	if scene_path == "":
+		# 池化/运行期创建的实例可能拿不到 scene_file_path，导致该弹道永远不进广播队列
+		vempty += 1
+		if vempty <= 3:
+			Trail.mark("vis_empty_path", "node=%s script=%s" % [str(bullet.name), str(bullet.get_script())])
 		return
 	# 无 velocity → 爆炸/范围/一次性特效，走特效通道（纯表现）
 	if bullet.get("velocity") == null:
@@ -4352,10 +5074,11 @@ func _on_projectile_despawned(bullet: Node) -> void:
 	if bullet.has_meta("net_visual_id"):
 		var sync_id: String = str(bullet.get_meta("net_visual_id"))
 		bullet.remove_meta("net_visual_id")
-		if multiplayer.is_server():
-			rpc("_despawn_visual_bullet", sync_id)
-		else:
-			rpc_id(1, "_server_despawn_visual_bullet", sync_id)
+		if _tx_evt("visual", 48):
+			if multiplayer.is_server():
+				rpc("_despawn_visual_bullet", sync_id)
+			else:
+				rpc_id(1, "_server_despawn_visual_bullet", sync_id)
 	if bullet.has_meta("net_effect_id"):
 		var effect_id: String = str(bullet.get_meta("net_effect_id"))
 		bullet.remove_meta("net_effect_id")
@@ -4363,7 +5086,8 @@ func _on_projectile_despawned(bullet: Node) -> void:
 		if multiplayer.is_server():
 			rpc("_despawn_visual_effect", effect_id)
 		else:
-			rpc_id(1, "_server_despawn_visual_effect", effect_id)
+			if _tx_evt("visual", 56):
+				rpc_id(1, "_server_despawn_visual_effect", effect_id)
 
 
 # ---------------- 受伤类道具（救生圈）清弹：host 权威半径清除 ----------------
@@ -4380,7 +5104,8 @@ func _on_enemy_bullet_clear(pos: Vector2, radius: float) -> void:
 	radius = clampf(radius, 0.0, MAX_ENEMY_BULLET_CLEAR_RADIUS)
 	_clear_enemy_projectiles_near(pos, radius)
 	if is_lan_game and not multiplayer.is_server():
-		rpc_id(1, "_server_enemy_bullet_clear", pos, radius)
+		if _evt_dedupe_allow("bclear", 50) and _tx_evt("proc", 96, false):
+			rpc_id(1, "_server_enemy_bullet_clear", pos, radius)
 
 
 @rpc("any_peer", "call_remote", "reliable")
@@ -4474,6 +5199,13 @@ func _on_hit_sfx(sfx_key: String, _position: Vector2) -> void:
 
 
 func _broadcast_hit_sfx(sfx_key: String) -> void:
+	if not _tx_evt("sfx", 64):
+		return
+	if str(_last_hit_sfx_key) == sfx_key and Time.get_ticks_msec() - _last_hit_sfx_msec < 50:
+		return
+	_last_hit_sfx_key = sfx_key
+	_last_hit_sfx_msec = Time.get_ticks_msec()
+	snd_sfx_bytes += 64
 	if multiplayer.is_server():
 		rpc("_remote_hit_sfx", sfx_key)
 	else:
@@ -4527,6 +5259,13 @@ func _remote_sfx_allowed(sfx_key: String) -> bool:
 # 节点建一次后靠 active_state 复用的道具特效（镰刀/火场/毒环/冰环）：child_entered_tree 只首次触发，
 # 故在激活点显式广播（走 _remote_visual_node，接收端 spawn_visual_effect 纯视觉）。
 # params 为通用视觉参数（需可序列化）；实现 network_apply_visual 的节点会用它重放参数化表现。
+
+# 纯本机视觉（弹壳等）：不广播、也不接收别人的
+func _is_local_only_visual(path: String) -> bool:
+	for suffix in LOCAL_ONLY_VISUAL_SUFFIXES:
+		if path.ends_with(suffix):
+			return true
+	return false
 func _on_visual_activated(node: Node, params: Dictionary = {}) -> void:
 	if not is_lan_game or node == null or not is_instance_valid(node):
 		return
@@ -4536,6 +5275,8 @@ func _on_visual_activated(node: Node, params: Dictionary = {}) -> void:
 	node.set_meta("_coop_visual_broadcast", true)
 	var scene_path: String = str(node.scene_file_path)
 	if scene_path == "":
+		return
+	if _is_local_only_visual(scene_path):
 		return
 	var par := node.get_parent()
 	if par == null:
@@ -4559,10 +5300,16 @@ func _on_visual_activated(node: Node, params: Dictionary = {}) -> void:
 	# 否则远端克隆会按本机玩家本地驱动、表现错位。
 	if effect_id != "" and (node.has_method("network_get_visual_state") or node.has_method("network_get_beam_state")):
 		_follow_nodes[effect_id] = node
+	# 视觉节点通道同样计入出口预算（道具视觉洪泛不能绕过预算）
+	if not _vis_budget_allow(180):
+		_note_visual_dropped(1)
+		return
 	if multiplayer.is_server():
 		rpc("_remote_visual_node", scene_path, pos, rot, sc, grp, method, effect_id, false, safe_params)
 	else:
-		rpc_id(1, "_server_visual_node", scene_path, pos, rot, sc, grp, method, effect_id, safe_params)
+		if _vis_budget_allow(140 + scene_path.length()):
+			_tx_evt("visual", 140 + scene_path.length())
+			rpc_id(1, "_server_visual_node", scene_path, pos, rot, sc, grp, method, effect_id, safe_params)
 
 
 ## 视觉参数白名单：只接受可序列化、有限大小的值，避免恶意包/异常类型。
@@ -4614,7 +5361,8 @@ func _on_visual_node_tree_exiting(node: Node) -> void:
 	if multiplayer.is_server():
 		rpc("_despawn_visual_effect", effect_id)
 	else:
-		rpc_id(1, "_server_despawn_visual_effect", effect_id)
+		if _tx_evt("visual", 56):
+			rpc_id(1, "_server_despawn_visual_effect", effect_id)
 
 
 # 拾取物生成（pyroxenes 等）→ 广播纯视觉副本
@@ -4821,7 +5569,8 @@ func _on_summoned_action(summoned: Node, action: String, sfx_key: String, fx_sce
 	if multiplayer.is_server():
 		rpc("_remote_summoned_action", net_id, action, sfx_key, fx_scene, fx_pos, fx_rot, action_dur)
 	else:
-		rpc_id(1, "_server_summoned_action", net_id, action, sfx_key, fx_scene, fx_pos, fx_rot, action_dur)
+		if _evt_dedupe_allow("sact|%d|%s" % [net_id, str(action)], 100) and _tx_evt("proc", 140):
+			rpc_id(1, "_server_summoned_action", net_id, action, sfx_key, fx_scene, fx_pos, fx_rot, action_dur)
 
 
 @rpc("any_peer", "call_remote", "reliable")
@@ -4867,9 +5616,11 @@ func _on_coin_spawned(coin: Node, value: int) -> void:
 		return
 	if coin == null or not is_instance_valid(coin) or value <= 0:
 		return
-	# 抛物线金币（Boss coin_box）：drop() 里 active_state() 早于 curve 构建 → 延后一帧读轨迹再广播
-	if coin.get_parent() is PathFollow2D:
-		_register_parabola_coin.call_deferred(coin)
+	# 代码弹道金币（coin_box / 索尼克）：drop() 先把弹道状态建好再 active_state()，
+	# 因此这里可以同步向节点要轨迹（world 折线 + 总时长），不再需要延后一帧读 curve。
+	var drop := coin.get_parent()
+	if drop != null and drop.has_method("get_trajectory"):
+		_register_parabola_coin(coin)
 		return
 	var net_id: int = next_coin_net_id
 	next_coin_net_id += 1
@@ -4878,7 +5629,7 @@ func _on_coin_spawned(coin: Node, value: int) -> void:
 	rpc("_spawn_coin_remote", net_id, coin.global_position, int(coin.coin), bool(coin.pick_up))
 
 
-# host：抛物线金币登记 + 广播世界坐标折线
+# host：代码弹道金币登记 + 广播世界坐标折线与总时长
 func _register_parabola_coin(coin: Node) -> void:
 	if not is_lan_game or not multiplayer.is_server():
 		return
@@ -4886,19 +5637,22 @@ func _register_parabola_coin(coin: Node) -> void:
 		return
 	if coin.has_meta("net_id"):
 		return
-	var pf := coin.get_parent()
-	var parabola := pf.get_parent() if pf != null else null
-	if parabola == null or not is_instance_valid(parabola):
+	var drop := coin.get_parent()
+	if drop == null or not is_instance_valid(drop):
 		return
 	var pts := PackedVector2Array()
-	var curve = parabola.get("curve")
-	if curve is Curve2D and (curve as Curve2D).point_count > 0:
-		pts = (curve as Curve2D).get_baked_points()
-		var origin: Vector2 = (parabola as Node2D).global_position if parabola is Node2D else Vector2.ZERO
-		for i in pts.size():
-			pts[i] = origin + pts[i]
-	else:
+	var dur: float = PARABOLA_DURATION
+	if drop.has_method("get_trajectory"):
+		var traj = drop.get_trajectory()
+		if traj is Dictionary:
+			var raw = traj.get("points", PackedVector2Array())
+			if raw is PackedVector2Array:
+				pts = raw
+			dur = float(traj.get("duration", PARABOLA_DURATION))
+	if pts.size() == 0:
 		pts = PackedVector2Array([(coin as Node2D).global_position if coin is Node2D else Vector2.ZERO])
+	if not is_finite(dur) or dur <= 0.0:
+		dur = PARABOLA_DURATION
 	var net_id: int = next_coin_net_id
 	next_coin_net_id += 1
 	coin.set_meta("net_id", net_id)
@@ -4907,6 +5661,7 @@ func _register_parabola_coin(coin: Node) -> void:
 		"_remote_parabola_coin",
 		net_id,
 		pts,
+		dur,
 		int(coin.coin),
 		bool(coin.pick_up),
 		bool(coin.get("ignore_auto_pick")),
@@ -4923,6 +5678,8 @@ func _on_player_downed(player: Node) -> void:
 	var pid: int = multiplayer.get_unique_id()
 	down_peer_ids[pid] = true
 	_show_motion_down()
+	# 联机倒地等价于单机死亡：补一次 GameOver 音效（只本机播，避免多人叠音）
+	SoundManager.play_sfx_once("GameOver")
 	if multiplayer.is_server():
 		rpc("_remote_player_down_changed", pid, true)
 		_check_team_game_over()
@@ -5162,6 +5919,7 @@ func _on_pyroxenes_gain(amount: int, node: Node = null) -> void:
 		for peer in multiplayer.get_peers():
 			rpc_id(peer, "_apply_shared_pyroxenes_remote", amount, key)
 	else:
+		_tx_evt("coin", 80, false)
 		rpc_id(1, "_server_shared_pyroxenes_gain", amount, key)
 
 
@@ -5317,30 +6075,68 @@ func request_local_player_change(path: String, position: Vector2) -> void:
 		_replace_player_for_peer(local_id, path, position)
 		rpc("_replace_player_remote", local_id, path, position)
 	else:
-		rpc_id(1, "_server_request_player_change", path, position)
+		_req_send("change", {"path": path, "pos": position})
 
 
 @rpc("any_peer", "call_remote", "reliable")
-func _server_request_player_change(path: String, position: Vector2) -> void:
+func _server_request_player_change(path: String, position: Vector2, token: int = 0) -> void:
 	if not multiplayer.is_server():
 		return
 	if not _server_sender_ok():
 		return
+	var sender: int = multiplayer.get_remote_sender_id()
 	var resolved_path: String = _resolve_scene_path(path)
 	if resolved_path == "" or not _is_safe_remote_path(resolved_path, [SAFE_PLAYER_PREFIX, "res://mods/"], [".tscn"]):
 		push_warning("[etn_coop] reject unsafe player change scene: %s" % path)
+		rpc_id(sender, "_change_ack", token, false, "unsafe_scene")
 		return
 	path = resolved_path
 	if not (is_finite(position.x) and is_finite(position.y)):
+		rpc_id(sender, "_change_ack", token, false, "bad_position")
 		return
-	var sender: int = multiplayer.get_remote_sender_id()
+	if str(selected_player_scene_by_peer.get(sender, "")) == path:
+		rpc_id(sender, "_change_ack", token, true, "")
+		return
 	_replace_player_for_peer(sender, path, position)
 	rpc("_replace_player_remote", sender, path, position)
+	rpc_id(sender, "_change_ack", token, true, "")
+	Trail.mark("chg_host", "peer=%d path=%s" % [sender, path])
 
 
 @rpc("authority", "call_remote", "reliable")
 func _replace_player_remote(peer_id: int, path: String, position: Vector2) -> void:
 	_replace_player_for_peer(peer_id, path, position)
+
+
+@rpc("authority", "call_remote", "reliable")
+func _change_ack(token: int, ok: bool, reason: String) -> void:
+	_req_ack(token, ok, reason)
+
+
+@rpc("authority", "call_remote", "reliable")
+func _select_ready_ack(token: int) -> void:
+	_req_ack(token, true)
+
+
+# 换角色后重抓 PlayerData 基础值：base_max_hp / base_max_ammo / base_bullet_shoot_time /
+# base_bullet_damage 等都来自 player.stats，新角色实例化后必须重新采集，否则后续属性重算
+# 会把上一个角色的基础值写回新角色（表现：模型换了、数值还是上个角色）。
+func _rebase_player_data_after_switch(p: Node) -> void:
+	if p == null or not is_instance_valid(p):
+		return
+	if p.get("player_card") == null or p.get("stats") == null:
+		Trail.mark("player_switch_rebase_skip", "missing player_card/stats")
+		return
+	PlayerData.get_player()
+	PlayerData.get_player_base_ability()
+	PlayerData.emit_set_player()
+	PlayerData.update_player_ability()
+	var st = p.get("stats")
+	if st != null:
+		Trail.mark("player_switch_rebased", "hp=%d ammo=%d shoot=%d dmg=%d" % [
+			int(st.get("max_hp")), int(st.get("max_ammo")),
+			int(st.get("bullet_shoot_time")), int(st.get("bullet_damage")),
+		])
 
 
 func _replace_player_for_peer(peer_id: int, path: String, position: Vector2) -> void:
@@ -5369,6 +6165,9 @@ func _replace_player_for_peer(peer_id: int, path: String, position: Vector2) -> 
 		_ensure_local_proxy(p)
 		_attach_name_tag(p, peer_id)
 		PlayerData.player = p
+		# 换角色后必须重抓基础值：PlayerData.base_*（max_hp/max_ammo/bullet_shoot_time/
+		# bullet_damage…）仍停在上一个角色，后续任何属性重算都会把旧值写回新角色。
+		_rebase_player_data_after_switch(p)
 		# 换人后本机 PlayerRoot 可能刚被 test_room 重置清过，补生远端镜像
 		_schedule_respawn_remotes()
 	else:
@@ -5451,6 +6250,9 @@ func _apply_cached_item_state(peer_id: int, item_id: String, visual: Node) -> vo
 
 func _apply_item_states(peer_id: int, states: Dictionary) -> void:
 	if peer_id == multiplayer.get_unique_id():
+		return
+	# 空字典 = 发送端「本帧无变化」，沿用已有缓存（不能当成"道具全丢"清空）
+	if states.is_empty():
 		return
 	item_states_by_peer[peer_id] = ItemState.sanitize(states)
 	# 持续快照也能补建错过获取消息的动态道具；丢包由下次快照恢复。
@@ -5571,7 +6373,8 @@ func _on_local_test_room_reset() -> void:
 	if multiplayer.is_server():
 		_respawn_remote_players()
 	else:
-		rpc_id(1, "_client_scene_ready")
+		_local_scene_ready_path = current_scene_path
+	rpc_id(1, "_client_scene_ready")
 	_despawn_owned_summons_local()
 	# 不再无差别清 item_visual_by_peer（那是别的 peer 的视觉）；按记录 id 重建以保留他人道具
 	_rebuild_all_remote_item_visuals.call_deferred()
@@ -5661,6 +6464,9 @@ func _maybe_broadcast_visual_node(child: Node) -> void:
 	var scene_path: String = str(child.scene_file_path)
 	if scene_path == "":
 		return
+	# 弹壳等纯本机表现：不做广播（否则接收端因带参 active_state 无法激活，白白浪费带宽）
+	if _is_local_only_visual(scene_path):
+		return
 	# UI 飘字（伤害数字 / "RELOAD!" / 道具提示）内容动态、各端各自本地生成，不广播；
 	# 若广播，接收端克隆不会调 start(text)，会显示场景占位文本 "123456789" 且不消失。
 	if scene_path.ends_with("ui/floating_text.tscn"):
@@ -5693,10 +6499,15 @@ func _maybe_broadcast_visual_node(child: Node) -> void:
 		sc = (child as Node2D).scale
 	var method: String = "active_state" if child.has_method("active_state") else ""
 	var effect_id: String = _assign_effect_broadcast_id(child)
+	if not _vis_budget_allow(180):
+		_note_visual_dropped(1)
+		return
 	if multiplayer.is_server():
 		rpc("_remote_visual_node", scene_path, pos, rot, sc, grp, method, effect_id, false, {})
 	else:
-		rpc_id(1, "_server_visual_node", scene_path, pos, rot, sc, grp, method, effect_id, {})
+		if _vis_budget_allow(120 + scene_path.length()):
+			_tx_evt("visual", 120 + scene_path.length())
+			rpc_id(1, "_server_visual_node", scene_path, pos, rot, sc, grp, method, effect_id, {})
 
 
 # 把非 Summoned 的持久身体接入现有召唤同步（仅视觉镜像 + 变换同步）
@@ -5744,6 +6555,7 @@ func _remote_visual_node(scene_path: String, pos: Vector2, rot: float, sc: Vecto
 # ---------------- 玩家同步 ----------------
 
 func _reset_player_sync() -> void:
+	_midrun_scene_sent.clear()
 	Trail.mark("reset_sync", "players=%d items=%d summons=%d" % [player_by_peer_id.size(), item_visual_by_peer.size(), summoned_by_net_id.size()])
 	battle_active = false
 	_state_timer = 0.0
@@ -5854,6 +6666,105 @@ func _reset_run_state() -> void:
 	_relay_connect_in_flight = false
 	net_extrap_events = 0
 	net_hard_snaps = 0
+	net_snap_96_160 = 0
+	net_snap_160_320 = 0
+	net_snap_gt320 = 0
+	net_visual_dropped = 0
+	net_item_state_skipped = 0
+	_visual_drop_announced = false
+	_diag_log_timer = 0.0
+	_worst_frame_ms = 0.0
+	_diag_prev_vis = 0
+	_diag_prev_mb = 0
+	_last_peak_win = 0
+	send_state_bytes = 0
+	send_items_bytes = 0
+	send_fwd_bytes = 0
+	bdrop = 0
+	_items_send_msec = 0
+	_last_items_sig = 0
+	_aux_bucket_bytes = 0.0
+	_aux_bucket_msec = 0
+	send_snap_bytes = 0
+	send_vis_bytes = 0
+	send_follow_bytes = 0
+	send_evt_bytes = 0
+	_diag_prev_state_b = 0
+	_diag_prev_snap_b = 0
+	_diag_prev_vis_b = 0
+	_diag_prev_follow_b = 0
+	_diag_prev_evt_b = 0
+	_pending_chip_round_state = {}
+	_pending_chip_counts = []
+	_chip_retry_left = 0
+	_abr_scale = 1.0
+	_abr_rtt_baseline = 0.0
+	_abr_bad_since_msec = 0
+	_abr_good_since_msec = 0
+	_abr_last_eval_msec = 0
+	_abr_shed_level = 0
+	_abr_shed_until_msec = 0
+	_vis_bucket_bytes = 0.0
+	_vis_bucket_msec = 0
+	_abr_downshifts = 0
+	_relay_budget_bound = false
+	_congested_peers.clear()
+	_last_items_sig = 0
+	vis_tx = 0
+	vis_rx = 0
+	vis_skip_throttle = 0
+	vempty = 0
+	vn_reject = 0
+	vflash = 0
+	rpush = 0
+	rrx = 0
+	rsp = 0
+	_enemy_fast_mode = false
+	_enemy_rate_timer = 0.0
+	_enemy_rate_prev_bytes = 0
+	_roster_resend_timer = 0.0
+	_flash_idle_state.clear()
+	_death_fx_played.clear()
+	_pending_hits.clear()
+	_hit_flush_msec = 0
+	_summoned_state_msec.clear()
+	_buff_dedupe_msec.clear()
+	_evt_bucket_bytes = 0.0
+	_evt_bucket_msec = 0
+	_abr_flood_streak = 0
+	_abr_tx_prev_msec = 0
+	_gun_shoot_msec = 0
+	_last_hit_sfx_msec = 0
+	hitch_n = 0
+	rejoin_ms = 0
+	_pending_buffs.clear()
+	_pending_drone.clear()
+	_tx_cat_bytes.clear()
+	_tx_cat_prev.clear()
+	_tx_cat_bucket.clear()
+	_tx_evt_rate_kb = 0.0
+	_tx_cat_prev.clear()
+	_buff_sent_msec.clear()
+	_relay_buff_sig.clear()
+	tx_cats_text = ""
+	buff_tx_bytes = 0
+	buff_skip = 0
+	buff_ovf = 0
+	buff_reset = 0
+	_buff_flood_streak = 0
+	_follow_pressure_until = 0
+	_gap_streak = 0
+	tx_top_cat = ""
+	cli_flood_n = 0
+	_cli_flood_until = 0
+	_cli_flood_streak = 0
+	_cli_tx_prev_msec = 0
+	_join_warning_acked = false
+	_join_warning_open = false
+	_vis_dump_seen.clear()
+	_missing_iframe_warned.clear()
+	_diag_prev_tx_bytes = 0
+	_diag_prev_rx_bytes = 0
 	_enemy_snap_tick = 0
 	_enemy_snap_next_tick.clear()
 	net_remote_frames = 0
@@ -5893,6 +6804,7 @@ func _on_first_round_add() -> void:
 	if not is_lan_game:
 		return
 	Trail.mark("first_round", "scene=%s paused=%s phase=%d" % [current_scene_path, str(get_tree().paused), _flow_phase])
+	_flush_pending_chip()
 	# 选人/难度页会全局暂停世界；若暂停残留，玩家看到的是"黑屏卡死"（与崩溃混淆）。
 	# 只在「本机确实处于联机选人流程」时解除，避免误解除关卡自身的暂停。
 	if get_tree().paused and (_select_flow_active or _flow_phase in [FlowPhase.SELECT, FlowPhase.ALL_READY]):
@@ -5904,7 +6816,11 @@ func _on_first_round_add() -> void:
 	_bind_chip_sync.call_deferred()
 	_broadcast_chip_round_state.call_deferred()
 	if multiplayer.is_server():
-		player_scene_by_peer[multiplayer.get_unique_id()] = local_player_scene_path
+		var roster_scene: String = _roster_scene_of_local()
+		if roster_scene != "":
+			player_scene_by_peer[multiplayer.get_unique_id()] = roster_scene
+		else:
+			Trail.mark("roster_empty", "host battle start without scene path")
 		rpc("_client_sync_roster", player_scene_by_peer)
 		print("[etn_coop] host battle start, roster=%s" % str(player_scene_by_peer))
 		_ensure_team_stat(multiplayer.get_unique_id())
@@ -5978,7 +6894,11 @@ func _place_and_refresh_local_player() -> void:
 
 
 func _ensure_local_proxy(player: Node) -> void:
-	if player == null or player.has_node("CoopPlayerProxy"):
+	if player == null:
+		return
+	# 记录"本机玩家节点当前"的时刻：轮询只有在节点比选择更新时才允许改记录
+	_local_player_spawn_msec = Time.get_ticks_msec()
+	if player.has_node("CoopPlayerProxy"):
 		return
 	# 本地 proxy 仅缓存/meta（setup 本地分支提前返回），不注册进 player_by_peer_id，
 	# 避免 _reset_player_sync 误释放本地玩家。
@@ -6052,21 +6972,75 @@ func _find_node_named(root: Node, wanted: String) -> Node:
 	return null
 
 
+# 清掉所有远端镜像（单机→开房、重复开房时用）：节点 + 所有按 peer 的字典。
+func _clear_all_remote_players() -> void:
+	var tree := get_tree()
+	if tree == null:
+		return
+	var root := tree.get_first_node_in_group("PlayerRoot")
+	if root != null:
+		for c in root.get_children():
+			if str(c.name).begins_with("CoopRemote_"):
+				c.queue_free()
+	for p in tree.get_nodes_in_group("RemotePlayer"):
+		if p != null and is_instance_valid(p):
+			p.queue_free()
+	player_by_peer_id.clear()
+	player_proxy_by_peer_id.clear()
+	player_scene_by_peer.clear()
+	player_name_by_peer.clear()
+
+
 func spawn_remote_player(peer_id: int, scene_path: String) -> void:
-	if peer_id == multiplayer.get_unique_id():
+	if peer_id == _uid_safe():
 		return
 	if player_by_peer_id.has(peer_id) and is_instance_valid(player_by_peer_id[peer_id]):
-		return
+		var existing = player_by_peer_id[peer_id]
+		# 角色切换：同一 peer 换了场景 → 释放旧镜像并重建，否则会一直显示旧角色（或切换后消失）
+		if scene_path == "" or str(existing.scene_file_path) == scene_path:
+			return
+		# 立即摘除，不能只 queue_free：释放是帧末的，下面的 meta 扫描会再次抓到"将死"的旧镜像
+		# 并"复用"它 → 新角色不生成、旧节点随后释放 → 客机看不到（表现为概率性失败）。
+		existing.remove_from_group("RemotePlayer")
+		existing.set_meta("peer_id", -1)
+		var old_parent: Node = existing.get_parent()
+		if old_parent != null:
+			old_parent.remove_child(existing)
+		existing.queue_free()
+		player_by_peer_id.erase(peer_id)
+		player_proxy_by_peer_id.erase(peer_id)
+		Trail.mark("remote_player_respawn", "peer=%d -> %s" % [peer_id, scene_path])
+		rsp += 1
 	if scene_path == "":
 		return
 	var root := get_tree().get_first_node_in_group("PlayerRoot")
 	if root == null:
 		return
+	# 二次守卫：字典可能刚被 _reset_player_sync 清过，但节点还在 → 复用而不是再造一个。
+	# 按 peer meta 扫描（不依赖 CoopRemote_<id> 名字：Godot 撞名会改名，导致守卫漏判）。
+	for child in root.get_children():
+		if not is_instance_valid(child):
+			continue
+		if int(child.get_meta("peer_id", -1)) != peer_id:
+			continue
+		if not child.is_in_group("RemotePlayer"):
+			continue
+		player_by_peer_id[peer_id] = child
+		push_warning("[etn_coop] duplicate spawn blocked peer=%d (reuse by meta)" % peer_id)
+		return
 	var scene := load(scene_path) as PackedScene
 	if scene == null:
 		push_warning("[etn_coop] 无法加载玩家场景：%s" % scene_path)
-		return
+		Trail.mark("remote_player_fail", "peer=%d scene=%s" % [peer_id, scene_path])
+		# 客机缺该角色资源时不要让玩家直接"消失"：回退默认模型，至少能看见位置
+		if scene_path != DEFAULT_PLAYER_SCENE:
+			scene = load(DEFAULT_PLAYER_SCENE) as PackedScene
+		if scene == null:
+			return
 	var p: Node = scene.instantiate()
+	_mark_mirror_pending(p)
+	# 同一角色的多份镜像/本机角色会共享贴图材质 → 受击闪白会串到别人身上；镜像单独复制材质。
+	_isolate_mirror_materials(p)
 	p.name = "CoopRemote_%d" % peer_id
 	p.set_meta("peer_id", peer_id)
 	# 必须先移出 "Player" 组再入树：镜像场景根默认带 groups=["Player"]，若先 add_child，
@@ -6087,7 +7061,7 @@ func spawn_remote_player(peer_id: int, scene_path: String) -> void:
 	_attach_player_proxy(p, peer_id)
 	_attach_name_tag(p, peer_id)
 	_rebuild_peer_item_visuals(peer_id)
-	Trail.mark("spawn_remote", "peer=%d scene=%s" % [peer_id, scene_path])
+	Trail.mark("spawn_remote", "peer=%d scene=%s gen=%d" % [peer_id, scene_path, _session_generation])
 	print("[etn_coop] spawned remote player peer=%d scene=%s" % [peer_id, scene_path])
 
 
@@ -6107,10 +7081,889 @@ func _get_player_proxy(peer_id: int) -> Node:
 	return null
 
 
+# ---------------- 中继追赶 / 诊断 ----------------
+
+# 当前还有多少帧没被消费（仅中继有意义）。LAN 走 ENet 不可靠通道，无需此机制。
+func _relay_backlog() -> int:
+	if not is_relay or transport == null or transport.peer == null:
+		return 0
+	if not transport.peer.has_method("backlog_count"):
+		return 0
+	return int(transport.peer.call("backlog_count"))
+
+
+func _relay_backlog_peak() -> int:
+	# 峰值由 diag 每窗口「取走」（take_backlog_peak）后会清零，F4 显示最近一个窗口的峰值。
+	return _last_peak_win
+
+
+# 中继落后时是否丢弃纯表现包。判据只能用 backlog：分帧后剩余帧在之后才被读出，
+# 「按包年龄丢弃」在突发场景下永远不触发。
+func _visual_backlog_drop() -> bool:
+	if VISUAL_BACKLOG_DROP <= 0:
+		return false
+	return _relay_backlog() >= VISUAL_BACKLOG_DROP
+
+
+# ---------------- 出口预算 / ABR ----------------
+
+# 服务端声明的出口预算（KiB/s）；LAN 返回 INF（不限制）。
+func _link_egress_kib() -> float:
+	if not is_relay:
+		return INF
+	if transport != null and transport.peer != null and transport.peer.get("link_egress_kib") != null:
+		var v: float = float(transport.peer.get("link_egress_kib"))
+		if v > 0.0:
+			return v
+	return DEFAULT_EGRESS_KIB
+
+
+# 本机发送预算：主机按扇出分摊，客机只发给 host（扇出=1）。
+func _tx_budget_kib() -> float:
+	if not is_relay:
+		return INF
+	var peers_n: int = multiplayer.get_peers().size() if _has_peer() else 0
+	var total_players: int = maxi(2, peers_n + 1)
+	# 留 20% 余量给协议开销/重传/控制帧：按 100% 链路切预算必被背压反噬
+	var usable: float = _link_egress_kib() * BUDGET_HEADROOM
+	if not _is_server_safe():
+		# 客机只拿自己那一份（旧实现误用 host 公式，单机可发到 250 KB/s）
+		return clampf(usable * 0.14, CLIENT_BUDGET_MIN_KIB, CLIENT_BUDGET_MAX_KIB) * _abr_scale
+	var fanout: int = maxi(1, total_players - 1)
+	var client_allow: float = BUDGET_PER_CLIENT_KIB * float(total_players - 1)
+	var host_budget: float = (usable - client_allow) / float(fanout)
+	return clampf(host_budget, HOST_BUDGET_MIN_KIB, HOST_BUDGET_MAX_KIB) * _abr_scale
+
+
+# 视觉通道字节令牌桶：rate = 预算 × VIS_SHARE，桶容量 = 1 秒的量。
+func _vis_budget_allow(cost: int) -> bool:
+	if not is_relay:
+		return true
+	var rate_bytes: float = _tx_budget_kib() * 1024.0 * ABR_LOW_VIS_SHARE
+	if rate_bytes <= 1.0:
+		return false
+	var now: int = Time.get_ticks_msec()
+	if _vis_bucket_msec == 0:
+		_vis_bucket_msec = now
+		_vis_bucket_bytes = rate_bytes
+	var dt: float = float(now - _vis_bucket_msec) / 1000.0
+	_vis_bucket_msec = now
+	_vis_bucket_bytes = minf(rate_bytes, _vis_bucket_bytes + dt * rate_bytes)
+	if _vis_bucket_bytes >= float(cost):
+		_vis_bucket_bytes -= float(cost)
+		return true
+	return false
+
+
+# 非视觉通道（玩家状态 / host 扇出）的出口预算：与视觉共享总预算的另一半。
+# 超预算时允许跳帧——这些 RPC 本来就是 unreliable_ordered，跳一帧由插值兜住。
+var _aux_bucket_bytes: float = 0.0
+var _aux_bucket_msec: int = 0
+var bdrop: int = 0
+
+# ---------------- 事件通道预算（命中/特效/召唤/硬币/场上效果共用） ----------------
+# 与状态通道分开：状态丢了会卡操作，事件丢了只是少一个特效/音效。
+const EVT_BUDGET_SHARE: float = 0.25
+var _evt_bucket_bytes: float = 0.0
+var _evt_bucket_msec: int = 0
+var evt_drop: int = 0
+var snd_sfx_bytes: int = 0
+var snd_summ_bytes: int = 0
+var snd_coin_bytes: int = 0
+var snd_char_bytes: int = 0
+var _summoned_state_msec: Dictionary = {}
+var _last_hit_sfx_key: String = ""
+var _last_hit_sfx_msec: int = 0
+var _buff_dedupe_msec: Dictionary = {}
+var _pending_buffs: Dictionary = {}
+var _buff_flush_msec: int = 0
+var _char_event_last_msec: Dictionary = {}
+var _gun_shoot_msec: int = 0
+
+
+func _evt_budget_allow(bytes: int, category: String = "") -> bool:
+	if not is_relay:
+		return true
+	var rate: float = _tx_budget_kib() * 1024.0 * EVT_BUDGET_SHARE
+	if rate <= 1.0:
+		evt_drop += 1
+		return false
+	var now: int = Time.get_ticks_msec()
+	if _evt_bucket_msec == 0:
+		_evt_bucket_msec = now
+		_evt_bucket_bytes = rate
+	var dt: float = float(now - _evt_bucket_msec) / 1000.0
+	_evt_bucket_msec = now
+	_evt_bucket_bytes = minf(rate, _evt_bucket_bytes + dt * rate)
+	if _evt_bucket_bytes >= float(bytes):
+		_evt_bucket_bytes -= float(bytes)
+		return true
+	evt_drop += 1
+	_evt_dropped_by_cat[category] = int(_evt_dropped_by_cat.get(category, 0)) + 1
+	return false
+
+
+var _evt_dropped_by_cat: Dictionary = {}
+
+
+# ---------------- 客机上行事件分类计量 + 分类配额 ----------------
+# 每个客机→主机的事件 RPC 都要先过 _tx_evt(category, bytes)：
+# 既用于 diag 的按类别拆分，也用于按类别限流（避免 buff/特效把命中挤掉）。
+const EVT_CAT_SHARE := {
+	"buff": 0.30, "part": 0.15, "visual": 0.20, "char": 0.10,
+	"coin": 0.10, "sfx": 0.05, "proc": 0.10, "follow": 0.10,
+}
+var _tx_cat_bytes: Dictionary = {}
+var _follow_pressure_until: int = 0
+var _tx_cat_prev: Dictionary = {}
+var _tx_cat_bucket: Dictionary = {}
+var _tx_evt_rate_kb: float = 0.0
+var tx_top_cat: String = ""
+var _gap_streak: int = 0
+var buff_skip: int = 0
+var buff_ovf: int = 0
+var buff_reset: int = 0
+var _buff_flood_streak: int = 0
+var buff_tx_bytes: int = 0
+var cli_flood_n: int = 0
+var _cli_flood_until: int = 0
+var _cli_flood_streak: int = 0
+var _cli_tx_prev_bytes: int = 0
+var _cli_tx_prev_msec: int = 0
+
+
+var _relay_buff_sig: Dictionary = {}
+var _buff_sent_msec: Dictionary = {}
+var tx_cats_text: String = ""
+
+
+# 玩家/召唤物 buff 中继去重：首次生效、叠层变化、移除必发；同值重复只做 1s 心跳
+func _relay_buff_allow(key: String, apply: bool, value: Array) -> bool:
+	var now: int = Time.get_ticks_msec()
+	var sig: String = str(value)
+	var st = _relay_buff_sig.get(key)
+	if apply:
+		# 叠层型 buff 每次施加都要送达：这里只记录状态（供 remove 判断是否真的在身）
+		_relay_buff_sig[key] = {"on": true, "sig": sig, "msec": now}
+		return true
+	if st == null or not bool(st.get("on", false)):
+		return false
+	_relay_buff_sig.erase(key)
+	return true
+
+
+func _evt_dedupe_allow(key: String, msec: int) -> bool:
+	var now: int = Time.get_ticks_msec()
+	if now - int(_buff_dedupe_msec.get(key, 0)) < msec:
+		return false
+	_buff_dedupe_msec[key] = now
+	if _buff_dedupe_msec.size() > 512:
+		for k in _buff_dedupe_msec.keys():
+			if now - int(_buff_dedupe_msec[k]) > 10000:
+				_buff_dedupe_msec.erase(k)
+	return true
+
+
+# ---------------- 可靠请求（选人 / 就绪 / 换角色） ----------------
+# 单次 RPC 会因未握手/通道拥塞而静默丢失，这里统一成「pending + 重发 + ack」。
+var _midrun_scene_sent: Dictionary = {}
+var _local_scene_ready_path: String = ""
+var _battle_scene_loading: String = ""
+var _req_pending: Dictionary = {}
+var _req_seq: int = 0
+var _req_timeout_n: int = 0
+var _urgent_until: int = 0
+
+
+func _req_send(kind: String, payload: Dictionary, timeout_ms: int = 8000) -> void:
+	_req_seq += 1
+	_req_pending[kind] = {
+		"payload": payload,
+		"token": _req_seq,
+		"tries": 0,
+		"next_ms": 0,
+		"deadline": Time.get_ticks_msec() + timeout_ms,
+	}
+	_urgent_until = Time.get_ticks_msec() + 1500
+	_req_tick()
+
+
+func _req_tick() -> void:
+	if _req_pending.is_empty():
+		return
+	var now: int = Time.get_ticks_msec()
+	for kind in _req_pending.keys():
+		var r: Dictionary = _req_pending[kind]
+		if now >= int(r.get("deadline", 0)):
+			_req_pending.erase(kind)
+			_req_timeout_n += 1
+			Trail.mark("req_timeout", "kind=%s tries=%d" % [kind, int(r.get("tries", 0))])
+			continue
+		if now < int(r.get("next_ms", 0)):
+			continue
+		if not _net_connected():
+			r["next_ms"] = now + 300
+			continue
+		r["tries"] = int(r.get("tries", 0)) + 1
+		r["next_ms"] = now + 500
+		_urgent_until = maxi(_urgent_until, now + 1500)
+		var token: int = int(r.get("token", 0))
+		var p: Dictionary = r.get("payload", {})
+		match kind:
+			"select":
+				if int(r.get("tries", 0)) > 3:
+					_req_pending.erase(kind)
+					continue
+				rpc_id(1, "_server_player_selected", str(p.get("path", "")), token)
+			"ready":
+				rpc_id(1, "_server_select_ready", bool(p.get("ready", false)), token)
+			"change":
+				rpc_id(1, "_server_request_player_change", str(p.get("path", "")), p.get("pos", Vector2.ZERO), token)
+		_req_pending[kind] = r
+
+
+func _req_ack(token: int, ok: bool = true, reason: String = "") -> void:
+	if token == 0:
+		return
+	for kind in _req_pending.keys():
+		var r: Dictionary = _req_pending[kind]
+		if int(r.get("token", -1)) != token:
+			continue
+		_req_pending.erase(kind)
+		if ok:
+			Trail.mark("req_ack", "kind=%s token=%d" % [kind, token])
+		else:
+			Trail.mark("req_fail", "kind=%s token=%d reason=%s" % [kind, token, reason])
+			if kind == "change":
+				show_coop_toast("换人失败：%s" % reason)
+		return
+
+
+func _tx_evt(category: String, bytes: int, dropable: bool = true) -> bool:
+	if not is_relay:
+		_tx_cat_bytes[category] = int(_tx_cat_bytes.get(category, 0)) + bytes
+		return true
+	if _urgent_until > Time.get_ticks_msec() and category != "hit":
+		# 选人/换人请求待确认期间，其它事件让路（不记账，直接丢弃）
+		return false
+	if category == "hit" or not dropable:
+		# 命中与玩法关键路径：只记账，绝不丢
+		_tx_cat_bytes[category] = int(_tx_cat_bytes.get(category, 0)) + bytes
+		return true
+	var now: int = Time.get_ticks_msec()
+	var share: float = float(EVT_CAT_SHARE.get(category, 0.05))
+	var rate: float = _tx_budget_kib() * 1024.0 * share
+	if _cli_flood_until > now:
+		rate *= 0.5
+	if rate <= 1.0:
+		evt_drop += 1
+		_evt_dropped_by_cat[category] = int(_evt_dropped_by_cat.get(category, 0)) + 1
+		return false
+	var rec: Array = _tx_cat_bucket.get(category, [rate, 0])
+	var tokens: float = float(rec[0])
+	var last: int = int(rec[1])
+	if last > 0:
+		tokens = minf(rate, tokens + float(maxi(0, now - last)) / 1000.0 * rate)
+	else:
+		tokens = rate
+	if tokens >= float(bytes):
+		_tx_cat_bucket[category] = [tokens - float(bytes), now]
+		_tx_cat_bytes[category] = int(_tx_cat_bytes.get(category, 0)) + bytes
+		return true
+	_tx_cat_bucket[category] = [tokens, now]
+	evt_drop += 1
+	_evt_dropped_by_cat[category] = int(_evt_dropped_by_cat.get(category, 0)) + 1
+	return false
+
+
+# 窗口结算：供 diag 输出「本窗口事件总量 / 占比最高的类别」
+func _tx_cat_window() -> void:
+	var total: int = 0
+	var top: String = ""
+	var top_v: int = 0
+	for k in _tx_cat_bytes.keys():
+		var v: int = int(_tx_cat_bytes[k])
+		var d: int = v - int(_tx_cat_prev.get(k, 0))
+		total += d
+		if d > top_v:
+			top_v = d
+			top = str(k)
+	var ranked: Array = []
+	for k2 in _tx_cat_bytes.keys():
+		var d2: int = int(_tx_cat_bytes[k2]) - int(_tx_cat_prev.get(k2, 0))
+		if d2 > 0:
+			ranked.append([str(k2), float(d2) / 1024.0 / maxf(0.5, DIAG_INTERVAL)])
+	ranked.sort_custom(func(a, b): return float(a[1]) > float(b[1]))
+	var parts: PackedStringArray = []
+	for i2 in range(mini(3, ranked.size())):
+		parts.append("%s:%.1f" % [ranked[i2][0], ranked[i2][1]])
+	tx_cats_text = ",".join(parts)
+	_tx_cat_prev = _tx_cat_bytes.duplicate()
+	_tx_evt_rate_kb = float(total) / 1024.0 / maxf(0.5, DIAG_INTERVAL)
+	tx_top_cat = top
+
+
+
+func _aux_budget_allow(bytes: int) -> bool:
+	if not is_relay:
+		return true
+	if bytes <= 0:
+		return true
+	var rate_bytes: float = _tx_budget_kib() * 1024.0 * (1.0 - ABR_LOW_VIS_SHARE)
+	if rate_bytes <= 1.0:
+		bdrop += 1
+		return false
+	var now: int = Time.get_ticks_msec()
+	if _aux_bucket_msec == 0:
+		_aux_bucket_msec = now
+		_aux_bucket_bytes = rate_bytes
+	var dt: float = float(now - _aux_bucket_msec) / 1000.0
+	_aux_bucket_msec = now
+	_aux_bucket_bytes = minf(rate_bytes, _aux_bucket_bytes + dt * rate_bytes)
+	if _aux_bucket_bytes >= float(bytes):
+		_aux_bucket_bytes -= float(bytes)
+		return true
+	bdrop += 1
+	return false
+
+func _abr_active() -> bool:
+	return is_relay
+
+
+# 快照间隔 / 实体上限：拥塞时降频降量（只在中继下生效）。
+func _snapshot_interval() -> float:
+	var base: float = ENEMY_SNAPSHOT_INTERVAL_FAST if _enemy_fast_mode else ENEMY_SNAPSHOT_INTERVAL
+	if not _abr_active():
+		return base
+	return base * (1.0 + (1.0 - _abr_scale) * 1.5)
+
+
+func _snapshot_entity_limit() -> int:
+	if not _abr_active() or _abr_scale >= ABR_LOW_SNAPSHOT_AT:
+		return enemy_snapshot_batch_limit
+	return maxi(8, int(enemy_snapshot_batch_limit / 2))
+
+
+func _follow_interval_scale() -> float:
+	var base: float = 2.0 if _follow_pressure_until > Time.get_ticks_msec() else 1.0
+	if not _abr_active():
+		return base
+	return base * (1.0 + (1.0 - _abr_scale))
+
+
+# 延迟绑定 relay 的预算/劝降信号（三种建连路径共用；重复调用无副作用）
+func _bind_relay_budget_signals() -> void:
+	if _relay_budget_bound or transport == null or transport.peer == null:
+		return
+	_relay_budget_bound = true
+	var peer = transport.peer
+	if peer.has_signal("relay_shed") and not peer.relay_shed.is_connected(_on_relay_shed):
+		peer.relay_shed.connect(_on_relay_shed)
+	if peer.has_signal("relay_link_budget_changed") and not peer.relay_link_budget_changed.is_connected(_on_link_budget_changed):
+		peer.relay_link_budget_changed.connect(_on_link_budget_changed)
+	if peer.has_signal("relay_peer_congested") and not peer.relay_peer_congested.is_connected(_on_peer_congested):
+		peer.relay_peer_congested.connect(_on_peer_congested)
+	# room_created 可能早于本函数第一次执行：补记一次已声明的预算
+	var egress: float = 0.0
+	if peer.get("link_egress_kib") != null:
+		egress = float(peer.get("link_egress_kib"))
+	if egress > 0.0:
+		var mbps: float = 0.0
+		if peer.get("link_mbps") != null:
+			mbps = float(peer.get("link_mbps"))
+		_on_link_budget_changed(egress, mbps)
+
+
+func _on_link_budget_changed(egress_kib: float, mbps: float) -> void:
+	Trail.mark("link_budget", "egress=%.1fKiB/s mbps=%.1f" % [egress_kib, mbps])
+
+
+# 服务端通告某客机拥塞：level>=2 时 host 对该 peer 停发视觉（只降可丢通道）
+func _on_peer_congested(peer_id: int, level: int) -> void:
+	if peer_id <= 0:
+		return
+	if level <= 0:
+		_congested_peers.erase(peer_id)
+	else:
+		_congested_peers[peer_id] = level
+	Trail.mark("congested", "peer=%d level=%d" % [peer_id, level])
+
+
+func _skip_visual_for(peer_id: int) -> bool:
+	return is_relay and int(_congested_peers.get(peer_id, 0)) >= 2
+
+
+# 道具视觉态的内容签名（键值排序后取 hash，Dictionary 顺序不同不影响）
+# 道具视觉态量化：phase/动画进度是连续量，不量化会让"变化才发"退化为每包全量
+func _quantize_items(items: Dictionary) -> Dictionary:
+	var out: Dictionary = {}
+	var ids: Array = items.keys()
+	ids.sort()
+	if ids.size() > 24:
+		ids = ids.slice(0, 24)
+	for id in ids:
+		var st = items[id]
+		if not (st is Dictionary):
+			continue
+		var q: Dictionary = {}
+		for k in st.keys():
+			var v = st[k]
+			match String(k):
+				"phase":
+					q[k] = roundf(float(v) * 32.0) / 32.0
+				"speed":
+					q[k] = roundf(float(v) * 1000.0) / 1000.0
+				"scale":
+					q[k] = roundf(float(v) * 100.0) / 100.0
+				"facing":
+					q[k] = signf(float(v))
+				"animations":
+					if v is Array:
+						var arr: Array = []
+						for a in v:
+							if a is Array and a.size() >= 2:
+								arr.append([str(a[0]), roundf(float(a[1]) * 20.0) / 20.0, bool(a[2]) if a.size() > 2 else false])
+						q[k] = arr
+				_:
+					q[k] = v
+		out[str(id)] = q
+	return out
+
+func _items_signature(items: Dictionary) -> int:
+	var parts: Array[String] = []
+	for k in items.keys():
+		var v = items[k]
+		if v is Dictionary:
+			var sub: Array[String] = []
+			for kk in v.keys():
+				sub.append("%s=%s" % [str(kk), str(v[kk])])
+			sub.sort()
+			parts.append("%s{%s}" % [str(k), ",".join(sub)])
+		else:
+			parts.append("%s=%s" % [str(k), str(v)])
+	parts.sort()
+	return hash("\n".join(parts))
+
+
+func _on_relay_shed(level: int, ttl_ms: int) -> void:
+	_abr_shed_level = level
+	_abr_shed_until_msec = Time.get_ticks_msec() + ttl_ms
+	var cap: float = 1.0
+	if level >= 2:
+		cap = ABR_MIN_SCALE
+	elif level >= 1:
+		cap = 0.6
+	if _abr_scale > cap:
+		_abr_scale = cap
+		_trim_pending_visual()
+		_abr_downshifts += 1
+		Trail.mark("abr", "shed level=%d ttl=%d scale=%.2f budget=%.0f" % [level, ttl_ms, _abr_scale, _tx_budget_kib()])
+
+
+# 每 500ms 评估一次：RTT 持续恶化或收到 shed → 乘 0.6；连续 8s 正常 → 乘 1.15（上限 1.0）。
+func _abr_tick() -> void:
+	if not _abr_active():
+		_abr_scale = 1.0
+		_abr_shed_until_msec = 0
+		return
+	_bind_relay_budget_signals()
+	var now: int = Time.get_ticks_msec()
+	if now - _abr_last_eval_msec < ABR_EVAL_INTERVAL_MSEC:
+		return
+	_abr_last_eval_msec = now
+	if net_rtt_ms > 0.0:
+		if _abr_rtt_baseline <= 0.0 or net_rtt_ms < _abr_rtt_baseline:
+			_abr_rtt_baseline = net_rtt_ms
+		# EWMA：单次尖峰不再直接判拥塞（旧实现靠瞬时 RTT，导致 0.4↔1.0 反复抖动）
+		_abr_rtt_ewma = net_rtt_ms if _abr_rtt_ewma <= 0.0 else (_abr_rtt_ewma * 0.7 + net_rtt_ms * 0.3)
+	var threshold: float = maxf(200.0, _abr_rtt_baseline * 2.5)
+	var send_fail: int = 0
+	if transport != null and transport.peer != null and transport.peer.get("send_fail_count") != null:
+		send_fail = int(transport.peer.get("send_fail_count"))
+	var rtt_bad: bool = _abr_rtt_ewma > threshold
+	_abr_rtt_bad_streak = _abr_rtt_bad_streak + 1 if rtt_bad else 0
+	# 自洪泛看门狗：自己发得太猛（RTT 反馈滞后 1-2s）时也要降档
+	var tx_rate_kb: float = 0.0
+	if transport != null and transport.peer != null and transport.peer.get("tx_bytes") != null:
+		var txb: int = int(transport.peer.get("tx_bytes"))
+		if _abr_tx_prev_msec > 0:
+			var dt_ms: int = now - _abr_tx_prev_msec
+			if dt_ms >= 200:
+				tx_rate_kb = float(txb - _abr_tx_prev_bytes) / 1024.0 / (float(dt_ms) / 1000.0)
+				_abr_tx_prev_bytes = txb
+				_abr_tx_prev_msec = now
+		else:
+			_abr_tx_prev_bytes = txb
+			_abr_tx_prev_msec = now
+	var tgt_budget: float = _tx_budget_kib()
+	var flood_bad: bool = tgt_budget > 0.0 and not is_inf(tgt_budget) and tx_rate_kb > tgt_budget * 1.3
+	_abr_flood_streak = _abr_flood_streak + 1 if flood_bad else 0
+	var congested: bool = (_abr_shed_until_msec > now) or send_fail > 0 or _abr_rtt_bad_streak >= ABR_RTT_BAD_SAMPLES or _abr_flood_streak >= 2
+	if congested:
+		_abr_good_since_msec = 0
+		if _abr_bad_since_msec == 0:
+			_abr_bad_since_msec = now
+		elif now - _abr_bad_since_msec >= ABR_BAD_HOLD_MSEC and _abr_scale > ABR_MIN_SCALE:
+			_abr_scale = maxf(ABR_MIN_SCALE, _abr_scale * ABR_DOWN_STEP)
+			_abr_bad_since_msec = now
+			_trim_pending_visual()
+			_abr_downshifts += 1
+			Trail.mark("abr", "down scale=%.2f rtt=%.0f ewma=%.0f base=%.0f shed=%d fail=%d budget=%.0f" % [
+				_abr_scale, net_rtt_ms, _abr_rtt_ewma, _abr_rtt_baseline, _abr_shed_level, send_fail, _tx_budget_kib()])
+	else:
+		_abr_bad_since_msec = 0
+		_abr_rtt_bad_streak = 0
+		if _abr_shed_until_msec <= now:
+			_abr_shed_level = 0
+		if _abr_good_since_msec == 0:
+			_abr_good_since_msec = now
+		elif now - _abr_good_since_msec >= ABR_GOOD_HOLD_MSEC and _abr_scale < 1.0:
+			_abr_scale = minf(1.0, _abr_scale * ABR_UP_STEP)
+			_abr_good_since_msec = now
+			_abr_upshifts += 1
+			Trail.mark("abr", "up scale=%.2f rtt=%.0f budget=%.0f" % [_abr_scale, net_rtt_ms, _tx_budget_kib()])
+
+
+# 降档时不再清空整帧特效：只裁剪到最新 24 条，避免"火焰/特效时有时无"
+func _trim_pending_visual() -> void:
+	for name in ["_pending_visual", "_pending_effects"]:
+		var q: Array = get(name)
+		if q.size() <= 24:
+			continue
+		var drop: int = q.size() - 24
+		set(name, q.slice(drop))
+		vis_drop_abr += drop
+		_note_visual_dropped(drop)
+
+func _note_visual_dropped(count: int) -> void:
+	if count > 0:
+		net_visual_dropped += count
+	if _visual_drop_announced:
+		return
+	_visual_drop_announced = true
+	var peers_n: int = multiplayer.get_peers().size() if _has_peer() else 0
+	push_warning("[etn_coop] visual drop engaged backlog=%d peers=%d" % [_relay_backlog(), peers_n])
+
+
+# 敌人镜像平滑误差上报（供 diag 的 smerr 使用）
+func note_enemy_smooth_err(err_px: float) -> void:
+	if err_px > net_enemy_smooth_err:
+		net_enemy_smooth_err = err_px
+
+
+# 帧时间监视（_process 的 delta 是真实帧时间，含渲染）+ 2s 落一行诊断。
+func _process(delta: float) -> void:
+	var _t0: int = Time.get_ticks_usec()
+	var frame_ms: float = delta * 1000.0
+	if frame_ms > _worst_frame_ms:
+		_worst_frame_ms = frame_ms
+	if frame_ms > 120.0:
+		hitch_n += 1
+		Trail.mark("frame_hitch", "dt=%.0f fps=%d scene=%s" % [frame_ms, Engine.get_frames_per_second(), current_scene_path])
+	_abr_tick()
+	if not (is_lan_game or is_relay):
+		_perf_process_usec = Time.get_ticks_usec() - _t0
+		return
+	# 枪口火焰等"池化节点每次激活"的视觉：child_entered_tree 只会在首次入树广播一次，
+	# 之后复用同一节点开火就不会再广播。这里按 is_idle 1→0 的跳变补发。
+	_flash_watch_timer += delta
+	if _flash_watch_timer >= 0.1:
+		_flash_watch_timer = 0.0
+		_watch_flash_visuals()
+	# 角色切换/场景重载后的 roster 收敛（0.5s 检查，2s 兜底重推）
+	_roster_check_timer += delta
+	if _roster_check_timer >= 0.5:
+		_roster_check_timer = 0.0
+		_sync_local_player_scene(delta)
+	# Ako 链子：锁目标变化（0.2s）+ 克隆跟随施法者（0.1s）
+	_chain_watch_timer += delta
+	if _chain_watch_timer >= 0.2:
+		_chain_watch_timer = 0.0
+		_watch_chain_locks()
+	if not _chain_clones.is_empty():
+		_tick_chain_clones()
+	_diag_log_timer += delta
+	_perf_process_usec = Time.get_ticks_usec() - _t0
+	if _diag_log_timer < DIAG_INTERVAL:
+		return
+	_diag_log_timer = 0.0
+	_emit_diag_line()
+	_worst_frame_ms = 0.0
+
+
+# 角色切换/场景重载后的 roster 收敛：
+# - host：本地角色场景变了就推 roster；战斗中每 2s 再无条件重推一次（几字节，保证重载后也能恢复镜像）
+# - client：自己的角色场景变了就上报 host
+func _sync_local_player_scene(_delta: float) -> void:
+	if not _net_connected() or not battle_active:
+		return
+	var uid: int = multiplayer.get_unique_id()
+	var want: String = _roster_scene_of_local()
+	if want == "":
+		return
+	# 选择宽限：刚选完角色时本机节点还是旧角色，轮询若照着节点上报会把新选择回滚掉
+	# （表现为"选了 hoshino 进去却是 aris_armed"）。这里只允许"比选择更新的节点"改记录。
+	if Time.get_ticks_msec() - _selection_set_msec < SELECTION_GRACE_MSEC:
+		Trail.mark("roster_override_suppressed", "grace node=%s recorded=%s" % [want, str(selected_player_scene_by_peer.get(uid, ""))])
+		return
+	if _local_player_spawn_msec <= _selection_set_msec:
+		Trail.mark("roster_override_suppressed", "stale_node node=%s recorded=%s" % [want, str(selected_player_scene_by_peer.get(uid, ""))])
+		return
+	if multiplayer.is_server():
+		if str(player_scene_by_peer.get(uid, "")) != want:
+			player_scene_by_peer[uid] = want
+			selected_player_scene_by_peer[uid] = want
+			local_player_scene_path = want
+			_roster_resend_timer = 0.0
+			rpc("_client_sync_roster", player_scene_by_peer)
+			rpush += 1
+			Trail.mark("roster_push", "auto scene=%s" % want)
+		else:
+			_roster_resend_timer += 0.5
+			if _roster_resend_timer >= 2.0:
+				_roster_resend_timer = 0.0
+				rpc("_client_sync_roster", player_scene_by_peer)
+				rpush += 1
+	else:
+		if str(selected_player_scene_by_peer.get(uid, "")) != want:
+			# 节点比"选择"新却与选择不符：说明进场景时被换成了别的角色 → 先按选择修一次
+			if not _selection_repair_done and _selected_scene != "" and _selected_scene != want:
+				_selection_repair_done = true
+				Trail.mark("selection_mismatch", "node=%s record=%s repair" % [want, _selected_scene])
+				var lp := get_local_player()
+				var pos: Vector2 = Vector2.ZERO
+				if lp is Node2D:
+					pos = (lp as Node2D).global_position
+				_replace_player_for_peer(uid, _selected_scene, pos)
+				return
+			selected_player_scene_by_peer[uid] = want
+			local_player_scene_path = want
+			_req_send("select", {"path": want})
+			Trail.mark("local_scene_report", "auto scene=%s" % want)
+
+
+func _watch_flash_visuals() -> void:
+	if not _net_connected():
+		return
+	var tree := get_tree()
+	if tree == null:
+		return
+	var layer := tree.get_first_node_in_group("SELayer")
+	if layer == null:
+		return
+	var seen: Dictionary = {}
+	for child in layer.get_children():
+		if child == null or not is_instance_valid(child):
+			continue
+		if child.has_meta("remote_visual"):
+			continue
+		var sp: String = str(child.scene_file_path)
+		if not sp.contains("flash"):
+			continue
+		if child.get("is_idle") == null:
+			continue
+		var iid: int = child.get_instance_id()
+		seen[iid] = true
+		var cur: int = int(child.get("is_idle"))
+		# 首次看到时用当前值做基线：首次入树的广播由 child_entered_tree 负责，避免重复
+		var prev: int = int(_flash_idle_state.get(iid, cur))
+		if cur == 0 and prev != 0:
+			_on_visual_activated(child)
+			vflash += 1
+		_flash_idle_state[iid] = cur
+	if _flash_idle_state.size() > 128:
+		for k in _flash_idle_state.keys():
+			if not seen.has(k):
+				_flash_idle_state.erase(k)
+
+
+func _proxy_bpk_sum() -> int:
+	var total: int = 0
+	for k in enemy_proxy_by_net_id.keys():
+		var pr = enemy_proxy_by_net_id[k]
+		if pr != null and is_instance_valid(pr) and pr.get("bpk") != null:
+			total += int(pr.get("bpk"))
+	return total
+
+
+func _proxy_hpresync_sum() -> int:
+	var total: int = 0
+	for k in enemy_proxy_by_net_id.keys():
+		var pr = enemy_proxy_by_net_id[k]
+		if pr != null and is_instance_valid(pr) and pr.get("stat_hresync") != null:
+			total += int(pr.get("stat_hresync"))
+	return total
+
+func _emit_diag_line() -> void:
+	var role: String = "host" if _is_server_safe() else "client"
+	var peers_n: int = multiplayer.get_peers().size() if _has_peer() else 0
+	var delay_ms: float = SnapshotBuffer.compute_delay(STATE_SEND_INTERVAL, net_rtt_ms, net_jitter_ms) * 1000.0
+	var extrap_rate: float = 0.0
+	if net_remote_frames > 0:
+		extrap_rate = 100.0 * float(net_extrap_frames) / float(net_remote_frames)
+	var send_fail: int = 0
+	var overload: int = 0
+	var tx_kb: float = 0.0
+	var rx_kb: float = 0.0
+	var backlog_now: int = 0
+	var backlog_peak_win: int = 0
+	if transport != null and transport.peer != null:
+		if transport.peer.get("send_fail_count") != null:
+			send_fail = int(transport.peer.send_fail_count)
+		if transport.peer.get("_overload_dropped") != null:
+			overload = int(transport.peer.get("_overload_dropped"))
+		if transport.peer.get("tx_bytes") != null:
+			var tx_now: int = int(transport.peer.get("tx_bytes"))
+			var rx_now: int = int(transport.peer.get("rx_bytes"))
+			tx_kb = float(tx_now - _diag_prev_tx_bytes) / 1024.0 / DIAG_INTERVAL
+			rx_kb = float(rx_now - _diag_prev_rx_bytes) / 1024.0 / DIAG_INTERVAL
+			_diag_prev_tx_bytes = tx_now
+			_diag_prev_rx_bytes = rx_now
+		if transport.peer.has_method("take_backlog_peak"):
+			backlog_peak_win = int(transport.peer.call("take_backlog_peak"))
+			_last_peak_win = backlog_peak_win
+		backlog_now = _relay_backlog()
+	var vis_rate: float = float(net_visual_dropped - _diag_prev_vis) / DIAG_INTERVAL
+	_diag_prev_vis = net_visual_dropped
+	# 分类发送字节（本窗口）：用于判断带宽大头是状态/快照/视觉/跟随
+	var st_kb: float = float(send_state_bytes - _diag_prev_state_b) / 1024.0 / DIAG_INTERVAL
+	var sn_kb: float = float(send_snap_bytes - _diag_prev_snap_b) / 1024.0 / DIAG_INTERVAL
+	var vs_kb: float = float(send_vis_bytes - _diag_prev_vis_b) / 1024.0 / DIAG_INTERVAL
+	var fw_kb: float = float(send_follow_bytes - _diag_prev_follow_b) / 1024.0 / DIAG_INTERVAL
+	var ev_kb: float = float(send_evt_bytes - _diag_prev_evt_b) / 1024.0 / DIAG_INTERVAL
+	var it_kb: float = float(send_items_bytes - _diag_prev_items_b) / 1024.0 / DIAG_INTERVAL
+	var fwd_kb: float = float(send_fwd_bytes - _diag_prev_fwd_b) / 1024.0 / DIAG_INTERVAL
+	_diag_prev_state_b = send_state_bytes
+	_diag_prev_snap_b = send_snap_bytes
+	_diag_prev_vis_b = send_vis_bytes
+	_diag_prev_follow_b = send_follow_bytes
+	_diag_prev_evt_b = send_evt_bytes
+	_diag_prev_items_b = send_items_bytes
+	_diag_prev_fwd_b = send_fwd_bytes
+	# MapBounds 的位置拉回次数（壁垒局"移动被传回去"的直接证据）：本机玩家被拽一次就 +1。
+	var mb_win: int = 0
+	var mb_last: String = ""
+	var mb_node = get_node_or_null("/root/MapBounds")
+	if mb_node != null and mb_node.get("pull_count") != null:
+		var mb_now: int = int(mb_node.get("pull_count"))
+		mb_win = mb_now - _diag_prev_mb
+		_diag_prev_mb = mb_now
+		if mb_win > 0:
+			mb_last = str(mb_node.get("last_pull"))
+			Trail.mark("mb_pull", "n=%d %s" % [mb_win, mb_last])
+	var budget_now: float = _tx_budget_kib()
+	var budget_num: float = -1.0 if is_inf(budget_now) else budget_now
+	# buff 硬闸：连续 2 个窗口发送量过高 → 清空待发队列，防止再次堵死中继
+	if float(buff_tx_bytes) / 1024.0 / maxf(0.5, DIAG_INTERVAL) > 30.0:
+		_buff_flood_streak += 1
+	else:
+		_buff_flood_streak = 0
+	if _buff_flood_streak >= 2:
+		_buff_flood_streak = 0
+		buff_reset += 1
+		_pending_buffs.clear()
+		_pending_relay.clear()
+		Trail.mark("buff_reset", "tx=%dKB" % (buff_tx_bytes / 1024))
+	_tx_cat_window()
+	# 未走任何预算的字节（state/snap/vis/follow/items/fwd/events 之外）
+	var tx_gap_kb: float = maxf(0.0, tx_kb - (st_kb + sn_kb + vs_kb + fw_kb + it_kb + fwd_kb + _tx_evt_rate_kb))
+	if tx_gap_kb > maxf(6.0, tx_kb * 0.15):
+		_gap_streak += 1
+		if _gap_streak >= 2:
+			_gap_streak = 0
+			Trail.mark("tx_gap", "gap=%.1fK tx=%.1fK top=%s" % [tx_gap_kb, tx_kb, tx_top_cat])
+	else:
+		_gap_streak = 0
+	var line: String = "fps=%d worst=%.1fms role=%s peers=%d relay=%s rtt=%.0f jit=%.0f delay=%.0f extrap=%.0f%% snaps=%d snap_hi=%d/%d/%d backlog=%d peak=%d vis/s=%.1f skip=%d tx=%.0fKB/s rx=%.0fKB/s sfail=%d overload=%d snd_state=%.1f snd_snap=%.1f snd_vis=%.1f snd_follow=%.1f snd_evt=%.1f snd_items=%.1f snd_fwd=%.1f snd_hit=%d snd_sfx=%d snd_summ=%d evt_drop=%d hit_merge=%d bdrop=%d hitch=%d vcap=%d vbttl=%d bpk=%d hpres=%d rejoin=%d tx_evt=%.1f tx_top=%s tx_gap=%.1f tx_cats=%s buff_tx=%.1f buff_skip=%d buff_q=%d buff_ovf=%d buff_reset=%d live=%d vis_gc=%d req=%d req_to=%d abr_dn=%d abr_up=%d visdrop=%d ovf=%d dcap=%d budget=%.0f abr=%.2f shed=%d codec_err=%d vtx=%d vrx=%d vsp=%d vl=%d vg=%d vd=%d vt=%d va=%d vnv=%d vemp=%d vnr=%d vfl=%d fxttl=%d rp=%d rr=%d rs=%d smerr=%.1f efast=%d mb=%d scene=%s" % [
+		Engine.get_frames_per_second(), _worst_frame_ms, role, peers_n, str(is_relay),
+		net_rtt_ms, net_jitter_ms, delay_ms, extrap_rate, net_hard_snaps,
+		net_snap_96_160, net_snap_160_320, net_snap_gt320,
+		backlog_now, backlog_peak_win, vis_rate, net_item_state_skipped,
+		tx_kb, rx_kb, send_fail, overload, st_kb, sn_kb, vs_kb, fw_kb, ev_kb, it_kb, fwd_kb,
+		snd_hit_bytes, snd_sfx_bytes, snd_summ_bytes, evt_drop, hit_merge, bdrop,
+		hitch_n, int(_visual.get("stat_vcap")), int(_visual.get("stat_vbttl")), _proxy_bpk_sum(), _proxy_hpresync_sum(), rejoin_ms,
+		_tx_evt_rate_kb, tx_top_cat, tx_gap_kb, tx_cats_text, float(buff_tx_bytes) / 1024.0 / maxf(0.5, DIAG_INTERVAL), buff_skip, _pending_buffs.size(), buff_ovf, buff_reset, int(_visual.call("_live_count")), int(_visual.get("stat_vis_gc")), _req_pending.size(), _req_timeout_n,
+		_abr_downshifts, _abr_upshifts, vis_drop_abr, vis_overflow, _delaycap,
+		budget_num, _abr_scale, _abr_shed_level, net_vis_codec_err,
+		vis_tx, vis_rx, _visual.stat_spawn_ok, _visual.stat_load_fail, _visual.stat_group_fail,
+		_visual.stat_dedupe_skip, vis_skip_throttle, _visual.stat_arity_skip,
+		_visual.stat_invisible, vempty, vn_reject, vflash, _visual.stat_fx_ttl,
+		rpush, rrx, rsp, net_enemy_smooth_err, 1 if _enemy_fast_mode else 0,
+		mb_win, current_scene_path,
+	]
+	net_enemy_smooth_err = 0.0
+	# 双写：coop_trail 供结构化检索；print 保证即使玩家关掉 network_trail 也会落到
+	# user://logs/ETN_debug.log（project.godot 已开 file_logging），诊断数据不会丢。
+	Trail.mark("diag", line)
+	print("[etn_coop] diag " + line)
+	# [PERF]：定位"中期掉帧"用，细到子系统耗时与镜像/特效数量
+	var selayer_n: int = 0
+	var sl := get_tree().get_first_node_in_group("SELayer") if get_tree() != null else null
+	if sl != null:
+		selayer_n = sl.get_child_count()
+	var fx_n: int = 0
+	if _visual != null and is_instance_valid(_visual):
+		var by_id = _visual.get("_by_effect_id")
+		if by_id is Dictionary:
+			fx_n = by_id.size()
+	var trail_now: int = 0
+	var trail_bytes: int = Trail.bytes()
+	if _perf_trail_bytes > 0:
+		trail_now = maxi(0, trail_bytes - _perf_trail_bytes)
+	_perf_trail_bytes = trail_bytes
+	if delay_ms >= SnapshotBuffer.DELAY_MAX * 1000.0 - 1.0:
+		_delaycap += 1
+	var perf_line: String = "[PERF] phys=%.2fms process=%.2fms snapT=%.1fms visT=%.1fms mirrors(enemy=%d player=%d summon=%d) selayer=%d effects=%d trail_kb=%.1f defer=%d" % [
+		float(_perf_phys_usec) / 1000.0, float(_perf_process_usec) / 1000.0,
+		float(_perf_snap_usec) / 1000.0, float(_perf_vis_usec) / 1000.0,
+		enemy_by_net_id.size(), player_by_peer_id.size(), summoned_by_net_id.size(),
+		selayer_n, fx_n, float(trail_now) / 1024.0, vis_defer,
+	]
+	Trail.mark("perf", perf_line)
+	print(perf_line)
+	_perf_snap_usec = 0
+	_perf_vis_usec = 0
+	snd_hit_bytes = 0
+	snd_sfx_bytes = 0
+	snd_summ_bytes = 0
+	evt_drop = 0
+	hit_merge = 0
+	hit_n = 0
+
+
+func _tick_enemy_rate(delta: float) -> void:
+	# 先判 peer：离线时 multiplayer.is_server()/get_peers() 会内部调 get_unique_id 并每帧报错刷日志
+	if not _has_peer() or not _net_connected() or not battle_active:
+		return
+	if not _is_server_safe():
+		return
+	if multiplayer.get_peers().is_empty():
+		return
+	_enemy_rate_timer += delta
+	if _enemy_rate_timer < 2.0:
+		return
+	_enemy_rate_timer = 0.0
+	var total: int = send_state_bytes + send_snap_bytes + send_vis_bytes + send_follow_bytes + send_evt_bytes
+	var used_kib: float = float(total - _enemy_rate_prev_bytes) / 1024.0 / 2.0
+	_enemy_rate_prev_bytes = total
+	var budget: float = _tx_budget_kib()
+	if not is_finite(budget) or budget <= 0.0:
+		return
+	# 阈值带迟滞：<45% 提频、>65% 降频，避免在边界反复切换
+	if not _enemy_fast_mode and used_kib < budget * 0.45:
+		_enemy_fast_mode = true
+		Trail.mark("enemy_rate", "fast used=%.0f budget=%.0f" % [used_kib, budget])
+	elif _enemy_fast_mode and used_kib > budget * 0.65:
+		_enemy_fast_mode = false
+		Trail.mark("enemy_rate", "slow used=%.0f budget=%.0f" % [used_kib, budget])
+
+
 func _physics_process(delta: float) -> void:
+	var _t0: int = Time.get_ticks_usec()
 	# 10s 一次内存心跳（自带节流）：跨局泄漏/内存涨爆与原生崩溃的区分依据
 	var _peer_count: int = multiplayer.get_peers().size() if _has_peer() else 0
 	Trail.heartbeat("peers=%d battle=%s phase=%d lan=%s" % [_peer_count, str(battle_active), _flow_phase, str(is_lan_game)])
+	_tick_enemy_rate(delta)
 	_tick_boss_cinematic()
 	_sync_local_melee_hook()
 	_tick_ako_locks()
@@ -6125,7 +7978,7 @@ func _physics_process(delta: float) -> void:
 	_update_client_handshake_timeout()
 	_update_rejoin_timeouts()
 	_tick_reconnect(delta)
-	if is_lan_game and multiplayer.is_server() and battle_active:
+	if is_lan_game and _is_server_safe() and _net_sendable() and battle_active:
 		_team_stats_timer -= delta
 		if _team_stats_timer <= 0.0:
 			_team_stats_timer = TEAM_STATS_INTERVAL
@@ -6136,8 +7989,10 @@ func _physics_process(delta: float) -> void:
 			_sim_report_timer = 0.0
 			_emit_sim_report()
 	if not is_lan_game or not battle_active:
+		_perf_phys_usec = Time.get_ticks_usec() - _t0
 		return
 	if not _net_connected():
+		_perf_phys_usec = Time.get_ticks_usec() - _t0
 		return
 	_state_timer -= delta
 	if _state_timer <= 0.0:
@@ -6146,12 +8001,23 @@ func _physics_process(delta: float) -> void:
 	if multiplayer.is_server():
 		_snapshot_timer -= delta
 		if _snapshot_timer <= 0.0:
-			_snapshot_timer = ENEMY_SNAPSHOT_INTERVAL
+			_snapshot_timer = _snapshot_interval()
+			var _s0: int = Time.get_ticks_usec()
 			_send_enemy_snapshot()
+			_perf_snap_usec += Time.get_ticks_usec() - _s0
 		_server_update_rescue(delta)
+	_flush_enemy_hits()
+	_req_tick()
+	_flush_client_buffs()
+	_flush_client_relay_buffs()
+	_flush_client_procs()
+	_tick_client_tx_flood()
+	var _v0: int = Time.get_ticks_usec()
 	_flush_visuals()
+	_perf_vis_usec += Time.get_ticks_usec() - _v0
 	if not _follow_nodes.is_empty():
 		_flush_follow_states(delta)
+	_perf_phys_usec = Time.get_ticks_usec() - _t0
 
 
 func _send_local_player_state() -> void:
@@ -6189,11 +8055,44 @@ func _send_local_player_state() -> void:
 		var h = p.call("get_network_heading_direction")
 		if h is Vector2:
 			heading = h
-	var items: Dictionary = ItemState.capture(p)
-	if multiplayer.is_server():
-		rpc("_apply_player_state", multiplayer.get_unique_id(), pos, vel, look, hp, ammo, sprite_y, state, cstate, heading, max_hp, t_hp, max_t_hp, items, corruption)
+	# 道具视觉态：量化 + 独立 5Hz 节流。phase/动画进度每帧都在变，若不量化，
+	# "变化才发"会退化成"每包全量"，道具多时上行会被撑到几十 KB/s（进而被 host 扇出放大）。
+	var items_now: int = Time.get_ticks_msec()
+	var items: Dictionary = {}
+	if items_now - _items_send_msec >= ITEMS_SEND_INTERVAL_MSEC:
+		var quantized: Dictionary = _quantize_items(ItemState.capture(p))
+		var items_sig: int = _items_signature(quantized)
+		if items_sig != _last_items_sig:
+			_last_items_sig = items_sig
+			items = quantized
+			_items_send_msec = items_now
+	else:
+		items = {}
+	send_items_bytes += _est_items_bytes(items)
+	send_state_bytes += 96 + _est_items_bytes(items)
+	# 本机一次 NaN/Inf（物理异常、除零）经此包会污染所有客机的镜像 transform 且不可自愈。
+	# 客机上报路径已由 _sanitize_player_state 处理，这里补上房主广播路径的同等校验。
+	if not (is_finite(pos.x) and is_finite(pos.y) and is_finite(vel.x) and is_finite(vel.y)
+			and is_finite(look.x) and is_finite(look.y) and is_finite(sprite_y)
+			and is_finite(heading.x) and is_finite(heading.y)):
+		return
+	# 出口预算：状态包（含放大后的 items）也计入，超预算就跳这一帧（unreliable_ordered，插值兜住）
+	if not _aux_budget_allow(96 + _est_items_bytes(items)):
+		return
+	if _is_server_safe():
+		rpc("_apply_player_state", _local_peer_id_safe(), pos, vel, look, hp, ammo, sprite_y, state, cstate, heading, max_hp, t_hp, max_t_hp, items, corruption)
 	else:
 		rpc_id(1, "_server_receive_player_state", pos, vel, look, hp, ammo, sprite_y, state, cstate, heading, max_hp, t_hp, max_t_hp, items, corruption)
+
+
+# 本机 peer id 的安全读取：断线瞬间 get_unique_id() 可能返回 0，会把状态键写成 0。
+func _local_peer_id_safe() -> int:
+	if not _has_peer():
+		return 1
+	var id: int = multiplayer.get_unique_id()
+	if id > 0:
+		_last_known_peer_id = id
+	return _last_known_peer_id
 
 
 @rpc("any_peer", "call_remote", "reliable")
@@ -6229,9 +8128,19 @@ func _spawn_remote_player(peer_id: int, scene_path: String) -> void:
 
 @rpc("authority", "call_remote", "reliable")
 func _client_sync_roster(roster: Dictionary) -> void:
+	rrx += 1
 	for pid in roster.keys():
-		player_scene_by_peer[int(pid)] = str(roster[pid])
-		spawn_remote_player(int(pid), str(roster[pid]))
+		var path: String = str(roster[pid])
+		# 空路径会清掉有效记录并让镜像直接消失：保留原值，不当成"没选角色"
+		if path == "":
+			continue
+		player_scene_by_peer[int(pid)] = path
+		spawn_remote_player(int(pid), path)
+	# 开战前对账：host 记录与"我明确选择"不同 → 弹窗让玩家决定（选人界面最后一道保险）
+	if not battle_active and _selected_scene != "" and not _selection_dialog_open:
+		var mine: String = str(roster.get(multiplayer.get_unique_id(), ""))
+		if mine != "" and mine != _selected_scene:
+			_show_selection_mismatch(mine)
 
 
 @rpc("any_peer", "call_remote", "unreliable_ordered", 1)
@@ -6256,7 +8165,17 @@ func _server_receive_player_state(
 		safe[0] = MapBounds.nearest_inside(safe[0] as Vector2)
 	var safe_items: Dictionary = ItemState.sanitize(items)
 	_apply_player_state(peer_id, safe[0], safe[1], safe[2], safe[3], safe[4], safe[5], safe[6], safe[7], safe[8], safe[9], safe[10], safe[11], safe_items, safe[12])
-	rpc("_apply_player_state", peer_id, safe[0], safe[1], safe[2], safe[3], safe[4], safe[5], safe[6], safe[7], safe[8], safe[9], safe[10], safe[11], safe_items, safe[12])
+	# host 扇出也计入出口预算：客机状态 ×(N-1) 是 3 人局最容易把 host 上传顶爆的一路
+	if _aux_budget_allow(96 + _est_items_bytes(safe_items)):
+		send_fwd_bytes += 96 + _est_items_bytes(safe_items)
+		if _congested_peers.is_empty():
+			rpc("_apply_player_state", peer_id, safe[0], safe[1], safe[2], safe[3], safe[4], safe[5], safe[6], safe[7], safe[8], safe[9], safe[10], safe[11], safe_items, safe[12])
+		else:
+			# 慢客机（level>=1）不再转发"别人的"状态，优先保住它自己的操作
+			for _pid in multiplayer.get_peers():
+				if int(_congested_peers.get(_pid, 0)) >= 1:
+					continue
+				rpc_id(_pid, "_apply_player_state", peer_id, safe[0], safe[1], safe[2], safe[3], safe[4], safe[5], safe[6], safe[7], safe[8], safe[9], safe[10], safe[11], safe_items, safe[12])
 
 
 @rpc("authority", "call_remote", "unreliable_ordered", 1)
@@ -6272,6 +8191,11 @@ func _apply_player_state(
 	var proxy: Node = _get_player_proxy(peer_id)
 	if proxy != null and proxy.has_method("apply_state"):
 		proxy.apply_state(position, velocity, look_position, hp, ammo, sprite_y, state, character_state, heading, max_hp, t_hp, max_t_hp, corruption)
+	# 落后时只跳「道具视觉刷新」，位置照常应用：道具状态每 50ms 全量重发，跳一次不丢数值；
+	# 而一次道具刷新要遍历全部道具并比对外观，突发积压时是明显浪费。
+	if _visual_backlog_drop():
+		net_item_state_skipped += 1
+		return
 	_apply_item_states(peer_id, items)
 
 
@@ -6506,6 +8430,63 @@ func register_enemy_spawn(enemy: Node, scene_path: String) -> void:
 	_connect_enemy_parts(enemy, net_id)
 	_connect_enemy_despawn(enemy)
 	rpc("_spawn_enemy_remote", net_id, scene_path, enemy.global_position, max_hp, hp, hp_multiplier, damage_multiplier, _enemy_part_hps(enemy), str(enemy.get_meta("chip_id", "")))
+
+
+# 镜像出生在 (0,0) 时先挂"待首帧"标记：MapBounds 会跳过它们，避免整批被拽进地图
+func _mark_mirror_pending(node: Node) -> void:
+	if node == null or not is_instance_valid(node):
+		return
+	node.set_meta("coop_pending_snapshot", true)
+	var tree := get_tree()
+	if tree == null:
+		node.remove_meta("coop_pending_snapshot")
+		return
+	_clear_mirror_pending_later(node, tree)
+
+
+func _clear_mirror_pending_later(node: Node, tree: SceneTree) -> void:
+	await tree.create_timer(1.5).timeout
+	if node != null and is_instance_valid(node) and node.has_meta("coop_pending_snapshot"):
+		node.remove_meta("coop_pending_snapshot")
+
+# 镜像材质隔离：同一场景的多份实例共享 SubResource 材质，受击闪白/描边会互相串联。
+# 只对镜像做 duplicate()，本机实体保持共享（省内存）。
+var _mirror_mat_sites: Dictionary = {}   # scene_path -> Array[NodePath]（需要复制的材质位点，按场景缓存）
+
+
+func _duplicate_mirror_materials_full(root: Node) -> void:
+	for n in root.find_children("*", "CanvasItem", true, false):
+		var item := n as CanvasItem
+		if item == null or item.material == null:
+			continue
+		if item.material is ShaderMaterial or item.material is CanvasItemMaterial:
+			item.material = item.material.duplicate()
+
+
+func _isolate_mirror_materials(root: Node) -> void:
+	if root == null or not is_instance_valid(root):
+		return
+	var key: String = str(root.scene_file_path)
+	if key == "":
+		_duplicate_mirror_materials_full(root)
+		return
+	# 首次按场景遍历一次并记住"哪些节点有材质"；之后只复制这些位点，省掉每次的 find_children
+	var sites = _mirror_mat_sites.get(key)
+	if sites == null:
+		sites = []
+		for n in root.find_children("*", "CanvasItem", true, false):
+			var item := n as CanvasItem
+			if item == null or item.material == null:
+				continue
+			if item.material is ShaderMaterial or item.material is CanvasItemMaterial:
+				sites.append(root.get_path_to(n))
+		_mirror_mat_sites[key] = sites
+	for path in sites:
+		var n2 = root.get_node_or_null(path)
+		if n2 is CanvasItem:
+			var ci := n2 as CanvasItem
+			if ci.material != null:
+				ci.material = ci.material.duplicate()
 
 
 func _attach_enemy_proxy(enemy: Node, net_id: int, server_owned: bool) -> void:
@@ -7135,9 +9116,35 @@ func _play_enemy_death_remote(net_id: int, icon: String, position: Vector2) -> v
 	if multiplayer.is_server():
 		return
 	var enemy = enemy_by_net_id.get(net_id)
-	if enemy != null and is_instance_valid(enemy) and enemy.has_method("play_network_death"):
+	if enemy != null and is_instance_valid(enemy):
+		if enemy.has_method("play_network_death"):
+			return
+		# 客机已预测致死并播过死亡演出：host 确认时不要再播一次（否则死亡动画/粒子放两遍）
+		if enemy.get_meta("predicted_dead", false):
+			return
+	if _death_fx_recent(net_id):
 		return
+	_mark_death_fx(net_id)
 	_play_enemy_death(icon, position)
+
+
+# 死亡演出去重：预测致死与 host 确认可能各触发一次，按 net_id 记录最近一次播放
+var _death_fx_played: Dictionary = {}
+
+func _mark_death_fx(net_id: int) -> void:
+	if net_id <= 0:
+		return
+	_death_fx_played[net_id] = Time.get_ticks_msec()
+	if _death_fx_played.size() > 128:
+		var now: int = Time.get_ticks_msec()
+		for k in _death_fx_played.keys():
+			if now - int(_death_fx_played[k]) > 10000:
+				_death_fx_played.erase(k)
+
+func _death_fx_recent(net_id: int) -> bool:
+	if net_id <= 0 or not _death_fx_played.has(net_id):
+		return false
+	return Time.get_ticks_msec() - int(_death_fx_played[net_id]) < 3000
 
 
 func _play_enemy_death(icon: String, position: Vector2) -> void:
@@ -7162,6 +9169,35 @@ func _play_enemy_death(icon: String, position: Vector2) -> void:
 		ap.call("play", "death")
 	SoundManager.play_sfx("DeadSounds")
 
+
+# 慢客机：level>=2 时只发它附近 ≤900px 的敌人（快照裁剪），减少其下行压力
+func _filter_snapshot_for_peer(peer_id: int, ids: PackedInt32Array, pos: PackedVector2Array, states: PackedInt32Array, conv: PackedInt32Array, gauge: PackedInt32Array, level: int) -> Array:
+	var out_ids := PackedInt32Array()
+	var out_pos := PackedVector2Array()
+	var out_states := PackedInt32Array()
+	var out_conv := PackedInt32Array()
+	var out_gauge := PackedInt32Array()
+	var center := Vector2.ZERO
+	var has_center: bool = false
+	if level >= 2:
+		var mirror = player_by_peer_id.get(peer_id)
+		if mirror != null and is_instance_valid(mirror) and mirror is Node2D:
+			center = (mirror as Node2D).global_position
+			has_center = true
+	var n: int = ids.size() / 2
+	for k in n:
+		if has_center:
+			var p: Vector2 = pos[k * 2]
+			if p.distance_squared_to(center) > 900.0 * 900.0:
+				continue
+		out_ids.append(ids[k * 2])
+		out_ids.append(ids[k * 2 + 1])
+		out_pos.append(pos[k * 2])
+		out_pos.append(pos[k * 2 + 1])
+		out_states.append(states[k])
+		out_conv.append(conv[k])
+		out_gauge.append(gauge[k])
+	return [out_ids, out_pos, out_states, out_conv, out_gauge]
 
 func _send_enemy_snapshot() -> void:
 	if multiplayer.get_peers().is_empty():
@@ -7222,18 +9258,40 @@ func _send_enemy_snapshot() -> void:
 			_enemy_snap_next_tick.erase(k)
 	var total: int = ids_and_hp.size() / 2
 	var i: int = 0
-	var limit: int = maxi(1, enemy_snapshot_batch_limit)
+	var limit: int = maxi(1, _snapshot_entity_limit())
+	var congested: Array = []
+	for pid in multiplayer.get_peers():
+		if int(_congested_peers.get(pid, 0)) > 0:
+			congested.append(pid)
 	while i < total:
 		var n: int = mini(limit, total - i)
-		rpc(
-			"_enemy_snapshot",
-			ids_and_hp.slice(i * 2, (i + n) * 2),
-			positions_and_velocities.slice(i * 2, (i + n) * 2),
-			states.slice(i, i + n),
-			conv_flags.slice(i, i + n),
-			gauges.slice(i, i + n)
-		)
-		net_snapshot_sends += 1
+		var c_ids: PackedInt32Array = ids_and_hp.slice(i * 2, (i + n) * 2)
+		var c_pos: PackedVector2Array = positions_and_velocities.slice(i * 2, (i + n) * 2)
+		var c_states: PackedInt32Array = states.slice(i, i + n)
+		var c_conv: PackedInt32Array = conv_flags.slice(i, i + n)
+		var c_gauge: PackedInt32Array = gauges.slice(i, i + n)
+		if congested.is_empty():
+			rpc("_enemy_snapshot", c_ids, c_pos, c_states, c_conv, c_gauge)
+			net_snapshot_sends += 1
+			send_snap_bytes += n * 20 + 24
+		else:
+			for pid in multiplayer.get_peers():
+				if congested.has(pid):
+					continue
+				rpc_id(pid, "_enemy_snapshot", c_ids, c_pos, c_states, c_conv, c_gauge)
+				net_snapshot_sends += 1
+				send_snap_bytes += n * 20 + 24
+			for pid in congested:
+				var lvl: int = int(_congested_peers.get(pid, 0))
+				var step: int = 2 if lvl <= 1 else 3
+				if _enemy_snap_tick % step != 0:
+					continue
+				var f: Array = _filter_snapshot_for_peer(pid, c_ids, c_pos, c_states, c_conv, c_gauge, lvl)
+				if (f[0] as PackedInt32Array).is_empty():
+					continue
+				rpc_id(pid, "_enemy_snapshot", f[0], f[1], f[2], f[3], f[4])
+				net_snapshot_sends += 1
+				send_snap_bytes += (f[0] as PackedInt32Array).size() / 2 * 20 + 24
 		net_snapshot_entities += n
 		i += n
 
@@ -7366,6 +9424,9 @@ func _spawn_enemy_remote(
 	if root == null or scene == null:
 		return
 	var enemy: Node = scene.instantiate()
+	_mark_mirror_pending(enemy)
+	# 同一场景的多份镜像会共享贴图材质 → 受击闪白会串（A 被打 B 也闪）。镜像单独复制材质。
+	_isolate_mirror_materials(enemy)
 	root.add_child(enemy)
 	enemy.global_position = position
 	if chip_id != "":
@@ -7509,7 +9570,10 @@ func _server_enemy_hit(net_id: int, cfg: Dictionary, victim_pos: Vector2) -> voi
 		_add_team_damage(attacker, maxi(0, hp_before - hp_after))
 		var killed: bool = hp_before > 0 and hp_after <= 0
 		_replay_hit_feedback(enemy, data, actual, true)
-		rpc("_remote_hit_feedback", net_id, actual, safe_cfg, attacker, true)
+		for _fp in multiplayer.get_peers():
+			if _fp == attacker:
+				continue
+			rpc_id(_fp, "_remote_hit_feedback", net_id, actual, safe_cfg, attacker, true)
 		if attacker != multiplayer.get_unique_id() and _peer_online(attacker):
 			# 归属端在本机发射 enemy_damage_taken(_dead) 触发其道具/PS（host 端已被 suppress_proc 抑制）
 			rpc_id(attacker, "_remote_enemy_proc", net_id, actual, _damage_to_dict(data), killed, _enemy_score(enemy))
@@ -7534,23 +9598,215 @@ func _queue_visual(entry: Dictionary, reliable: bool) -> void:
 
 
 func _queue_effect(entry: Dictionary) -> void:
+	# 一次性特效（无 eid）带兜底 TTL：远端克隆若没等到 idle_state，由它保证不永久残留
+	if str(entry.get("eid", "")) == "" and not entry.has("ttl"):
+		entry["ttl"] = 2500
 	if _pending_effects.size() < PENDING_EFFECT_MAX:
 		_pending_effects.append(entry)
 
 
+func _vis_out_codec():
+	if _vis_codec_out == null:
+		_vis_codec_out = VisualCodecScript.new()
+		_vis_codec_out.setup(BULLET_PROP_NAMES, EFFECT_PROP_NAMES)
+	return _vis_codec_out
+
+
+func _vis_in_codec(sender: int):
+	var c = _vis_codec_in.get(sender)
+	if c == null:
+		c = VisualCodecScript.new()
+		c.setup(BULLET_PROP_NAMES, EFFECT_PROP_NAMES)
+		_vis_codec_in[sender] = c
+	return c
+
+
+# 解码收到的视觉批；失败时计数并留痕（二进制不可读，必须可观测）
+func _decode_visual_batch(packed: PackedByteArray, sender: int) -> Array:
+	if packed == null or packed.is_empty():
+		return []
+	var out: Array = _vis_in_codec(sender).decode_batch(packed)
+	if out.is_empty() and packed.size() > 2:
+		net_vis_codec_err += 1
+		if net_vis_codec_err <= 3:
+			Trail.mark("vis_codec", "decode failed sender=%d bytes=%d" % [sender, packed.size()])
+	vis_rx += out.size()
+	if _vis_dump:
+		for e in out:
+			if not (e is Dictionary):
+				continue
+			var sc: String = str(e.get("s", ""))
+			if _vis_dump_seen.has(sc):
+				continue
+			_vis_dump_seen[sc] = true
+			Trail.mark("vis_entry", "rx sender=%d %s" % [sender, JSON.stringify(e)])
+	return out
+
+
+# 每帧最多发送的视觉条目：大波次（爆炸/弹幕）拆到多帧，避免单帧编码+广播尖峰
+const VIS_MAX_PER_FRAME: int = 24
+const VIS_QUEUE_MAX: int = 200
+
+
+func _take_visual_batch(queue_name: String) -> Array:
+	var queue: Array = get(queue_name)
+	if queue.is_empty():
+		return []
+	# 上限兜底：极端战斗下若每帧 24 条仍追不上，丢最旧的，避免队列无限增长
+	if queue.size() > VIS_QUEUE_MAX:
+		var drop: int = queue.size() - VIS_QUEUE_MAX
+		set(queue_name, queue.slice(drop))
+		vis_overflow += drop
+		_note_visual_dropped(drop)
+		queue = get(queue_name)
+	if queue.size() <= VIS_MAX_PER_FRAME:
+		set(queue_name, [])
+		return queue
+	var take: Array = queue.slice(0, VIS_MAX_PER_FRAME)
+	set(queue_name, queue.slice(VIS_MAX_PER_FRAME))
+	vis_defer += int(get(queue_name).size())
+	return take
+
+
+# 转场期预热高频视觉场景（实例化 + 释放）：把资源加载/节点构建的尖刺挪出战斗
+func _prewarm_visuals() -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	var tree := get_tree()
+	if tree == null:
+		return
+	var layer := tree.get_first_node_in_group("SELayer")
+	if layer == null:
+		return
+	for sp in ["res://scenes/weapon/player_bullet.tscn", "res://scenes/weapon/muzzle_flash.tscn", "res://scenes/effects/explosion.tscn"]:
+		if not ResourceLoader.exists(sp):
+			continue
+		var scene := load(sp) as PackedScene
+		if scene == null:
+			continue
+		var n: Node = scene.instantiate()
+		if n == null:
+			continue
+		layer.add_child(n)
+		if n is Node2D:
+			(n as Node2D).global_position = Vector2(-10000.0, -10000.0)
+		n.set_meta("coop_prewarm", true)
+		_finish_prewarm(tree, n)
+
+
+func _finish_prewarm(tree: SceneTree, node: Node) -> void:
+	await tree.process_frame
+	if node != null and is_instance_valid(node):
+		node.queue_free()
+
+# ---------------- 命中合并（高射速角色的主要带宽来源） ----------------
+# 每发子弹命中原本各发一条 RPC（含 _damage_to_dict 大字典）→ 客机上行可达 140+ KB/s。
+# 现在按目标合并到 100ms 窗口内一条，伤害求和、暴击取或、只带精简字段。
+
+const HIT_MERGE_MSEC: int = 100
+const HIT_MERGE_MAX: int = 24
+var _pending_hits: Dictionary = {}
+var _hit_flush_msec: int = 0
+var snd_hit_bytes: int = 0
+var hit_n: int = 0
+var hit_merge: int = 0
+
+
+func _compact_hit_cfg(cfg: Dictionary) -> Dictionary:
+	# 只去掉体积最大且 host 不需要的字段（source_node 是完整节点路径字符串）
+	# 其余 damage/type/source/flags/knockback/direction/center 必须保留：它们决定伤害类型与手感
+	var out: Dictionary = cfg.duplicate(true)
+	out.erase("source_node")
+	return out
+
+
+func _queue_enemy_hit(net_id: int, cfg: Dictionary, victim_pos: Vector2) -> void:
+	if not is_lan_game or multiplayer.is_server():
+		return
+	var key: String = str(net_id)
+	var rec = _pending_hits.get(key)
+	if rec == null:
+		_pending_hits[key] = {
+			"dmg": int(cfg.get("resolved_damage", 0)),
+			"crit": bool(cfg.get("crit", false)),
+			"cfg": _compact_hit_cfg(cfg),
+			"pos": victim_pos,
+			"count": 1,
+		}
+	else:
+		rec["dmg"] = int(rec["dmg"]) + int(cfg.get("resolved_damage", 0))
+		rec["crit"] = bool(rec["crit"]) or bool(cfg.get("crit", false))
+		rec["pos"] = victim_pos
+		rec["count"] = int(rec["count"]) + 1
+		_pending_hits[key] = rec
+
+
+# 部件命中并入同一个合并窗口（key 用 net_id#part），避免多部件 BOSS 每次命中发一条
+func _queue_part_hit(net_id: int, part_index: int, cfg: Dictionary, victim_pos: Vector2) -> void:
+	if not is_lan_game or multiplayer.is_server():
+		return
+	var key: String = "%d#%d" % [net_id, part_index]
+	var rec = _pending_hits.get(key)
+	if rec == null:
+		_pending_hits[key] = {
+			"dmg": int(cfg.get("resolved_damage", 0)),
+			"crit": bool(cfg.get("crit", false)),
+			"cfg": _compact_hit_cfg(cfg),
+			"pos": victim_pos,
+			"count": 1,
+			"part": [net_id, part_index],
+		}
+	else:
+		rec["dmg"] = int(rec["dmg"]) + int(cfg.get("resolved_damage", 0))
+		rec["crit"] = bool(rec["crit"]) or bool(cfg.get("crit", false))
+		rec["pos"] = victim_pos
+		rec["count"] = int(rec["count"]) + 1
+		_pending_hits[key] = rec
+
+func _flush_enemy_hits() -> void:
+	if _pending_hits.is_empty():
+		return
+	var now: int = Time.get_ticks_msec()
+	if now - _hit_flush_msec < HIT_MERGE_MSEC and _pending_hits.size() < HIT_MERGE_MAX:
+		return
+	_hit_flush_msec = now
+	var sendable: bool = _net_sendable()
+	for key in _pending_hits.keys():
+		var rec: Dictionary = _pending_hits[key]
+		_pending_hits.erase(key)
+		var cfg: Dictionary = rec.get("cfg", {})
+		cfg["resolved_damage"] = int(rec.get("dmg", 0))
+		cfg["crit"] = bool(rec.get("crit", false))
+		var count: int = int(rec.get("count", 1))
+		hit_n += count
+		hit_merge += maxi(0, count - 1)
+		var bytes: int = 120 + int(rec.get("dmg", 0)) % 7
+		snd_hit_bytes += bytes
+		if rec.has("part"):
+			var pk: Array = rec["part"]
+			if _tx_evt("part", bytes) and sendable:
+				rpc_id(1, "_server_enemy_part_hit", int(pk[0]), int(pk[1]), cfg)
+		else:
+			_tx_evt("hit", bytes)
+			if sendable:
+				rpc_id(1, "_server_enemy_hit", int(key), cfg, rec.get("pos", Vector2.ZERO))
+var _vis_sweep_msec: int = 0
+
+
 func _flush_visuals() -> void:
-	if not _pending_visual.is_empty():
-		var batch: Array = _pending_visual.duplicate()
-		_pending_visual.clear()
-		_send_visual_batches(batch, "_spawn_visual_bullet_batch", "_server_visual_bullet_batch")
-	if not _pending_visual_reliable.is_empty():
-		var rbatch: Array = _pending_visual_reliable.duplicate()
-		_pending_visual_reliable.clear()
-		_send_visual_batches(rbatch, "_spawn_visual_bullet_reliable_batch", "_server_visual_bullet_reliable_batch")
-	if not _pending_effects.is_empty():
-		var ebatch: Array = _pending_effects.duplicate()
-		_pending_effects.clear()
-		_send_visual_batches(ebatch, "_spawn_visual_effect_batch", "_server_visual_effect_batch")
+	var _sweep_now: int = Time.get_ticks_msec()
+	if _sweep_now - _vis_sweep_msec > 5000:
+		_vis_sweep_msec = _sweep_now
+		_visual.sweep_idle_visuals()
+	var batch: Array = _take_visual_batch("_pending_visual")
+	if not batch.is_empty():
+		_send_visual_batches(batch, "_spawn_visual_bullet_batch", "_server_visual_bullet_batch", VisualCodecScript.KIND_BULLET)
+	var rbatch: Array = _take_visual_batch("_pending_visual_reliable")
+	if not rbatch.is_empty():
+		_send_visual_batches(rbatch, "_spawn_visual_bullet_reliable_batch", "_server_visual_bullet_reliable_batch", VisualCodecScript.KIND_BULLET)
+	var ebatch: Array = _take_visual_batch("_pending_effects")
+	if not ebatch.is_empty():
+		_send_visual_batches(ebatch, "_spawn_visual_effect_batch", "_server_visual_effect_batch", VisualCodecScript.KIND_EFFECT)
 
 
 # ---------------- 持续视觉状态通道（player_laser_beam / murky_hand_scythe 等） ----------------
@@ -7559,11 +9815,26 @@ func _flush_visuals() -> void:
 #  - 光束（network_get_beam_state）：枪口 + 各段角度 + 各段锁定目标 net_id；
 #  - 通用视觉（network_get_visual_state）：世界坐标 + 朝向 + 缩放。
 # 位置在本体 _physics_process 里向目标点插值，避免 20Hz 状态造成跳变。
+# 持续视觉变化才发：内容签名 + 2s 心跳，静止时几乎不占带宽。
+var _follow_sig: Dictionary = {}
+var _follow_sig_msec: Dictionary = {}
+const FOLLOW_RESYNC_MSEC: int = 2000
+
+
+func _follow_should_send(eid: String, sig: String) -> bool:
+	var now: int = Time.get_ticks_msec()
+	if str(_follow_sig.get(eid, "")) == sig and now - int(_follow_sig_msec.get(eid, 0)) < FOLLOW_RESYNC_MSEC:
+		return false
+	_follow_sig[eid] = sig
+	_follow_sig_msec[eid] = now
+	return true
+
+
 func _flush_follow_states(delta: float) -> void:
 	_follow_timer -= delta
 	if _follow_timer > 0.0:
 		return
-	_follow_timer = FOLLOW_SYNC_INTERVAL
+	_follow_timer = FOLLOW_SYNC_INTERVAL * (2.0 if is_relay else 1.0) * _follow_interval_scale()
 	var batch: Array = []
 	for eid in _follow_nodes.keys():
 		var node = _follow_nodes[eid]
@@ -7588,6 +9859,11 @@ func _flush_follow_states(delta: float) -> void:
 			var p = st.get("p", Vector2.ZERO)
 			if not (p is Vector2) or not (p as Vector2).is_finite():
 				continue
+			var a_val = st.get("a", PackedFloat32Array())
+			var t_val = st.get("t", PackedInt32Array())
+			# 内容没变就只走 2s 心跳，静止光束不再按 20Hz 重复发
+			if not _follow_should_send(str(eid), "%.1f,%.1f|%s|%s" % [(p as Vector2).x, (p as Vector2).y, str(a_val), str(t_val)]):
+				continue
 			batch.append({
 				"eid": str(eid),
 				"p": p,
@@ -7601,6 +9877,10 @@ func _flush_follow_states(delta: float) -> void:
 			var vp = vs.get("p", Vector2.ZERO)
 			if not (vp is Vector2) or not (vp as Vector2).is_finite():
 				continue
+			var v_sc = vs.get("sc", Vector2.ONE)
+			var v_r = vs.get("r", 0.0)
+			if not _follow_should_send(str(eid), "%.1f,%.1f|%s|%s" % [(vp as Vector2).x, (vp as Vector2).y, str(v_r), str(v_sc)]):
+				continue
 			batch.append({
 				"eid": str(eid),
 				"p": vp,
@@ -7609,8 +9889,16 @@ func _flush_follow_states(delta: float) -> void:
 			})
 	if batch.is_empty():
 		return
+	var follow_est: int = _est_follow_batch_bytes(batch)
+	if not multiplayer.is_server() and not _tx_evt("follow", follow_est):
+		_follow_pressure_until = Time.get_ticks_msec() + 3000
+		return
+	send_follow_bytes += follow_est
 	if multiplayer.is_server():
-		rpc("_remote_effect_follow_batch", batch)
+		for pid in multiplayer.get_peers():
+			if _skip_visual_for(pid):
+				continue
+			rpc_id(pid, "_remote_effect_follow_batch", batch)
 	else:
 		rpc_id(1, "_server_effect_follow_batch", batch)
 
@@ -7655,6 +9943,9 @@ func _sanitize_follow_entry(e) -> Dictionary:
 
 @rpc("any_peer", "call_remote", "unreliable")
 func _server_effect_follow_batch(batch: Array) -> void:
+	if _visual_backlog_drop():
+		_note_visual_dropped(batch.size())
+		return
 	if not multiplayer.is_server():
 		return
 	if not _server_sender_ok():
@@ -7680,6 +9971,9 @@ func _server_effect_follow_batch(batch: Array) -> void:
 
 @rpc("authority", "call_remote", "unreliable")
 func _remote_effect_follow_batch(batch: Array) -> void:
+	if _visual_backlog_drop():
+		_note_visual_dropped(batch.size())
+		return
 	for e in batch:
 		if e is Dictionary:
 			_apply_remote_follow(e)
@@ -7721,22 +10015,97 @@ func _apply_remote_follow(e: Dictionary) -> void:
 
 
 # 按 BULLET_BATCH_LIMIT 切包发送，避免单包过大超 MTU/被丢整批
-func _send_visual_batches(batch: Array, remote_method: String, server_method: String) -> void:
+func _send_visual_batches(batch: Array, remote_method: String, server_method: String, kind: int) -> void:
 	var i: int = 0
 	var n: int = batch.size()
+	var count_cap: int = _bullet_batch_limit()
 	while i < n:
-		var chunk: Array = batch.slice(i, mini(i + BULLET_BATCH_LIMIT, n))
-		if multiplayer.is_server():
-			rpc(remote_method, chunk)
+		var size: int = 0
+		var est_bytes: int = 0
+		while i + size < n and size < count_cap:
+			var eb: int = _est_visual_entry_bytes(batch[i + size])
+			# 中继：条数 + 字节 双约束；LAN 保持纯条数切分（避免多余分片）
+			if is_relay and size > 0 and est_bytes + eb > VISUAL_BATCH_BYTES_MAX:
+				break
+			est_bytes += eb
+			size += 1
+		if size <= 0:
+			size = 1
+		var chunk: Array = batch.slice(i, i + size)
+		var packed: PackedByteArray = _vis_out_codec().encode_batch(kind, chunk)
+		if packed.is_empty():
+			i += size
+			continue
+		# 中继出口预算：按**编码后真实字节**计费（v13 起比估算小很多）。超预算整批丢弃，不排队。
+		if not _vis_budget_allow(packed.size()):
+			_note_visual_dropped(size)
+			i += size
+			continue
+		send_vis_bytes += packed.size()
+		vis_tx += chunk.size()
+		if _is_server_safe():
+			# 定向降载：服务端会把「慢客机」的拥塞档位通告过来，level>=2 时对该 peer 停发视觉。
+			for pid in multiplayer.get_peers():
+				if _skip_visual_for(pid):
+					continue
+				rpc_id(pid, remote_method, packed)
 		else:
-			rpc_id(1, server_method, chunk)
-		i += BULLET_BATCH_LIMIT
+			rpc_id(1, server_method, packed)
+		i += size
+
+
+# 视觉条目字节量的粗估（分类观测 + 中继 8KB 封顶用）：
+# 固定开销 + 三个字符串长度 + 白名单属性数量。只用于排序与切包，不要求精确。
+func _est_visual_entry_bytes(e) -> int:
+	if not (e is Dictionary):
+		return 48
+	var b: int = 60
+	b += str(e.get("s", "")).length()
+	b += str(e.get("id", "")).length()
+	b += str(e.get("eid", "")).length()
+	b += str(e.get("m", "")).length()
+	var pr = e.get("pr")
+	if pr is Dictionary:
+		b += pr.size() * 12
+	return b
+
+
+# 玩家状态里 items（道具视觉态）的字节粗估
+func _est_items_bytes(items: Dictionary) -> int:
+	var b: int = 0
+	for k in items.keys():
+		b += 24
+		var v = items[k]
+		if v is Dictionary:
+			var anims = v.get("animations")
+			if anims is Array:
+				b += anims.size() * 20
+	return b
+
+
+# 持续视觉（光束/镰刀）批的字节粗估
+func _est_follow_batch_bytes(batch: Array) -> int:
+	var b: int = 32
+	for e in batch:
+		if not (e is Dictionary):
+			continue
+		b += 40 + str(e.get("eid", "")).length()
+		var a = e.get("a")
+		if a is PackedFloat32Array:
+			b += (a as PackedFloat32Array).size() * 4
+		var t = e.get("t")
+		if t is PackedInt32Array:
+			b += (t as PackedInt32Array).size() * 4
+	return b
 
 
 func _spawn_one_effect(e) -> void:
 	if not (e is Dictionary):
 		return
+	if _is_local_only_visual(str(e.get("s", ""))):
+		return
 	if not remote_effect_allowed(StringName("eff:" + str(e.get("s", "")))):
+		vis_skip_throttle += 1
 		return
 	var eid: String = str(e.get("eid", ""))
 	_visual.spawn_visual_effect(
@@ -7754,10 +10123,17 @@ func _spawn_one_effect(e) -> void:
 	# laser_launcher 等宿主实体的持续发射器：克隆生成后绑定镜像锚点并逐帧跟随
 	if eid != "" and e.has("an") and e.has("ap"):
 		_bind_effect_anchor(eid, int(e.get("an", 0)), str(e.get("ap", "")))
+	# Ako 链子：把锁目标绑到克隆上，否则锁段只会留在施法者身上
+	if eid != "" and str(e.get("s", "")).ends_with("ako_chain.tscn"):
+		_bind_chain_clone(eid, e)
 
 
 @rpc("authority", "call_remote", "reliable")
-func _spawn_visual_effect_batch(batch: Array) -> void:
+func _spawn_visual_effect_batch(packed: PackedByteArray) -> void:
+	var batch: Array = _decode_visual_batch(packed, multiplayer.get_remote_sender_id())
+	if _visual_backlog_drop():
+		_note_visual_dropped(batch.size())
+		return
 	if net_diag_enabled:
 		net_effect_recv += batch.size()
 	for e in batch:
@@ -7765,12 +10141,16 @@ func _spawn_visual_effect_batch(batch: Array) -> void:
 
 
 @rpc("any_peer", "call_remote", "reliable")
-func _server_visual_effect_batch(batch: Array) -> void:
+func _server_visual_effect_batch(packed: PackedByteArray) -> void:
+	var batch: Array = _decode_visual_batch(packed, multiplayer.get_remote_sender_id())
+	if _visual_backlog_drop():
+		_note_visual_dropped(batch.size())
+		return
 	if not multiplayer.is_server():
 		return
 	if not _server_sender_ok():
 		return
-	if batch.size() > BULLET_BATCH_LIMIT * 2:
+	if batch.size() > _bullet_batch_limit() * 2:
 		return
 	if not _rate_allow_tokens(multiplayer.get_remote_sender_id(), "veffect", 300.0, 30.0):
 		return
@@ -7784,15 +10164,21 @@ func _server_visual_effect_batch(batch: Array) -> void:
 	if net_diag_enabled:
 		net_effect_sent += safe_batch.size()
 	var sender: int = multiplayer.get_remote_sender_id()
+	var out_packed: PackedByteArray = _vis_out_codec().encode_batch(VisualCodecScript.KIND_EFFECT, safe_batch)
+	if out_packed.is_empty():
+		return
 	for peer in multiplayer.get_peers():
 		if peer != sender:
-			rpc_id(peer, "_spawn_visual_effect_batch", safe_batch)
+			rpc_id(peer, "_spawn_visual_effect_batch", out_packed)
 
 
 func _spawn_one_visual(e) -> void:
 	if not (e is Dictionary):
 		return
+	if _is_local_only_visual(str(e.get("s", ""))):
+		return
 	if not remote_effect_allowed(StringName("vis:" + str(e.get("s", "")))):
+		vis_skip_throttle += 1
 		return
 	var comp: Array = _compensate_bullet_spawn(e)
 	_visual.spawn_visual_bullet(
@@ -7834,7 +10220,11 @@ func _compensate_bullet_spawn(e: Dictionary) -> Array:
 
 
 @rpc("authority", "call_remote", "unreliable")
-func _spawn_visual_bullet_batch(batch: Array) -> void:
+func _spawn_visual_bullet_batch(packed: PackedByteArray) -> void:
+	var batch: Array = _decode_visual_batch(packed, multiplayer.get_remote_sender_id())
+	if _visual_backlog_drop():
+		_note_visual_dropped(batch.size())
+		return
 	if net_diag_enabled:
 		net_bullet_recv += batch.size()
 	for e in batch:
@@ -7842,12 +10232,16 @@ func _spawn_visual_bullet_batch(batch: Array) -> void:
 
 
 @rpc("any_peer", "call_remote", "unreliable")
-func _server_visual_bullet_batch(batch: Array) -> void:
+func _server_visual_bullet_batch(packed: PackedByteArray) -> void:
+	var batch: Array = _decode_visual_batch(packed, multiplayer.get_remote_sender_id())
+	if _visual_backlog_drop():
+		_note_visual_dropped(batch.size())
+		return
 	if not multiplayer.is_server():
 		return
 	if not _server_sender_ok():
 		return
-	if batch.size() > BULLET_BATCH_LIMIT * 2:
+	if batch.size() > _bullet_batch_limit() * 2:
 		return
 	if not _rate_allow_tokens(multiplayer.get_remote_sender_id(), "vbullet", 300.0, 30.0):
 		return
@@ -7861,14 +10255,18 @@ func _server_visual_bullet_batch(batch: Array) -> void:
 	if net_diag_enabled:
 		net_bullet_sent += safe_batch.size()
 	var sender: int = multiplayer.get_remote_sender_id()
+	var out_packed: PackedByteArray = _vis_out_codec().encode_batch(VisualCodecScript.KIND_BULLET, safe_batch)
+	if out_packed.is_empty():
+		return
 	for peer in multiplayer.get_peers():
 		if peer != sender:
-			rpc_id(peer, "_spawn_visual_bullet_batch", safe_batch)
+			rpc_id(peer, "_spawn_visual_bullet_batch", out_packed)
 
 
 # 一次性关键投射物（打 coop_reliable_visual meta）：可靠批量
 @rpc("authority", "call_remote", "reliable")
-func _spawn_visual_bullet_reliable_batch(batch: Array) -> void:
+func _spawn_visual_bullet_reliable_batch(packed: PackedByteArray) -> void:
+	var batch: Array = _decode_visual_batch(packed, multiplayer.get_remote_sender_id())
 	if net_diag_enabled:
 		net_bullet_recv += batch.size()
 	for e in batch:
@@ -7876,12 +10274,13 @@ func _spawn_visual_bullet_reliable_batch(batch: Array) -> void:
 
 
 @rpc("any_peer", "call_remote", "reliable")
-func _server_visual_bullet_reliable_batch(batch: Array) -> void:
+func _server_visual_bullet_reliable_batch(packed: PackedByteArray) -> void:
+	var batch: Array = _decode_visual_batch(packed, multiplayer.get_remote_sender_id())
 	if not multiplayer.is_server():
 		return
 	if not _server_sender_ok():
 		return
-	if batch.size() > BULLET_BATCH_LIMIT * 2:
+	if batch.size() > _bullet_batch_limit() * 2:
 		return
 	if not _rate_allow_tokens(multiplayer.get_remote_sender_id(), "vbulletr", 300.0, 30.0):
 		return
@@ -7895,9 +10294,12 @@ func _server_visual_bullet_reliable_batch(batch: Array) -> void:
 	if net_diag_enabled:
 		net_bullet_sent += safe_batch.size()
 	var sender: int = multiplayer.get_remote_sender_id()
+	var out_packed: PackedByteArray = _vis_out_codec().encode_batch(VisualCodecScript.KIND_BULLET, safe_batch)
+	if out_packed.is_empty():
+		return
 	for peer in multiplayer.get_peers():
 		if peer != sender:
-			rpc_id(peer, "_spawn_visual_bullet_reliable_batch", safe_batch)
+			rpc_id(peer, "_spawn_visual_bullet_reliable_batch", out_packed)
 
 
 @rpc("authority", "call_remote", "reliable")
@@ -7948,6 +10350,50 @@ func _server_despawn_visual_effect(effect_id: String) -> void:
 	for peer in multiplayer.get_peers():
 		if peer != sender:
 			rpc_id(peer, "_despawn_visual_effect", effect_id)
+
+
+# 开发/压测：不生成实体，按目标速率把视觉批灌进真实发送路径（验证出口预算/降载）。
+# 条目用不存在的场景名 "devload"：接收端 load() 失败后直接返回，不会产生节点/日志噪声。
+var _dev_flood_kbps: int = 0
+var _dev_flood_timer: Timer = null
+
+
+func dev_start_flood(kbps: int) -> void:
+	_dev_flood_kbps = maxi(0, kbps)
+	if _dev_flood_kbps <= 0:
+		if _dev_flood_timer != null:
+			_dev_flood_timer.stop()
+		return
+	if _dev_flood_timer == null:
+		_dev_flood_timer = Timer.new()
+		_dev_flood_timer.name = "DevFloodTimer"
+		_dev_flood_timer.wait_time = 0.05
+		_dev_flood_timer.process_mode = Node.PROCESS_MODE_ALWAYS
+		_dev_flood_timer.timeout.connect(_dev_flood_tick)
+		add_child(_dev_flood_timer)
+	_dev_flood_timer.start()
+
+
+# 开发/诊断：--coop-visdump 打开后，每个视觉场景首次出现时打印一条完整条目，
+# 便于 host（编码前）与 client（解码后）逐字段对比。
+func dev_set_vis_dump(enabled: bool) -> void:
+	_vis_dump = enabled
+
+
+func _dev_flood_tick() -> void:
+	if _dev_flood_kbps <= 0 or not _net_sendable():
+		return
+	var per_tick: float = float(_dev_flood_kbps) * 1024.0 / 20.0
+	var count: int = maxi(1, int(per_tick / 90.0))
+	var now: int = Time.get_ticks_msec()
+	var batch: Array = []
+	for i in count:
+		batch.append({
+			"s": "devload",
+			"id": "L%d_%d" % [now, i],
+			"p": Vector2(float(i), float(i)),
+		})
+	_send_visual_batches(batch, "_spawn_visual_bullet_batch", "_server_visual_bullet_batch", VisualCodecScript.KIND_BULLET)
 
 
 # 开发/测试：本地生成一发普通子弹（经 ProjectileSpawner → 触发广播）。
@@ -8323,6 +10769,7 @@ func _on_local_coins_get(amount: int) -> void:
 	if multiplayer.is_server():
 		_add_team_coins(multiplayer.get_unique_id(), amount)
 	else:
+		_tx_evt("coin", 64, false)
 		rpc_id(1, "_server_coin_gain", amount)
 
 
@@ -8357,11 +10804,12 @@ func _spawn_coin_remote(net_id: int, position: Vector2, value: int, pick_up: boo
 	coin_by_net_id[net_id] = c
 
 
-# 客机：抛物线金币镜像。按广播的世界折线随时间驱动飞行，落地后才可拾取。
+# 客机：代码弹道金币镜像。按广播的世界折线 + 总时长驱动飞行，静止后才可拾取。
 @rpc("authority", "call_remote", "reliable")
 func _remote_parabola_coin(
 	net_id: int,
 	points: PackedVector2Array,
+	duration: float,
 	value: int,
 	pick_up: bool,
 	ignore_auto_pick: bool = false,
@@ -8390,7 +10838,8 @@ func _remote_parabola_coin(
 	c.set_meta("net_id", net_id)
 	c.set_meta("remote_coin", true)
 	coin_by_net_id[net_id] = c
-	coin_traj[net_id] = {"points": points, "start": Time.get_ticks_msec(), "dur": PARABOLA_DURATION, "pick_up": pick_up}
+	var dur: float = duration if is_finite(duration) else PARABOLA_DURATION
+	coin_traj[net_id] = {"points": points, "start": Time.get_ticks_msec(), "dur": clampf(dur, 0.05, 5.0), "pick_up": pick_up}
 
 
 # 客机：每物理帧推进抛物线镜像位置（墙钟计时，不受 Engine.time_scale 影响）
@@ -8498,6 +10947,7 @@ func _sync_coin_multiplier(value: float) -> void:
 		coin_multiplier_by_peer[multiplayer.get_unique_id()] = value
 	elif _hello_acked and value != _last_sent_coin_multiplier:
 		# 与拾取请求同为可靠 channel 0，保证新倍率先于本次拾取被房主接收。
+		_tx_evt("coin", 48, false)
 		rpc_id(1, "_server_coin_multiplier", value)
 		_last_sent_coin_multiplier = value
 
@@ -8652,6 +11102,7 @@ func _on_medkit_taken(node: Node) -> void:
 			rpc("_remote_medkit_consumed", net_id)
 			_handle_ayane_on_take()
 	else:
+		_tx_evt("coin", 48, false)
 		rpc_id(1, "_server_medkit_taken", net_id)
 
 
@@ -8760,13 +11211,24 @@ func _queue_free_later(node: Node, delay: float) -> void:
 
 
 func _play_scene_transition_start() -> void:
+	_prewarm_visuals()
 	var transition := get_node_or_null("/root/Transition")
 	if transition == null or not transition.has_method("play_left_start"):
 		return
 	if transition.get("is_left_end_start") == true:
 		return
 	transition.call("play_left_start")
-	await transition.left_end_start
+	# 有界等待：暂停、动画被打断或节点被释放时信号可能永不发出；卡死比黑屏更糟。
+	var ended: Array = [false]
+	var on_end := func() -> void: ended[0] = true
+	transition.left_end_start.connect(on_end, CONNECT_ONE_SHOT)
+	var deadline := get_tree().create_timer(3.0, true)
+	while not ended[0] and deadline.time_left > 0.0 and is_instance_valid(transition):
+		await get_tree().process_frame
+	if is_instance_valid(transition) and transition.left_end_start.is_connected(on_end):
+		transition.left_end_start.disconnect(on_end)
+	if not ended[0]:
+		push_warning("[etn_coop] scene transition timeout; continue")
 
 
 func _play_coin_pickup_visual(coin_node: Node, picker_peer: int) -> void:
@@ -8798,6 +11260,17 @@ func _play_coin_pickup_visual(coin_node: Node, picker_peer: int) -> void:
 func send_summoned_state(net_id: int, position: Vector2, velocity: Vector2, rotation: float, state: int = -1, facing: int = 1) -> void:
 	if not _net_connected() or (not multiplayer.is_server() and not _hello_acked):
 		return
+	var now_s: int = Time.get_ticks_msec()
+	if now_s - int(_summoned_state_msec.get(net_id, 0)) < 100:
+		return
+	_summoned_state_msec[net_id] = now_s
+	if _summoned_state_msec.size() > 128:
+		for k in _summoned_state_msec.keys():
+			if now_s - int(_summoned_state_msec[k]) > 5000:
+				_summoned_state_msec.erase(k)
+	if not _tx_evt("char", 72):
+		return
+	snd_summ_bytes += 72
 	if multiplayer.is_server():
 		rpc("_summoned_state_remote", net_id, position, velocity, rotation, state, facing)
 	else:
@@ -8888,6 +11361,7 @@ func _spawn_summoned_local(net_id: int, owner_peer: int, scene_path: String, pos
 	if root == null or scene == null:
 		return
 	var s: Node = scene.instantiate()
+	_mark_mirror_pending(s)
 	s.set_meta("remote_summoned", true)
 	root.add_child(s)
 	s.global_position = position
@@ -9033,6 +11507,7 @@ func _send_summoned_melee_kb(net_id: int, force: int, direction: Vector2) -> voi
 	if multiplayer.is_server():
 		_route_summoned_melee_kb(net_id, force, direction)
 	else:
+		_tx_evt("proc", 64, false)
 		rpc_id(1, "_server_summoned_melee_kb", net_id, force, direction)
 
 
@@ -9075,6 +11550,7 @@ func _send_summoned_upgrade(net_id: int, amount: int, source_id: String, overrid
 	if multiplayer.is_server():
 		_route_summoned_upgrade(net_id, amount, source_id, override)
 	else:
+		_tx_evt("proc", 96, false)
 		rpc_id(1, "_server_summoned_upgrade", net_id, amount, source_id, override)
 
 
@@ -9120,6 +11596,7 @@ func _on_local_summon_level_changed(state: Dictionary, net_id: int) -> void:
 	if multiplayer.is_server():
 		rpc("_remote_summoned_level_state", net_id, safe)
 	else:
+		_tx_evt("proc", 96, false)
 		rpc_id(1, "_server_summoned_level_state", net_id, safe)
 
 
@@ -9353,8 +11830,8 @@ func _complete_revive(target: int) -> void:
 	if not down_peer_ids.get(target, false):
 		return
 	down_peer_ids.erase(target)
-	rpc("_remote_revived", target, REVIVE_HEALTH_MULT)
-	_apply_revive_local(target, REVIVE_HEALTH_MULT)
+	rpc("_remote_revived", target, REVIVE_HEALTH_MULT, true)
+	_apply_revive_local(target, REVIVE_HEALTH_MULT, true)
 
 
 func _local_or_remote_player(peer_id: int) -> Node:
@@ -9366,7 +11843,41 @@ func _local_or_remote_player(peer_id: int) -> Node:
 	return null
 
 
-func _apply_revive_local(peer_id: int, mult: float) -> void:
+const REVIVE_IFRAME_SEC: float = 1.0
+
+
+# 复活瞬间的本机表现：1 秒无敌 + 0.3s 光环动画（各端本地生成，不走网络）
+func _grant_revive_effects(p: Node, is_rescue: bool = false) -> void:
+	if p == null or not is_instance_valid(p):
+		return
+	var timer = p.get("invincible_frame")
+	if timer == null:
+		timer = p.get_node_or_null("InvincibleFrame")
+	if timer != null:
+		timer.start(REVIVE_IFRAME_SEC)
+		if p.has_method("_on_invincible_frame"):
+			p.call("_on_invincible_frame", true)
+	# 音效：复活者本机 EquipSounds3；营救成功时其它玩家听 PowerUp1
+	if p == get_local_player():
+		SoundManager.play_sfx("EquipSounds3")
+	elif is_rescue:
+		SoundManager.play_sfx("PowerUp1")
+	var tree := get_tree()
+	if tree != null:
+		var layer := tree.get_first_node_in_group("SELayer")
+		if layer != null:
+			var fx_script = load("res://mods/etn_coop/net/coop_revive_fx.gd")
+			if fx_script == null:
+				Trail.mark("revive_fx", "missing_script")
+			else:
+				var fx: Node = fx_script.new()
+				layer.add_child(fx)
+				if fx is Node2D and p is Node2D:
+					(fx as Node2D).global_position = (p as Node2D).global_position + Vector2(0, 8)
+	Trail.mark("revive", "peer=%d iframe=%.1f" % [int(p.get("peer_id") if p.get("peer_id") != null else -1), REVIVE_IFRAME_SEC])
+
+
+func _apply_revive_local(peer_id: int, mult: float, is_rescue: bool = false) -> void:
 	var p: Node = null
 	if peer_id == multiplayer.get_unique_id():
 		p = get_local_player()
@@ -9374,6 +11885,7 @@ func _apply_revive_local(peer_id: int, mult: float) -> void:
 		p = player_by_peer_id.get(peer_id)
 	if p == null or not is_instance_valid(p):
 		return
+	var was_downed: bool = p.get("is_downed") == true
 	if p.has_method("set_downed_state"):
 		p.set_downed_state(false)
 	if peer_id == multiplayer.get_unique_id():
@@ -9382,6 +11894,8 @@ func _apply_revive_local(peer_id: int, mult: float) -> void:
 		if p.stats.get("player_dead") != null:
 			p.stats.player_dead = false
 		p.stats.hp = maxi(1, int(round(float(p.stats.max_hp) * mult)))
+	if was_downed:
+		_grant_revive_effects(p, is_rescue)
 
 
 @rpc("authority", "call_remote", "reliable")
@@ -9450,8 +11964,8 @@ func _server_player_up() -> void:
 
 
 @rpc("authority", "call_remote", "reliable")
-func _remote_revived(peer_id: int, mult: float) -> void:
-	_apply_revive_local(peer_id, mult)
+func _remote_revived(peer_id: int, mult: float, is_rescue: bool = false) -> void:
+	_apply_revive_local(peer_id, mult, is_rescue)
 
 
 # ---------------- 团队流程（game over / 回合升级就绪） ----------------
@@ -9563,7 +12077,7 @@ func _remote_round_upgrade_end() -> void:
 # ---------------- 场景切换广播 ----------------
 
 @rpc("any_peer", "call_remote", "reliable")
-func _server_player_selected(player_scene: String) -> void:
+func _server_player_selected(player_scene: String, token: int = 0) -> void:
 	if not multiplayer.is_server():
 		return
 	if not _server_sender_ok():
@@ -9577,6 +12091,8 @@ func _server_player_selected(player_scene: String) -> void:
 	selected_player_scene_by_peer[sender] = player_scene
 	player_scene_by_peer[sender] = player_scene
 	print("[etn_coop] peer %d selected %s" % [sender, player_scene])
+	# 回执：客机据此确认 host 记录一致（不一致会重发，最多 3 次）
+	rpc_id(sender, "_selection_ack", player_scene, token)
 	# 新流程：准备房选人阶段只记录，由房主选完难度后统一开战（见 begin_battle / change_scene gate）
 	if _select_flow_active:
 		return
@@ -9585,7 +12101,13 @@ func _server_player_selected(player_scene: String) -> void:
 	# 已开打（中途加入）：不重载整局（否则会触发 first_round/reset_data 清空 host 进度与属性），
 	# 只让新玩家进入当前场景，并为其补生在局玩家镜像与已存在敌人/召唤物。
 	if battle_active and current_scene_path != "":
+		# 幂等：该 peer 已在当前场景（已上报 scene_ready）或已发过同场景 → 只更新选人记录，不重载
+		var already_in_scene: bool = scene_ready_peers.has(sender) or str(_midrun_scene_sent.get(sender, "")) == current_scene_path
+		if already_in_scene:
+			Trail.mark("midrun_skip", "peer=%d scene=%s" % [sender, current_scene_path])
+			return
 		print("[etn_coop] mid-run join: peer %d -> %s (no session reload)" % [sender, current_scene_path])
+		_midrun_scene_sent[sender] = current_scene_path
 		rpc_id(sender, "_remote_change_scene", current_scene_path, player_scene_by_peer, _build_level_state())
 		for other in multiplayer.get_peers():
 			if other != sender:
@@ -9602,9 +12124,15 @@ func _server_player_selected(player_scene: String) -> void:
 func _remote_change_scene(path: String, roster: Dictionary, level_state: Dictionary = {}) -> void:
 	if multiplayer.is_server():
 		return
+	if path != "" and (path == _local_scene_ready_path or path == _battle_scene_loading):
+		# 已就绪 / 正在加载同一场景：只更新 roster，绝不重复加载（重发时命中）
+		player_scene_by_peer = roster.duplicate()
+		Trail.mark("remote_scene_skip", "path=%s ready=%s loading=%s" % [path, _local_scene_ready_path, _battle_scene_loading])
+		return
+	_battle_scene_loading = path
 	Trail.mark("remote_scene", "path=%s roster=%d paused=%s phase=%d" % [path, roster.size(), str(get_tree().paused), _flow_phase])
-	# 离开选人/准备房前先解除暂停，保证转场与目标场景正常运行
-	_set_select_pause(false)
+	# 离开选人/准备房/升级结算前清掉所有"临时暂停"：带暂停切场景会让转场与新场景一起卡住。
+	_clear_transient_pauses()
 	var generation: int = _session_generation
 	var source_peer = multiplayer.multiplayer_peer
 	# 复刻 host 的场景切换转场（左划开始 → 结束再真正切场景）
@@ -9631,6 +12159,8 @@ func _remote_change_scene(path: String, roster: Dictionary, level_state: Diction
 	await get_tree().process_frame
 	if generation != _session_generation or not _net_connected() or multiplayer.multiplayer_peer != source_peer:
 		return
+	# 新场景若已带 ChipManager，立刻补上之前缓存的词条状态（不必等重试 timer）
+	_flush_pending_chip()
 	rpc_id(1, "_client_scene_ready")
 	Trail.mark("remote_scene", "ready_sent")
 
@@ -9709,10 +12239,37 @@ func _remote_player_hurt(peer_id: int, iframe_duration: float = 0.5) -> void:
 	var timer = p.get("invincible_frame")
 	if timer == null:
 		timer = p.get_node_or_null("InvincibleFrame")
-	if timer != null and timer.has_method("start"):
+	if timer == null:
+		# 没有计时器就不能只调 _on_invincible_frame：flash_opacity 只在 timeout 回调里复位，
+		# 不走计时器必然永久闪白。跳过并留痕（每个 peer 只警告一次）。
+		_warn_missing_iframe_once(peer_id, p)
+		return
+	if timer.has_method("start"):
 		timer.call("start", duration)
 	if p.has_method("_on_invincible_frame"):
 		p.call("_on_invincible_frame", true)
+	# 兜底：duration + 0.3s 后若计时器已不在运行、镜像却仍在闪，强制结束。
+	_schedule_mirror_flash_clear(p, duration)
+
+
+func _warn_missing_iframe_once(peer_id: int, p: Node) -> void:
+	if _missing_iframe_warned.has(peer_id):
+		return
+	_missing_iframe_warned[peer_id] = true
+	push_warning("[etn_coop] peer=%d mirror has no InvincibleFrame; hurt flash skipped (%s)" % [peer_id, str(p.scene_file_path)])
+
+
+func _schedule_mirror_flash_clear(p: Node, duration: float) -> void:
+	if p == null or not is_instance_valid(p) or not is_inside_tree():
+		return
+	await get_tree().create_timer(duration + 0.3).timeout
+	if p == null or not is_instance_valid(p):
+		return
+	var timer = p.get("invincible_frame")
+	if timer != null and timer.has_method("start") and float(timer.get("time_left")) > 0.0:
+		return
+	if p.has_method("_stop_invincible_flash"):
+		p.call("_stop_invincible_flash")
 
 
 @rpc("any_peer", "call_remote", "unreliable")
@@ -9741,6 +12298,13 @@ func _on_local_gun_shoot(gun: Node) -> void:
 		if gp.length() <= 64 and not gp.contains(".."):
 			gun_path = gp
 	var pid: int = multiplayer.get_unique_id()
+	var now_g: int = Time.get_ticks_msec()
+	if now_g - _gun_shoot_msec < 50:
+		return
+	_gun_shoot_msec = now_g
+	if not _tx_evt("char", 64):
+		return
+	snd_char_bytes += 64
 	if multiplayer.is_server():
 		rpc("_remote_player_gun_shoot", pid, gun_path)
 	else:
@@ -9920,11 +12484,13 @@ func _send_player_buff(peer: int, apply: bool, buff_path: String, value: Array, 
 			return
 		rpc_id(peer, "_remote_player_buff", apply, buff_path, value, source_id)
 	else:
-		rpc_id(1, "_server_relay_player_buff", peer, apply, buff_path, value, source_id)
+		var rkey: String = "p|%d|%s" % [int(peer), str(buff_path)]
+		if _relay_buff_allow(rkey, apply, value):
+			_queue_relay_buff(rkey, {"peer": int(peer), "apply": apply, "path": str(buff_path), "value": value, "src": str(source_id)})
 
 
 @rpc("any_peer", "call_remote", "reliable")
-func _server_relay_player_buff(peer: int, apply: bool, buff_path: String, value: Array, source_id: String) -> void:
+func _server_relay_player_buff(peer: int, apply: bool, buff_path: String, value: Array, source_id: String, count: int = 1) -> void:
 	if not multiplayer.is_server():
 		return
 	if not _server_sender_ok():
@@ -9934,16 +12500,17 @@ func _server_relay_player_buff(peer: int, apply: bool, buff_path: String, value:
 	if not _is_valid_relay_peer(peer):
 		return
 	var clean_value: Array = _sanitize_buff_value(value)
+	var loops: int = clampi(count, 1, 16)
 	if peer == multiplayer.get_unique_id():
 		# 目标为房主自身：get_peers() 不含自身，且 rpc("call_remote") 不回本地 → 直接本地调用
-		_remote_player_buff(apply, buff_path, clean_value, source_id)
+		_remote_player_buff(apply, buff_path, clean_value, source_id, loops)
 	else:
-		rpc_id(peer, "_remote_player_buff", apply, buff_path, clean_value, source_id)
+		rpc_id(peer, "_remote_player_buff", apply, buff_path, clean_value, source_id, loops)
 
 
 # 目标端：对真实玩家按来源上/去 buff（source_refcount 类，如 kei_buff）
 @rpc("authority", "call_remote", "reliable")
-func _remote_player_buff(apply: bool, buff_path: String, value: Array, source_id: String) -> void:
+func _remote_player_buff(apply: bool, buff_path: String, value: Array, source_id: String, count: int = 1) -> void:
 	var p = get_local_player()
 	if p == null or not is_instance_valid(p):
 		return
@@ -9951,7 +12518,8 @@ func _remote_player_buff(apply: bool, buff_path: String, value: Array, source_id
 	if not (buff is Buff):
 		return
 	if apply:
-		BuffRouter.apply_buff(p, buff, value, source_id)
+		for _i in clampi(count, 1, 16):
+			BuffRouter.apply_buff(p, buff, value, source_id)
 	else:
 		BuffRouter.remove_source(p, buff, source_id)
 
@@ -9967,6 +12535,7 @@ func _on_local_support_ex_active() -> void:
 	if multiplayer.is_server():
 		rpc("_remote_support_ex", pid, sid, true)
 	else:
+		_tx_evt("proc", 96, false)
 		rpc_id(1, "_server_support_ex", pid, sid, true)
 
 
@@ -9983,6 +12552,7 @@ func _on_local_support_ex_end() -> void:
 	if multiplayer.is_server():
 		rpc("_remote_support_ex", pid, _local_support_id(), false)
 	else:
+		_tx_evt("proc", 96, false)
 		rpc_id(1, "_server_support_ex", pid, _local_support_id(), false)
 
 
@@ -10048,8 +12618,8 @@ func _apply_support_aura_visual(owner: int, support_id: String, active: bool) ->
 		if area != null:
 			# 本体光环迁移到 BuffAura 后 Area2D 自带脚本；视觉代理须一并清脚本，否则 _ready 会入 CoopSummonAura 组
 			area.set_script(null)
-			area.monitoring = false
-			area.monitorable = false
+			area.set_deferred("monitoring", false)
+			area.set_deferred("monitorable", false)
 		if support_id == "serina":
 			var aura = inst.get_node_or_null("Aura")
 			if aura != null:
@@ -10093,6 +12663,7 @@ func _on_support_heal(owner: Node) -> void:
 	if multiplayer.is_server():
 		rpc("_remote_support_heal", pid)
 	else:
+		_tx_evt("proc", 48, false)
 		rpc_id(1, "_server_support_heal")
 
 
@@ -10206,11 +12777,13 @@ func _send_summoned_buff(owner_peer: int, net_id: int, apply: bool, buff_path: S
 			return
 		rpc_id(owner_peer, "_remote_summoned_buff", net_id, apply, buff_path, value, source_id)
 	else:
-		rpc_id(1, "_server_relay_summoned_buff", owner_peer, net_id, apply, buff_path, value, source_id)
+		var rskey: String = "s|%d|%d|%s" % [int(owner_peer), net_id, str(buff_path)]
+		if _relay_buff_allow(rskey, apply, value):
+			_queue_relay_buff(rskey, {"summoned": true, "owner": int(owner_peer), "nid": net_id, "apply": apply, "path": str(buff_path), "value": value, "src": str(source_id)})
 
 
 @rpc("any_peer", "call_remote", "reliable")
-func _server_relay_summoned_buff(owner_peer: int, net_id: int, apply: bool, buff_path: String, value: Array, source_id: String) -> void:
+func _server_relay_summoned_buff(owner_peer: int, net_id: int, apply: bool, buff_path: String, value: Array, source_id: String, count: int = 1) -> void:
 	if not multiplayer.is_server():
 		return
 	if not _server_sender_ok():
@@ -10222,20 +12795,21 @@ func _server_relay_summoned_buff(owner_peer: int, net_id: int, apply: bool, buff
 	if int(summoned_owner_by_net_id.get(net_id, -1)) != owner_peer:
 		return
 	var clean_value: Array = _sanitize_buff_value(value)
+	var loops: int = clampi(count, 1, 16)
 	if owner_peer == multiplayer.get_unique_id():
 		# 目标为房主自身（含房主拥有的召唤物）：直接本地调用，理由同 _server_relay_player_buff
-		_remote_summoned_buff(net_id, apply, buff_path, clean_value, source_id)
+		_remote_summoned_buff(net_id, apply, buff_path, clean_value, source_id, loops)
 	else:
-		rpc_id(owner_peer, "_remote_summoned_buff", net_id, apply, buff_path, clean_value, source_id)
+		rpc_id(owner_peer, "_remote_summoned_buff", net_id, apply, buff_path, clean_value, source_id, loops)
 
 
 @rpc("authority", "call_remote", "reliable")
-func _remote_summoned_buff(net_id: int, apply: bool, buff_path: String, value: Array, source_id: String) -> void:
-	_apply_summoned_buff_local(net_id, apply, buff_path, value, source_id)
+func _remote_summoned_buff(net_id: int, apply: bool, buff_path: String, value: Array, source_id: String, count: int = 1) -> void:
+	_apply_summoned_buff_local(net_id, apply, buff_path, value, source_id, count)
 
 
 # 在召唤物 owner 端：对真实召唤物按其 buff_manager 上/去来源 buff
-func _apply_summoned_buff_local(net_id: int, apply: bool, buff_path: String, value: Array, source_id: String) -> void:
+func _apply_summoned_buff_local(net_id: int, apply: bool, buff_path: String, value: Array, source_id: String, count: int = 1) -> void:
 	if int(summoned_owner_by_net_id.get(net_id, -1)) != multiplayer.get_unique_id():
 		return
 	var s = summoned_by_net_id.get(net_id)
@@ -10245,7 +12819,8 @@ func _apply_summoned_buff_local(net_id: int, apply: bool, buff_path: String, val
 	if not (buff is Buff):
 		return
 	if apply:
-		BuffRouter.apply_buff(s, buff, value, source_id)
+		for _i in clampi(count, 1, 16):
+			BuffRouter.apply_buff(s, buff, value, source_id)
 	else:
 		BuffRouter.remove_source(s, buff, source_id)
 
@@ -10352,6 +12927,9 @@ func will_enemy_hit_kill(enemy: Node, damage: int) -> bool:
 func _predict_enemy_death(enemy: Node, damage: int, net_id: int) -> void:
 	if enemy == null or not is_instance_valid(enemy):
 		return
+	# BOSS/多部件敌人：host 有减伤/伤害上限，预测死亡会导致血条"死后复活"来回跳
+	if enemy.is_in_group("BOSS") or str(enemy.scene_file_path).contains("/boss/") or enemy.get("body_part") != null:
+		return
 	if enemy.has_meta("predicted_dead") and enemy.get_meta("predicted_dead"):
 		return
 	var stats = enemy.get("stats")
@@ -10376,7 +12954,8 @@ func _predict_enemy_death(enemy: Node, damage: int, net_id: int) -> void:
 	if enemy.has_method("play_network_death"):
 		return
 	var icon: String = str(enemy.icon) if enemy.get("icon") != null else ""
-	if icon != "":
+	if icon != "" and not _death_fx_recent(net_id):
+		_mark_death_fx(net_id)
 		_play_enemy_death(icon, enemy.global_position)
 	if enemy.has_method("idle_state"):
 		enemy.call("idle_state")
@@ -10587,7 +13166,8 @@ func broadcast_boss_pattern_event(net_id: int, event_data: Dictionary) -> void:
 	if multiplayer.is_server():
 		rpc("_remote_boss_pattern_event", net_id, event_data)
 	else:
-		rpc_id(1, "_server_boss_pattern_event", net_id, event_data)
+		if _tx_evt("char", 120):
+			rpc_id(1, "_server_boss_pattern_event", net_id, event_data)
 
 
 @rpc("any_peer", "call_remote", "reliable")
@@ -10715,10 +13295,36 @@ func report_local_selection(scene_path: String) -> void:
 	if resolved_scene == "":
 		resolved_scene = scene_path
 	local_player_scene_path = resolved_scene
+	# 选人保险：记录"玩家明确选择"的时刻与场景，供轮询宽限/回执/对账使用
+	_selected_scene = resolved_scene
+	_selection_set_msec = Time.get_ticks_msec()
+	_selection_repair_done = false
+	_selection_resync_count = 0
+	Trail.mark("selection", "requested=%s resolved=%s" % [scene_path, resolved_scene])
 	var pid: int = multiplayer.get_unique_id()
 	selected_player_scene_by_peer[pid] = resolved_scene
-	if not multiplayer.is_server():
-		rpc_id(1, "_server_player_selected", resolved_scene)
+	if multiplayer.is_server():
+		# host 自己换角色时也要把 roster 推给客机：否则客机直到下次自己选人才会刷新，
+		# 表现为「host 切角色后客机看不到 host，客机一选人又出现」。
+		var roster_scene: String = _roster_scene_of_local()
+		if roster_scene == "":
+			roster_scene = resolved_scene
+		player_scene_by_peer[pid] = roster_scene
+		if battle_active:
+			rpc("_client_sync_roster", player_scene_by_peer)
+			Trail.mark("roster_push", "host scene=%s" % roster_scene)
+	else:
+		_req_send("select", {"path": resolved_scene})
+
+
+# host 推 roster 用：实际玩家节点的场景优先，其次记录值；避免把空串推给客机（客机会直接不生成镜像）
+func _roster_scene_of_local() -> String:
+	var p := get_local_player()
+	if p != null and is_instance_valid(p):
+		var sp: String = str(p.scene_file_path)
+		if sp != "":
+			return sp
+	return local_player_scene_path
 
 
 # 本机所选支援 id（""/"null" = 无）：记录并同步给全端；mods 为其对 medical_kit 生成的影响
@@ -10764,16 +13370,17 @@ func report_select_ready(ready: bool) -> void:
 	if multiplayer.is_server():
 		_set_select_ready(multiplayer.get_unique_id(), ready)
 	else:
-		rpc_id(1, "_server_select_ready", ready)
+		_req_send("ready", {"ready": ready})
 
 
 @rpc("any_peer", "call_remote", "reliable")
-func _server_select_ready(ready: bool) -> void:
+func _server_select_ready(ready: bool, token: int = 0) -> void:
 	if not multiplayer.is_server():
 		return
 	if not _server_sender_ok():
 		return
 	_set_select_ready(multiplayer.get_remote_sender_id(), ready)
+	rpc_id(multiplayer.get_remote_sender_id(), "_select_ready_ack", token)
 
 
 func _set_select_ready(pid: int, ready: bool) -> void:
@@ -10875,6 +13482,15 @@ func begin_battle(scene_path: String = "") -> void:
 func _set_select_pause(on: bool) -> void:
 	if get_tree() != null:
 		get_tree().paused = on
+
+
+# 清掉所有"临时暂停"来源（选人页 / 升级结算 / 过场）：带暂停切场景会让转场 await 永不完结，
+# 玩家看到的是"卡在黑屏"，与崩溃难以区分。
+func _clear_transient_pauses() -> void:
+	_in_round_upgrade = false
+	_set_select_pause(false)
+	if get_tree() != null:
+		get_tree().paused = false
 
 
 func is_all_ready() -> bool:
@@ -11373,6 +13989,8 @@ func host_game(port: int = DEFAULT_PORT) -> bool:
 	_abort_reconnect_for_new_session()
 	_begin_session_epoch()
 	close_connection()
+	# 单机/上一局残留的远端镜像必须清掉：否则再次开房会复用旧节点、或同一 peer 叠出第二个。
+	_clear_all_remote_players()
 	transport = TransportScript.create_lan_host(port, MAX_PLAYERS)
 	if transport == null or transport.peer == null:
 		var msg: String = transport.status_message if transport != null else "null transport"
@@ -11401,6 +14019,7 @@ func join_game(ip: String, port: int = DEFAULT_PORT) -> bool:
 	_abort_reconnect_for_new_session()
 	_begin_session_epoch()
 	close_connection()
+	_clear_all_remote_players()
 	transport = TransportScript.create_lan_client(ip, port)
 	if transport == null or transport.peer == null:
 		var msg: String = transport.status_message if transport != null else "null transport"
@@ -11560,10 +14179,19 @@ func _on_relay_error(message: String) -> void:
 	_hello_acked = false
 	_relay_connect_in_flight = false
 	connection_status_changed.emit("Relay failed: %s" % message)
+	var low: String = message.to_lower()
+	# 服务端明确拒绝（版本过旧/房满/已在房内）：断开并回菜单，避免挂着反复重试白占带宽
+	var fatal: bool = low.contains("outdated") or low.contains("room full") or low.contains("already in room")
 	if _reconnecting:
-		# 房间已不存在（房主关房）→ 立即回菜单；其它错误继续退避重试
-		if message.to_lower().contains("not found"):
+		if low.contains("not found") or fatal:
 			_abort_reconnect_to_menu()
+		return
+	if fatal:
+		if low.contains("outdated"):
+			show_coop_toast(tr("coop_relay_outdated"))
+		else:
+			show_coop_toast(tr("coop_version_mismatch"))
+		_abort_join_to_menu()
 		return
 
 
@@ -11624,6 +14252,8 @@ func close_connection(silent: bool = false) -> void:
 	if not _reconnecting:
 		if get_tree() != null:
 			_reset_run_state()
+			# 会话结束必须清暂停：否则下次进游戏会带着上一局的升级/选人暂停
+			_clear_transient_pauses()
 		_last_join_params.clear()
 	if not silent and not _reconnecting:
 		connection_status_changed.emit("offline")
@@ -11780,12 +14410,13 @@ func get_network_debug_text() -> String:
 		return "coop: off"
 	var role: String = "host" if multiplayer.is_server() else "client"
 	var lines: Array[String] = []
-	lines.append("coop %s  id=%d  peers=%d" % [role, multiplayer.get_unique_id(), multiplayer.get_peers().size()])
+	lines.append("coop %s  id=%d  peers=%d  mod=%s build=%s" % [role, multiplayer.get_unique_id(), multiplayer.get_peers().size(), MOD_VERSION, _mod_build if _mod_build != "" else "-"])
 	lines.append("rtt=%.0fms  jitter=%.0fms  loss=%.0f%%" % [_sample_avg(_latency_samples), _sample_jitter(), _sample_loss()])
 	var send_fail: int = 0
 	if transport != null and transport.peer != null and transport.peer.get("send_fail_count") != null:
 		send_fail = int(transport.peer.send_fail_count)
 	lines.append("comp  extrap=%d  snap=%d  send_fail=%d  sim(lat=%.0f jit=%.0f loss=%.0f)" % [net_extrap_events, net_hard_snaps, send_fail, sim_latency_ms, sim_jitter_ms, sim_loss_pct])
+	lines.append("relay  backlog=%d  peak=%d  vis_drop=%d  item_skip=%d" % [_relay_backlog(), _relay_backlog_peak(), net_visual_dropped, net_item_state_skipped])
 	lines.append("hit  ok=%d  reject=%d" % [net_hits_accepted, net_hits_rejected])
 	lines.append("bullet  tx=%.1f/s rx=%.1f/s" % [_rate_bullet_sent, _rate_bullet_recv])
 	lines.append("effect  tx=%.1f/s rx=%.1f/s" % [_rate_effect_sent, _rate_effect_recv])
@@ -11843,3 +14474,107 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_F12:
 			close_session()
 			print("[etn_coop] connection closed")
+
+# ---------------- Ako 链子锁目标同步 ----------------
+# 链子克隆只有场景本体，locked_enemy 永远是 null → 锁段画不出来（只剩施法者身上那段）。
+# 这里由拥有者检测锁目标变化，随 effect 通道带 tn（目标敌人 net id）广播，接收端绑定。
+
+var _chain_watch_timer: float = 0.0
+var _chain_lock_state: Dictionary = {}
+var _chain_clones: Dictionary = {}
+
+
+func _watch_chain_locks() -> void:
+	if not _net_connected():
+		return
+	var root := get_tree().get_first_node_in_group("PlayerRoot")
+	if root == null:
+		return
+	# 只扫"玩家 → 一级子节点"：链子挂在角色节点下，全子树递归在装备/召唤多时会明显变贵
+	var found: Dictionary = {}
+	var chains: Array = []
+	for p in root.get_children():
+		if p == null or not is_instance_valid(p):
+			continue
+		for child in p.get_children():
+			if child != null and is_instance_valid(child) and str(child.scene_file_path).ends_with("ako_chain.tscn"):
+				chains.append(child)
+	for child in chains:
+		var iid: int = child.get_instance_id()
+		var tn: int = 0
+		var le = child.get("locked_enemy")
+		if le != null and is_instance_valid(le):
+			tn = int(le.get_meta("net_id", 0))
+		var st: int = int(child.get("state")) if child.get("state") != null else 0
+		found[iid] = true
+		var prev = _chain_lock_state.get(iid)
+		if prev == null or int(prev[0]) != tn or int(prev[1]) != st:
+			_chain_lock_state[iid] = [tn, st]
+			_broadcast_chain_state(child, tn)
+	if _chain_lock_state.size() > 64:
+		for k in _chain_lock_state.keys():
+			if not found.has(k):
+				_chain_lock_state.erase(k)
+
+
+func _broadcast_chain_state(node: Node, tn: int) -> void:
+	if not (node is Node2D):
+		return
+	var eid: String = str(node.get_meta("coop_chain_net_id", ""))
+	if eid == "":
+		eid = "%d_%d" % [multiplayer.get_unique_id(), _next_visual_id]
+		_next_visual_id += 1
+		node.set_meta("coop_chain_net_id", eid)
+	_queue_effect({
+		"s": str(node.scene_file_path),
+		"p": (node as Node2D).global_position,
+		"r": 0.0,
+		"sc": Vector2.ONE,
+		"g": "SELayer",
+		"m": "",
+		"pr": {},
+		"eid": eid,
+		"tn": tn,
+	})
+
+
+func _bind_chain_clone(effect_id: String, entry: Dictionary) -> void:
+	var node = _visual.get_effect(effect_id)
+	if node == null or not is_instance_valid(node):
+		return
+	var owner_id: int = 0
+	var parts: PackedStringArray = effect_id.split("_", false)
+	if parts.size() >= 2 and parts[0].is_valid_int():
+		owner_id = parts[0].to_int()
+	var caster: Node = null
+	if owner_id > 0:
+		caster = get_local_player() if owner_id == multiplayer.get_unique_id() else player_by_peer_id.get(owner_id)
+	if caster == null:
+		caster = get_local_player()
+	var tn: int = int(entry.get("tn", 0))
+	var target: Node = null
+	if tn > 0:
+		target = enemy_by_net_id.get(tn)
+	node.set("player", caster)
+	node.set("locked_enemy", target)
+	node.set("state", 2 if target != null else 0)
+	node.set("lock_timer", 1e9)
+	node.set("convert_power", 0)
+	node.set("convert_interval", 9999.0)
+	if node is CanvasItem:
+		(node as CanvasItem).visible = target != null
+	_chain_clones[effect_id] = {"node": node, "caster": caster, "tn": tn}
+
+
+func _tick_chain_clones() -> void:
+	for eid in _chain_clones.keys():
+		var rec: Dictionary = _chain_clones[eid]
+		var node = rec.get("node")
+		var caster = rec.get("caster")
+		if node == null or not is_instance_valid(node):
+			_chain_clones.erase(eid)
+			continue
+		if caster == null or not is_instance_valid(caster) or not (caster is Node2D):
+			continue
+		if node is Node2D:
+			(node as Node2D).global_position = (caster as Node2D).global_position

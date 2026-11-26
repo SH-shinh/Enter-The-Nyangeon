@@ -23,6 +23,11 @@ static var _file: FileAccess = null
 static var _enabled: bool = true
 static var _sealed: bool = false
 static var _bytes: int = 0
+
+
+# 当前文件已写字节数（诊断用：PERF 行统计 trail 写入量）
+static func bytes() -> int:
+	return _bytes
 static var _rate_window_msec: int = 0
 static var _rate_lines: int = 0
 static var _dropped: int = 0
@@ -51,6 +56,13 @@ static func open() -> void:
 	_file = FileAccess.open(PATH, FileAccess.READ_WRITE)
 	if _file == null:
 		_file = FileAccess.open(PATH, FileAccess.WRITE)
+	if _file == null:
+		# 主日志被其它实例占用（Windows 上会出现）：退到带 PID 的独立文件。
+		# 否则后续所有埋点会被静默丢弃（本机 12 个残留进程就造成过整份现场缺失）。
+		var alt: String = "user://logs/coop_trail_%d.log" % OS.get_process_id()
+		_file = FileAccess.open(alt, FileAccess.WRITE)
+		if _file != null:
+			push_warning("[etn_coop] trail log busy; fallback to %s" % alt)
 	if _file != null:
 		_file.seek_end()
 		_bytes = int(_file.get_position())

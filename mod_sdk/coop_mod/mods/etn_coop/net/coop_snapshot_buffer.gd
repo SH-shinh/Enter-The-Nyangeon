@@ -15,15 +15,20 @@ const EXTRAP_MAX_MS: int = 120
 const TELEPORT_DIST: float = 220.0
 const TELEPORT_DIST_SQUARED: float = TELEPORT_DIST * TELEPORT_DIST
 const GAP_EMA_ALPHA: float = 0.3
+# push_mono 的单调时间轴参数：突发到达时按 MIN_STEP_MS 步进铺开，最多回退 MAX_BURST_LAG_MS，
+# 允许最多 FUTURE_TOL_MS 的前视余量（避免把时间轴推到插值延迟窗口之外）。
+const MIN_STEP_MS: int = 10
+const MAX_BURST_LAG_MS: int = 250
+const FUTURE_TOL_MS: int = 16
 
 # 自适应插值延迟：max(1.35×快照间隔, 1.2×实测间隔(封顶 2.2×间隔), rtt/2 + 1.5×jitter)，
 # clamp 到 [min,max]（秒）。下限由 2×interval 降到 1.35×，显著减小固定滞后。
 const DELAY_MIN: float = 0.033
-const DELAY_MAX: float = 0.20
+const DELAY_MAX: float = 0.30
 const DELAY_BASE_MULT: float = 1.35
 const DELAY_OBS_CAP_MULT: float = 2.2
 const DELAY_OBS_MULT: float = 1.2
-const DELAY_JITTER_MULT: float = 1.5
+const DELAY_JITTER_MULT: float = 2.0
 
 var _t: PackedInt64Array = PackedInt64Array()
 var _pos: PackedVector2Array = PackedVector2Array()
@@ -32,6 +37,8 @@ var _vel: PackedVector2Array = PackedVector2Array()
 var _look: PackedVector2Array = PackedVector2Array()
 var _avg_gap_ms: float = 0.0
 var _last_push_ms: int = 0
+# push_mono 的时间轴游标（0 = 尚未入队）
+var _mono_t: int = 0
 
 # 最近一次 sample 是否处于外推状态（供 HUD 统计）
 var extrapolating: bool = false
@@ -59,6 +66,7 @@ func clear() -> void:
 	_vel = PackedVector2Array()
 	_look = PackedVector2Array()
 	extrapolating = false
+	_mono_t = 0
 
 
 func size() -> int:
@@ -80,6 +88,18 @@ func consume_teleport() -> bool:
 	var v: bool = teleported
 	teleported = false
 	return v
+
+
+# 单调时间轴入队：突发到达（中继/ENet 把多条快照挤在同一物理帧）时，若直接用到达毫秒，
+# 多条会被 push() 的「同毫秒覆盖」压成一条，插值时间轴出现空洞 → 硬校正。
+# 这里把一帧内的多条按 MIN_STEP_MS 步进铺在 now 之前（最多回退 MAX_BURST_LAG_MS），
+# 单条按时到达时与 push(now,...) 等价。
+func push_mono(now_msec: int, p: Vector2, v: Vector2, look: Vector2 = Vector2.ZERO) -> void:
+	var t: int = now_msec
+	if _mono_t > 0:
+		t = mini(maxi(now_msec - MAX_BURST_LAG_MS, _mono_t + MIN_STEP_MS), now_msec + FUTURE_TOL_MS)
+	_mono_t = t
+	push(t, p, v, look)
 
 
 func push(t_msec: int, p: Vector2, v: Vector2, look: Vector2 = Vector2.ZERO) -> void:

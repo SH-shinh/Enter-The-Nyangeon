@@ -1,6 +1,174 @@
 # ETN Coop Mod（骨架）
 
-> 当前发布版本 **0.1.16**（以 `mods/etn_coop/mod.json` 为准），协议 **v7**；最低本体版本声明为 **v0.5.2.0**。运行时仍要求本体具备 `enemy_damage_calculating` 前置伤害接口，本体与 Mod 需配套更新；当前不整文件覆盖本体脚本。
+> 当前发布版本 **0.2.8**（以 `mods/etn_coop/mod.json` 为准），协议 **v13**；最低本体版本声明为 **v0.5.3.1-test**。运行时仍要求本体具备 `enemy_damage_calculating` 前置伤害接口，本体与 Mod 需配套更新；当前不整文件覆盖本体脚本。
+
+## 2026-11-24 0.2.2：mod 构建不一致警告（版本号提升）
+
+- **版本号**：`MOD_VERSION` 0.2.1 → **0.2.2**（协议仍 v13）；0.2.1 客户端会被拒绝并提示双方版本。
+- **构建指纹**：`build_coop_mod.ps1` 打包后对源文件（相对路径 + 内容）算 SHA-256，前 12 位写入**分发用 mod.json** 的 `build` 字段（源 mod.json 不动，git 保持干净）。
+- **握手**：`_client_hello` 新增末位 `build` 参数；同版本号但 build 不同 → **放行并双向警告**（host toast + 客机 toast + trail `mod_mismatch`），不再静默混连。
+- **版本不一致提示**：`_hello_reject` 增加主机版本参数，客机显示 `主机 X / 你 Y` 的具体文案。
+- **可见性**：F4 HUD 首行显示 `mod=0.2.2 build=xxxxxxxxxxxx`，便于对账。
+## 2026-11-26 0.2.8（可靠性）：选人 / 就绪 / 换角色改成可靠请求
+
+- **统一请求框架** `_req_send/_req_tick/_req_ack`：未握手时保留、断线恢复自动补发、每 500ms 重发、8s 超时留痕；单槽覆盖（只保留最后一次意图）。
+- **选角色 / 就绪 / 换角色** 三个入口全部改走框架，host 端对应处理器带 `token` 并回执（`_selection_ack` / `_select_ready_ack` / `_change_ack`），换人还带失败原因（unsafe_scene / bad_position）。
+- **优先级**：有请求待确认时 `_urgent_until` 窗口内 `buff/visual/coin/char/follow` 一律让路（命中不丢），保证请求不被洪泛排在队尾。
+- **关键修复：重复换场景**。`_server_player_selected` 在 `battle_active` 下每次都会给该 peer 发 `_remote_change_scene`，配合选人重试会**反复重载客机场景**（日志里 "client battle start / first_round_add" 重复出现，fps 掉到个位数）；现在：
+  - host 侧幂等：peer 已 `scene_ready` 或已发过同场景 → 只更新选人记录（`midrun_skip`）；
+  - client 侧幂等：已在同一场景/正在加载 → 只更新 roster（`remote_scene_skip`）。
+- **附带**：视觉存活登记改为按 `instance_id` 去重（原来池化节点每复用一次就多计一份 → 计数永久顶满 240，主机只偶尔看到客机子弹，且计数是 O(n²) 卡顿源）；新增空闲池清扫 `sweep_idle_visuals`。
+- 诊断：diag 新增 `req/req_to/live/vis_gc`。
+## 2026-11-26 0.2.8（真·根因）：mod 自包含修复
+
+- 现象：导出包（非工程目录）里联机半残——无法换角色、主机几乎看不到客机子弹；日志报 `Preload file "res://scenes/effects/coop_revive_frames.res" does not exist`。
+- 根因：复活动画的烘焙资源放在了**本体工程目录** `scenes/effects/`，而 mod 代码用 `preload` 引用它。工程目录能跑，导出包的本体 pck 里没有这个新文件 → `coop_revive_fx.gd` 编译失败 → `coop_net.gd` / `coop_menu.gd` 依赖链断裂。
+- 修复：
+  - 资源移到 **`mods/etn_coop/effects/coop_revive_frames.res`**（打进 `etn_coop.pck`，任何导出包都能读）；
+  - `coop_net.gd` 去掉对 fx 脚本的 `const preload`，改为**懒加载 + 判空**（缺资源只少动画，绝不影响联机）；
+  - `coop_revive_fx.gd` 用 `ResourceLoader.exists()` + `load()`，缺资源静默跳过；
+  - 烘焙脚本输出路径改到 mod 目录；
+  - `build_coop_mod.ps1` 增加**自包含校验**：mod 引用本体目录里的自建资源（`res://scenes/effects/coop_*` 等）直接构建失败并打印路径。
+- 验证：把安装好的 `etn_coop.pck` 加载进干净进程，`FileAccess.file_exists` + `load()` 均能拿到 `SpriteFrames`。
+## 2026-11-26 0.2.8（热修）：buff 待发队列失控
+
+- 现象：客机 maki 大量 DoT 后**无法换角色**、主机**看不到客机子弹**，buff 消失后仍不恢复。
+- 根因：上一版"首次施加必发"是**无条件绕过预算**，且 `_pending_buffs` 以 `net_id|buff` 为 key、**敌人死亡不清**；一局累积数千死 key，每 100ms 全部重发 → `buff_tx` 实测冲到 **1835 KB/s**，把中继单条 TCP 流塞满，换人（可靠）与子弹（unreliable）全部排在后面。
+- 修复：
+  - flush 时剔除**敌人已不存在**的 key，entry 超 1s 未发出直接丢弃；
+  - 队列上限 32（超出丢最旧，`buff_ovf`），单窗最多 2 条"首次优先"，其余严格走预算；
+  - `count` 上限 16→4，发完**不回队**（层上限本就低，避免长期占线）；
+  - 中继 buff 队列同样：失效目标剔除、上限 16、1s 过期；
+  - 硬闸：连续 2 个窗口 `buff_tx > 30 KB/s` → 清空待发队列（`buff_reset`）并留痕。
+- 诊断：`buff_q`（待发 key 数）、`buff_ovf`、`buff_reset`。
+## 2026-11-26 0.2.8（修正）：buff 丢层修复
+
+- 问题：0.2.8 首版把 buff 施加合并/去重，导致**叠层型 buff 丢层**（maki 颜料标记、子弹/燃烧易伤不上）。
+- 根因：`apply_buff` 每次施加 = +1 层；客户端合并成一条后 host 只应用一次；且高频尝试把 buff 桶刷空，首次施加也可能被拒。
+- 修复：
+  - 窗口内合并为**次数**（`count`，上限 16），RPC 带 `count`，host 循环 `apply_buff` `count` 次 → 层数与逐次施加一致；
+  - **满层停发**：镜像 entry `layer >= max_layer` 时不再发送（`buff_skip` 计数）；
+  - **首次施加优先**：桶满也强制发一次，保证第一层必落；
+  - 玩家/召唤物 buff 中继恢复逐次语义，同样按窗口计数合并（RPC 带 `count`）；
+  - 去掉 host 侧 50ms buff 去重（会二次丢层）。
+- 诊断：`tx_cats` 只统计真正发出的字节；新增 `buff_tx`（buff 实际 KB/s）与 `buff_skip`（满层跳过次数）。
+## 2026-11-26 0.2.8：buff 通道收口
+
+- 自测数据：客机 `tx` 59 KB/s、`tx_evt` 42.4、`tx_top=buff`、`tx_gap` 0–5；命中合并（`hit_merge≈160`）与泄漏检测均正常，唯一大头是 buff。
+- **玩家/召唤物 buff 中继去重**：按 `(目标, buff_path)` 记录状态——首次生效/叠层变化/移除必发，同值重复 400ms 内不发，之后 1s 心跳；仍保持"绝不丢"（`dropable=false`）。
+- **敌方 buff 节流**：`_flush_client_buffs` 改为逐 key 500ms 节流（首次立即发，桶满放回队列），把"每命中挂元素"的流量再降一个量级。
+- **诊断**：diag 新增 `tx_cats`（前 3 类别的 KB/s），可直接读出 buff/hit/visual 占比。
+- **版本**：0.2.8。
+## 2026-11-26 0.2.7：客机上行事件治理（buff 合并 / 部件合并 / 分类配额 / 自洪泛闸）
+
+- 数据背景：11-26 两局（`GHJQ`/`S2KS`）客机上行 20→**326 KB/s** 打满链路、`GHJQ` 缓冲 1008 KB；主机上行只有 3–31 KB/s（说明 host→client 已正常，病根在 client→host）。
+- **分类计量**：所有客机→主机事件走 `_tx_evt(category, bytes)`，diag 新增 `tx_evt`（事件总量 KB/s）与 `tx_top`（占比最高类别）。
+- **分类配额**（总预算按类别切分，命中不丢）：`buff 35% / part 15% / visual 20% / char 10% / coin 10% / sfx 5% / proc 5%`。
+- **buff 合并**：`_gate_enemy_buff_apply` 改为 100ms 窗口合并（同目标同 buff 只发最新一次），大幅削减元素流每次命中挂 buff 的流量。
+- **部件命中合并**：`_server_enemy_part_hit` 并入命中窗口（key=`net_id#part`），多部件 BOSS 不再每部件每次命中各发一条。
+- **单发视觉**：`_server_visual_node` 客机侧改走 `_vis_budget_allow`，与批处理共享视觉预算。
+- **无人机伤害合并**：Chihiro 无人机 100ms 窗口内同目标求和后发送。
+- **策反去重**：同目标 100ms 内只发一次。
+- **自洪泛硬闸**：客机 `tx > 1.15×预算` 连续 2 s → `tx_flood` 留痕，并把视觉/角色/硬币配额再减半 3 s（与 ABR 解耦，不依赖 RTT）。
+- **复审补漏（同一 0.2.7 构建内）**：再扫一遍 62 处客机→主机发送点，补上 `_server_character_event`（角色被动，加 10Hz 去重 + `char` 配额）、`_server_effect_follow_batch`（新增 `follow` 配额，超限拉长同步间隔而非丢批）、`_server_summoned_action`（100ms 去重）、特效消失、感电刷新、清弹（只计量不丢）。
+- **只计量不丢**：`support_heal/support_ex/summoned_melee_kb/summoned_upgrade/level_state/medkit/coin_*` 全部走 `_tx_evt(..., dropable=false)`，保证玩法不同步错。
+- **泄漏检测**：diag 新增 `tx_gap`（原始 tx 减去各已登记通道）；>15% 连续 2 窗口记 `tx_gap` 留痕，以后漏预算会立刻暴露。
+- **版本**：0.2.7（双方需同版本，否则握手拒绝）。
+## 2026-11-26 0.2.6：卡顿取证 + BOSS 血条回跳 + 视觉克隆上限
+
+- **BOSS 血条"跳舞"修复**：BOSS/多部件敌人关闭本地血量预测（`boss_like`：BOSS 组 / 场景含 `/boss/` / 有 `body_part`）——只做闪白飘字，血量完全跟随 host 快照；`_predict_enemy_death` 对 BOSS 直接跳过；普通敌人遇到快照"血量回涨"时清空未确认预测（`hpres`）而不是跳涨。
+- **帧尖刺取证**：单帧 >120ms 记 `frame_hitch`（dt/fps/scene），diag 新增 `hitch`；重连记 `rejoin_ms`。
+- **视觉克隆上限**：`MAX_LIVE_VISUALS=240`，超限拒绝新生成（`vcap`）；远端子弹加 4s 兜底寿命（`vbttl`），避免 despawn 丢包导致永久残留。
+- **特效预热**：转场期实例化→释放高频视觉场景（子弹/火焰/爆炸），把资源加载尖刺挪出战斗。
+- **诊断**：diag 新增 `hitch/vcap/vbttl/bpk/hpres/rejoin`。
+- **倒地音效**：联机倒地等价单机死亡，本机播 `GameOver`（`play_sfx_once` 防叠音）。
+- **复活表现**：被救起/升级复活时给 **1 秒无敌**（`invincible_frame.start(1.0)` + `_on_invincible_frame(true)`），并在脚下生成 **0.3s 复活动画**（`coop_revive_fx.gd`：`serina_burst` + `heal_ring` + `heal_plus_big` 按 speed_scale 压到 0.3s，纯本地、不走网络）。
+- **参考库选型**：语义最贴的是 `holy/resurrection`（4.8s）与 `holy/heal`（1.9s），但没有 0.3s 档；因此复用已烘焙的同族资产组合，母题与 `holy/heal` 一致。
+- **版本**：0.2.6（0.2.5 客户端会被拒绝并提示双方版本）。
+## 2026-11-25 0.2.5：事件 RPC 洪泛治理（命中 / 道具 / 被动 / 敌人 / 词条）
+
+- **命中合并**：客机每次命中原本单发一条 RPC（含完整 `_damage_to_dict`），高射速（maki 堆属性）可达 140+ KB/s。现按目标合并到 **100ms 窗口一条**：伤害求和、暴击取或、只去掉 `source_node`（host 的 `_sanitize_for_authority` 本来也不接收该字段）。
+- **回传减半**：host 的 `_remote_hit_feedback` 不再回传给攻击者（对方已本地预测回放）。
+- **事件预算层** `_evt_budget_allow`（预算 × 0.25）：命中不丢只放宽窗口；音效 50ms 去重、子弹消失/角色事件/召唤状态超限丢弃；召唤状态每实体 10Hz；场上效果 `cells` 截断 256；buff/策反施加 50–100ms 去重。
+- **枪口/音效**：`_remote_player_gun_shoot` 限 50ms 一条，`_remote_hit_sfx` 同 key 50ms 去重。
+- **ABR 看门狗**：`tx_rate > 1.3 × 预算` 连续 2 次 → 提前降档（RTT 反馈滞后 1–2s）。
+- **诊断**：diag 新增 `snd_hit/snd_sfx/snd_summ/evt_drop/hit_merge`。
+- **版本**：0.2.5（0.2.4 客户端会被拒绝并提示双方版本）。
+## 2026-11-25 0.2.4：预算模型纠错 / ABR 抗抖 / 旧客户端准入 / 幽灵传送
+
+- **客机预算纠错**：旧实现客机误用 host 公式，单机可发到 **250 KiB/s**；现客机 = `clamp(usable*0.14, 18, 45)`（3 人局 ≈36）。host 每 peer = `(usable - 客机预留)/fanout`（3 人局 ≈93、2 人局 228）。
+- **预算留余量**：`BUDGET_HEADROOM = 0.8`，总出口只用到链路的 80%，避免"按 100% 切预算"被背压反噬。
+- **服务端拒绝旧协议**：`RELAY_MIN_PROTO`（默认 13）；旧客户端建房/加入回 `Outdated mod: require proto>=13`，不再灌满公共链路。
+- **ABR 抗抖**：RTT 用 EWMA + 连续 3 次超阈值（`max(200, baseline*2.5)`）才降档；down ×0.75、up ×1.08、good hold 12s；降档不再清空整帧特效，只裁剪到最新 24 条（`vis_drop_abr`）。
+- **插值上限**：`DELAY_MAX` 0.20 → 0.30、jitter 系数 1.5 → 2.0，高 RTT 不再持续外推。
+- **慢客机分级限流**：level≥1 跳过转发他人状态、快照 1/2 频率；level≥2 快照 1/3 + 只发 ≤900px 敌人。
+- **幽灵传送**：镜像出生打 `coop_pending_snapshot`，`MapBounds` 跳过，首帧 1.5s 后自动解除（不再一帧 28 个从 (0,0) 被拽回）。
+- **致命错误关连接**：服务端回 `outdated/room full/already in room` 时客户端断开并提示，不再挂着重试。
+- **诊断**：diag 新增 `abr_dn/abr_up/visdrop/ovf/dcap`。
+- **版本**：0.2.4（0.2.3 客户端会被拒绝并提示双方版本）。
+## 2026-11-24 0.2.3：修每帧报错刷屏 + PERF 诊断 + 三项安全优化
+
+- **修复（确定 bug）**：`_tick_enemy_rate` 之前第一行就调 `multiplayer.is_server()`，离线（主菜单/单人/重连间隙）时每帧报 `No multiplayer peer is assigned` 并打完整 backtrace，实测 12 秒写出 24 MB 日志。现改为 `_has_peer()` 优先，离线 45 秒实测 **0 条**该错误。
+- **`[PERF]` 诊断**（每 2s，随 diag 输出）：`phys=… process=… snapT=… visT=…`（主线程两回调耗时、快照/视觉批窗口合计）+ `mirrors(enemy/player/summon)`、`selayer`、`effects`、`trail_kb`、`defer`。用于定位"中期掉帧"。
+- **安全优化**：① `_watch_chain_locks` 只扫"玩家→一级子节点"（原为 PlayerRoot 全子树递归）；② `_isolate_mirror_materials` 按场景缓存材质位点，后续只复制这些节点；③ `_flush_visuals` 每帧最多 24 条，超出顺延（`vis_defer` 计数），避免大波次单帧编码/广播尖峰。
+- **版本**：0.2.2 → **0.2.3**（0.2.2 客户端会被拒绝并提示双方版本）。
+## 2026-11-24 0.2.2 补丁 2：选人正确性保险 + 重连突发 + 双房预算
+
+- **选人回滚根因**：`_sync_local_player_scene` 每 0.5 s 用"当前节点场景"覆盖记录，转场完成前会把刚选的角色改回旧角色（hoshino → aris_armed）。现加**选择 5 s 宽限**与"节点必须比选择更新"两道闸，抑制时记 `roster_override_suppressed`。
+- **就绪界面回显**：`coop_ready.gd` 显示"已选择：<角色>"，开战前一眼可核对。
+- **回执与自愈**：host 记录选择后回 `_selection_ack`；客机发现与本地选择不符立即重报（最多 3 次），记 `selection_ack_mismatch`。
+- **开战前对账弹窗**：roster 与本机选择不一致时弹窗——"以我的选择重新上报" / "跟随主机记录"。
+- **进场兜底**：本地玩家场景与选择不符时记 `selection_mismatch` 并每局修复一次。
+- **重连/入场补发分帧**：`_run_resync` 每帧只发一类（敌人/召唤/医疗包/…），不再一次性把客机下行冲爆。
+- **服务端按房间分摊出口预算**：`room_egress_kib = max(80, 整链路 / 房间数)`，房间数变化时广播 `budget`；diag 记 `budget` trail。
+## 2026-11-24 0.2.2 补丁：加入时的 mod 不一致弹窗（进入 / 退出）
+
+- **比对范围**：`etn_coop` 构建指纹 + 其它"已启用且已挂载"的 mod（`id@version`，最多 24 条，超过只带计数）。
+- **时机**：握手时随 `_client_hello(meta)` 上报；host 算差异后随 `_hello_accept(warn)` 回传，客机在**加入那一刻**弹窗。
+- **不阻止进入**：弹窗两个按钮——**进入**（继续，本会话不再弹）/ **退出**（断开并回主菜单）。
+- **host 侧**：仍用 toast + `Trail.mark("mod_mismatch" / "mod_set_mismatch")`，不弹窗。
+- **无头环境**（回归脚本）：不弹窗，记 `join_warning` 并视为进入，避免阻塞自动化。
+- **实现**：新增 [coop_mod_set.gd](mods/etn_coop/net/coop_mod_set.gd)（纯函数：snapshot/diff/summary/meta 编解码）与 [coop_join_warning.gd](mods/etn_coop/ui/coop_join_warning.gd)（ConfirmationDialog 封装）。
+## 2026-11-24 0.2.1 修复批：视觉属性类型 / 调用约定 / 诊断（同版本重打包）
+
+- **Color 属性**：`EFFECT_PROP_NAMES` 里的 `color`/`modulate` 是 Color，旧实现把非 bool/int/Vector2 一律按 float 编码成 `0.0`，解码后 `set("color", 0)` → **客机激光/颜料弹变黑**。现新增 `PROP_T_COLOR`（4×float32）与 `PROP_T_STRING`（字符串表索引），**未知类型直接跳过**，不再写 0 覆盖原值。
+- **激活方法参数**：`spawn_visual_effect` / `spawn_visual_bullet` 之前直接 `call(method)`；`bullet_casing.active_state(origin, aim)` 这类带必填参数的方法会抛 `Expected 2 argument(s)` 并停在 inactive。现改为先查 `get_method_list()` 的必填参数个数，非 0 则跳过并计数（`va`）。
+- **诊断计数**（diag 新增）：`vtx`（发出条目）、`vrx`（收到条目）、`vsp`（成功生成）、`vl`（load 失败）、`vg`（找不到组）、`vd`（sync_id 去重）、`vt`（节流丢弃）、`va`（参数不匹配跳过）。`--coop-visdump` 可打印每个场景的首条完整条目。
+- **角色切换**：同一 peer 场景变化时释放旧镜像并重建；客机缺该角色资源时回退默认模型（不再直接消失）。
+- **换角色数值**：换角色后重抓 `PlayerData.base_*`（`get_player_base_ability` / `update_player_ability`），否则弹匣/射速/伤害/生命会沿用上一个角色。
+- **弹壳**：`bullet_casing.tscn` 标记为**本地专属**，不再广播（客机本来也不需要看别人的抛壳）。
+- **枪口火焰**：`SAFE_VISUAL_SCENE_PREFIXES` 增加 `res://scenes/weapon/`、`res://scenes/enemies/`；池化火焰节点按 `is_idle` 1→0 的激活补发广播（`vfl`）。
+- **Ako 锁链**：效果记录新增 `tn`（目标敌人 net id），由拥有者检测 `locked_enemy` 变化后广播，客机克隆绑定目标并跟随施法者（`tp` 通道内的链路）。
+- **策反视觉**：镜像敌人在 `converted` false→true 时补播 `_start_convert_glitch()`。
+- **出口预算统一**：玩家状态里的 `items` 与 host 扇出也计入预算（超预算跳帧，`unreliable_ordered` 安全）；道具视觉态改为**量化 + 5Hz**（`phase` 32 档 / 动画 20fps / 范围缩放 2 位），修掉"道具多时上行被撑爆、host 被扇出放大到 200+ KB/s、最终 host 被踢"的问题。diag 新增 `snd_items` / `snd_fwd` / `bdrop`。
+- **服务端 host 保护**：host 背压宽限 20s → **60s**（`RELAY_WRITE_GRACE_SEC_HOST`），超软水位打 `[HOST STALL]`，避免一次卡顿结束整房。- **敌人镜像平滑**：15Hz 快照下在 `coop_enemy_proxy` 加节点级渲染平滑（指数收敛 + 限速 5000px/s），传送/重生/大跳变直接吸附；碰撞体随节点移动，命中判定不受影响；diag 新增 `smerr`（窗口内最大平滑误差）。
+- **注意**：属性编码格式变了，同一 0.2.1 的旧包与新包**不能互连**，测试时两个窗口都要换新包。
+
+## 2026-11-24 视觉封包二进制化（feat，协议 v12→v13 / 0.2.1）
+
+- **变更**：新增 [coop_visual_codec.gd](mods/etn_coop/net/coop_visual_codec.gd)，视觉批由 `Array[Dictionary]` 改为 `PackedByteArray`：
+  - 场景路径/方法名/非常规 id 用**每方向惰性字符串表**（首批下发 define，之后只发 u16 索引）；
+  - 位置 0.25 px、旋转 1e-3 rad、缩放 1/256、速度 1/20 的定长量化；
+  - `sync_id`（`"peer_counter"`）编码为 `u16 + u32`；道具属性用 `BULLET_PROP_NAMES` 的 u8 索引。
+- **收益**（`var_to_bytes` 模拟线上 RPC 体积）：单条 464 → **95 B（20%）**；3 条批 1376 → **152 B（11%）**。
+- **预算计费改为真实字节**：`_send_visual_batches` 先编码再按 `packed.size()` 扣令牌桶，`snd_vis` 与线上字节一致（此前用估算，偏保守）。
+- **兼容性**：协议 v13 与 v12 **不互通**，握手会以 `reason=protocol` 拒绝旧客户端；LAN/中继共用同一套编码。
+- **诊断**：diag 新增 `codec_err=`；解码异常计数并写 `Trail.mark("vis_codec", …)`。
+- **测试钩子**：`--coop-devload=<KB/s>` 保留（不生成实体、直接灌视觉批，用于压预算/降载）。
+
+## 2026-11-22 最低本体版本提升到 `v0.5.3.1-test`
+
+- **变更**：两份 manifest 的 `game_version` 由 `v0.5.2.0` 改为 `v0.5.3.1-test`；`MOD_VERSION` 仍 `0.1.26`、协议仍 `v12`。
+- **效果**：`Game.version_number` 低于 `v0.5.3.1` 的本体会在 `ModManager` 挂载阶段产生「要求本体 >= …」告警（**仅告警不阻断**）。`v0.5.3.0` / `v0.5.3.0a-test` / `v0.5.2.x` 都会告警；`v0.5.3.1-test` 与 `v0.5.3.1` 视为满足。
+- **为什么不用改比较器**：`_version_parts` 逐段取前导数字比较，`0.5.3.1` 与 `0.5.3.0` 的第四段 `1 > 0` 天然区分，字母后缀（`a`）则会被 `to_int()` 吞掉、无法区分——所以最低版本必须落在**真实递增的数字段**上，而不是 `0.5.3.0a`。
+- **注意**：清单里的 `-test` 后缀会被比较器忽略（按 `-` 截断），与 `v0.5.3.1` 等价。
+
+## 2026-11-20 金币弹道重做：折线广播携带总时长（feat，协议 v11→v12 / 0.1.25）
+
+- **背景（本体）**：金币从 `Path2D + Curve2D + Tween` 改为 `CoinBallistic` 代码弹道（`scenes/item/parabola_path.gd`，根节点 Node2D），`drop()` 先建弹道状态再 `body.active_state()`；落点必须过 `MapBounds` 外边界 + 壁垒 `NavObstacle` 内部墙（`EnemyNavField`），无壁垒时不建拓扑。
+- **修法（纯 mod）**：`_on_coin_spawned` 改为「coin 父节点 `has_method("get_trajectory")`」判定并**同步**登记（不再 `call_deferred`、不再读 `curve`）；`_register_parabola_coin` 取 `{points(世界折线), duration}` → `rpc("_remote_parabola_coin", net_id, points, duration, value, pick_up, ignore_auto_pick, ignore_coin_mult, personal_pickup)`；客机 `coin_traj[net_id]["dur"]` 用广播时长（`clampf(0.05, 5.0)`，非法回退 `PARABOLA_DURATION`）。顺带修掉旧版「索尼克 1.2s 落币在客机固定按 3s 播」的偏差。
+- **协议/版本**：RPC 参数变化 → `PROTOCOL_VERSION` 11→12、`MOD_VERSION` 与 `mod.json` 0.1.24→0.1.25；旧端会在握手阶段被拒（`protocol` / `mod_version`），联机双方需一起更新。
+- **回归**：`tests/test_coin_ballistic.gd`（本地、不入库）6/6；本体实机 `game_eval`（test_room）：无墙 24 枚全部 `can_pick` 且 0 越界；`EnemyNavField.add_block` 3 格后 30 枚 `solid_bad=0 / unsafe_bad=0`。两份 mod 副本需逐字节一致。
 
 ## 2026-11-02 修复：倒地玩家断线重连后仍可操作（fix，不升版）
 
@@ -677,6 +845,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\mod_sdk\build_coop_mod.ps1
 - **Kasumi 钻头（M5 角色事件）**：钻头是**瞬态**近战（`kasumi_melee.kick_start` 临时实例化），走 `player.broadcast_character_event(&"kasumi_drill", {pos,scale_x,now_t,dur})`；镜像在 `kasumi_ps.apply_network_character_event` 生成**纯视觉**钻头（`set_script(null)` + 关 `Area2D2`，播 `drill_anim`，短暂后释放）。
 - **Hina QTE 联机化（本体 `hina_ps.gd`，`is_lan_session` 门控）**：LAN 下 QTE **不再 `Engine.time_scale` 全局慢放**（会拖慢本机、房主端还会饿死网络节奏），改为**等比慢放 QTE 动画**（`qte_bar/AnimationPlayer.speed_scale = 0.07`，bar 移动本就是 `qte_anim` 的 `bar:position` 轨道）；`check_qte`/`qte_false`/`_exit_tree` 恢复 `speed_scale=1`。单机行为不变。
 - **dev**：`--coop-devparabola`（host 生成一枚抛物线金币，打印两端轨迹/位置）、`--coop-devhina`（打印 `Engine.time_scale` 应恒 1 与 QTE 动画 `speed_scale`）。
+- **SUPERSEDED: 2026-11-20（0.1.25 / 协议 v12）**：上面这条 coin 抛物线同步已被「`get_trajectory()` + `duration`」取代——本体 `parabola_path` 改为 Node2D 代码弹道，host 在 `on_coin_spawned` 同步广播折线与实际总时长，客机不再固定 3s；详见顶部 2026-11-20 一节。
 
 ## 延迟小字（两个聊天按钮下方）
 - **位置**：主 HUD 聊天按钮（代码构建 `CoopChatButton`，挂 `$GameUI/AmmoPosition`）正下方用**代码构建**的 `_ping_label`（兄弟节点、`PING_POS = BTN_POS + (-10, 32)`）；升级页聊天按钮 `%UpgradeChatButton` 下方是**场景节点** `%UpgradePingLabel`（`coop_chat.tscn`，编辑器可调）。二者均只在 **LAN + 本地玩家有效**（升级小字另需升级阶段）时显示。

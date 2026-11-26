@@ -6,6 +6,68 @@ extends RefCounted
 ##  - 视觉弹清空 collision layer/mask、关 monitoring、禁 shape，纯表现，不结算伤害。
 ##  - 发送端只在生成时广播；视觉弹靠自身 kill_time 自然回池。
 
+# 全局存活视觉上限：防止一局内克隆堆到 500+ 导致渲染/内存抖动
+const MAX_LIVE_VISUALS: int = 240
+# 存活集合按 instance_id 去重：池化节点被反复复用时不能重复计数（否则计数虚高会永久顶满上限）
+var _live_map: Dictionary = {}
+var stat_vcap: int = 0
+var stat_vbttl: int = 0
+var stat_vis_gc: int = 0
+
+
+func _live_count() -> int:
+	for k in _live_map.keys():
+		var node = (_live_map[k] as WeakRef).get_ref() if _live_map[k] is WeakRef else null
+		if node == null or not is_instance_valid(node):
+			_live_map.erase(k)
+	return _live_map.size()
+
+
+# 注册一个远端视觉；同一节点（含池化复用）只计一次；超过全局上限则拒绝本次生成（计入 vcap）
+func _register_live(node: Node) -> bool:
+	if node == null or not is_instance_valid(node):
+		return false
+	var iid: int = node.get_instance_id()
+	if _live_map.has(iid):
+		var existing = (_live_map[iid] as WeakRef).get_ref() if _live_map[iid] is WeakRef else null
+		if existing != null and is_instance_valid(existing):
+			return true
+		_live_map.erase(iid)
+	if _live_count() >= MAX_LIVE_VISUALS:
+		stat_vcap += 1
+		return false
+	_live_map[iid] = weakref(node)
+	return true
+
+
+# 回收长期空闲的池化克隆（is_idle == 1 且 5s 未被复用），避免池子占满存活配额
+func sweep_idle_visuals(max_age_msec: int = 5000) -> void:
+	var now: int = Time.get_ticks_msec()
+	for k in _live_map.keys():
+		var node = (_live_map[k] as WeakRef).get_ref() if _live_map[k] is WeakRef else null
+		if node == null or not is_instance_valid(node):
+			_live_map.erase(k)
+			continue
+		if node.get("is_idle") != null and int(node.is_idle) == 1:
+			if now - int(node.get_meta("_coop_live_ms", now)) >= max_age_msec:
+				_live_map.erase(k)
+				stat_vis_gc += 1
+				node.queue_free()
+		else:
+			node.set_meta("_coop_live_ms", now)
+
+
+# 远端子弹兜底寿命：despawn 包可能被事件预算丢弃，到点强制回收，避免永久残留
+func _schedule_bullet_ttl(tree: SceneTree, bullet: Node, ttl_ms: int) -> void:
+	if tree == null or bullet == null:
+		return
+	var wr: WeakRef = weakref(bullet)
+	tree.create_timer(maxf(0.5, float(ttl_ms) / 1000.0)).timeout.connect(func() -> void:
+		var node = wr.get_ref()
+		if node != null and is_instance_valid(node) and node.has_meta("remote_visual"):
+			stat_vbttl += 1
+			node.queue_free())
+
 const MAX_PER_SCENE: int = 180
 const EFFECT_POOL_MAX: int = 24
 const SMOKE_EFFECT_GUARD_SEC: float = 1.0
@@ -22,6 +84,14 @@ var _by_effect_id: Dictionary = {} # effect_id -> Node（特效通道回收句�
 var _ended_effect: Dictionary = {} # effect_id -> true（防止迟到的 spawn 复活）
 var _ended_effect_order: Array[String] = []
 var effects_spawned: int = 0
+# 诊断计数：定位"收到了但没生成/没显示"的环节
+var stat_load_fail: int = 0
+var stat_group_fail: int = 0
+var stat_dedupe_skip: int = 0
+var stat_arity_skip: int = 0
+var stat_spawn_ok: int = 0
+var stat_invisible: int = 0
+var stat_fx_ttl: int = 0
 
 
 func reset() -> void:
@@ -48,18 +118,25 @@ func spawn_visual_bullet(tree: SceneTree, scene_path: String, position: Vector2,
 	if tree == null or scene_path == "":
 		return
 	if sync_id != "" and _ended.has(sync_id):
+		stat_dedupe_skip += 1
 		return
 	if sync_id != "" and _by_sync_id.has(sync_id):
+		stat_dedupe_skip += 1
 		return
 	var scene := load(scene_path) as PackedScene
 	if scene == null:
+		stat_load_fail += 1
 		return
 	var root := tree.get_first_node_in_group("BulletRoot")
 	if root == null:
+		stat_group_fail += 1
 		return
 	var bullet := _acquire(scene, scene_path, sync_id)
 	if bullet == null:
 		return
+	if not _register_live(bullet):
+		return
+	_schedule_bullet_ttl(tree, bullet, 4000)
 	var add_bullet: bool = bullet.get_parent() == null
 	bullet.set_meta("remote_visual", true)
 	if sync_id != "":
@@ -82,14 +159,43 @@ func spawn_visual_bullet(tree: SceneTree, scene_path: String, position: Vector2,
 		root.add_child(bullet)
 		_remove_from_gameplay_pools(bullet, scene_path)
 	# 对齐联机版：先 pre_method、再 method，最后禁伤
-	if pre_method != "" and bullet.has_method(pre_method):
-		bullet.call(pre_method)
-	if method_name != "" and bullet.has_method(method_name):
-		bullet.call(method_name)
+	_call_if_no_args(bullet, pre_method)
+	_call_if_no_args(bullet, method_name)
+	stat_spawn_ok += 1
+	# 生成成功但节点仍不可见：单独计数，用于区分"没生成"和"生成了看不见"
+	if bullet is CanvasItem and not (bullet as CanvasItem).visible:
+		stat_invisible += 1
 	_disable_damage(bullet)
 	# 敌方弹对本地玩家开放伤害（伤害洞）：只命中玩家、不命中其它
 	if bool(properties.get("eb", false)):
 		_open_player_damage_hole(bullet, int(properties.get("dmg", 1)), int(properties.get("kb", 0)))
+
+
+# 视觉场景的激活方法可能带必填参数（如 bullet_casing.active_state(origin, aim)）：
+# 直接 call 会抛错并让视觉停在 inactive。这里只在"必填参数为 0"时调用，否则跳过并计数。
+func _required_args(obj: Object, method: String) -> int:
+	if not obj.has_method(method):
+		return -1
+	for m in obj.get_method_list():
+		if str(m.get("name", "")) != method:
+			continue
+		var total: int = (m.get("args", []) as Array).size()
+		var dflt: int = (m.get("default_args", []) as Array).size()
+		return maxi(0, total - dflt)
+	return -1
+
+
+func _call_if_no_args(obj: Object, method: String) -> bool:
+	if method == "":
+		return false
+	var need: int = _required_args(obj, method)
+	if need < 0:
+		return false
+	if need > 0:
+		stat_arity_skip += 1
+		return false
+	obj.call(method)
+	return true
 
 
 func forget(sync_id: String) -> void:
@@ -207,6 +313,8 @@ func spawn_visual_effect(tree: SceneTree, scene_path: String, position: Vector2,
 			_by_effect_id.erase(effect_id)
 	if effect == null:
 		effect = _acquire_effect(scene_path)
+		if effect != null and not _register_live(effect):
+			return
 	if effect == null:
 		effect = scene.instantiate()
 	# 先打 remote_visual 标记再入树：场景根脚本的 _ready（如 pyroxenes 的 on_pickup_spawned）
@@ -239,7 +347,8 @@ func spawn_visual_effect(tree: SceneTree, scene_path: String, position: Vector2,
 	elif method_name != "" and effect.has_method(method_name):
 		for k in properties.keys():
 			effect.set(str(k), properties[k])
-		effect.call(method_name)
+		_call_if_no_args(effect, method_name)
+	stat_spawn_ok += 1
 	# 敌方激光等：对本地玩家开放"伤害洞"（仅表现端、只命中玩家）。allow_hole=false（客机来源）时禁用。
 	if allow_hole and effect.has_method("open_network_player_damage_hole"):
 		effect.call("open_network_player_damage_hole")
@@ -251,6 +360,28 @@ func spawn_visual_effect(tree: SceneTree, scene_path: String, position: Vector2,
 	elif effect_id == "":
 		# 无 effect_id 的一次性特效：安全超时释放；带 id 者等 despawn 广播回收，避免远端早于本地消失
 		_queue_free_after(tree, effect, 6.0)
+	# 发送端声明的兜底 TTL（一次性特效必带）：到点无论如何都让它不可见，避免动画被中断后永久残留
+	var ttl_ms: int = int(properties.get("ttl", 0))
+	if effect_id == "" and ttl_ms > 0:
+		_schedule_effect_ttl(tree, effect, ttl_ms)
+
+
+func _schedule_effect_ttl(tree: SceneTree, effect: Node, ttl_ms: int) -> void:
+	if tree == null or effect == null or not is_instance_valid(effect):
+		return
+	var wr: WeakRef = weakref(effect)
+	tree.create_timer(maxf(0.2, float(ttl_ms) / 1000.0)).timeout.connect(func():
+		var node = wr.get_ref()
+		if node == null or not is_instance_valid(node):
+			return
+		stat_fx_ttl += 1
+		if node is CanvasItem and not (node as CanvasItem).visible:
+			return
+		if node.has_method("idle_state"):
+			_visual_idle(node)
+		else:
+			node.queue_free()
+	)
 
 
 # 取可复用空闲特效；无则返回 null（由调用方实例化）。
@@ -337,17 +468,38 @@ func _acquire(scene: PackedScene, scene_path: String, sync_id: String) -> Node:
 	var bodies: Array = _pool.get(scene_path, [])
 	for b in bodies:
 		if b != null and is_instance_valid(b) and b.get("is_idle") != null and int(b.is_idle) == 1:
+			_forget_stale_sync_id(b)
 			return b
 	if bodies.size() >= MAX_PER_SCENE:
 		for b in bodies:
-			if b != null and is_instance_valid(b):
-				_visual_idle(b)
-				return b
+			# 只允许回收「已空闲且不被任何 sync_id 占用」的克隆：否则会把仍在飞行中的远端视觉弹
+			# 当场 idle 掉（表现为远端子弹中途消失），并留下悬垂的 _by_sync_id 映射。
+			if b != null and is_instance_valid(b) and not _is_sync_claimed(b):
+				if b.get("is_idle") == null or int(b.is_idle) == 1:
+					_forget_stale_sync_id(b)
+					_visual_idle(b)
+					return b
+		return null
 	var new_b: Node = scene.instantiate()
 	if not _pool.has(scene_path):
 		_pool[scene_path] = []
 	_pool[scene_path].append(new_b)
 	return new_b
+
+
+# 节点当前是否被某个 sync_id 占用（映射仍在且指向自己）。
+func _is_sync_claimed(node: Node) -> bool:
+	var sid: String = str(node.get_meta("visual_sync_id", ""))
+	if sid == "":
+		return false
+	return _by_sync_id.get(sid) == node
+
+
+# 复用节点前清掉它上一个 sync_id 的映射，避免旧 id 的 despawn 结束时误伤新弹。
+func _forget_stale_sync_id(node: Node) -> void:
+	var sid: String = str(node.get_meta("visual_sync_id", ""))
+	if sid != "" and _by_sync_id.get(sid) == node:
+		_by_sync_id.erase(sid)
 
 
 func _remove_from_gameplay_pools(bullet: Node, _scene_path: String) -> void:
@@ -381,12 +533,13 @@ func _open_player_damage_hole(bullet: Node, damage: int, knockback: int) -> void
 		hb.set("manages_own_hits", false)
 		hb.collision_layer = ENEMY_BULLET_LAYER
 		hb.collision_mask = 0
-		hb.monitoring = false
-		hb.monitorable = true
+		# 本函数可能在物理回调/查询 flush 期间被调用：monitoring/monitorable/disabled 必须走 deferred，
+		# 否则每次都会刷 "Can't change this state while flushing queries"（实测一局 50~116 条）。
+		hb.set_deferred("monitoring", false)
+		hb.set_deferred("monitorable", true)
 		for shape in hb.find_children("*", "CollisionShape2D", true, false):
 			var cs := shape as CollisionShape2D
 			if cs != null:
-				cs.disabled = false
 				cs.set_deferred("disabled", false)
 
 
@@ -398,13 +551,13 @@ func _disable_damage(bullet: Node) -> void:
 			n.set_collision_layer(0)
 			n.set_collision_mask(0)
 			if n is Area2D:
-				n.monitoring = false
-				n.monitorable = false
+				n.set_deferred("monitoring", false)
+				n.set_deferred("monitorable", false)
 				# 注意：不要在这里 set_physics_process(false)。子弹/导弹的移动在自身 _physics_process 里，
 				# 关掉会把远端视觉弹冻住。需要停 process 的只有 player/summon 镜像的 HurtBox 轮询
 				# （由 coop_player_proxy._disable_areas / coop_summoned_proxy._disable_damage_nodes 处理）。
 		elif n is CollisionShape2D:
-			n.disabled = true
+			n.set_deferred("disabled", true)
 		for c in n.get_children():
 			stack.append(c)
 

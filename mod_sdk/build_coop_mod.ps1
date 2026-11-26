@@ -28,6 +28,28 @@ if (-not (Test-Path -LiteralPath (Join-Path $Source "mod.json"))) {
     throw "找不到 mod.json：$Source\mod.json"
 }
 
+# ---------- 自包含校验 ----------
+# mod 里引用的资源必须在 res://mods/<id>/ 内（导出包里本体目录没有我们新增的文件）。
+# 只拦"我们自己新建、却放在本体目录"的资源前缀，避免误伤本体原有资源。
+$selfPrefix = "res://mods/$ModId/"
+$badRefs = @()
+foreach ($gd in (Get-ChildItem -LiteralPath $Source -Recurse -File -Filter "*.gd")) {
+    $text = [System.IO.File]::ReadAllText($gd.FullName, [System.Text.Encoding]::UTF8)
+    foreach ($m in [regex]::Matches($text, 'res://[A-Za-z0-9_./\-]+\.(res|tres|tscn|gd|gdshader)')) {
+        $ref = $m.Value
+        if ($ref.StartsWith($selfPrefix)) { continue }
+        if ($ref -match '^res://(scenes/effects/(coop_|pixelfx_coop_)|tests/)') {
+            $rel = $gd.FullName.Substring($Source.Length + 1)
+            $badRefs += "$rel -> $ref"
+        }
+    }
+}
+if ($badRefs.Count -gt 0) {
+    Write-Host "构建失败：mod 引用了本体目录里的自建资源（导出包里不存在）：" -ForegroundColor Red
+    foreach ($b in $badRefs) { Write-Host "  $b" -ForegroundColor Red }
+    throw "mod 不是自包含的：请把资源移入 res://mods/$ModId/ 并更新引用路径"
+}
+
 # 从 mod.json 读取版本号与覆盖配置（按 UTF-8 读取，避免含中文时 PowerShell 5.1 默认 ANSI 解析失败）
 $manifest = [System.IO.File]::ReadAllText((Join-Path $Source "mod.json"), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
 $version = ""
@@ -143,6 +165,25 @@ $stage = Join-Path $outDir $ModId
 if (Test-Path -LiteralPath $stage) { Remove-Item -Recurse -Force $stage }
 New-Item -ItemType Directory -Force -Path $stage | Out-Null
 Copy-Item (Join-Path $Source "mod.json") (Join-Path $stage "mod.json")
+# 构建指纹：对参与打包的源文件（相对路径 + 内容）排序后算 SHA-256，取前 12 位十六进制。
+# 只写进分发用的 mod.json（暂存副本），源 mod.json 保持干净、不脏 git。
+$hashFiles = Get-ChildItem -LiteralPath $Source -Recurse -File |
+    Where-Object { $_.Name -notlike "*.import" } |
+    Sort-Object { $_.FullName.Substring($Source.Length + 1) }
+$hashText = New-Object System.Text.StringBuilder
+foreach ($hf in $hashFiles) {
+    $rel = $hf.FullName.Substring($Source.Length + 1).Replace('\', '/')
+    $fh = (Get-FileHash -LiteralPath $hf.FullName -Algorithm SHA256).Hash.ToLower()
+    [void]$hashText.Append($rel).Append(':').Append($fh).Append("`n")
+}
+$sha256 = [System.Security.Cryptography.SHA256]::Create()
+$digest = $sha256.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($hashText.ToString()))
+$buildId = -join ($digest[0..5] | ForEach-Object { $_.ToString("x2") })
+Write-Host "构建指纹：$buildId（$($hashFiles.Count) 个文件）"
+$stageManifestPath = Join-Path $stage "mod.json"
+$stageManifest = [System.IO.File]::ReadAllText($stageManifestPath, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
+$stageManifest | Add-Member -NotePropertyName "build" -NotePropertyValue $buildId -Force
+[System.IO.File]::WriteAllText($stageManifestPath, ($stageManifest | ConvertTo-Json -Depth 8), $utf8)
 Copy-Item $pck (Join-Path $stage "$ModId.pck")
 if (Test-Path -LiteralPath (Join-Path $Source "icon.png")) {
     Copy-Item (Join-Path $Source "icon.png") (Join-Path $stage "icon.png")

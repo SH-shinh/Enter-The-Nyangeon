@@ -190,6 +190,7 @@ func _handle_dev_args() -> void:
 	var devhit := false
 	var devbullet := false
 	var deveffect := false
+	var devload := 0
 	var devcoin := false
 	var devsummon := false
 	var devdown := false
@@ -222,6 +223,7 @@ func _handle_dev_args() -> void:
 	var devnetlag: float = 0.0
 	var devsim: String = ""
 	var devsimreport := false
+	var devvisdump := false
 	var devautoquit: float = 0.0
 	var devsnapbatch: int = 0
 	var devdiscover := false
@@ -269,6 +271,9 @@ func _handle_dev_args() -> void:
 			devbullet = true
 		elif a == "--coop-deveffect":
 			deveffect = true
+		elif a.begins_with("--coop-devload="):
+			# 本地压测：不生成实体，按目标速率直接灌视觉批（验证出口预算/降载）
+			devload = int(a.trim_prefix("--coop-devload="))
 		elif a == "--coop-devcoin":
 			devcoin = true
 		elif a == "--coop-devsummon":
@@ -333,6 +338,8 @@ func _handle_dev_args() -> void:
 			devsim = a.substr("--coop-devsim=".length())
 		elif a == "--coop-devsimreport":
 			devsimreport = true
+		elif a == "--coop-visdump":
+			devvisdump = true
 		elif a.begins_with("--coop-devautoquit="):
 			devautoquit = float(a.substr("--coop-devautoquit=".length()))
 		elif a.begins_with("--coop-devsnapbatch="):
@@ -427,6 +434,9 @@ func _handle_dev_args() -> void:
 		return
 	if devautoquit > 0.0:
 		_auto_quit_after(devautoquit)
+	if devvisdump:
+		_coop.call("dev_set_vis_dump", true)
+		print("[etn_coop] vis dump enabled")
 	if devmenu:
 		_open_overlay()
 		await get_tree().process_frame
@@ -562,6 +572,20 @@ func _handle_dev_args() -> void:
 			await get_tree().create_timer(2.5).timeout
 			var h1: int = int(_coop.call("dev_local_hp"))
 			print("[etn_coop] dev self-laser hp before=%d after=%d" % [h0, h1])
+		if mode == "host" and devbullet:
+			for i in 5:
+				_coop.call("dev_spawn_bullet")
+				await get_tree().create_timer(0.3).timeout
+			print("[etn_coop] dev host spawned 5 bullets")
+		if mode == "host" and deveffect:
+			for i in 3:
+				_coop.call("dev_spawn_effect")
+				await get_tree().create_timer(0.3).timeout
+			print("[etn_coop] dev host spawned 3 effects")
+		if devload > 0:
+			# 本地压测：host/join 都可灌，用来验证出口预算与降载
+			_coop.call("dev_start_flood", devload)
+			print("[etn_coop] dev flood started %d KB/s" % devload)
 		if mode == "join":
 			var waited: float = 0.0
 			while not _coop.battle_active and waited < 15.0:

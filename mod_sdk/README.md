@@ -58,6 +58,8 @@ res://mods/example/defs/characters/example_hero.tscn
 | `defs/levels/` | `Level` | `level_id` |
 
 > 各 kind 现均接入 UI：`characters`/`shop_characters`/`clothes` → 选人/商店，`upgrades` → 三选一与物品浏览器，`enemies` → 敌人测试房与波次，`supports` → 支援池，`game_modes`/`levels` → 模式/选关。
+> 支援 EX 类升级项可用 `AbilityUpgrade.support_gate`（`0` 不限制 / `1` 任意支援 / `2` 指定支援）+ `support_ids`（`2` 时生效）声明「仅本局出战支援满足条件时才进入三选一候选」，不写时与旧内容行为一致。
+> 支援卡可配 `SupportCard.ex_charge_gain`（默认 `1.0`）设基础击杀充能；本局修正经 `SupportData.set_ex_modifiers(source_id, {...})` / `clear_ex_modifiers(source_id)`，键为 `charge_add/charge_mult`、`cost_add/cost_mult`、`duration_add/duration_mult`、`power_mult`、`range_mult`（只作用 ayane 单发爆炸半径），不写时与旧行为一致。
 > `manifest.characters` 是**显式补充**（只跳过 `characters` 的目录扫描，其余 kind 照常扫描），条目 `{"card":"res://...","card_scene":"res://..."}`。
 > 角色的 `unlock_mode` 决定 `auto`（自动解锁）或 `shop`（需 `defs/shop_characters/` 条目，见 `CHARACTER_GUIDE.md` §3.13）。
 
