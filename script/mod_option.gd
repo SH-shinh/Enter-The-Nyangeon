@@ -8,6 +8,9 @@ const ACCENT := Color(0.815686, 0.701961, 0.0235294, 1)
 const DANGER := Color(1.0, 0.352941, 0.352941, 1)
 const OK_COLOR := Color(0.509804, 0.807843, 0.313726, 1)
 const DIM := Color(0.74902, 0.74902, 0.74902, 1)
+# 拖入结果浮层：停留时长 + 淡出时长（秒）。
+const TOAST_HOLD := 2.6
+const TOAST_FADE := 0.4
 
 @onready var list_box: VBoxContainer = %List
 @onready var summary_label: Label = %Summary
@@ -69,9 +72,20 @@ var _drag_origin_index: int = 0
 var _drag_origin_row_index: int = 0
 var _spacer: Control = null
 
+var _drop_hint: Label
+var _drop_toast: PanelContainer
+var _drop_toast_label: Label
+var _drop_toast_tween: Tween
+# 同一文件列表在 1 秒内重复触发时只处理一次（防止一次拖放被重复回调）。
+# 不用 static：GDScript 静态变量会让脚本类在退出时无法释放，连带 preload 资源计入退出泄漏。
+var _last_drop_sig: String = ""
+var _last_drop_msec: int = 0
+
 
 func _ready() -> void:
 	_build_row_styles()
+	_build_drop_hint()
+	_build_drop_toast()
 	_file_dialog = FileDialog.new()
 	_file_dialog.use_native_dialog = true
 	_file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
@@ -110,6 +124,7 @@ func menu_show() -> void:
 
 func menu_hide() -> void:
 	_cancel_drag()
+	_hide_drop_toast()
 	super()
 
 
@@ -763,6 +778,180 @@ func _on_zip_selected(path: String) -> void:
 	else:
 		_set_status(tr("mod_import_fail") % str(r.get("error", "")), true)
 	_refresh()
+
+
+# ---------------- 系统拖放导入 ----------------
+
+# 由 ui/option.gd 在当前页可见时转发；页面未展开时直接忽略。
+func handle_files_dropped(files: PackedStringArray) -> void:
+	if not shown:
+		return
+	var zips := _zip_paths(files)
+	var sig := "|".join(zips)
+	var now := Time.get_ticks_msec()
+	if not zips.is_empty() and sig == _last_drop_sig and now - _last_drop_msec < 1000:
+		return
+	_last_drop_sig = sig
+	_last_drop_msec = now
+	if zips.is_empty():
+		var message := tr("mod_drop_no_zip")
+		_set_status(message, true)
+		_show_drop_toast(message, true)
+		return
+	_show_drop_toast(_tr_format("mod_drop_importing", zips.size()))
+	_install_dropped_zips.call_deferred(zips)
+
+
+# 过滤出可安装的 zip（忽略非 zip、目录、不存在的路径、重复项）。
+func _zip_paths(files: PackedStringArray) -> PackedStringArray:
+	var out := PackedStringArray()
+	var seen: Dictionary = {}
+	for f in files:
+		var path := str(f)
+		if path.get_extension().to_lower() != "zip":
+			continue
+		if seen.has(path) or DirAccess.dir_exists_absolute(path) or not FileAccess.file_exists(path):
+			continue
+		seen[path] = true
+		out.append(path)
+	return out
+
+
+func _install_dropped_zips(zips: PackedStringArray) -> void:
+	if not is_inside_tree():
+		return
+	var result: Dictionary = ModManager.import_zip_files(zips)
+	var imported: Array = result.get("imported", [])
+	var failed: Array = result.get("failed", [])
+	for item in imported:
+		var id := str(item.get("id", ""))
+		if id != "":
+			_pending_irreversible[id] = true
+	var message := _drop_result_text(imported, failed)
+	var good := failed.is_empty() and not imported.is_empty()
+	_set_status(message, not good)
+	_show_drop_toast(message, not good)
+	_refresh()
+
+
+func _drop_result_text(imported: Array, failed: Array) -> String:
+	if imported.size() == 1 and failed.is_empty():
+		return _tr_format("mod_import_ok", str(imported[0].get("id", "")))
+	var parts := PackedStringArray()
+	if not imported.is_empty():
+		parts.append(_tr_format("mod_drop_ok", imported.size()))
+	if not failed.is_empty():
+		var details := PackedStringArray()
+		for i in mini(failed.size(), 2):
+			var item: Dictionary = failed[i]
+			details.append("%s: %s" % [str(item.get("path", "")).get_file(), str(item.get("error", ""))])
+		if failed.size() > 2:
+			details.append("...")
+		parts.append(_tr_format("mod_drop_fail", " / ".join(details)))
+	if parts.is_empty():
+		return tr("mod_drop_no_zip")
+	return "\n".join(parts)
+
+
+# 翻译缺失时 tr() 返回键名（无占位符），直接格式化会抛 String formatting error，这里先判占位符。
+func _tr_format(key: String, values) -> String:
+	var text := tr(key)
+	if not text.contains("%"):
+		return text
+	return text % values
+
+
+func _build_drop_hint() -> void:
+	var hint := Label.new()
+	hint.text = tr("mod_drop_hint")
+	if hint.text == "mod_drop_hint" or status_label == null:
+		return
+	hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hint.add_theme_font_override("font", ROW_FONT)
+	hint.add_theme_font_size_override("font_size", 9)
+	hint.add_theme_color_override("font_color", DIM)
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var content := status_label.get_parent()
+	if content == null:
+		return
+	_drop_hint = hint
+	content.add_child(hint)
+	content.move_child(hint, status_label.get_index() + 1)
+
+
+func _build_drop_toast() -> void:
+	var panel := PanelContainer.new()
+	panel.visible = false
+	panel.z_index = 20
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.0745098, 0.0745098, 0.0745098, 0.95)
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	style.border_color = OK_COLOR
+	style.content_margin_left = 6.0
+	style.content_margin_top = 3.0
+	style.content_margin_right = 6.0
+	style.content_margin_bottom = 3.0
+	panel.add_theme_stylebox_override("panel", style)
+	var label := Label.new()
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.add_theme_font_override("font", ROW_FONT)
+	label.add_theme_font_size_override("font_size", 10)
+	panel.add_child(label)
+	add_child(panel)
+	_drop_toast = panel
+	_drop_toast_label = label
+
+
+func _show_drop_toast(text: String, failed: bool = false) -> void:
+	if _drop_toast == null or _drop_toast_label == null:
+		return
+	if _drop_toast_tween != null and _drop_toast_tween.is_valid():
+		_drop_toast_tween.kill()
+	_drop_toast_label.text = text
+	# 短文案单行、按内容撑宽；长文案（批量失败明细/多行）固定宽度并自动换行。
+	var wrap := text.length() > 28 or text.contains("\n")
+	_drop_toast_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if wrap else TextServer.AUTOWRAP_OFF
+	_drop_toast_label.custom_minimum_size = Vector2(380.0 if wrap else 0.0, 0.0)
+	var style := _drop_toast.get_theme_stylebox("panel") as StyleBoxFlat
+	if style != null:
+		style.border_color = DANGER if failed else OK_COLOR
+	_drop_toast.modulate.a = 1.0
+	_drop_toast.visible = true
+	_place_drop_toast()
+	_place_drop_toast.call_deferred()
+	_drop_toast_tween = create_tween()
+	_drop_toast_tween.tween_interval(TOAST_HOLD)
+	_drop_toast_tween.tween_property(_drop_toast, "modulate:a", 0.0, TOAST_FADE)
+	_drop_toast_tween.tween_callback(_on_drop_toast_expired)
+
+
+func _place_drop_toast() -> void:
+	if _drop_toast == null or not _drop_toast.visible:
+		return
+	_drop_toast.reset_size()
+	_drop_toast.position = Vector2(
+		(size.x - _drop_toast.size.x) * 0.5,
+		maxf(0.0, size.y - _drop_toast.size.y - 10.0),
+	)
+
+
+func _on_drop_toast_expired() -> void:
+	if _drop_toast != null:
+		_drop_toast.visible = false
+	_drop_toast_tween = null
+
+
+func _hide_drop_toast() -> void:
+	if _drop_toast_tween != null and _drop_toast_tween.is_valid():
+		_drop_toast_tween.kill()
+	_drop_toast_tween = null
+	if _drop_toast != null:
+		_drop_toast.visible = false
 
 
 func _on_uninstall_pressed() -> void:

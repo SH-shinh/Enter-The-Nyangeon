@@ -5220,3 +5220,27 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - Notes / 说明: 可破坏道具走 `PropHurtBox` → `PropHealth._on_hit_received` 回调，传入的 victim 是 `SceneProp` 根；根节点只有 `prop_id/faction/is_idle`，`stats` 在 `PropStats` 子节点上、`enemy_buff_manager` 根本不存在。原先直接 `victim.stats.penetrate_resis` / `victim.enemy_buff_manager.apply_buff(...)`，用玩家或召唤物子弹打油桶会报 `Invalid access to property or key 'stats'`。修法：`victim.get("stats")` 为空且属于 `SceneProp` 时回退 `get_node_or_null("PropStats")`（取不到按 0），`enemy_buff_manager` 判空后跳过 buff。新增可破坏道具时记得挂 `PropStats` 子节点，否则子弹/召唤物命中会走「无穿透抗性」分支。
 - Source / 来源: code + test
 - Date / 日期: 2026-11-27
+
+### [Mod/UI] `Window.files_dropped` 只在桌面原生主窗口回调，且没有 drag-enter 事件
+- Evidence / 证据: `ui/option.gd` 的 `_ready`（`OS.has_feature("pc") and DisplayServer.get_name() != "headless"` 才连接）、`_on_files_dropped`；`script/mod_option.gd` 的 `handle_files_dropped`
+- Notes / 说明: 系统文件拖放只在桌面平台由原生窗口抛信号（移动端/Web 不会回调），不能作为移动端导入入口。Godot 没有「文件悬停在窗口上」的事件，只有 drop 那一刻才拿到路径，做不了拖拽悬停高亮，只能在落点后给结果。Windows 下以管理员权限运行、而拖拽源是普通权限程序时，UIPI 会让系统直接不投递拖放事件——属系统限制，代码无需兜底。
+- Source / 来源: code
+- Date / 日期: 2026-11-27
+
+### [Mod/UI] 关闭 option 不会对当前页调 `menu_hide()`，子页 `shown` 不能代表「玩家正看着这一页」
+- Evidence / 证据: `ui/option.gd` 的 `out_option_selected`（只 `button_close()` + 播 `option_out`，未对当前页 `menu_hide()`）、`ui/option.gd` 的 `menu_button_press`（新增 `_active_page`）
+- Notes / 说明: `OptionMenu.shown` 只在页签切换时更新；直接读 `mod_option.shown` 会把「关掉面板之后」仍当成可见。判断某页是否真的对玩家可见要用宿主容器状态（本实现用 `option.gd` 的 `on_option` + `_active_page`，关闭时清空）。同理，系统事件（文件拖放）的接收器应放在宿主 `option.gd`，再按页转发，而不是让页自己判断可见性。
+- Source / 来源: code
+- Date / 日期: 2026-11-27
+
+### [Localization] `tr()` 缺键时返回键名，直接 `%` 格式化会抛 String formatting error
+- Evidence / 证据: `script/mod_option.gd` 的 `_tr_format`（先判 `%` 再格式化）；新键未 reimport 时 `tr("mod_drop_importing") % 1` 实测报 `not all arguments converted during string formatting`（`core/variant/variant_op.h`）
+- Notes / 说明: `ETN_*localization.csv` 追加新键后必须 reimport 才进 `.translation`；在那之前（或某 locale 缺该键）`tr()` 原样返回键名，没有 `%d/%s` 占位符，格式化直接运行时错误。带占位符的新键要么先 reimport，要么走「含 `%` 才格式化」的守卫。
+- Source / 来源: test
+- Date / 日期: 2026-11-27
+
+### [GDScript] `static var` 会让脚本类在退出时无法释放，连带 `preload` 资源计入退出期 RID/资源泄漏
+- Evidence / 证据: `script/mod_option.gd` 的 `_last_drop_sig`/`_last_drop_msec`（初版为 `static var`）；`python tests/run_ui_ux_checks.py --settings-only`：static 版稳定报 `2 RID material + 1 shader + 13 texture leaked at exit` 且 `80 resources still in use`（runner 判失败），改成普通成员变量后恢复 `UI_UX_RESULT checks=23 failures=0`、exit 0。禁用新增 UI 节点、或换回 HEAD 版 `ui/option.gd` 都仍复现，故与节点/构建无关。
+- Notes / 说明: GDScript 静态变量存在脚本级静态存储里，脚本类因此保持引用、退出时未被释放；它持有的 `preload` 常量（字体、场景等）随之仍 in use，headless dummy renderer 把它们记成 RID 泄漏。排查退出期泄漏可先用「静态变量 → 普通成员变量」二分；确实需要跨实例共享时，用 autoload 上的字段而不是 `static var`。
+- Source / 来源: test
+- Date / 日期: 2026-11-27

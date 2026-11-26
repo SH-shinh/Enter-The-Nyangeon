@@ -202,3 +202,8 @@ chip_barricade_description,"场地中随机出现墙体障碍，阻挡移动与�
 option_casing_cap,弹壳上限,Casing Limit,Limite de Cápsulas,Giới hạn vỏ đạn
 option_screen_filters,屏幕滤镜,Screen Filters,Filtros de Tela,Bộ Lọc Màn Hình
 option_screen_filters_mobile_notice,部分机型可能黑屏或闪退，异常时请关闭此选项,Some devices may black-screen or crash; turn this off if needed,Alguns aparelhos podem ficar com tela preta ou travar; desative se necessário,Một số máy có thể đen màn hình hoặc crash; hãy tắt nếu cần
+mod_drop_hint,也可把 zip 拖进这里,Or drop a .zip here,Ou arraste um .zip aqui,Hoặc kéo thả tệp .zip vào đây
+mod_drop_no_zip,未检测到 zip 文件,No .zip file found,Nenhum arquivo .zip encontrado,Không tìm thấy tệp .zip
+mod_drop_importing,正在导入 %d 个 zip…,Importing %d .zip file(s)…,Importando %d arquivo(s) .zip…,Đang nhập %d tệp .zip…
+mod_drop_ok,已导入 %d 个 Mod，重启游戏后生效,Imported %d mod(s); effective after restart,%d mod(s) importado(s); efeito após reiniciar o jogo,Đã nhập %d Mod; có hiệu lực sau khi khởi động lại
+mod_drop_fail,导入失败：%s,Import failed: %s,Falha na importação: %s,Nhập thất bại: %s

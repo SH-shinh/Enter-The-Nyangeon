@@ -1464,6 +1464,33 @@ func import_zip(zip_path: String) -> Dictionary:
 	return preload("res://script/mod_installer.gd").new().install(zip_path, MODS_DIR, IMPORT_MAX_FILES, IMPORT_MAX_BYTES)
 
 
+# 批量安装（系统拖放等一次传多个路径）：过滤非 .zip / 不存在 / 目录，逐个走 install 事务。
+# 返回 {ok, imported:[{id,path}], failed:[{path,error}], ignored:[path]}；ok = 至少成功 1 个且无失败。
+func import_zip_files(paths: PackedStringArray) -> Dictionary:
+	var imported: Array = []
+	var failed: Array = []
+	var ignored: Array = []
+	for p in paths:
+		var path := str(p)
+		var is_zip := path.get_extension().to_lower() == "zip"
+		if is_zip and (DirAccess.dir_exists_absolute(path) or not FileAccess.file_exists(path)):
+			is_zip = false
+		if not is_zip:
+			ignored.append(path)
+			continue
+		var result := import_zip(path)
+		if result.get("ok", false):
+			imported.append({"id": str(result.get("id", "")), "path": path})
+		else:
+			failed.append({"path": path, "error": str(result.get("error", ""))})
+	return {
+		"ok": not imported.is_empty() and failed.is_empty(),
+		"imported": imported,
+		"failed": failed,
+		"ignored": ignored,
+	}
+
+
 # ---------------- 卸载 / 待删 ----------------
 
 # 删除该 id 在所有 mod 根下的目录；返回是否全部删除成功（不存在的根不算失败）。
