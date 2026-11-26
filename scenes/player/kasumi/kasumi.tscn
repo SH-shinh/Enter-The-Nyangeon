@@ -31,7 +31,6 @@
 [ext_resource type="Script" uid="uid://bs61n330ebtki" path="res://scenes/player/kasumi/kasumi_melee.gd" id="29_k51yo"]
 [ext_resource type="Texture2D" uid="uid://dfi144wplx4ym" path="res://sprites/player/kasumi/kasumi_controller.png" id="30_xuheo"]
 [ext_resource type="Script" uid="uid://bd8hahgdmj1id" path="res://scenes/player/kasumi/kasumi_ps.gd" id="31_ku5yp"]
-[ext_resource type="Resource" uid="uid://dmur1plvar11c" path="res://resources/buff/player_buff/kasumi_drill_buff.tres" id="32_urb3n"]
 [ext_resource type="Script" uid="uid://crtabh2xwunne" path="res://script/player_health_component.gd" id="33_e2wsm"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_5lclh"]
@@ -648,10 +647,6 @@ position = Vector2(50, 0)
 
 [node name="kasumi_ps" type="Node2D" parent="." unique_id=527697764 node_paths=PackedStringArray("stats", "player", "gun")]
 script = ExtResource("31_ku5yp")
-player_buff = ExtResource("32_urb3n")
-buff_layer = 30
-buff_value = 1.0
-buff_erase_timer = 10000.0
 stats = NodePath("../Stats")
 player = NodePath("..")
 gun = NodePath("../GraphicsGun/Gun")

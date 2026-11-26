@@ -25,8 +25,6 @@ func kick_start():
 			kasumi_drill.player_position = player.global_position
 			kasumi_drill.scale_x = player.graphics.scale.x
 			kasumi_drill.melee_cd = ps_node.t_cd
-			kasumi_drill.player_explosion_damage = ps_node.e_damage
-			kasumi_drill.max_layer = ps_node.buff_layer
 			kasumi_drill.active_state()
 			# 联机（M5 角色事件）：把钻头近战广播给其它端做纯视觉回放
 			player.broadcast_character_event(&"kasumi_drill", {

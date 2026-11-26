@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="Buff" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" uid="uid://b443gs3b8xe45" path="res://sprites/buff_icon/drill_buff_icon.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/buff/buff.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = "kasumi_drill_mark"
+icon = ExtResource("1_icon")
+name = "钻击标记"
+ability = ""
+remove_by_layer = false
+is_debuff = true
+description = "钻头命中叠加；子弹命中消耗 1 层并引爆，伤害与范围随层数提高（最高 999 层）。"

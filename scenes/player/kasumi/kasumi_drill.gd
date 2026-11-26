@@ -1,8 +1,11 @@
 extends Node2D
 
+## 钻头：命中叠「钻击标记」；标记由任意伤害引爆；引爆给钻头充能（+2%，暴击 +4%）。
+## 充能沿用原有 now_lv/critical_damage_add，钻头命中不再加充能；不再有钻头爆炸。
 
 var player: Node
-@export var player_buff: Buff
+
+const MARK_BUFF: Buff = preload("res://resources/buff/enemy_buff/kasumi_drill_mark.tres")
 
 var kick_damage: int
 var bullet_knockback: int
@@ -12,22 +15,12 @@ var is_critical: bool = false
 var melee_cd: int = 2
 var now_cd: int = 0
 
-var player_explosion_damage: int = 15
-var damage_mult: float = 1
-var range_mult: float = 1
-var explosion_damage: int = 0
-
 var now_lv: int = 0
 var scale_x: float = 1
 
 var damage_count: float = 0
 
-@export var base_explosion_range: int = 5
-
 var body_group: Array[Node]
-
-var explosion_num: int = 0
-var max_layer: int = 3
 
 var is_idle: int = 1
 
@@ -40,14 +33,12 @@ var quip_damage: int = 0
 @onready var animation_player_2: AnimationPlayer = $AnimationPlayer2
 @onready var gpu_particles_2d_2: GPUParticles2D = $GPUParticles2D2
 @onready var drill_sounds: AudioStreamPlayer2D = $DrillSounds
-@onready var explosion_pak: PackedScene = preload("res://script/explosion_damage.tscn")
-@onready var gpu_particles_2d: GPUParticles2D = $GPUParticles2D
 @onready var lv_num: Label = $LVNum
 @onready var hit_box = $Area2D2
 
 func _ready() -> void:
+	add_to_group("KasumiDrill")
 	GameEvents.round_end.connect(reset_lv)
-	GameEvents.enemy_damage_taken.connect(melee_lv_add)
 	hit_box.area_entered.connect(_on_hit_box_entered)
 	hit_box.area_exited.connect(_on_hit_box_exited)
 	reset_lv()
@@ -78,7 +69,7 @@ func active_state():
 	drill_sounds.pitch_scale = randf_range(0.8,1.2)
 	drill_sounds.play()
 	lv_num.scale.x = scale_x
-	self.scale = Vector2( scale_x * (1 + now_lv * 0.0015), 1 + now_lv * 0.0015)
+	_sync_charge_effects()
 	apply_melee_damage_data()
 
 func time_count():
@@ -99,76 +90,25 @@ func reset_lv():
 	PlayerData.critical_damage_add -= damage_count
 	damage_count = 0
 
-func melee_lv_add(_final_damage: int, damage_data: DamageData, _body_path: NodePath):
-	if damage_data.damage_type.has(GameTags.MELEE_DAMAGE) and damage_data.source_type.has(GameTags.EQUIP):
-		lv_count()
+func lv_count(amount: int = 1):
+	if amount <= 0:
+		return
+	now_lv += amount
+	lv_num.text = str(now_lv) + "%"
+	lv_num.scale.x = scale_x
+	_sync_charge_effects()
 
-func lv_count():
-	if now_t > 0:
-		now_lv += 1
-		lv_num.text = str(now_lv) + "%"
-		lv_num.scale.x = scale_x
-		self.scale = Vector2( scale_x * (1 + now_lv * 0.0015), 1 + now_lv * 0.0015)
-		damage_count += 0.01
-		PlayerData.critical_damage_add += 0.01
+## now_lv 是唯一充能来源：同时驱动大小/范围与爆伤。
+## 爆伤用「期望贡献 - 已写入贡献」的差值写入，避免覆盖其它来源的 critical_damage_add。
+func _sync_charge_effects() -> void:
+	var scale_value: float = 1.0 + float(now_lv) * 0.0015
+	self.scale = Vector2(scale_x * scale_value, scale_value)
+	var desired: float = float(now_lv) * 0.01
+	var delta: float = desired - damage_count
+	if not is_zero_approx(delta):
+		PlayerData.critical_damage_add += delta
+		damage_count = desired
 		PlayerData.update_player_ability()
-		
-		explosion_num += 1
-		if explosion_num > 100:
-			explosion_num = 0
-			if is_idle == 0:
-				add_full_explosion()
-	
-
-func add_explosion_ins():
-	ProjectileSpawner.spawn_core(
-		explosion_pak, "player_explosion", "BulletRoot", self, Faction.PLAYER_SIDE,
-		self.global_position, 0.0, Vector2.ZERO,
-		true, false, true,
-		Callable(self, "_configure_explosion"),
-		Callable(),
-		Callable(self, "_post_explosion")
-	)
-	
-	gpu_particles_2d.emitting = true
-	gpu_particles_2d.restart()
-
-func _configure_explosion(node: Node) -> void:
-	node.damage_data = DamageData.fill(node.damage_data, {
-		"knockback": player.stats.bullet_knockback,
-		"type": GameTags.EXPLOSION_DAMAGE,
-		"source": GameTags.EQUIP,
-	})
-	var luck = randf_range(0, 100)
-	if luck < player.stats.critical_luck:
-		node.damage_data.is_crit = true
-		node.damage_data.base_damage = max(1, round(explosion_damage * player.stats.critical_damage))
-	else:
-		node.damage_data.is_crit = false
-		node.damage_data.base_damage = max(1, round(explosion_damage))
-
-	node.explosion_range = player.stats.explosion_range * base_explosion_range * range_mult
-
-func _post_explosion(node: Node) -> void:
-	node.damage_data.source_node = node.get_path()
-	node.is_small_explosion()
-
-func add_full_explosion():
-	damage_mult = 1 + (max_layer * 0.4)
-	range_mult = 1 + (max_layer * 0.05)
-	explosion_damage = player_explosion_damage * damage_mult * player.stats.global_damage  * player.stats.equip_damage
-	
-	add_explosion_ins()
-
-func add_explosion():
-	if player.player_buff_manager.current_buff.has(player_buff.id):
-		damage_mult = 1 + (player.player_buff_manager.current_buff[player_buff.id]["layer"] * 0.4)
-		range_mult = 1 + (player.player_buff_manager.current_buff[player_buff.id]["layer"] * 0.05)
-		explosion_damage = player_explosion_damage * damage_mult * player.stats.global_damage  * player.stats.equip_damage
-		
-		add_explosion_ins()
-		
-		player.player_buff_manager.remove_buff(player_buff)
 
 func particles_shoot():
 	gpu_particles_2d_2.emitting = true
@@ -186,7 +126,7 @@ func freeze_frame_reset():
 func apply_melee_damage_data():
 	hit_box.damage_data = DamageData.fill(hit_box.damage_data, {
 		"knockback": max(player.stats.bullet_knockback + 100, 1),
-		"type": [GameTags.MELEE_DAMAGE, GameTags.EQUIP_DAMAGE],
+		"type": [GameTags.MELEE_DAMAGE, GameTags.EQUIP_DAMAGE, GameTags.KASUMI_DRILL_DAMAGE],
 		"center": hit_box.global_position,
 		"source": GameTags.EQUIP,
 		"flags": [GameTags.KNOCKBACK_ATTRACT],
@@ -201,10 +141,41 @@ func apply_melee_damage_data():
 		hit_box.damage_data.base_damage = max(1, round(player.stats.kick_damage * player.stats.global_damage * player.stats.equip_damage))
 		hit_box.damage_data.is_crit = false
 
+func _mark_cap() -> int:
+	match now_t:
+		0:
+			return 10
+		1:
+			return 30
+		2:
+			return 300
+		_:
+			return 999
+
+func _apply_mark(hurtbox: Area2D) -> void:
+	if hurtbox == null or not is_instance_valid(hurtbox):
+		return
+	var body = hurtbox.owner
+	if body == null or not is_instance_valid(body):
+		return
+	if body.is_in_group("SceneProp") or body.is_in_group("Summoned") or body.is_in_group("Converted"):
+		return
+	if Faction.of_entity(body) != Faction.ENEMY_SIDE:
+		return
+	var manager = body.get("enemy_buff_manager")
+	if manager == null:
+		return
+	var cap: int = _mark_cap()
+	var current = manager.get("current_buff")
+	if current != null and current.has(MARK_BUFF.id):
+		var entry: Dictionary = current[MARK_BUFF.id]
+		entry["max_layer"] = cap
+		if int(entry.get("layer", 0)) > cap:
+			entry["layer"] = cap
+	manager.apply_buff(MARK_BUFF, [cap, 0.0, 9999.0], "kasumi_drill")
+
 func add_damage_data():
 	if !body_group.is_empty():
-		
-		var damage_m:int = hit_box.damage_data.base_damage
 		for i in body_group:
 			if i == null or not is_instance_valid(i):
 				continue
@@ -213,8 +184,9 @@ func add_damage_data():
 				ExtensionHooks.notify_named("on_hit_sfx", ["HurtSounds2", global_position])
 				freeze_frame()
 				apply_melee_damage_data()
-				if hit_box.damage_data.is_crit == true:
-					lv_count()
+				_apply_mark(i)
+				if now_t >= 2 and hit_box.damage_data.is_crit:
+					_apply_mark(i)
 			else:
 				hit_box.damage_data.base_damage = 0
 			i.hit_received.emit(hit_box.damage_data)

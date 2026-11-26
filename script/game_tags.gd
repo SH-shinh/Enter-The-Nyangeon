@@ -42,3 +42,7 @@ const SPLIT_CHILD: String = "split_child" #分裂产物子弹：不再触发分�
 const SUMMON_TRANSFER: String = "summon_transfer" #召唤物替玩家承伤后转给玩家的伤害
 const IGNORE_IFRAME: String = "ignore_iframe"
 const EXECUTE_DAMAGE: String = "execute_damage" #处决伤害：跳过延迟死亡等致命伤害拦截
+
+# Kasumi 专用 damage_type 标记（只用于排除，不影响阵营/乘区）
+const KASUMI_DRILL_DAMAGE: String = "kasumi_drill_damage"
+const KASUMI_DETONATION_DAMAGE: String = "kasumi_detonation_damage"

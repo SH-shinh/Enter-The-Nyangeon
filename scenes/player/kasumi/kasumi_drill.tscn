@@ -2,11 +2,9 @@
 
 [ext_resource type="Script" uid="uid://b6kt5koa5arb4" path="res://scenes/player/kasumi/kasumi_drill.gd" id="1_blbim"]
 [ext_resource type="Texture2D" uid="uid://c4uywnbhriosv" path="res://sprites/player/kasumi/kasumi_drill.png" id="1_r7fcx"]
-[ext_resource type="Resource" uid="uid://dmur1plvar11c" path="res://resources/buff/player_buff/kasumi_drill_buff.tres" id="2_c8cn5"]
 [ext_resource type="Texture2D" uid="uid://b5nbmcnfshgb8" path="res://sprites/particle/circular_1.png" id="2_vmq0f"]
 [ext_resource type="Script" uid="uid://dgqq5631n3u32" path="res://script/hit_box.gd" id="4_cudgb"]
 [ext_resource type="AudioStream" uid="uid://o6drbfokgm3m" path="res://sounds/drill.wav" id="4_mr1in"]
-[ext_resource type="Texture2D" uid="uid://ccv20w8histyb" path="res://sprites/particle/explosion_0001.png" id="6_c0a7q"]
 [ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="7_8q2js"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_2p5c2"]
@@ -131,14 +129,11 @@ tracks/2/path = NodePath(".")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
-"times": PackedFloat32Array(0.1, 0.2, 0.6),
-"transitions": PackedFloat32Array(1, 1, 1),
+"times": PackedFloat32Array(0.1, 0.6),
+"transitions": PackedFloat32Array(1, 1),
 "values": [{
 "args": [],
 "method": &"particles_shoot"
-}, {
-"args": [],
-"method": &"add_explosion"
 }, {
 "args": [],
 "method": &"idle_state"
@@ -187,28 +182,8 @@ _data = {
 &"drill_anim": SubResource("Animation_1s4hh")
 }
 
-[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_o8ae1"]
-particles_animation = true
-particles_anim_h_frames = 4
-particles_anim_v_frames = 3
-particles_anim_loop = false
-
-[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_yqip2"]
-lifetime_randomness = 0.5
-particle_flag_disable_z = true
-emission_shape = 3
-emission_box_extents = Vector3(50, 30, 1)
-angle_min = -45.0
-angle_max = 45.0
-gravity = Vector3(0, 10, 0)
-scale_min = 0.5
-scale_max = 0.8
-anim_speed_min = 1.0
-anim_speed_max = 1.0
-
 [node name="kasumi_drill" type="Node2D" unique_id=813908633]
 script = ExtResource("1_blbim")
-player_buff = ExtResource("2_c8cn5")
 
 [node name="ColorRect2" type="ColorRect" parent="." unique_id=1788221198]
 visible = false
@@ -252,16 +227,6 @@ process_mode = 3
 stream = ExtResource("4_mr1in")
 volume_db = 6.0
 bus = &"SFX"
-
-[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=2108621811]
-z_index = 1
-material = SubResource("CanvasItemMaterial_o8ae1")
-emitting = false
-texture = ExtResource("6_c0a7q")
-lifetime = 0.4
-one_shot = true
-explosiveness = 1.0
-process_material = SubResource("ParticleProcessMaterial_yqip2")
 
 [node name="LVNum" type="Label" parent="." unique_id=1256751779]
 modulate = Color(1, 1, 1, 0)
