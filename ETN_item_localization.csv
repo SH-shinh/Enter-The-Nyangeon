@@ -928,3 +928,19 @@ return_handkerchief_forward,"最大持有 3 个
 +10% de reembolso de carga","Tối đa 3 cái
 +10% hoàn năng lượng"
 return_handkerchief_negative,,,,
+recharge_cookie_name,能量饼干,Energy Cookie,Biscoito de Energia,Bánh Quy Năng Lượng
+recharge_cookie_description,用来恢复消耗的体力的饼干，大家都有份，每个召唤物+15%召唤伤害。,A cookie for restoring spent stamina. Everyone gets a share and each summon gains +15% summon damage.,Um biscoito para recuperar a resistência gasta. Há para todo mundo e cada invocação ganha +15% de dano de invocação.,Bánh quy dùng để hồi phục thể lực đã tiêu hao. Ai cũng có phần và mỗi triệu hồi nhận +15% sát thương triệu hồi.
+recharge_cookie_forward,"最大持有 5 个
++5%每个召唤物伤害","Max Stack: 5
++5% Summon Damage per summon","Máximo: 5
++5% de Dano de Invocação por invocação","Tối đa 5 cái
++5% sát thương mỗi triệu hồi"
+recharge_cookie_negative,,,,
+opera_binoculars_name,歌剧望远镜,Opera Binoculars,Binóculos de Ópera,Ống Nhòm Nhà Hát
+opera_binoculars_description,在远处也能把舞台状况看得一清二楚的望远镜，视野被压缩到只剩最亮的那一幕。,Binoculars that keep the stage crystal clear even from afar; the view narrows until only the brightest scene remains.,Binóculos que mantêm o palco nítido mesmo à distância; a visão se estreita até restar apenas a cena mais brilhante.,Ống nhòm giúp nhìn rõ sân khấu từ xa; tầm nhìn thu hẹp đến chỉ còn cảnh sáng nhất.
+opera_binoculars_forward,"独特
+召唤物暴击伤害×200%","Unique
+Summon crit damage ×200%","Único
+Dano crítico de invocação ×200%","Độc Nhất
+ST chí mạng của triệu hồi ×200%"
+opera_binoculars_negative,召唤物非暴击伤害×50%,Non-crit Summon damage ×50%,Dano de invocação sem crítica ×50%,ST triệu hồi không chí mạng ×50%

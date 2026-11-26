@@ -81,9 +81,9 @@ droid_helmet_smg_description,头盔团的队长型自动机，持有SMG进行扫
 enhanced_sweeper_name,强化型清扫器,Enhanced Sweeper,Varredor Aprimorado,Sweeper Cơ Động
 enhanced_sweeper_description,轻量特化型的清扫器，强化了速度，但也容易被踢飞。,"A lightweight, specialized sweeper with boosted speed, but easy to send flying with a kick.","Modelo leve e especializado. Ganhou mais velocidade, mas voa longe com um bom chute.","Sweeper siêu nhẹ, tốc độ cực nhanh nhưng dễ bị cút."
 erosion_tower_name,侵蚀之柱,Erosion Tower,Pilar da Erosão,Tháp Xói Mòn
-erosion_tower_description, , , , 
+erosion_tower_description,,,,
 goliath_name,歌利亚,Goliath,Goliath,Goliath
-goliath_description, , , , 
+goliath_description,,,,
 lighttank_helmet_name,头盔团轻坦克,Helmet Gang Light Tank,Tanque Leve da Gangue do Capacete,Xe Tăng Hạng Nhẹ của Băng Đảng Mũ
 lighttank_helmet_description,头盔团的轻型坦克，炮弹爆炸会四散出弹幕，尾部是弱点。,"The Helmet Gang's light tank. Its shells explode into a scattered barrage, and its rear is a weak point.",Tanque leve da Gangue do Capacete. Seus projéteis explodem liberando uma chuva de balas. A traseira é seu ponto fraco!,"Xe tăng hạng nhẹ của Băng Mũ Bảo Hiểm. Đạn pháo nổ tung thành màn đạn tản mát, và phần đuôi là điểm yếu."
 menacing_automaton_name,失控自动机,Menacing Automaton,Autômato Descontrolado,Lính Máy Điên Loạn
@@ -200,3 +200,5 @@ chip_easy_fall_description,"受到伤害后不再有无敌时间。","No invulne
 chip_barricade_id,壁垒,BARRICADE,BARRICADA,LŨY CHẮN
 chip_barricade_description,"场地中随机出现墙体障碍，阻挡移动与子弹；障碍按墙体计算。","Wall obstacles appear randomly across the field, blocking movement and bullets; they count as walls.","Obstáculos de parede aparecem aleatoriamente pelo campo, bloqueando movimento e balas; contam como paredes.","Chướng ngại vật bằng tường xuất hiện ngẫu nhiên trên chiến trường, chặn di chuyển và đạn; được tính là tường."
 option_casing_cap,弹壳上限,Casing Limit,Limite de Cápsulas,Giới hạn vỏ đạn
+option_screen_filters,屏幕滤镜,Screen Filters,Filtros de Tela,Bộ Lọc Màn Hình
+option_screen_filters_mobile_notice,部分机型可能黑屏或闪退，异常时请关闭此选项,Some devices may black-screen or crash; turn this off if needed,Alguns aparelhos podem ficar com tela preta ou travar; desative se necessário,Một số máy có thể đen màn hình hoặc crash; hãy tắt nếu cần
