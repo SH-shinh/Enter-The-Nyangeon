@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="DanmakuPattern" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/danmaku/danmaku_pattern.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/bullet/danmaku_bullet.tscn" id="2_bullet"]
+
+[resource]
+script = ExtResource("1_script")
+id = "homing3"
+display_name = "追踪三连"
+notes = "只追踪 1.1 秒，之后变直线——给玩家『绕一下就能甩掉』的解法。"
+bullet_scene = ExtResource("2_bullet")
+spread = 0
+count = 3
+arc_deg = 40.0
+aim = 0
+speed = 120.0
+homing_deg_per_sec = 130.0
+homing_duration = 1.1
+lifetime = 7.0
+damage_mult = 0.8

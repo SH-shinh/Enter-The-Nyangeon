@@ -1,0 +1,82 @@
+[gd_resource type="Resource" script_class="DanmakuBarrage" load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://resources/danmaku/danmaku_barrage.gd" id="1_script"]
+[ext_resource type="Script" path="res://resources/danmaku/danmaku_cue.gd" id="2_cue"]
+[ext_resource type="Resource" path="res://resources/danmaku/patterns/aimed_single.tres" id="3_aimed"]
+[ext_resource type="Resource" path="res://resources/danmaku/patterns/fan3.tres" id="4_fan3"]
+[ext_resource type="Resource" path="res://resources/danmaku/patterns/fan9_wide.tres" id="5_fan9"]
+[ext_resource type="Resource" path="res://resources/danmaku/patterns/ring16.tres" id="6_ring16"]
+[ext_resource type="Resource" path="res://resources/danmaku/patterns/spiral_ring.tres" id="7_spiral"]
+[ext_resource type="Resource" path="res://resources/danmaku/patterns/aimed_burst.tres" id="8_burst"]
+[ext_resource type="Resource" path="res://resources/danmaku/patterns/homing3.tres" id="9_homing"]
+[ext_resource type="Resource" path="res://resources/danmaku/patterns/curve_ring.tres" id="10_curve"]
+[ext_resource type="Resource" path="res://resources/danmaku/patterns/split_ring.tres" id="11_split"]
+[ext_resource type="Resource" path="res://resources/danmaku/patterns/curtain_parallel.tres" id="12_curtain"]
+[ext_resource type="Resource" path="res://resources/danmaku/patterns/ring20_phase2.tres" id="13_ring20"]
+
+[sub_resource type="Resource" id="Resource_cue_all_1"]
+script = ExtResource("2_cue")
+pattern = ExtResource("3_aimed")
+time = 0.0
+
+[sub_resource type="Resource" id="Resource_cue_all_2"]
+script = ExtResource("2_cue")
+pattern = ExtResource("4_fan3")
+time = 0.8
+
+[sub_resource type="Resource" id="Resource_cue_all_3"]
+script = ExtResource("2_cue")
+pattern = ExtResource("5_fan9")
+time = 1.6
+
+[sub_resource type="Resource" id="Resource_cue_all_4"]
+script = ExtResource("2_cue")
+pattern = ExtResource("6_ring16")
+time = 2.4
+
+[sub_resource type="Resource" id="Resource_cue_all_5"]
+script = ExtResource("2_cue")
+pattern = ExtResource("7_spiral")
+time = 3.2
+repeat = 4
+repeat_interval = 0.4
+
+[sub_resource type="Resource" id="Resource_cue_all_6"]
+script = ExtResource("2_cue")
+pattern = ExtResource("8_burst")
+time = 5.0
+
+[sub_resource type="Resource" id="Resource_cue_all_7"]
+script = ExtResource("2_cue")
+pattern = ExtResource("9_homing")
+time = 5.8
+
+[sub_resource type="Resource" id="Resource_cue_all_8"]
+script = ExtResource("2_cue")
+pattern = ExtResource("10_curve")
+time = 6.8
+
+[sub_resource type="Resource" id="Resource_cue_all_9"]
+script = ExtResource("2_cue")
+pattern = ExtResource("11_split")
+time = 7.8
+
+[sub_resource type="Resource" id="Resource_cue_all_10"]
+script = ExtResource("2_cue")
+pattern = ExtResource("12_curtain")
+time = 8.8
+
+[sub_resource type="Resource" id="Resource_cue_all_11"]
+script = ExtResource("2_cue")
+pattern = ExtResource("13_ring20")
+time = 9.8
+
+[resource]
+script = ExtResource("1_script")
+id = "showcase_all"
+display_name = "全部图案演示（10 种）"
+notes = "编辑器里先播这一招，逐条检查每种图案的实际手感；正式战斗请按阶段拆到不同招式。"
+cues = [SubResource("Resource_cue_all_1"), SubResource("Resource_cue_all_2"), SubResource("Resource_cue_all_3"), SubResource("Resource_cue_all_4"), SubResource("Resource_cue_all_5"), SubResource("Resource_cue_all_6"), SubResource("Resource_cue_all_7"), SubResource("Resource_cue_all_8"), SubResource("Resource_cue_all_9"), SubResource("Resource_cue_all_10"), SubResource("Resource_cue_all_11")]
+duration = 11.0
+cooldown = 1.5
+phases = 15

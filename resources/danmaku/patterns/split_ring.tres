@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="DanmakuPattern" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/danmaku/danmaku_pattern.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/bullet/enemy_bullet_2.tscn" id="2_bullet"]
+
+[resource]
+script = ExtResource("1_script")
+id = "split_ring"
+display_name = "分裂环"
+notes = "命中/撞墙/超时后碎成 6 发小子弹（复用 EnemySpreadBullet），别在弹道上停太久。"
+bullet_scene = ExtResource("2_bullet")
+spread = 1
+count = 10
+arc_deg = 360.0
+aim = 0
+speed = 100.0
+lifetime = 7.0
+damage_mult = 0.7
+split_count = 6

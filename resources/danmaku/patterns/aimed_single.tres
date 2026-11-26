@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="DanmakuPattern" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/danmaku/danmaku_pattern.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/bullet/enemy_bullet.tscn" id="2_bullet"]
+
+[resource]
+script = ExtResource("1_script")
+id = "aimed_single"
+display_name = "瞄准单发"
+notes = "最短的起手：朝玩家打一发，用来建立『看 BOSS 枪口』的读招习惯。"
+bullet_scene = ExtResource("2_bullet")
+spread = 0
+count = 1
+arc_deg = 0.0
+aim = 0
+speed = 170.0
+lifetime = 7.0

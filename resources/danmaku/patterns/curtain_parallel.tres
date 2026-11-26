@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="DanmakuPattern" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/danmaku/danmaku_pattern.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/bullet/enemy_bullet.tscn" id="2_bullet"]
+
+[resource]
+script = ExtResource("1_script")
+id = "curtain_parallel"
+display_name = "平行弹幕墙"
+notes = "同角度 7 条并排向下推，压缩场地；配合其他弹幕时注意留出侧向通道。"
+bullet_scene = ExtResource("2_bullet")
+spread = 3
+count = 7
+arc_deg = 0.0
+parallel_spacing = 26.0
+aim = 1
+fixed_angle_deg = 90.0
+speed = 150.0
+lifetime = 6.0
+damage_mult = 0.7

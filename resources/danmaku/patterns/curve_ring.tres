@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="DanmakuPattern" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/danmaku/danmaku_pattern.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/bullet/danmaku_bullet.tscn" id="2_bullet"]
+
+[resource]
+script = ExtResource("1_script")
+id = "curve_ring"
+display_name = "弧线环"
+notes = "整圈向右弯，形成旋转花瓣；贴着弹幕内圈走最安全。"
+bullet_scene = ExtResource("2_bullet")
+spread = 1
+count = 14
+arc_deg = 360.0
+aim = 0
+speed = 130.0
+curvature_deg_per_sec = 55.0
+lifetime = 8.0
+damage_mult = 0.7

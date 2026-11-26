@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="DanmakuPattern" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/danmaku/danmaku_pattern.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/bullet/enemy_bullet.tscn" id="2_bullet"]
+
+[resource]
+script = ExtResource("1_script")
+id = "fan3"
+display_name = "三连扇形"
+notes = "三发窄扇，速度中等，留足横向走位空间。"
+bullet_scene = ExtResource("2_bullet")
+spread = 0
+count = 3
+arc_deg = 30.0
+aim = 0
+speed = 140.0
+lifetime = 7.0

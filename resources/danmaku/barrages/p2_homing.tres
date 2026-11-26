@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="DanmakuBarrage" load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://resources/danmaku/danmaku_barrage.gd" id="1_script"]
+[ext_resource type="Script" path="res://resources/danmaku/danmaku_cue.gd" id="2_cue"]
+[ext_resource type="Resource" path="res://resources/danmaku/patterns/homing3.tres" id="3_homing"]
+[ext_resource type="Resource" path="res://resources/danmaku/patterns/curve_ring.tres" id="4_curve"]
+[ext_resource type="Resource" path="res://resources/danmaku/patterns/ring20_phase2.tres" id="5_ring20"]
+[ext_resource type="Resource" path="res://resources/danmaku/patterns/split_ring.tres" id="6_split"]
+
+[sub_resource type="Resource" id="Resource_cue_homing_1"]
+script = ExtResource("2_cue")
+pattern = ExtResource("3_homing")
+time = 0.3
+repeat = 2
+repeat_interval = 1.6
+
+[sub_resource type="Resource" id="Resource_cue_homing_2"]
+script = ExtResource("2_cue")
+pattern = ExtResource("4_curve")
+time = 1.4
+
+[sub_resource type="Resource" id="Resource_cue_homing_3"]
+script = ExtResource("2_cue")
+pattern = ExtResource("5_ring20")
+time = 3.0
+
+[sub_resource type="Resource" id="Resource_cue_homing_4"]
+script = ExtResource("2_cue")
+pattern = ExtResource("6_split")
+time = 4.2
+
+[resource]
+script = ExtResource("1_script")
+id = "p2_homing"
+display_name = "阶段2：追踪 + 弧线 + 密环 + 分裂"
+notes = "四种机制轮番上，靠 cue 时间错开，不要同时压满。"
+cues = [SubResource("Resource_cue_homing_1"), SubResource("Resource_cue_homing_2"), SubResource("Resource_cue_homing_3"), SubResource("Resource_cue_homing_4")]
+duration = 5.6
+cooldown = 1.4
+phases = 2
+weight = 1.2

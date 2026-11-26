@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="DanmakuPattern" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/danmaku/danmaku_pattern.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/bullet/enemy_bullet.tscn" id="2_bullet"]
+
+[resource]
+script = ExtResource("1_script")
+id = "spiral_ring"
+display_name = "螺旋环"
+notes = "每轮整体转 17°，用 cue.repeat 连打形成螺旋。"
+bullet_scene = ExtResource("2_bullet")
+spread = 1
+count = 12
+arc_deg = 360.0
+aim = 0
+angle_offset_deg = 0.0
+spin_per_volley_deg = 17.0
+speed = 120.0
+lifetime = 8.0
+damage_mult = 0.7

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="DanmakuSet" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://resources/danmaku/danmaku_set.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/danmaku/barrages/p1_open.tres" id="2_open"]
+[ext_resource type="Resource" path="res://resources/danmaku/barrages/p1_spiral.tres" id="3_spiral"]
+[ext_resource type="Resource" path="res://resources/danmaku/barrages/p2_homing.tres" id="4_homing"]
+[ext_resource type="Resource" path="res://resources/danmaku/barrages/p2_curtain.tres" id="5_curtain"]
+[ext_resource type="Resource" path="res://resources/danmaku/barrages/showcase_all.tres" id="6_showcase"]
+
+[resource]
+script = ExtResource("1_script")
+id = "demo_set"
+display_name = "弹幕示例组（两阶段）"
+notes = "P1 起手/螺旋，P2 追踪/弹幕墙；showcase_all 全图案演示。可直接挂给测试 Boss。"
+barrages = [ExtResource("2_open"), ExtResource("3_spiral"), ExtResource("4_homing"), ExtResource("5_curtain"), ExtResource("6_showcase")]
+loop = true
+rest_between_barrages = 0.0
+max_active_bullets = 100
+phase_hp_thresholds = PackedFloat32Array(0.5)
+interrupt_on_phase_change = true
+clear_bullets_on_phase_change = false
+rng_seed = 0

@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="DanmakuBarrage" load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://resources/danmaku/danmaku_barrage.gd" id="1_script"]
+[ext_resource type="Script" path="res://resources/danmaku/danmaku_cue.gd" id="2_cue"]
+[ext_resource type="Resource" path="res://resources/danmaku/patterns/spiral_ring.tres" id="3_spiral"]
+[ext_resource type="Resource" path="res://resources/danmaku/patterns/ring16.tres" id="4_ring16"]
+[ext_resource type="Resource" path="res://resources/danmaku/patterns/aimed_burst.tres" id="5_burst"]
+
+[sub_resource type="Resource" id="Resource_cue_spiral_1"]
+script = ExtResource("2_cue")
+pattern = ExtResource("3_spiral")
+time = 0.4
+repeat = 5
+repeat_interval = 0.45
+
+[sub_resource type="Resource" id="Resource_cue_spiral_2"]
+script = ExtResource("2_cue")
+pattern = ExtResource("4_ring16")
+time = 1.2
+
+[sub_resource type="Resource" id="Resource_cue_spiral_3"]
+script = ExtResource("2_cue")
+pattern = ExtResource("5_burst")
+time = 3.4
+
+[resource]
+script = ExtResource("1_script")
+id = "p1_spiral"
+display_name = "螺旋 + 环 + 点射"
+notes = "螺旋制造持续压力，中间插一圈环换节奏，点射逼位移。"
+cues = [SubResource("Resource_cue_spiral_1"), SubResource("Resource_cue_spiral_2"), SubResource("Resource_cue_spiral_3")]
+duration = 4.6
+cooldown = 1.2
+phases = 1

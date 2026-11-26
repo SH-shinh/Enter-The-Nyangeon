@@ -86,6 +86,9 @@ const IDLE_LIMITS := {
 	"enemy_bullet_1": 200,
 	"enemy_bullet_2": 40,
 	"enemy_missile_1": 20,
+	# 弹幕系统专用弹体（DanmakuEmitter）：预算由 DanmakuSet.max_active_bullets 先行拦截，
+	# 这里的 160 是硬上限，留出其余敌方弹与瞬时峰值的余量。
+	"danmaku_bullet_1": 160,
 	"enemy_explosion": 20,
 	"bullet_smoke_1": 30,
 	"bullet_smoke_2": 30,

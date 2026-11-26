@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="DanmakuPattern" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/danmaku/danmaku_pattern.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/bullet/enemy_bullet.tscn" id="2_bullet"]
+
+[resource]
+script = ExtResource("1_script")
+id = "fan9_wide"
+display_name = "九发宽扇"
+notes = "100° 宽扇，子弹之间留缝，属于『要走位不要硬吃』的弹幕。"
+bullet_scene = ExtResource("2_bullet")
+spread = 0
+count = 9
+arc_deg = 100.0
+aim = 0
+speed = 120.0
+lifetime = 8.0
+damage_mult = 0.8

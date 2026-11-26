@@ -26,6 +26,10 @@ var ACCELERATION: float
 var is_idle: int = 1
 var is_ready: bool = false
 
+# 生命周期代数：每次成功 active_state 自增。带代数校验的延迟回池调用
+# 只对“同一代”的弹体生效，旧生命周期的回调不会让已复用对象失活。
+var _life_gen: int = 0
+
 var _shape_gen: int = 0
 
 @onready var now_penetrate: int = penetrate:
@@ -71,10 +75,15 @@ func _set_shape_disabled_guarded(value: bool, gen: int) -> void:
 	collision_shape_2d.disabled = value
 
 func idle_state():
+	# 幂等：待机弹再收到 round_end/boss_round_end/bullet_clear 时不得重复冒烟、
+	# 不重复发 bullet_idle，也不重复重置物理/形状状态。
+	if is_idle == 1:
+		return
 	reset_physics_interpolation()
-	if is_idle == 0:
-		ExtensionHooks.notify_named("on_projectile_despawned", [self])
+	ExtensionHooks.notify_named("on_projectile_despawned", [self])
 	is_idle = 1
+	# 待机不参与物理：池里有大量待机弹（如 120 枚）时不再逐帧空转。
+	set_physics_process(false)
 	if GameEvents.global_time_count.is_connected(_on_bullet_kill_timer_timeout):
 		GameEvents.global_time_count.disconnect(_on_bullet_kill_timer_timeout)
 	if GameEvents.global_time_count.is_connected(_on_bullet_decay_timer_timeout):
@@ -94,7 +103,10 @@ func active_state():
 	if is_ready == false:
 		return
 	
+	_life_gen += 1
 	is_idle = 0
+	# 复用恢复物理；待机期间被 idle_state 关掉。
+	set_physics_process(true)
 	if !GameEvents.global_time_count.is_connected(_on_bullet_kill_timer_timeout):
 		GameEvents.global_time_count.connect(_on_bullet_kill_timer_timeout)
 	
@@ -115,6 +127,13 @@ func active_state():
 		collision_layer = 131072
 	else:
 		collision_layer = 128
+
+## 延迟回池入口：仅同一生命周期允许转待机。
+## 分裂弹用它替代裸 idle_state.call_deferred()，防止旧的延迟回调把刚复用的对象打回待机。
+func _idle_if_generation(gen: int) -> void:
+	if gen != _life_gen:
+		return
+	idle_state()
 
 func bulletSmoke(smoke_position: Vector2):
 	var ins = PoolManager.get_pool("bullet_smoke_2")
@@ -144,6 +163,9 @@ func _physics_process(delta):
 	global_position += velocity * delta
 
 func bullet_clear():
+	# 待机弹收到清场通知必须是纯 no-op：不冒烟、不分裂、不重复发 bullet_idle。
+	if is_idle == 1:
+		return
 	bulletSmoke(global_position)
 	idle_state()
 

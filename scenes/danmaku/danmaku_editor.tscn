@@ -1,0 +1,9 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/danmaku/danmaku_editor.gd" id="1_editor"]
+[ext_resource type="PackedScene" path="res://scenes/danmaku/danmaku_preview.tscn" id="2_preview"]
+
+[node name="DanmakuEditor" type="Node2D"]
+script = ExtResource("1_editor")
+
+[node name="Preview" parent="." instance=ExtResource("2_preview")]
