@@ -69,14 +69,14 @@ func _ready():
 	manages_own_hits = does_direct_hit()
 	if manages_own_hits:
 		_setup_self_hits()
-	if line != null and line_2 != null:
-		var p := _ensure_player()
-		line.life_timer = 4
-		line_2.life_timer = line.life_timer
-		if p != null:
-			line.scale_mult = p.stats.bullet_scale
-			line_2.scale_mult = p.stats.bullet_scale
+	var trail_player := _ensure_player()
+	if line != null:
+		if trail_player != null:
+			line.scale_mult = trail_player.stats.bullet_scale
 		line.update_width()
+	if line_2 != null:
+		if trail_player != null:
+			line_2.scale_mult = trail_player.stats.bullet_scale
 		line_2.update_width()
 	
 	is_on_ready()
@@ -144,10 +144,11 @@ func idle_state():
 	self.visible = false
 	self.global_position = Vector2.ZERO
 	self.velocity = Vector2.ZERO
-	if line != null and line_2 != null:
+	if line != null:
 		line.is_idle = true
-		line_2.is_idle = true
 		line.reset()
+	if line_2 != null:
+		line_2.is_idle = true
 		line_2.reset()
 
 func active_state():
@@ -169,19 +170,20 @@ func active_state():
 	ray_cast_2d.target_position.x = speed * 0.0167
 	if slow_down == true:
 		ACCELERATION = speed / slow_time
-	if line != null and line_2 != null:
-		var p := _ensure_player()
-		line.reset()
-		line_2.reset()
-		line.is_idle = false
-		line_2.is_idle = false
-		line.life_timer = 4
-		line_2.life_timer = line.life_timer
-		if p != null:
-			line.scale_mult = p.stats.bullet_scale
-			line_2.scale_mult = p.stats.bullet_scale
-		line.update_width()
-		line_2.update_width()
+	if line != null or line_2 != null:
+		var trail_player := _ensure_player()
+		if line != null:
+			line.reset()
+			line.is_idle = false
+			if trail_player != null:
+				line.scale_mult = trail_player.stats.bullet_scale
+			line.update_width()
+		if line_2 != null:
+			line_2.reset()
+			line_2.is_idle = false
+			if trail_player != null:
+				line_2.scale_mult = trail_player.stats.bullet_scale
+			line_2.update_width()
 	self.visible = true
 	flight_time = 0
 	# 朝向一次定型；之后仅在变向（r_move/反弹）时更新，直线弹不再每帧重算

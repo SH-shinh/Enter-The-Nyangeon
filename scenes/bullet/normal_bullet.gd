@@ -50,16 +50,16 @@ func _ready():
 	manages_own_hits = true
 	_setup_self_hits()
 	if has_line:
-		var p := _ensure_player()
+		var trail_player := _ensure_player()
 		line = $Line
-		line_2 = $Line2
-		line.life_timer = 4
-		line_2.life_timer = line.life_timer
-		if p != null:
-			line.scale_mult = p.stats.bullet_scale
-			line_2.scale_mult = p.stats.bullet_scale
+		line_2 = get_node_or_null("Line2")
+		if trail_player != null:
+			line.scale_mult = trail_player.stats.bullet_scale
+			if line_2 != null:
+				line_2.scale_mult = trail_player.stats.bullet_scale
 		line.update_width()
-		line_2.update_width()
+		if line_2 != null:
+			line_2.update_width()
 	
 	is_on_ready()
 
@@ -81,10 +81,12 @@ func idle_state():
 	self.global_position = Vector2.ZERO
 	self.velocity = Vector2.ZERO
 	if has_line:
-		line.is_idle = true
-		line_2.is_idle = true
-		line.reset()
-		line_2.reset()
+		if line != null:
+			line.is_idle = true
+			line.reset()
+		if line_2 != null:
+			line_2.is_idle = true
+			line_2.reset()
 
 func is_on_ready():
 	is_ready = true
@@ -108,18 +110,19 @@ func active_state():
 	self.velocity = direction * speed
 	self.visible = true
 	if has_line:
-		var p := _ensure_player()
-		line.reset()
-		line_2.reset()
-		line.is_idle = false
-		line_2.is_idle = false
-		line.life_timer = 4
-		line_2.life_timer = line.life_timer
-		if p != null:
-			line.scale_mult = p.stats.bullet_scale
-			line_2.scale_mult = p.stats.bullet_scale
-		line.update_width()
-		line_2.update_width()
+		var trail_player := _ensure_player()
+		if line != null:
+			line.reset()
+			line.is_idle = false
+			if trail_player != null:
+				line.scale_mult = trail_player.stats.bullet_scale
+			line.update_width()
+		if line_2 != null:
+			line_2.reset()
+			line_2.is_idle = false
+			if trail_player != null:
+				line_2.scale_mult = trail_player.stats.bullet_scale
+			line_2.update_width()
 
 func apply_penetrate_dealt():
 	var cb: Callable = func(victim: Node, _actual_damage: float):

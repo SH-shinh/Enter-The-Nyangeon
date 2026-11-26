@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://ygvqweawmhgs" path="res://scenes/line.tscn" id="2_lius5"]
 [ext_resource type="Shader" uid="uid://bqypa5578tm8a" path="res://shaders/sprite_outline.gdshader" id="3_mb461"]
 [ext_resource type="Texture2D" uid="uid://nsmg6eumcur2" path="res://sprites/bullet/midori_bullet.png" id="4_tlb8y"]
+[ext_resource type="Material" path="res://resources/vfx/bullet_trail_core.tres" id="9_trail"]
 
 [sub_resource type="Gradient" id="Gradient_opjdr"]
 colors = PackedColorArray(0.672835, 0.762098, 0.138945, 1, 0.5342, 0.811003, 0.184261, 1)
@@ -13,10 +14,6 @@ shader = ExtResource("3_mb461")
 shader_parameter/outline_width = 3.0
 shader_parameter/outline_color = Color(1, 60, 10, 1)
 shader_parameter/flash_opacity = 0.0
-
-[sub_resource type="Curve" id="Curve_k8o8u"]
-_data = [Vector2(0, 0.527472), 0.0, 0.0, 0, 0, Vector2(1, 0.67033), 0.0, 0.0, 0, 0]
-point_count = 2
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_yrn22"]
 radius = 7.0
@@ -28,22 +25,16 @@ collision_mask = 16384
 script = ExtResource("1_cybv3")
 
 [node name="Line" parent="." unique_id=1977636170 instance=ExtResource("2_lius5")]
+material = ExtResource("9_trail")
 z_index = 1
 width = 12.0
 gradient = SubResource("Gradient_opjdr")
-texture_mode = 2
 width_f = 12.0
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1615897417]
 material = SubResource("ShaderMaterial_liqt8")
 scale = Vector2(0.4, 0.4)
 texture = ExtResource("4_tlb8y")
-
-[node name="Line2" parent="." unique_id=58913136 instance=ExtResource("2_lius5")]
-z_index = 2
-width = 7.0
-width_curve = SubResource("Curve_k8o8u")
-width_f = 7.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=67675137]
 shape = SubResource("CircleShape2D_yrn22")
