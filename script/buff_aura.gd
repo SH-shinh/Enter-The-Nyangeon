@@ -49,6 +49,10 @@ func network_aura_value() -> Array:
 
 # 联机来源标识 = 本机 peer id（单机为 "1"）；apply/remove 必须成对用同一 id
 func aura_source_id() -> String:
+	# 无 peer 时 multiplayer.get_unique_id() 会刷 "No multiplayer peer is assigned"
+	# （实测单会话 20 万条，把日志写到 28MB）。离线语义就是 1。
+	if multiplayer == null or multiplayer.multiplayer_peer == null:
+		return "1"
 	return str(multiplayer.get_unique_id())
 
 

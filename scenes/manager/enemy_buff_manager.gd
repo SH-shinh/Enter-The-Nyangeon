@@ -79,6 +79,9 @@ func _estat(entry: Dictionary, key: String, fallback: Variant = 0) -> Variant:
 func _is_remote_mirror() -> bool:
 	if not ExtensionHooks.intercept_named("is_lan_session", []):
 		return false
+	# 无 peer 时 is_server()/get_unique_id() 会刷 "No multiplayer peer is assigned"：按单机处理
+	if multiplayer == null or multiplayer.multiplayer_peer == null:
+		return false
 	if multiplayer.is_server():
 		return false
 	if body == null or not is_instance_valid(body):
@@ -232,16 +235,24 @@ func _aura_scene_for(id: String) -> PackedScene:
 
 
 ## buff 生效时挂上光环（已存在就只刷新跟随与强度）。
+## ⚠️ status_aura_fx 会在目标失效/敌人回池时自行 queue_free，所以读取 _dot_auras 一律用
+## 无类型变量：`var aura: Node = ...` 会先于 is_instance_valid 校验 freed 实例并直接报错。
 func _ensure_dot_aura(entry: Dictionary) -> void:
 	var id := str(entry["resource"].id)
 	var scene := _aura_scene_for(id)
 	if scene == null or body == null or not is_instance_valid(body):
+		_dot_auras.erase(id)
 		return
-	var aura: Node = _dot_auras.get(id)
+	var aura = _dot_auras.get(id)
 	if aura != null and is_instance_valid(aura):
 		aura.call("follow_body", body)
 		aura.call("set_strength", int(entry["layer"]))
 		aura.call("play_anim")
+		return
+	# 光环已自释放：清掉残留引用，避免后续读到 freed 实例
+	_dot_auras.erase(id)
+	# 敌人回池（is_idle=1）时不创建：否则会立刻被 status_aura_fx 释放、每跳反复重建
+	if body.get("is_idle") == 1:
 		return
 	var layer := _fx_layer()
 	if layer == null:
@@ -250,29 +261,39 @@ func _ensure_dot_aura(entry: Dictionary) -> void:
 	if aura == null:
 		return
 	layer.add_child(aura)
+	# 光环自释放时主动清字典，避免长期持有 freed 引用
+	aura.tree_exiting.connect(_on_dot_aura_tree_exiting.bind(id, aura.get_instance_id()), CONNECT_ONE_SHOT)
 	aura.call("follow_body", body)
 	aura.call("set_strength", int(entry["layer"]))
 	aura.call("play_anim")
 	_dot_auras[id] = aura
 
 
+func _on_dot_aura_tree_exiting(id: String, aura_iid: int) -> void:
+	var current = _dot_auras.get(id)
+	if current != null and is_instance_valid(current) and current.get_instance_id() == aura_iid:
+		_dot_auras.erase(id)
+
+
 func _apply_aura_strength(id: String, layer: int) -> void:
-	var aura: Node = _dot_auras.get(id)
+	var aura = _dot_auras.get(id)
 	if aura != null and is_instance_valid(aura):
 		aura.call("set_strength", layer)
+	else:
+		_dot_auras.erase(id)
 
 
 ## DOT 跳伤时的反馈脉冲（光环在但不是每跳都重新创建）
 func _flare_dot_aura(id: String) -> void:
-	var aura: Node = _dot_auras.get(id)
+	var aura = _dot_auras.get(id)
 	if aura != null and is_instance_valid(aura):
 		aura.call("flare")
+	else:
+		_dot_auras.erase(id)
 
 
 func _drop_dot_aura(id: String) -> void:
-	if not _dot_auras.has(id):
-		return
-	var aura: Node = _dot_auras[id]
+	var aura = _dot_auras.get(id)
 	_dot_auras.erase(id)
 	if aura != null and is_instance_valid(aura):
 		aura.call("idle_state")
