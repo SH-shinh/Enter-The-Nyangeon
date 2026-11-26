@@ -227,12 +227,24 @@
 [ext_resource type="AudioStream" uid="uid://cslaxhxb4sgbx" path="res://sounds/voice/chihiro/CH0160_MemorialLobby_1.ogg" id="188_oi1kr"]
 [ext_resource type="AudioStream" uid="uid://bsbf17v5k6c4a" path="res://sounds/voice/chihiro/CH0160_Cafe_monolog_2.ogg" id="189_ahekd"]
 [ext_resource type="AudioStream" uid="uid://62r2a7x2m55h" path="res://sounds/voice/chihiro/CH0160_Cafe_monolog_3.ogg" id="190_48n30"]
+[ext_resource type="AudioStream" uid="uid://tf75iftameu3" path="res://sounds/voice/hare/Hare_Formation_In_1.ogg" id="197_haeax"]
+[ext_resource type="AudioStream" uid="uid://c4uf4a4bc6y5d" path="res://sounds/voice/hare/Hare_Formation_In_2.ogg" id="198_dqxq5"]
+[ext_resource type="AudioStream" uid="uid://cplaa0lstv6jd" path="res://sounds/voice/hare/Hare_Battle_TSA_2.ogg" id="199_1ej3t"]
 [ext_resource type="AudioStream" uid="uid://dtc5uphvw05ce" path="res://sounds/night_vision.wav" id="200_night"]
+[ext_resource type="AudioStream" uid="uid://c78lyg5e0i4s" path="res://sounds/voice/hare/Hare_ExSkill_Level_2.ogg" id="200_ytenp"]
+[ext_resource type="AudioStream" uid="uid://bjs4g3ajwg5ny" path="res://sounds/voice/hare/Hare_Cafe_monolog_2.ogg" id="201_887ra"]
 [ext_resource type="AudioStream" uid="uid://l3u4a2uv4pik" path="res://sounds/night_vision_reverse.wav" id="201_nightrev"]
 [ext_resource type="AudioStream" uid="uid://dwgvlmdqky5xi" path="res://sounds/menu-selection-click.wav" id="202_menuclick"]
+[ext_resource type="AudioStream" uid="uid://dpur1xfr30e1y" path="res://sounds/voice/hare/Hare_Cafe_monolog_3.ogg" id="202_vjlrm"]
 [ext_resource type="AudioStream" uid="uid://v2t5v1goocfk" path="res://sounds/laser3.wav" id="203_laser3"]
+[ext_resource type="AudioStream" uid="uid://dcjvm3soqffv5" path="res://sounds/voice/kotama/Kotama_Formation_In_1.ogg" id="203_o1y6t"]
 [ext_resource type="AudioStream" uid="uid://bb7lne6d13pev" path="res://sounds/ice-spell.wav" id="204_icespell"]
+[ext_resource type="AudioStream" uid="uid://coefd80uayhlj" path="res://sounds/voice/kotama/Kotama_Formation_In_2.ogg" id="204_possn"]
+[ext_resource type="AudioStream" uid="uid://bwqb7uaro17sv" path="res://sounds/voice/kotama/Kotama_ExSkill_3.ogg" id="205_4qng2"]
 [ext_resource type="AudioStream" uid="uid://c6nystaurcfvi" path="res://sounds/cloud-poof.wav" id="205_smoke"]
+[ext_resource type="AudioStream" uid="uid://ck7wk1k161sut" path="res://sounds/voice/kotama/Kotama_Growup_3.ogg" id="206_86ski"]
+[ext_resource type="AudioStream" uid="uid://2bxhiuocmrak" path="res://sounds/voice/kotama/Kotama_Cafe_monolog_2.ogg" id="207_6b6vj"]
+[ext_resource type="AudioStream" uid="uid://cx1ilni76sc85" path="res://sounds/voice/kotama/Kotama_Cafe_monolog_3.ogg" id="208_5jv8b"]
 
 [sub_resource type="Animation" id="Animation_4rqlr"]
 resource_name = "1s"
@@ -442,7 +454,7 @@ bus = &"SFX"
 stream = ExtResource("17_omv7x")
 bus = &"SFX"
 
-[node name="SmokeSounds" type="AudioStreamPlayer" parent="SFX"]
+[node name="SmokeSounds" type="AudioStreamPlayer" parent="SFX" unique_id=1074261248]
 stream = ExtResource("205_smoke")
 volume_db = -6.0
 bus = &"SFX"
@@ -1196,6 +1208,58 @@ bus = &"VOICE"
 
 [node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/chihiro" unique_id=2100655685]
 stream = ExtResource("190_48n30")
+bus = &"VOICE"
+
+[node name="hare" type="Node" parent="VOICE" unique_id=1642256107]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/hare" unique_id=1219524473]
+stream = ExtResource("197_haeax")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/hare" unique_id=1281429268]
+stream = ExtResource("198_dqxq5")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/hare" unique_id=551481814]
+stream = ExtResource("199_1ej3t")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/hare" unique_id=139015021]
+stream = ExtResource("200_ytenp")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/hare" unique_id=131866684]
+stream = ExtResource("201_887ra")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/hare" unique_id=63796072]
+stream = ExtResource("202_vjlrm")
+bus = &"VOICE"
+
+[node name="kotama" type="Node" parent="VOICE" unique_id=719943760]
+
+[node name="SelectVoice1" type="AudioStreamPlayer" parent="VOICE/kotama" unique_id=140089918]
+stream = ExtResource("203_o1y6t")
+bus = &"VOICE"
+
+[node name="SelectVoice2" type="AudioStreamPlayer" parent="VOICE/kotama" unique_id=69146081]
+stream = ExtResource("204_possn")
+bus = &"VOICE"
+
+[node name="WinVoice1" type="AudioStreamPlayer" parent="VOICE/kotama" unique_id=1672252543]
+stream = ExtResource("205_4qng2")
+bus = &"VOICE"
+
+[node name="WinVoice2" type="AudioStreamPlayer" parent="VOICE/kotama" unique_id=409208021]
+stream = ExtResource("206_86ski")
+bus = &"VOICE"
+
+[node name="LoseVoice1" type="AudioStreamPlayer" parent="VOICE/kotama" unique_id=24806443]
+stream = ExtResource("207_6b6vj")
+bus = &"VOICE"
+
+[node name="LoseVoice2" type="AudioStreamPlayer" parent="VOICE/kotama" unique_id=1338012522]
+stream = ExtResource("208_5jv8b")
 bus = &"VOICE"
 
 [node name="Talk" type="Node" parent="." unique_id=313735976]
