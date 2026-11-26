@@ -42,7 +42,7 @@ func _ready():
 	SoundManager.cut_finish.connect(bgm_loop_play)
 	SoundManager.play_bgm_cut(bgm_first_cut)
 	GameEvents.society_card_selected.connect(society_card_filter)
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	UIMode.enter_menu()
 	GameEvents.player_card_selected.connect(on_level_select)
 	GameEvents.level_select_out.connect(out_level_select)
 	version.text = Game.version_number

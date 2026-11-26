@@ -70,7 +70,7 @@ var damage_types: Array[String] = []
 var flags: Array[String] = []
 
 @onready var gun = $%Gun
-@onready var kick = $Kick
+@onready var kick = get_node_or_null("Kick")
 @onready var smoke = $GPUParticles2D
 @onready var halo = $%Halo
 @onready var graphics = $%Graphics
@@ -89,7 +89,7 @@ var flags: Array[String] = []
 @onready var pause_screen = $CanvasLayer/PauseScreen
 @onready var jump_cd_bar = $JumpCDBar
 @onready var camera_2d = $Camera2D
-@onready var kick_anim = $AnimationPlayer2
+@onready var kick_anim = get_node_or_null("AnimationPlayer2")
 @onready var collision_shape_2d = $PickBox/CollisionShape2D
 @onready var player_buff_manager = $PlayerBuffManager
 @onready var game_ui = $GameUI
@@ -152,6 +152,18 @@ func _start_invincible_flash() -> void:
 	_set_flash_visible(true)
 
 func _stop_invincible_flash() -> void:
+	# flash_opacity 的归零原本只写在 _on_invincible_frame_end()（InvincibleFrame.timeout 回调）里，
+	# 任何错过那次回调的路径（计时器被重启/被停/联机镜像没起计时器）都会把受击白光永久留在
+	# 0.3~1。统一收到这里：所有「结束受击」的路径都会经过本函数（含 _update_invincible_flash 超时兜底）。
+	if long_hair == false:
+		if sprite_2d != null:
+			sprite_2d.material.set_shader_parameter("flash_opacity", 0)
+	else:
+		var cg := get_node_or_null("CanvasGroup")
+		if cg != null:
+			cg.material.set_shader_parameter("flash_opacity", 0)
+	if halo != null:
+		halo.material.set_shader_parameter("flash_opacity", 0)
 	if not _flashing:
 		return
 	_flashing = false
@@ -543,12 +555,16 @@ func _on_invincible_frame(anim: bool):
 			sprite_2d.material.set_shader_parameter("flash_opacity", 1)
 			halo.material.set_shader_parameter("flash_opacity", 0.5)
 			await  get_tree().create_timer(0.1).timeout
+			if not is_instance_valid(self):
+				return
 			sprite_2d.material.set_shader_parameter("flash_opacity", 0.3)
 			halo.material.set_shader_parameter("flash_opacity", 0.3)
 		else:
 			$CanvasGroup.material.set_shader_parameter("flash_opacity", 1)
 			halo.material.set_shader_parameter("flash_opacity", 0.5)
 			await  get_tree().create_timer(0.1).timeout
+			if not is_instance_valid(self):
+				return
 			$CanvasGroup.material.set_shader_parameter("flash_opacity", 0.3)
 			halo.material.set_shader_parameter("flash_opacity", 0.3)
 

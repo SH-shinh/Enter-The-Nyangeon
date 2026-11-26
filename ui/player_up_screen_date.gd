@@ -18,14 +18,8 @@ func _ready():
 	GameEvents.round_start.connect(hide_player_date)
 	GameEvents.round_num_changed.connect(next_round_num)
 	GameEvents.get_player.connect(get_player)
-	visibility_changed.connect(_sync_mouse_cursor)
-
-## 升级页（含 ability_shop）自己持有鼠标：不再只依赖 crosshair 的 `round_upgrade`。
-func _sync_mouse_cursor() -> void:
-	if visible:
-		UICursor.show_for(self)
-	else:
-		UICursor.hide_for(self)
+	# 升级页显隐自动压/弹 UI 模式；鼠标与准星由 UIMode 统一派生。
+	UIMode.bind_visibility(self)
 
 func get_player():
 	player = get_tree().get_first_node_in_group("Player")

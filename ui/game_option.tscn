@@ -486,6 +486,33 @@ size_flags_vertical = 4
 focus_mode = 2
 track_color = Color(0.164706, 0.164706, 0.164706, 1)
 
+[node name="RowScreenFilters" type="HBoxContainer" parent="Scroll/Content/DisplayCard/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="Scroll/Content/DisplayCard/VBox/RowScreenFilters"]
+custom_minimum_size = Vector2(126, 22)
+layout_mode = 2
+theme = SubResource("Theme_row")
+text = "option_screen_filters"
+horizontal_alignment = 2
+vertical_alignment = 1
+clip_text = true
+script = ExtResource("5_autotext")
+base_font_size = 15
+base_size_y = 22.0
+base_size_x = 126.0
+min_font_size = 7
+
+[node name="ScreenFilters" parent="Scroll/Content/DisplayCard/VBox/RowScreenFilters" instance=ExtResource("10_toggle")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 2
+track_color = Color(0.16470589, 0.16470589, 0.16470589, 1)
+
 [node name="RowCrt" type="HBoxContainer" parent="Scroll/Content/DisplayCard/VBox" unique_id=771829913]
 unique_name_in_owner = true
 layout_mode = 2

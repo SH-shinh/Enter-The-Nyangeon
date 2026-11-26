@@ -115,7 +115,6 @@ func first_round_start():
 	
 	GameEvents.emit_get_player()
 	emit_player_portal()
-	Input.mouse_mode = Input.MOUSE_MODE_CONFINED_HIDDEN
 	GameEvents.emit_round_start()
 
 func _on_round_start():
@@ -142,7 +141,6 @@ func _on_round_start():
 	GameEvents.emit_pause_lock(false)
 	Transition.play_left_end()
 	emit_player_portal()
-	Input.mouse_mode = Input.MOUSE_MODE_CONFINED_HIDDEN
 	GameEvents.emit_round_start()
 
 func _on_round_end():

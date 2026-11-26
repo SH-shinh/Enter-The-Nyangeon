@@ -18,14 +18,7 @@ func _ready():
 	# 点空白处（未落在卡片上）收起卡片文本；卡片点击会被 GridContainer 拦下，不会触发这里
 	scroll_container.gui_input.connect(_on_scroll_gui_input)
 	add_enemy_card()
-	visibility_changed.connect(_sync_mouse_cursor)
-
-## 选单是 layer=4 的全屏 CanvasLayer，会把世界里的准星盖住；打开时显示系统鼠标。
-func _sync_mouse_cursor() -> void:
-	if visible:
-		UICursor.show_for(self)
-	else:
-		UICursor.hide_for(self)
+	UIMode.bind_visibility(self)
 
 func _on_scroll_gui_input(event: InputEvent) -> void:
 	if event as InputEventScreenTouch and event.pressed:

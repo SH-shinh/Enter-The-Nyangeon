@@ -34,12 +34,13 @@ func _release_touch_state() -> void:
 		var button := node as TouchScreenButton
 		if button == null:
 			continue
-		if button.action != StringName():
-			Input.action_release(button.action)
+		# 只处理真正被手指按下的按钮：引擎的 visible 切换会触发它内部 _release()，
+		# 只释放它自己按下的 action。绝不能对未按下的按钮 Input.action_release——
+		# move_jump/kick/reload/EX_skill/pause 与键盘/鼠标共享，无条件释放会让键盘"失灵"。
 		if button.is_pressed():
 			button.visible = false
 			button.visible = true
-	# Knob / MouseKnob 的脚本态（finger_index、fire 按住等）也一并清掉。
+	# Knob / MouseKnob 的脚本态（finger_index、fire 按住等）也一并清掉；它们只释放自己按过的动作。
 	for node in find_children("*", "Node", true, false):
 		if node.has_method("_release_all"):
 			node.call("_release_all")

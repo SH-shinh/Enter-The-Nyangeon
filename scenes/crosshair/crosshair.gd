@@ -19,15 +19,24 @@ func _ready():
 	# 位置由 _process 每帧跟随鼠标/摇杆写入，属"逐帧驱动视觉"，须关物理插值；
 	# 否则插值会在物理 tick 间把它渲染在上一次位置 → 准星滞后于真实瞄准点。
 	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
-	Input.mouse_mode = Input.MOUSE_MODE_CONFINED_HIDDEN
+	UIMode.register_crosshair(self)
+	UIMode.enter_gameplay()
 	GameEvents.player_shot_position.connect(_shock)
-	GameEvents.game_over.connect(game_over_hide)
 	GameEvents.get_player.connect(get_player)
 	GameEvents.crosshair_target.connect(get_target_pos)
-	GameEvents.round_upgrade.connect(touch_mode_hide)
-	GameEvents.round_start.connect(touch_mode_show)
 	Game.game_mode_changed.connect(control_mode_changed)
 	control_mode_changed()
+
+func _exit_tree():
+	UIMode.unregister_crosshair(self)
+
+## UIMode 的派生视图：只控制准星显隐，系统鼠标由 UIMode.apply() 写。
+func set_view_visible(value: bool) -> void:
+	visible = value
+
+func _notification(what):
+	if what == NOTIFICATION_APPLICATION_FOCUS_IN or what == NOTIFICATION_WM_WINDOW_FOCUS_IN:
+		UIMode.apply()
 
 func control_mode_changed():
 	if Game.control_mode == 0:
@@ -39,27 +48,8 @@ func get_target_pos(target_position: Vector2):
 	target_pos = target_position * get_canvas_transform()
 	_last_touch_aim_msec = Time.get_ticks_msec()
 
-func touch_mode_show():
-	# 回合开始：释放鼠标所有权；没有其它全屏 UI 持有时才真正隐藏指针。
-	UICursor.hide_for(self)
-	visible = true
-
-func touch_mode_hide():
-	# 回合升级页：取得鼠标所有权（升级页自己也会持有一份，见 ui/player_up_screen_date.gd）。
-	UICursor.show_for(self)
-	visible = false
-
 func get_player():
 	player = PlayerRef.resolve(self)
-
-func game_over_hide(player_dead: bool):
-	player = PlayerRef.ensure(self, player)
-	if player_dead and player != null and player.get("stats") != null and player.stats.hp <= 0:
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-		visible = false
-	elif not player_dead:
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-		visible = false
 
 func joypad_aim_get(delta):
 	var now_x: float = Input.get_axis("aim_left", "aim_right")

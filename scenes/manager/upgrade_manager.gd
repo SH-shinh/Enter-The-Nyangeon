@@ -95,12 +95,6 @@ func round_bouns_upgrade():
 	if weight_manager != null:
 		weight_manager.advance_round()
 	round_weight_upgrade()
-	if test_mode == false:
-		# 移动端外接鼠标时 HIDDEN 会让指针不可见且无法用鼠标选择；改为可见。
-		if OS.has_feature("mobile"):
-			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-		else:
-			Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
 
 func round_weight_upgrade():
 	var round_local = float(min(now_round, 20)) / maxf(1.0, float(min(20, round_max)))

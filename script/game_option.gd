@@ -18,9 +18,11 @@ extends OptionMenu
 @onready var max_fps_value: Label = %MaxFpsValue
 @onready var physics_interp = %PhysicsInterp
 @onready var crt_filter = %Crt
+@onready var screen_filters = %ScreenFilters
 @onready var row_display: Control = %RowDisplay
 @onready var row_advanced: Control = %RowAdvanced
 @onready var row_crt: Control = %RowCrt
+@onready var row_screen_filters: Control = %RowScreenFilters
 @onready var full_screen_label: Control = %FullScreenLabel
 @onready var v_sync_label: Control = %VSyncLabel
 @onready var physics_interp_label: Control = %PhysicsInterpLabel
@@ -31,11 +33,18 @@ func _ready():
 	_bind_toggle(v_sync, Game.vsync_mode, _set_vsync, false)
 	_bind_toggle(physics_interp, Game.physics_interp, _set_physics_interp)
 	_bind_toggle(crt_filter, Game.crt_filter, _set_crt_filter)
+	_bind_toggle(screen_filters, Game.screen_filters, _set_screen_filters)
 	_bind_toggle_label(full_screen, full_screen_label)
 	_bind_toggle_label(shake, shake.get_parent().get_node("Label"))
 	_bind_toggle_label(v_sync, v_sync_label)
 	_bind_toggle_label(physics_interp, physics_interp_label)
 	_bind_toggle_label(crt_filter, crt_filter.get_parent().get_node("Label"))
+	_bind_toggle_label(screen_filters, screen_filters.get_parent().get_node("Label"))
+	# 移动端开启屏幕读取滤镜时提示机型风险（不阻止开启）。
+	screen_filters.toggled.connect(func(on: bool):
+		if on and OS.has_feature("mobile"):
+			mobile_notice.notice("option_screen_filters_mobile_notice")
+	)
 	resolutions.item_selected.connect(_on_resolutions_item_selected)
 	damage_freq.value_changed.connect(_on_damage_freq_value_changed)
 	effect_freq.value_changed.connect(_on_effect_freq_value_changed)
@@ -51,6 +60,8 @@ func _ready():
 		row_display.hide()
 		row_advanced.hide()
 		row_crt.hide()
+	# 屏幕滤镜总开关两端都可见（移动端开启时会提示机型风险）。
+	row_screen_filters.show()
 
 func menu_show():
 	super()
@@ -118,6 +129,15 @@ func _set_crt_filter(on: bool) -> void:
 		overlay.set_enabled(on)
 	Game.save_config()
 
+# 屏幕读取型全屏滤镜总开关（CRT / Hare 目镜 / Kotama 隐身影屏）：
+# 写设置后立即刷新所有已存在的滤镜节点，Hare 目镜关闭时回退安全 overlay。
+func _set_screen_filters(on: bool) -> void:
+	Game.screen_filters = on
+	Game.save_config()
+	for overlay in get_tree().get_nodes_in_group("ScreenFilterOverlay"):
+		if overlay != null and overlay.has_method("refresh_filter"):
+			overlay.call("refresh_filter")
+
 func _show_mobile_notice():
 	mobile_notice.notice("option_mobile_only_notice")
 
@@ -132,6 +152,7 @@ func setting_status():
 	v_sync.set_on(Game.vsync_mode, false)
 	physics_interp.set_on(Game.physics_interp, false)
 	crt_filter.set_on(Game.crt_filter, false)
+	screen_filters.set_on(Game.screen_filters, false)
 	damage_freq.set_value_no_signal(Game.damage_text_freq)
 	damage_freq_value.text = _damage_freq_text(Game.damage_text_freq)
 	effect_freq.set_value_no_signal(Game.effect_freq)

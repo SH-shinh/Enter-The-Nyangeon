@@ -60,7 +60,7 @@ var casing_level: int = 2
 var physics_interp: bool = false
 
 # CRT 屏幕滤镜（设置项，默认关）：autoload CRTOverlay 全屏叠加扫描线/荫罩。
-# 移动端强制禁用；关闭时滤镜节点隐藏，无渲染开销。
+# 关闭时滤镜节点隐藏，无渲染开销。
 var crt_filter: bool = false
 
 # 屏幕读取型全屏滤镜总开关：覆盖 CRT / Hare 目镜 / Kotama 隐身影屏。
@@ -72,6 +72,8 @@ var control_mode: int = ControlMode.MOUSE
 
 # 当前平台是否有触摸输入（移动端/触屏笔记本）。测试、mod 可覆写。
 var touch_device_available: bool = false
+# 是否为移动端（Android/iOS）。桌面触屏也 touch_device_available=true，但默认仍是键鼠。
+var is_mobile_platform: bool = false
 # 失焦自动暂停是否启用（默认仅移动端）。测试、mod 可覆写。
 var focus_pause_enabled: bool = false
 # GameEvents.pause_lock 的镜像，用于失焦兜底与看门狗判断「暂停是否由演出/升级持锁」。
@@ -111,8 +113,9 @@ var one_hit_kill: bool = false
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	is_mobile_platform = OS.has_feature("mobile")
 	touch_device_available = _detect_touch_device()
-	focus_pause_enabled = OS.has_feature("mobile")
+	focus_pause_enabled = is_mobile_platform
 	var now := Time.get_ticks_msec()
 	_last_non_touch_input_msec = now
 	_last_watchdog_msec = now
@@ -141,7 +144,8 @@ func reset_control_mode():
 		game_mode_changed.emit()
 
 func _default_control_mode() -> int:
-	return ControlMode.TOUCH if touch_device_available else ControlMode.MOUSE
+	# 桌面触屏不等于移动端：PC 上即使有触摸屏，默认仍是键鼠；真实触摸事件仍会切 TOUCH。
+	return ControlMode.TOUCH if is_mobile_platform else ControlMode.MOUSE
 
 func _detect_touch_device() -> bool:
 	return OS.has_feature("mobile") or DisplayServer.is_touchscreen_available()
@@ -165,9 +169,9 @@ func _tick_gamepad_candidate(now: int) -> void:
 	_gamepad_candidate_axis = -1
 
 # 外接键鼠/手柄静默（蓝牙睡眠、断开、接收器掉线）后，把触摸 UI 带回来。
-# 仅在触屏设备、局内、玩家存活、没有按住动作时触发；活跃设备仍按原策略隐藏摇杆。
+# 只在移动端启用；桌面触屏即使有触摸能力也不自动弹出触摸 UI（避免桌面键鼠被抢）。
 func _tick_external_idle_fallback(now: int) -> void:
-	if not touch_device_available or control_mode == ControlMode.TOUCH:
+	if not is_mobile_platform or control_mode == ControlMode.TOUCH:
 		return
 	if get_tree().paused:
 		return
@@ -214,11 +218,9 @@ func _on_pause_lock(locked: bool) -> void:
 
 func _on_joy_connection_changed(device: int, connected: bool) -> void:
 	_trace_input("joy_connection dev=%d connected=%s pads=%s" % [device, connected, str(Input.get_connected_joypads())])
-	if not connected and Input.get_connected_joypads().is_empty():
-		# 睡眠/拔出时最后一批按下态可能永远收不到 release，先清干净再回退模式。
-		_release_all_gameplay_inputs()
-		if control_mode == ControlMode.GAMEPAD:
-			reset_control_mode()
+	if not connected and Input.get_connected_joypads().is_empty() and control_mode == ControlMode.GAMEPAD:
+		# 只回退模式；不要在这里全量释放动作，否则会把键盘正按住的 move_* / fire 一起清掉。
+		reset_control_mode()
 	_resync_mode_ui()
 
 func _on_focus_lost() -> void:
@@ -318,6 +320,7 @@ func _release_all_gameplay_inputs() -> void:
 
 func input_debug_snapshot() -> Dictionary:
 	var now := Time.get_ticks_msec()
+	var ui_state := UIMode.debug_state()
 	var snapshot := {
 		"control_mode": control_mode,
 		"touch_device": touch_device_available,
@@ -328,6 +331,10 @@ func input_debug_snapshot() -> Dictionary:
 		"window_focused": DisplayServer.window_is_focused(),
 		"joypads": Input.get_connected_joypads(),
 		"mouse_mode": Input.mouse_mode,
+		"ui_mode": ui_state.get("mode"),
+		"ui_mode_base": ui_state.get("base"),
+		"ui_cursor_visible": ui_state.get("cursor_visible"),
+		"ui_entries": ui_state.get("entries"),
 		"last_input": _last_input_desc,
 		"last_input_age_ms": now - _last_input_msec if _last_input_msec > 0 else -1,
 		"touch_priority_left_ms": maxi(0, _touch_priority_until_msec - now),
@@ -452,8 +459,7 @@ func _track_input_device(event: InputEvent) -> void:
 		if mb.device == InputEvent.DEVICE_ID_EMULATION:
 			return
 		_note_input(now, "mouse_btn %d" % mb.button_index, true)
-		if Input.mouse_mode != Input.MOUSE_MODE_VISIBLE:
-			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		# 关卡内准星就是指针：鼠标点击只切键鼠模式，不改 Input.mouse_mode（鼠标/准星由 UIMode 模式栈统一派生）。
 		_apply_control_mode(ControlMode.MOUSE, "mouse_button")
 		return
 	if event is InputEventKey:
@@ -514,7 +520,7 @@ func _track_touch_finger(st: InputEventScreenTouch) -> void:
 	if _touch_fingers.is_empty():
 		_touch_session_start_msec = now
 	_touch_fingers[st.index] = true
-	if _touch_fingers.size() >= 3 and touch_device_available and now - _touch_session_start_msec <= 500:
+	if _touch_fingers.size() >= 3 and is_mobile_platform and now - _touch_session_start_msec <= 500:
 		_touch_fingers.clear()
 		recover_control_state()
 
@@ -668,6 +674,7 @@ func save_config():
 	config.set_value("game", "max_fps_index", max_fps_index)
 	config.set_value("game", "physics_interp", physics_interp)
 	config.set_value("game", "crt_filter", crt_filter)
+	config.set_value("game", "screen_filters", screen_filters)
 	config.set_value("game", "game_language", game_language)
 	config.set_value("game", "damage_text_freq", damage_text_freq)
 	config.set_value("game", "effect_freq", effect_freq)
@@ -699,6 +706,7 @@ func load_config():
 	max_fps_index = int(config.get_value("game", "max_fps_index", 1))
 	physics_interp = bool(config.get_value("game", "physics_interp", false))
 	crt_filter = bool(config.get_value("game", "crt_filter", false))
+	screen_filters = bool(config.get_value("game", "screen_filters", not OS.has_feature("mobile")))
 	game_language = config.get_value("game", "game_language", "zh_CN")
 	damage_text_freq = config.get_value("game", "damage_text_freq", 4)
 	effect_freq = config.get_value("game", "effect_freq", 4)

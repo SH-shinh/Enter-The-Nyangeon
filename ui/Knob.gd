@@ -8,6 +8,9 @@ var drag_offset: Vector2
 
 var rest_pos: Vector2
 var _rest_local: Vector2
+# 只记录摇杆自己按下的 move_* 动作：键盘/手柄也共用这些 InputMap action，
+# 摇杆隐藏/模式切换时不能无条件 action_release，否则会把键盘按住的方向键一起清掉。
+var _owned_actions: Dictionary = {}
 
 func _ready():
 	_rest_local = position
@@ -31,11 +34,19 @@ func reset_position():
 	global_position = rest_pos
 
 func _release_all():
-	Input.action_release("move_left")
-	Input.action_release("move_right")
-	Input.action_release("move_up")
-	Input.action_release("move_down")
+	for action in _owned_actions.keys():
+		Input.action_release(action)
+	_owned_actions.clear()
 	finger_index = -1
+
+func _press_owned(action: StringName, strength: float) -> void:
+	Input.action_press(action, strength)
+	_owned_actions[action] = true
+
+func _release_owned(action: StringName) -> void:
+	if _owned_actions.has(action):
+		_owned_actions.erase(action)
+		Input.action_release(action)
 
 func _on_visibility_changed():
 	if not is_visible_in_tree():
@@ -79,15 +90,21 @@ func _input(event: InputEvent):
 		
 		movement /= DRAG_RADIS
 		if movement.x > 0:
-			Input.action_release("move_left")
-			Input.action_press("move_right", movement.x)
+			_release_owned(&"move_left")
+			_press_owned(&"move_right", movement.x)
 		elif movement.x < 0:
-			Input.action_release("move_right")
-			Input.action_press("move_left", -movement.x)
+			_release_owned(&"move_right")
+			_press_owned(&"move_left", -movement.x)
+		else:
+			_release_owned(&"move_left")
+			_release_owned(&"move_right")
 		
 		if movement.y > 0:
-			Input.action_release("move_up")
-			Input.action_press("move_down", movement.y)
+			_release_owned(&"move_up")
+			_press_owned(&"move_down", movement.y)
 		elif movement.y < 0:
-			Input.action_release("move_down")
-			Input.action_press("move_up", -movement.y)
+			_release_owned(&"move_down")
+			_press_owned(&"move_up", -movement.y)
+		else:
+			_release_owned(&"move_up")
+			_release_owned(&"move_down")

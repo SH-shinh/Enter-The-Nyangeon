@@ -163,17 +163,17 @@ func build_snapshot() -> Dictionary:
 	var nav_info: Dictionary = {}
 	var nav_cells: Array = []
 	var priority_cells: Array = []
-	if show_priority:
+	if show_priority or show_nav_flow:
 		var target := _first_target()
 		if target != null:
-			priority_cells = EnemyNavField.debug_field_cells(target)
-	if show_nav_flow:
-		var target := _first_target()
-		if target != null:
-			nav_info = EnemyNavField.debug_field(target)
+			# 一次快照两用：旧实现 priority 与 nav_flow 各建一遍 729 格 Dictionary。
 			var all_cells := EnemyNavField.debug_field_cells(target)
-			for i in range(0, all_cells.size(), 2):
-				nav_cells.append(all_cells[i])
+			if show_priority:
+				priority_cells = all_cells
+			if show_nav_flow:
+				nav_info = EnemyNavField.debug_field(target)
+				for i in range(0, all_cells.size(), 2):
+					nav_cells.append(all_cells[i])
 
 	# 阻挡格：确认「排队成一条线」到底是不是场地走廊/障碍造成的
 	var solids: Array = []
@@ -196,6 +196,7 @@ func build_snapshot() -> Dictionary:
 		"priority_cells": priority_cells,
 		"solids": solids,
 		"arc": EnemyAI.debug_arc(),
+		"perf": EnemyAI.debug_perf(),
 	}
 
 
@@ -456,6 +457,17 @@ func _draw_legend(font: Font) -> void:
 		_snapshot.get("enemies", []).size(), float(_snapshot.get("max_density", 0.0))])
 	var mode_names := ["PURE_FIELD", "FIELD_STRATEGY", "LEGACY"]
 	lines.append("move_mode=%s" % mode_names[clampi(EnemyNavField.move_mode, 0, mode_names.size() - 1)])
+	var perf: Dictionary = _snapshot.get("perf", {})
+	if not perf.is_empty():
+		var perf_line := "AI perf: L%d cap=%d/%d %dms (field %dms) fps=%.0f solve=%.2fms" % [
+			int(perf.get("level", 0)), int(perf.get("cap", 0)), EnemyAI.TACTICAL_LIMIT,
+			int(perf.get("interval_ms", 0)), int(perf.get("field_interval_ms", 0)),
+			float(perf.get("fps", 0.0)), float(perf.get("solve_us", 0.0)) / 1000.0]
+		if int(perf.get("pending", -1)) >= 0:
+			perf_line += " pending=L%d" % int(perf["pending"])
+		if perf.get("adaptive") == false:
+			perf_line += " (adaptive off)"
+		lines.append(perf_line)
 	if EnemyAI.simple_follow_debug:
 		lines.append("SIMPLE FOLLOW (formation/density/queue off)")
 	if show_nav_flow:

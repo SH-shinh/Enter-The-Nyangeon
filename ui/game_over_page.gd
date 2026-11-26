@@ -46,6 +46,7 @@ var is_win: bool = false
 var _chip_score_bonus_applied: bool = false
 
 func _ready():
+	UIMode.bind_visibility(self)
 	GameEvents.ability_upgrade_added.connect(add_player_up_item_card)
 	GameEvents.round_num_changed.connect(end_round_num)
 	GameEvents.get_player.connect(get_player)
@@ -118,7 +119,6 @@ func time_count_start():
 
 func time_count_stop(player_dead: bool):
 	visible = true
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if player_dead == true:
 		is_win = false
 		SoundManager.play_sfx("GameOver")

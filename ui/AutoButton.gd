@@ -33,12 +33,14 @@ func auto_fire():
 	fire_input(true)
 
 func auto_close():
-	# 隐藏/失焦/暂停时必须停表并补发 fire=false，否则切设备隐藏摇杆后仍持续开火。
+	# 只有本按钮确实在开火时才补发 fire=false；隐藏/失焦时不能清掉鼠标/键盘正在按的 fire。
+	var was_pressing: bool = on_press
 	on_press = false
 	press.visible = false
 	release.visible = true
 	timer.stop()
-	fire_input(false)
+	if was_pressing:
+		fire_input(false)
 
 func auto_press(event: InputEvent):
 	
@@ -47,7 +49,6 @@ func auto_press(event: InputEvent):
 			on_press = true
 			auto_fire()
 		else:
-			on_press = false
 			auto_close()
 
 func _on_timer_timeout():

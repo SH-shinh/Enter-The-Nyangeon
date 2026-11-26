@@ -31,12 +31,11 @@ var player: Node
 
 # 记录暂停是否由本菜单引起，避免与暂停菜单/演出互相覆盖
 var _paused_by_cheat: bool = false
-# 打开前的鼠标模式，关闭时还原
-var _prev_mouse_mode: int = Input.MOUSE_MODE_CONFINED_HIDDEN
 
 func _ready() -> void:
 	# 暂停期间仍需响应开合输入与点击按钮
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	UIMode.bind_visibility(self)
 	add_card()
 	add_enemy_card()
 	_ensure_simple_follow_btn()
@@ -63,7 +62,6 @@ func _exit_tree() -> void:
 	# 兜底：本菜单在打开状态被释放（如切换场景）时恢复暂停
 	if _paused_by_cheat:
 		_paused_by_cheat = false
-		Input.mouse_mode = _prev_mouse_mode
 		var t := get_tree()
 		if t != null:
 			t.paused = false
@@ -88,16 +86,13 @@ func open_menu():
 		return
 	self.visible = true
 	_sync_ai_toggles()
-	# 显示并解除鼠标锁定/隐藏
-	_prev_mouse_mode = Input.mouse_mode
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	# 显隐由 UIMode.bind_visibility 自动切换鼠标/准星
 	_set_pause(true)
 
 func close_menu():
 	if self.visible == false:
 		return
 	self.visible = false
-	Input.mouse_mode = _prev_mouse_mode
 	_set_pause(false)
 
 func _set_pause(p: bool):

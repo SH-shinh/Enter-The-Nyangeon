@@ -47,6 +47,8 @@ func _ready():
 		else:
 			get_tree().paused = visible
 		)
+	# 全屏暂停菜单：显隐自动压/弹 UIMode，鼠标/准星由模式栈统一派生。
+	UIMode.bind_visibility(self)
 	GameEvents.get_player.connect(get_player)
 	get_player()
 	GameEvents.ability_upgrade_added.connect(add_player_up_item_card)
@@ -98,7 +100,7 @@ func hide_pause_screen():
 	if self.visible == true:
 		SoundManager.play_sfx("UISounds2")
 		SoundManager.set_bgm_base_db(linear_to_db(1))
-		# 不写鼠标：升级页/商店接管时应由 crosshair(VISIBLE) 持有指针，此处强改会丢失鼠标
+		# 鼠标/准星由 UIMode 随 visible 自动切换，这里不再直接写 Input.mouse_mode。
 		hide()
 		button_close()
 		get_window().set_input_as_handled()
@@ -127,9 +129,8 @@ func no_can_pause():
 func _on_pause_lock(locked: bool):
 	_pause_locked = locked
 	if locked and self.visible:
-		# 仅在确实关闭了可见菜单时隐藏指针（Boss 演出需要）；升级场景菜单通常已隐藏，不误伤
+		# 关闭暂停菜单；鼠标/准星交给 UIMode 随 visible 自动恢复
 		hide_pause_screen()
-		Input.mouse_mode = Input.MOUSE_MODE_CONFINED_HIDDEN
 
 func on_menu_selected_false():
 	on_menu_selected = false
@@ -179,7 +180,6 @@ func show_pause() -> void:
 	get_player_coin()
 	random_player_p()
 	animation_player.play("pause_in")
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 func get_player_coin():
 	coin.text = str(player.stats.coin)
@@ -226,7 +226,6 @@ func resume_mouse_selected(event: InputEvent):
 			SoundManager.play_sfx("ButtonSounds")
 			hide()
 			button_close()
-			Input.mouse_mode = Input.MOUSE_MODE_CONFINED_HIDDEN
 	
 	if event.is_action_pressed("shoot"):
 		SoundManager.play_sfx("UISounds2")
@@ -234,7 +233,6 @@ func resume_mouse_selected(event: InputEvent):
 		SoundManager.play_sfx("ButtonSounds")
 		hide()
 		button_close()
-		Input.mouse_mode = Input.MOUSE_MODE_CONFINED_HIDDEN
 
 func option_mouse_in():
 	SoundManager.play_sfx("ButtonSounds2")
@@ -321,7 +319,6 @@ func yes_mouse_selected(event: InputEvent):
 # 关闭暂停菜单并复位 BGM/鼠标（hide_pause_screen 因升级页鼠标归属不同而不走此处）
 func _pause_close():
 	SoundManager.set_bgm_base_db(linear_to_db(1))
-	Input.mouse_mode = Input.MOUSE_MODE_CONFINED_HIDDEN
 	hide()
 	button_close()
 	get_window().set_input_as_handled()

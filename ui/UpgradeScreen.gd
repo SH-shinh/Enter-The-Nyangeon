@@ -161,8 +161,6 @@ func on_upgrade_selected(upgrade:AbilityUpgrade):
 		i.can_select = false
 		i.card_dis()
 	upgrade_selected.emit(upgrade)
-	if Input.mouse_mode != Input.MOUSE_MODE_VISIBLE:
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 func next_on_selected():
 	SoundManager.play_sfx("ButtonSounds2")

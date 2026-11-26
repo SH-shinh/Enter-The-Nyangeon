@@ -26,14 +26,7 @@ func _ready():
 	reset_button.mouse_entered.connect(button_sounds)
 	close.mouse_entered.connect(button_sounds)
 	add_card()
-	visibility_changed.connect(_sync_mouse_cursor)
-
-## 选单是 layer=4 的全屏 CanvasLayer，会把世界里的准星盖住；打开时显示系统鼠标。
-func _sync_mouse_cursor() -> void:
-	if visible:
-		UICursor.show_for(self)
-	else:
-		UICursor.hide_for(self)
+	UIMode.bind_visibility(self)
 
 func open_button():
 	reset_button.mouse_filter = 0
