@@ -34,6 +34,10 @@ func set_count(value: int) -> void:
 	count = clampi(value, 1, MAX_DRONES)
 	for i in drones.size():
 		var d = drones[i]
+		# 无人机在玩家失效时会自 queue_free（hare_drone.gd 的 _process），
+		# 数组里可能留有失效引用；与 set_mode/set_release_level 一致做有效性守卫。
+		if not is_instance_valid(d):
+			continue
 		var on: bool = i < count
 		d.visible = on
 		d.set_process(on)

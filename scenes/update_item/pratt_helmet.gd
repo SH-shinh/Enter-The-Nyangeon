@@ -29,9 +29,10 @@ func shoot_count(shot_position: Vector2, bullet_body: Node):
 		is_stop = true
 		player_bullet_launcher.rotation = bullet_body.rotation
 		shoot_num = 7 + bullet_num
-		shoot_bullet()
+		shoot_bullet(bullet_body)
 
-func shoot_bullet():
+# trigger：触发本次齐射的那发子弹（用于判断是否继承专武的命中标记语义）。
+func shoot_bullet(trigger: Node = null):
 	player_bullet_launcher.bullet = player.gun.bullet
 	player_bullet_launcher.pool_id = player.gun.bullet_pool_id
 	player_bullet_launcher.bullet_count = bullet_num
@@ -39,5 +40,6 @@ func shoot_bullet():
 	player_bullet_launcher.bullet_speed = player.stats.bullet_speed
 	player_bullet_launcher.bullet_penetrate = player.stats.bullet_penetrate
 	player_bullet_launcher.collision_num = player.stats.collision_num
+	player_bullet_launcher.set_trigger_bullet(trigger)
 	player_bullet_launcher.shoot_bullet.call_deferred()
 	is_stop = false

@@ -233,7 +233,14 @@ func _shoot() -> void:
 
 func _configure_bullet(node: Node, _guard: bool) -> void:
 	# 池复用可能残留锁定弹标记：无人机弹必须始终视为普通玩家弹。
-	node.remove_meta("hare_locked_shot")
+	node.remove_meta(PlayerBullet.LOCKED_SHOT_META)
+	# 标记无人机来源：本弹触发的道具 volley 不参与 Hare 锁定标记（见 auto_aimer）。
+	node.set_meta(PlayerBullet.DRONE_ORIGIN_META, true)
+	# 逐发清空命中闭包：正常路径下 _pre_bullet 会 emit player_shot_position →
+	# Player.bullet_hit_damage 的 DamageData.fill 重置；一旦监听缺失（换角色窗口/探针），
+	# 同一复用节点上的 mark_regen 闭包会逐发累积，这里兜底清空。
+	if node.get("damage_data") != null:
+		node.damage_data.on_damage_dealt.clear()
 	var equip: float = 1.0
 	if player != null and player.get("stats") != null:
 		# 装备伤害强化：与 hare_aim buff 层数对齐，每层 +3% 装备伤害（只在 RELEASE 生效）。
@@ -267,7 +274,8 @@ func _pre_bullet(node: Node, guard: bool) -> void:
 			dd.source_type.append(GameTags.EQUIP)
 	# 无人机弹视为装备伤害：追加 EQUIP_DAMAGE 标签，吃通用装备易伤（hare_mark）。
 	if node.get("damage_data") != null:
-		node.damage_data.damage_type.append(GameTags.EQUIP_DAMAGE)
+		if not node.damage_data.damage_type.has(GameTags.EQUIP_DAMAGE):
+			node.damage_data.damage_type.append(GameTags.EQUIP_DAMAGE)
 	# 命中带 hare_mark 的敌人时给 Hare 回电。
 	if node.get("damage_data") != null and player != null:
 		var ps = player.get_node_or_null("HarePS")

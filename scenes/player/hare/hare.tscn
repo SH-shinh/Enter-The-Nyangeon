@@ -23,7 +23,6 @@
 [ext_resource type="Texture2D" uid="uid://nu6i7yovali6" path="res://ui/cd_bar.png" id="22_38jij"]
 [ext_resource type="Texture2D" uid="uid://ben34oyvgea61" path="res://ui/cd_bar_2.png" id="23_dq3lv"]
 [ext_resource type="PackedScene" uid="uid://d1gmjbadbxsjp" path="res://scenes/game_camera/gamecamera.tscn" id="24_v3lyi"]
-[ext_resource type="PackedScene" uid="uid://ccbfmsfn7ay8r" path="res://script/kick.tscn" id="25_i6sx7"]
 [ext_resource type="PackedScene" uid="uid://voxip8vojin" path="res://scenes/manager/player_buff_manager.tscn" id="26_x5uj0"]
 [ext_resource type="PackedScene" uid="uid://c620jv6qq2f8w" path="res://scenes/player/t_hp_count.tscn" id="27_qr5g1"]
 [ext_resource type="Script" uid="uid://crtabh2xwunne" path="res://script/player_health_component.gd" id="28_s7wd4"]
@@ -270,68 +269,6 @@ _data = {
 &"RESET": SubResource("Animation_54v52")
 }
 
-[sub_resource type="Animation" id="Animation_btd8x"]
-length = 0.001
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("Graphics/AnimatedSprite2D:rotation")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [0.0]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("Graphics/AnimatedSprite2D:position")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector2(0, -17)]
-}
-
-[sub_resource type="Animation" id="Animation_kssmf"]
-resource_name = "kick_anim"
-length = 0.1
-step = 0.01
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("Graphics/AnimatedSprite2D:rotation")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.03, 0.1),
-"transitions": PackedFloat32Array(1, 1, 1),
-"update": 0,
-"values": [0.0, -0.698132, 0.0]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("Graphics/AnimatedSprite2D:position")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.03, 0.1),
-"transitions": PackedFloat32Array(1, 1, 1),
-"update": 0,
-"values": [Vector2(0, -17), Vector2(5, -20), Vector2(0, -17)]
-}
-
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_y8tsq"]
-_data = {
-&"RESET": SubResource("Animation_btd8x"),
-&"kick_anim": SubResource("Animation_kssmf")
-}
-
 [node name="hare" type="CharacterBody2D" unique_id=814336257 node_paths=PackedStringArray("stats") groups=["Player"]]
 collision_mask = 256
 motion_mode = 1
@@ -341,7 +278,6 @@ player_card = ExtResource("2_arl35")
 ps_card = ExtResource("3_snt4d")
 stats = NodePath("Stats")
 player_color = Color(0.7607843, 0.8745098, 0, 1)
-allow_kick = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1307134586]
 position = Vector2(0, -6)
@@ -496,13 +432,6 @@ texture_progress = ExtResource("23_dq3lv")
 
 [node name="Camera2D" parent="." unique_id=721135821 instance=ExtResource("24_v3lyi")]
 offset = Vector2(0, -15)
-
-[node name="Kick" parent="." unique_id=684883691 node_paths=PackedStringArray("player") instance=ExtResource("25_i6sx7")]
-position = Vector2(0, -16)
-player = NodePath("..")
-
-[node name="AnimationPlayer2" type="AnimationPlayer" parent="." unique_id=1778237123]
-libraries/ = SubResource("AnimationLibrary_y8tsq")
 
 [node name="PlayerBuffManager" parent="." unique_id=1313312428 instance=ExtResource("26_x5uj0")]
 

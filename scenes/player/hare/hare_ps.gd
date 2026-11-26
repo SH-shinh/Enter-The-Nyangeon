@@ -189,7 +189,10 @@ func _process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not _local or player == null or player.player_stop:
 		return
-	if not event.is_action_pressed("hare_aim"):
+	# 近战键（移动端 MELEE / 桌面右键 / 手柄 LB）与 hare_aim（手柄 R3）都可切锁定。
+	# 桌面右键同时绑定 kick 与 hare_aim，但它是同一个 InputEventMouseButton，
+	# 这里每个事件只切一次，不会开→关双切。
+	if not (event.is_action_pressed("kick") or event.is_action_pressed("hare_aim")):
 		return
 	if _aim_cd > 0.0:
 		get_viewport().set_input_as_handled()
@@ -386,7 +389,7 @@ func _apply_mark(victim: Node) -> void:
 func _on_bullet_hit(bullet: Node, victim: Node) -> void:
 	if bullet == null or not is_instance_valid(bullet):
 		return
-	if not bool(bullet.get_meta("hare_locked_shot", false)):
+	if not bool(bullet.get_meta(PlayerBullet.LOCKED_SHOT_META, false)):
 		return
 	if victim == null or not is_instance_valid(victim):
 		return

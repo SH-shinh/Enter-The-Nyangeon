@@ -1,20 +1,27 @@
 extends CanvasLayer
 
 # Hare 锁定态战术目镜全屏滤镜宿主：
-# 中心不覆盖、边缘渐变（edge_mask），叠加扫描线/扫描带/暗角/数字雨。
-# 关闭时 BackBufferCopy 与 Filter 都隐藏，无渲染开销。
+# - Game.screen_filters=true：屏幕读取版（BackBufferCopy + hare_optic.gdshader），
+#   夜视混色/色差/扫描线/数字雨；
+# - Game.screen_filters=false：移动端安全版（MobileShade 压暗 + MobileGlow 加色），
+#   不读取屏幕纹理，中央保持原画。
+# 关闭时四个节点都隐藏，无渲染开销。
 
 @onready var back_buffer: BackBufferCopy = $BackBufferCopy
 @onready var filter: ColorRect = $Filter
+@onready var mobile_shade: ColorRect = $MobileShade
+@onready var mobile_glow: ColorRect = $MobileGlow
 
 var _tween: Tween = null
 var _active: bool = false
+var _open: float = 0.0
 
 
 func _ready() -> void:
+	add_to_group("ScreenFilterOverlay")
 	_sync_resolution()
-	back_buffer.visible = false
-	filter.visible = false
+	_set_open(0.0)
+	_hide_all()
 
 
 func set_active(on: bool) -> void:
@@ -23,48 +30,74 @@ func set_active(on: bool) -> void:
 	_active = on
 	if on:
 		visible = true
-	# 移动端对 hint_screen_texture 有兼容风险（与 CRT overlay 一致，直接禁用）。
-	if OS.has_feature("mobile"):
-		back_buffer.visible = false
-		filter.visible = false
-		return
-	var mat := filter.material as ShaderMaterial
-	if mat == null:
-		return
-	back_buffer.visible = true
-	filter.visible = true
-	var cur: float = float(mat.get_shader_parameter("open"))
-	if _tween != null and _tween.is_valid():
-		_tween.kill()
+	# 淡出期间保持当前模式的节点可见，等 Tween 结束再统一隐藏。
+	_show_mode(_use_screen_filter(), true)
+	_kill_tween()
+	var target: float = 1.0 if on else 0.0
 	_tween = create_tween()
-	_tween.tween_method(
-		func(v: float): mat.set_shader_parameter("open", v),
-		cur, 1.0 if on else 0.0, 0.45 if on else 0.28
-	)
+	_tween.tween_method(_set_open, _open, target, 0.45 if on else 0.28)
 	if not on:
-		_tween.tween_callback(func():
-			back_buffer.visible = false
-			filter.visible = false
-		)
+		_tween.tween_callback(_hide_all)
+
+
+## 总开关切换时即时刷新（由 game_option 遍历 ScreenFilterOverlay 组调用）。
+func refresh_filter() -> void:
+	if not _active:
+		_hide_all()
+		return
+	_show_mode(_use_screen_filter(), true)
 
 
 # 保底关闭：立即清掉滤镜，不等 Tween（回合结束/商店/节点释放）。
 func force_off() -> void:
-	if _tween != null and _tween.is_valid():
-		_tween.kill()
-	var mat := filter.material as ShaderMaterial
-	if mat != null:
-		mat.set_shader_parameter("open", 0.0)
-	back_buffer.visible = false
-	filter.visible = false
+	_kill_tween()
+	_set_open(0.0)
+	_hide_all()
 	_active = false
 	visible = false
 
 
+func _use_screen_filter() -> bool:
+	return bool(Game.screen_filters)
+
+
+func _show_mode(screen_mode: bool, on: bool) -> void:
+	back_buffer.visible = screen_mode and on
+	filter.visible = screen_mode and on
+	mobile_shade.visible = (not screen_mode) and on
+	mobile_glow.visible = (not screen_mode) and on
+
+
+func _hide_all() -> void:
+	back_buffer.visible = false
+	filter.visible = false
+	mobile_shade.visible = false
+	mobile_glow.visible = false
+
+
+func _kill_tween() -> void:
+	if _tween != null and _tween.is_valid():
+		_tween.kill()
+	_tween = null
+
+
+func _set_open(value: float) -> void:
+	_open = value
+	for material in _materials():
+		material.set_shader_parameter("open", value)
+
+
+func _materials() -> Array[ShaderMaterial]:
+	var result: Array[ShaderMaterial] = []
+	for rect in [filter, mobile_shade, mobile_glow]:
+		var material := rect.material as ShaderMaterial
+		if material != null:
+			result.append(material)
+	return result
+
+
 func _sync_resolution() -> void:
-	var mat := filter.material as ShaderMaterial
-	if mat == null:
-		return
 	var width: float = float(ProjectSettings.get_setting("display/window/size/viewport_width", 640))
 	var height: float = float(ProjectSettings.get_setting("display/window/size/viewport_height", 360))
-	mat.set_shader_parameter("resolution", Vector2(width, height))
+	for material in _materials():
+		material.set_shader_parameter("resolution", Vector2(width, height))

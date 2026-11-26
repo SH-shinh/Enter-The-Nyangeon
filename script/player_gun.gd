@@ -237,6 +237,8 @@ func _configure_bullet(node: Node) -> void:
 			.normalized()
 	shoot_position.rotation = direction.angle()
 	node.set_meta("player_damage_mult", _pending_damage_mult)
+	# 枪打出的子弹不是无人机来源；清掉池复用可能残留的标记（见 PlayerBullet）。
+	node.remove_meta(PlayerBullet.DRONE_ORIGIN_META)
 	if random_bullet == true:
 		node.speed = stats.bullet_speed * randf_range(0.7,1)
 	else:
@@ -249,6 +251,15 @@ func _configure_bullet(node: Node) -> void:
 	if parabola == true:
 		var length = shoot_position.global_position.distance_to(crosshair_pos)
 		node.mouse_length = length
+
+## 道具 volley 的触发源是否允许继承本武器附加的命中标记（默认允许）。
+## 专武可覆写以排除特定触发源（Hare 锁定形态用它排除无人机弹触发的道具弹）。
+func extra_shot_allows_mark(_trigger_bullet: Node) -> bool:
+	return true
+
+## 道具 volley 每发子弹的附加配置；allow_mark 在触发瞬间由 extra_shot_allows_mark() 决定。
+func configure_extra_bullet(_node: Node, _allow_mark: bool = true) -> void:
+	pass
 
 func _emit_player_shot_pre(node: Node) -> void:
 	GameEvents.emit_player_shot_position(shoot_position.global_position, node)

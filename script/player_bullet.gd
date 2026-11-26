@@ -5,6 +5,13 @@ signal in_idle(bullet_body: Node)
 
 ## 仅破隐子弹使用：击杀时返还本次消耗的穿透值。
 const REFUND_PENETRATE_META := &"refund_penetrate_on_kill"
+## Hare 锁定弹的命中标记（逐发状态）：`hare_ps._on_bullet_hit` 据此判定。
+## 回池必须在 idle_state() 统一清除——同一池（player_bullet）还被道具分裂弹/
+## 常态射击等站点复用，不能只靠各个 spawn 入口自己 remove_meta。
+const LOCKED_SHOT_META := &"hare_locked_shot"
+## 无人机来源标记（逐发状态）：无人机弹本身，以及由无人机弹触发的道具 volley 子弹。
+## 带此标记的子弹触发道具 volley 时不再继承 Hare 锁定标记（避免无人机间接喂锁定层）。
+const DRONE_ORIGIN_META := &"hare_drone_origin"
 
 var velocity: Vector2
 var acceleration: Vector2 = Vector2.ZERO
@@ -123,6 +130,10 @@ func apply_penetrate_dealt():
 func idle_state():
 	reset_physics_interpolation()
 	remove_meta(REFUND_PENETRATE_META)
+	# 单点收口：逐发射击标记不能跨「池复用」存活。所有回收路径（撞墙/穿透耗尽/
+	# kill_time/满额强收）都经过这里；节点上本来没有该 meta 时是空操作。
+	remove_meta(LOCKED_SHOT_META)
+	remove_meta(DRONE_ORIGIN_META)
 	if is_idle == 0:
 		ExtensionHooks.notify_named("on_projectile_despawned", [self])
 	is_idle = 1

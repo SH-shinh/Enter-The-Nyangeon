@@ -42,7 +42,7 @@ func _shoot_normal() -> void:
 
 # 常态/其它子弹复用池时清掉锁定弹标记，避免无人机弹被误判为锁定弹。
 func _configure_bullet(node: Node) -> void:
-	node.remove_meta("hare_locked_shot")
+	node.remove_meta(PlayerBullet.LOCKED_SHOT_META)
 	super._configure_bullet(node)
 
 
@@ -80,7 +80,9 @@ func _shoot_locked(entries: Array) -> void:
 
 
 func _configure_locked(node: Node, enemy: Node) -> void:
-	node.set_meta("hare_locked_shot", true)
+	node.set_meta(PlayerBullet.LOCKED_SHOT_META, true)
+	# 锁定弹不是无人机来源（池复用可能残留无人机标记）。
+	node.remove_meta(PlayerBullet.DRONE_ORIGIN_META)
 	node.set_meta("player_damage_mult", LOCKED_SHOT_RATIO * _pending_damage_mult)
 	node.speed = mini(int(stats.bullet_speed), LOCKED_MAX_SPEED)
 	node.penetrate = 1
@@ -89,3 +91,28 @@ func _configure_locked(node: Node, enemy: Node) -> void:
 	node.r_speed = LOCKED_TURN_SPEED
 	if node.has_method("set_homing_target") and enemy != null and is_instance_valid(enemy):
 		node.set_homing_target(enemy, true, LOCKED_CURVE, LOCKED_CURVE_TIME)
+
+
+# ---------------- 道具额外弹（pratt helmet 齐射 / shrapnel 分裂弹） ----------------
+
+## 锁定形态下道具弹也参与标记；但无人机弹（或无人机链派生弹）触发的 volley 不参与，
+## 避免无人机间接喂锁定层/回电。
+func extra_shot_allows_mark(trigger_bullet: Node) -> bool:
+	if trigger_bullet == null or not is_instance_valid(trigger_bullet):
+		return true
+	return not trigger_bullet.has_meta(PlayerBullet.DRONE_ORIGIN_META)
+
+
+## 逐发配置道具 volley 子弹：锁定中且非无人机触发 → 打锁定标记；无人机链 → 继续传播
+## 无人机来源标记，使下一层派生 volley 同样被排除。
+func configure_extra_bullet(node: Node, allow_mark: bool = true) -> void:
+	var hare = player.get_node_or_null("HarePS") if player != null else null
+	var locked: bool = hare != null and hare.has_method("is_locked") and hare.is_locked()
+	if allow_mark and locked:
+		node.set_meta(PlayerBullet.LOCKED_SHOT_META, true)
+	else:
+		node.remove_meta(PlayerBullet.LOCKED_SHOT_META)
+	if allow_mark:
+		node.remove_meta(PlayerBullet.DRONE_ORIGIN_META)
+	else:
+		node.set_meta(PlayerBullet.DRONE_ORIGIN_META, true)

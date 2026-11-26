@@ -58,8 +58,9 @@ func shoot_bullet(_final_damage: int, damage_data: DamageData, body_path: NodePa
 			# 优先使用触发子弹的场景/池（仅 PlayerBullet 系；其它场景回退枪子弹）。
 			var parent_scene: PackedScene = null
 			var parent_pool: String = ""
+			var parent: Node = null
 			if damage_data.source_node != NodePath():
-				var parent := get_tree().root.get_node_or_null(damage_data.source_node)
+				parent = get_tree().root.get_node_or_null(damage_data.source_node)
 				if parent is PlayerBullet and parent.scene_file_path != "":
 					parent_scene = load(parent.scene_file_path) as PackedScene
 					if parent.get("pool_id") != null:
@@ -72,5 +73,7 @@ func shoot_bullet(_final_damage: int, damage_data: DamageData, body_path: NodePa
 			launcher.bullet_penetrate = player.stats.bullet_penetrate + 1
 			launcher.collision_num = player.stats.collision_num
 			launcher.global_position = enemy_body.global_position
+			# 触发源 = 被命中的那颗子弹（无人机弹触发的分裂弹不参与锁定标记）。
+			launcher.set_trigger_bullet(parent)
 			launcher.shoot_bullet()
 			equip_cd = 2
