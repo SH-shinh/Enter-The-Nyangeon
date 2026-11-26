@@ -16,6 +16,11 @@ extends Node
 const TICK_INTERVAL := 10 # 0.1s * 10 = 1s
 const OUT_MARGIN := 24.0 # 圆心越过墙该距离才算真出界（贴墙/轻微挤压不触发）
 const INSET := 8.0 # 回位落点在半径基础上再向中心内推，多留余量
+# 内部墙（壁垒）卡住的玩家：连续命中多少次才拉、单次最大拉回距离、拉后锁多少个 tick。
+# 之前"命中即拉 + 只锁 1 tick"，客机被砌进墙里时表现为每秒一次横跨半张图的"闪回"。
+const PLAYER_STUCK_STRIKES := 2
+const MAX_PLAYER_PULL := 48.0
+const PULL_LOCK_TICKS := 3
 const WALL_MASK := 256 # FloorWall 碰撞层（玩家唯一会碰撞的地图墙）
 const RAY_LEN := 4000.0 # 从地图中心向外的射线长度，需覆盖整张竞技场
 
@@ -24,6 +29,12 @@ var _map_instance_id: int = 0
 var _hull := PackedVector2Array()
 var _outer_hull := PackedVector2Array() # _hull 外扩 OUT_MARGIN，用于触发判定
 var _boundary_source: StringName = &""
+# release 也计数/留痕：联机 diag 用它判断「位置被复位」是否来自 MapBounds。
+# 单次 _check_out_of_map 内的拉回都会累加，供 mod 每 2s 取差值。
+var pull_count: int = 0
+var last_pull: String = ""
+# 实体 -> 连续落在实心格的次数（玩家需要连续命中才拉）
+var _stuck_strikes: Dictionary = {}
 var _center := Vector2.ZERO
 var _tick: int = 0
 var _check_count: int = 0
@@ -46,6 +57,7 @@ func invalidate() -> void:
 	_erode_cache.clear()
 	_fallback_warned = false
 	_pull_lock.clear()
+	_stuck_strikes.clear()
 
 func _on_tick() -> void:
 	_tick += 1
@@ -88,6 +100,9 @@ func _check_out_of_map() -> void:
 func _resolve(entity: Node2D, internal_walls: bool = false) -> void:
 	if entity == null or not is_instance_valid(entity):
 		return
+	# 联机镜像在收到首帧快照前停在原点，不能当成"出界"整批拉回（会表现为一群实体从 (0,0) 瞬移）
+	if entity.has_meta("coop_pending_snapshot"):
+		return
 	var pos: Vector2 = entity.global_position
 	# 正常边界：沿用已调好的外扩多边形判定与落点，行为不变。
 	if _boundary_source == &"walls":
@@ -119,7 +134,18 @@ func _resolve(entity: Node2D, internal_walls: bool = false) -> void:
 # 只认 solid，贴墙但不进格不触发；落点仍 solid 则放弃，交给下一次 tick。
 func _resolve_internal_stuck(entity: Node2D, pos: Vector2) -> void:
 	if not EnemyNavField.is_solid(pos):
+		_stuck_strikes.erase(entity.get_instance_id())
 		return
+	var id := entity.get_instance_id()
+	var is_player: bool = entity.is_in_group("Player")
+	if is_player:
+		var strikes: int = int(_stuck_strikes.get(id, 0)) + 1
+		_stuck_strikes[id] = strikes
+		# 玩家需要连续命中才拉：单次误判（镜像刚重建、贴墙挤压）不再直接瞬移。
+		if strikes < PLAYER_STUCK_STRIKES:
+			return
+	else:
+		_stuck_strikes.erase(id)
 	var landing := EnemyNavField.nearest_body_safe_point(pos, 1)
 	if not landing.is_finite():
 		return
@@ -127,18 +153,23 @@ func _resolve_internal_stuck(entity: Node2D, pos: Vector2) -> void:
 		return
 	if EnemyNavField.is_solid(landing):
 		return
+	# 玩家单次只允许小幅修正；超过上限说明是"被砌进墙里"，交给物理解算，避免横跨式闪回。
+	if is_player and landing.distance_to(pos) > MAX_PLAYER_PULL:
+		return
 	_apply_pull(entity, landing, pos)
 
 func _apply_pull(entity: Node2D, landing: Vector2, from: Vector2) -> void:
 	var id := entity.get_instance_id()
-	# 拉回后跳过下一次 1s 检查，防止落点被物理再挤出形成 1s 循环。
+	# 拉回后多跳过几个 tick，防止落点被物理再挤出形成循环式"闪回"。
 	if int(_pull_lock.get(id, -1)) >= _check_count:
 		return
 	entity.global_position = landing
 	entity.reset_physics_interpolation()
 	if entity is CharacterBody2D:
 		entity.velocity = Vector2.ZERO
-	_pull_lock[id] = _check_count + 1
+	_pull_lock[id] = _check_count + PULL_LOCK_TICKS
+	pull_count += 1
+	last_pull = "%s %s->%s" % [str(entity.name), str(from), str(landing)]
 	if OS.is_debug_build():
 		print("[MapBounds] pull %s from=%s to=%s (boundary=%s)" % [entity.name, from, landing, _boundary_source])
 
@@ -164,6 +195,10 @@ func _wall_crossing(pos: Vector2) -> Dictionary:
 	}
 
 func _prune_pull_lock() -> void:
+	if not _stuck_strikes.is_empty():
+		for id in _stuck_strikes.keys():
+			if not is_instance_id_valid(id):
+				_stuck_strikes.erase(id)
 	if _pull_lock.is_empty():
 		return
 	for id in _pull_lock.keys():

@@ -1,21 +1,47 @@
 class_name EnemyAI
 
-## 敌人 AI 的 5Hz 求解编排（静态服务，不注册 autoload）。
+## 敌人 AI 的求解编排（静态服务，不注册 autoload；默认 360ms/次，3 相拆帧）。
 ##
 ## 统一决策管线：
 ##   1. 密度场：把全部 AI 敌人 splat 成一张拥挤度场，算出每只的「横向散开推力」。
 ##   2. 分桶：按目标玩家分组，分别给近战 / 远程下发「意图 + 目标点(方位角, 半径)」。
 ##       近战：CHASE（攻击位）/ RING（包围位）/ CUTOFF（封堵位）
 ##       远程：CHASE（接近）/ KITE（后撤）/ HOLD（驻守射击）/ REPOS（换位找视线）
-##   3. 脱困：连续 1 秒没有位移的敌人会被标记 UNSTUCK，由 Enemy 侧接管 0.8 秒。
+##   3. 脱困：连续 1.44 秒没有位移的敌人会被标记 UNSTUCK，由 Enemy 侧接管 0.8 秒。
 ##   4. 预判：提供 predict_anchor，让导航场种子落在玩家前方。
 ##
 ## 注意：这里刻意不引用 Enemy 类型（只用 duck typing），避免与 entity_ENEMY.gd
 ## 形成 class_name 循环引用；意图常量必须与 Enemy.AIIntent 的枚举顺序一致。
 
 const SOLVE_INTERVAL_MS := 360
-## 壁垒场开启时的决策频率进一步降低（有场/绕墙更贵，且不需要 5Hz 更新）。
+## 壁垒场开启时的决策频率进一步降低（有场/绕墙更贵，且不需要高频更新）。
 const FIELD_SOLVE_INTERVAL_MS := 600
+
+# ---------------- 性能自适应（动态上限 + 降频） ----------------
+# 只降不升：L0 是当前基线。性能持续吃紧时先削战术层人数（尖峰），再拉长求解间隔（总量）。
+# 信号：PoolManager 的 FPS EMA（整帧压力）+ 自身 solve_now 耗时（弱机上 AI 占掉半帧）。
+# 反馈环风险：降频 → 帧率恢复 → 升频 → 又掉帧。故带滞回 + 升档 1.2s / 退档 3s 确认。
+const QUALITY_LEVELS := 3
+const QUALITY_TACTICAL_LIMITS := [60, 44, 30]
+const QUALITY_SOLVE_INTERVAL_MS := [360, 480, 640]
+const QUALITY_FIELD_INTERVAL_MS := [600, 800, 1000]
+## 目标档位的 FPS 上界（严格小于才升到该档）
+const QUALITY_FPS_ENTER := [0.0, 50.0, 38.0]
+## 退档所需的 FPS 下界（滞回带：50/55、38/45）
+const QUALITY_FPS_EXIT := [0.0, 55.0, 45.0]
+## 单次求解耗时阈值（µs）：约等于一帧 16.6ms 的 36% / 54%
+const QUALITY_SOLVE_ENTER_US := [0, 6000, 9000]
+const QUALITY_SOLVE_EXIT_US := [0, 4500, 7500]
+const QUALITY_SAMPLE_MS := 250
+const QUALITY_DEGRADE_CONFIRM_MS := 1200
+const QUALITY_RECOVER_CONFIRM_MS := 3000
+## 空闲这么久（例如回合间隔）就回 L0，避免把上一回合的瞬时降档带进下一回合。
+const QUALITY_IDLE_RESET_MS := 5000
+## 单次耗时 clamp：一次加载/GC 的长尖峰不该直接把 AI 打到最低档。
+const QUALITY_COST_SAMPLE_CLAMP_US := 20000
+const QUALITY_EMA_ALPHA := 0.2
+## 决策过期阈值下限：L0 下 = 旧的 2000ms；降频后按 4×求间隔放大，避免误伤站位。
+const DECISION_STALE_FLOOR_MS := 2000
 const FAN_BASE := 0.18
 const SEP_BASE := 0.20
 
@@ -35,8 +61,17 @@ const INTENT_UNSTUCK := 8
 
 const MAX_SLOTS := 8
 # 战术分层人数上限（每个目标各自计）：超出这一数量后，远的只走纯场流，不参与角色/槽位/密度/反排队。
-# 目的是把 200ms 一次的求解尖峰**封顶**，89 只与 200 只成本相同。
+# L0（正常性能）基线；实际生效值见 tactical_limit()（性能自适应会把它降到 44 / 30）。
 const TACTICAL_LIMIT := 60
+## 多人容量缩放：总战术名额 = 60 + 12×(N-1)（2/3/4 人 → 72/84/96），而不是每组 60 × N。
+## 单组保底 12 ≈ 半圈（normal.tres 的 melee_ring_radius=120 + RING_SLOT_SIZE=32 → 满圈约 24 位），
+## 保证缩容后仍看得出包围而不是"排队跟流"。
+const TACTICAL_BASE := 60
+const TACTICAL_PER_EXTRA := 12
+const TACTICAL_GROUP_FLOOR := 12
+## 覆盖用总预算（>0 生效）；-1 = 关闭人数缩放，回到旧的"每组 TACTICAL_LIMIT"。
+static var tactical_limit_total: int = 0
+static var _tactical_used: int = 0
 const SLOT_SPACING := 28.0
 const SLOT_SMOOTH := 0.35
 const BASE_SMOOTH := 0.25
@@ -97,7 +132,8 @@ const LOS_SKIP := 40.0
 
 # 脱困
 const STUCK_EPSILON := 6.0
-const STUCK_SOLVES := 4
+## 位移 < STUCK_EPSILON 持续这么久（墙钟，与求解频率无关）→ 标记脱困。
+const STUCK_CONFIRM_MS := 1440
 const UNSTUCK_TICKS := 8
 
 const PREDICT_VEL_MIN := 40.0
@@ -106,11 +142,22 @@ const PREDICT_FULL_SPEED := 200.0
 const PREDICT_CLAMP_RADIUS := 24.0
 
 static var _last_solve_ms: int = -99999
-## 3 相拆帧：0=collect/density，1=density/wall push，2=组内槽位/场；每 5Hz 调一次，整轮 600ms。
+## 3 相拆帧：0=collect/density，1=density/wall push，2=组内槽位/场；每次求解只做一相，整轮 = 3×间隔。
 static var _solve_phase: int = 0
-## 第一轮/新目标/队伍变化强制全跑一次，避免开局或换队 600ms 没有槽位。
+## 第一轮/新目标/队伍变化强制全跑一次，避免开局或换队后一整轮没有槽位。
 static var _solve_primed: bool = false
 static var _last_group_sig: int = 0
+# 性能自适应状态（只降不升；见文件头 QUALITY_*）。
+static var quality_level: int = 0
+static var _quality_pending: int = -1
+static var _quality_pending_ms: int = 0
+static var _quality_since_ms: int = 0
+static var _last_quality_sample_ms: int = -99999
+static var _solve_us_ema: float = 0.0
+## 关闭后 tactical_limit()/间隔逐值回到基线（紧急逃生开关；Boss/测试房本来不进 AI）。
+static var adaptive_enabled: bool = true
+## 测试/调试注入：{"fps": float, "solve_us": float}；为空时读真实信号。
+static var perf_override: Dictionary = {}
 static var _candidates: Array[Enemy] = []
 ## 调试：关闭阵型/密度/队列，只保留 field 跟随，用于隔离“策略 vs 寻路”。
 static var simple_follow_debug: bool = false
@@ -152,6 +199,12 @@ static var _anchor_value: Vector2 = Vector2.ZERO
 # target_instance_id -> {"node": Node2D, "all": Array, "melee": Array, "ranged": Array,
 #                        "base": float, "cut_dir": float}
 static var _groups: Dictionary = {}
+## 分帧求解：本地玩家组每轮必算；远端玩家组每轮最多更新这么多个（按最久未更新优先）。
+static var groups_per_solve: int = 2
+static var _group_update_ms: Dictionary = {}
+## 成员变化（新敌人/新组）的脏组集合：本轮只补这些组的槽位，不整套重算。
+static var _groups_dirty: Dictionary = {}
+static var _known_enemy_ids: Dictionary = {}
 # Vector2i -> 密度
 static var _density: Dictionary = {}
 
@@ -162,7 +215,7 @@ const INTENT_NAMES := [
 
 # ---------------- 调试可视化只读入口（不要修改返回值） ----------------
 
-# 当前密度场（Vector2i -> float）。每 200ms 重建一次，读到的是一次求解的快照。
+# 当前密度场（Vector2i -> float）。每次求解重建一次，读到的是一次求解的快照。
 static func debug_density() -> Dictionary:
 	return _density
 
@@ -251,13 +304,168 @@ static func ensure_solved(target: Node2D, lead_seconds: float = 0.0) -> void:
 	if target == null or not is_instance_valid(target):
 		return
 	var now := Time.get_ticks_msec()
-	var interval := FIELD_SOLVE_INTERVAL_MS if EnemyNavField.complex_path_enabled else SOLVE_INTERVAL_MS
-	if now - _last_solve_ms < interval:
+	# 采样放在间隔判断之前：降频期间也必须能读到恢复信号，否则永远退不回 L0。
+	_sample_quality(now)
+	if now - _last_solve_ms < solve_interval_ms():
 		return
 	_last_solve_ms = now
 	if not EnemyNavField.has_blocks() and not _any_enemy_has_profile():
 		return
+	var t0 := Time.get_ticks_usec()
 	solve_now(lead_seconds)
+	if not _candidates.is_empty():
+		_note_solve_cost(Time.get_ticks_usec() - t0)
+
+
+# ---------------- 性能自适应（档位） ----------------
+
+## 当前档位索引（0..QUALITY_LEVELS-1）；关闭自适应时恒为 0。
+static func _quality_level_index() -> int:
+	if not adaptive_enabled:
+		return 0
+	return clampi(quality_level, 0, QUALITY_LEVELS - 1)
+
+
+## 每个目标分组实际生效的战术层人数上限（单组上限，仍受性能档位约束）。
+static func tactical_limit() -> int:
+	return int(QUALITY_TACTICAL_LIMITS[_quality_level_index()])
+
+
+## 全局战术名额总量：多人时按人数缩放（不是每组各拿一份上限），总成本随人数缓增。
+static func tactical_budget_total(player_count: int) -> int:
+	var n := maxi(1, player_count)
+	if tactical_limit_total < 0:
+		return tactical_limit() * n
+	if tactical_limit_total > 0:
+		return tactical_limit_total
+	var base := mini(TACTICAL_BASE, tactical_limit())
+	return clampi(base + TACTICAL_PER_EXTRA * (n - 1), base, base + TACTICAL_PER_EXTRA * 3)
+
+
+## 当前求解间隔（含壁垒场分支）：L0 360/600ms，L2 640/1000ms。
+static func solve_interval_ms() -> int:
+	if EnemyNavField.complex_path_enabled:
+		return int(QUALITY_FIELD_INTERVAL_MS[_quality_level_index()])
+	return int(QUALITY_SOLVE_INTERVAL_MS[_quality_level_index()])
+
+
+static func field_interval_ms() -> int:
+	return int(QUALITY_FIELD_INTERVAL_MS[_quality_level_index()])
+
+
+## 决策过期阈值：L0 保持旧的 2000ms（逐值不变）；降频后槽位更新变慢，按 4×间隔放大
+## （L1=3200ms、L2=4000ms；L2 壁垒场的整轮刷新周期 3000ms，必须大于它才不误伤站位）。
+static func decision_stale_ms() -> int:
+	if _quality_level_index() <= 0:
+		return DECISION_STALE_FLOOR_MS
+	return maxi(DECISION_STALE_FLOOR_MS, solve_interval_ms() * 4)
+
+
+## 当前生效的 FPS 信号：0 = 未知（headless / 未初始化），按健康处理。
+static func _fps_signal() -> float:
+	if perf_override.has("fps"):
+		return float(perf_override["fps"])
+	if PoolManager != null and PoolManager.has_method("get_fps_ema"):
+		return PoolManager.get_fps_ema()
+	return 0.0
+
+
+static func _note_solve_cost(cost_us: int) -> void:
+	if not adaptive_enabled or perf_override.has("solve_us"):
+		return
+	var sample := float(clampi(cost_us, 0, QUALITY_COST_SAMPLE_CLAMP_US))
+	if _solve_us_ema <= 0.0:
+		_solve_us_ema = sample
+	else:
+		_solve_us_ema = lerpf(_solve_us_ema, sample, QUALITY_EMA_ALPHA)
+
+
+## 250ms 门控采样；空闲超过 QUALITY_IDLE_RESET_MS 自动回 L0。
+static func _sample_quality(now: int) -> void:
+	if not adaptive_enabled:
+		return
+	if now - _last_solve_ms > QUALITY_IDLE_RESET_MS:
+		_reset_quality_state()
+		return
+	if now - _last_quality_sample_ms < QUALITY_SAMPLE_MS:
+		return
+	_last_quality_sample_ms = now
+	_evaluate_quality(now, _fps_signal(), _solve_us_ema)
+
+
+## 档位状态机：升档需持续 QUALITY_DEGRADE_CONFIRM_MS，退档需持续 QUALITY_RECOVER_CONFIRM_MS。
+## 测试接缝：直接传伪造的 now/fps/solve_us 驱动，不依赖真实帧率与等待。
+static func _evaluate_quality(now: int, fps: float, solve_us: float) -> void:
+	if not adaptive_enabled:
+		return
+	var level := _quality_level_index()
+	var fps_known := fps > 0.0
+	var target := level
+	if (fps_known and fps < float(QUALITY_FPS_ENTER[2])) \
+			or solve_us > float(QUALITY_SOLVE_ENTER_US[2]):
+		target = 2
+	elif (fps_known and fps < float(QUALITY_FPS_ENTER[1])) \
+			or solve_us > float(QUALITY_SOLVE_ENTER_US[1]):
+		target = 1
+	elif level > 0:
+		var fps_ok := not fps_known or fps >= float(QUALITY_FPS_EXIT[level])
+		var cost_ok := solve_us <= float(QUALITY_SOLVE_EXIT_US[level])
+		if fps_ok and cost_ok:
+			target = level - 1
+	if target == level:
+		_quality_pending = -1
+		return
+	if target != _quality_pending:
+		_quality_pending = target
+		_quality_pending_ms = now
+		return
+	var need := QUALITY_DEGRADE_CONFIRM_MS if target > level else QUALITY_RECOVER_CONFIRM_MS
+	if now - _quality_pending_ms < need:
+		return
+	quality_level = target
+	_quality_since_ms = now
+	_quality_pending = -1
+	if Game.dev_mode:
+		print("[ETNAI] perf level=%d fps=%.0f solve=%.2fms cap=%d interval=%dms" % [
+			quality_level, fps, solve_us / 1000.0, tactical_limit(), solve_interval_ms()])
+
+
+## 回 L0 并清空采样（回合间隔/测试用）。
+static func reset_quality() -> void:
+	perf_override.clear()
+	_reset_quality_state()
+
+
+## 只清档位状态，不动注入信号（空闲复位用，避免把测试/调试注入顺手清掉）。
+static func _reset_quality_state() -> void:
+	quality_level = 0
+	_quality_pending = -1
+	_quality_pending_ms = 0
+	_quality_since_ms = 0
+	_last_quality_sample_ms = -99999
+	_solve_us_ema = 0.0
+
+
+## 调试/可视化只读快照。
+static func debug_perf() -> Dictionary:
+	return {
+		"level": _quality_level_index(),
+		"cap": tactical_limit(),
+		"interval_ms": solve_interval_ms(),
+		"field_interval_ms": field_interval_ms(),
+		"fps": _fps_signal(),
+		"solve_us": _solve_us_ema,
+		"pending": _quality_pending,
+		"adaptive": adaptive_enabled,
+		"groups": _groups.size(),
+		"groups_per_solve": groups_per_solve,
+		"tactical_budget": tactical_budget_total(_groups.size()),
+		"tactical_used": _tactical_used,
+		"field_rebuilds": EnemyNavField.rebuild_count,
+		"field_reuses": EnemyNavField.reuse_count,
+		"field_pending": EnemyNavField.pending_rebuild,
+		"stale_groups": _groups_dirty.size(),
+	}
 
 
 static func solve_now(lead_seconds: float = 0.0) -> void:
@@ -299,19 +507,22 @@ static func solve_now(lead_seconds: float = 0.0) -> void:
 		_simple_follow()
 		_update_stuck()
 		return
-	# 首轮/换目标/队伍变化强制整套跑一次；之后按 3 相拆帧，每 5Hz 只做一相。
+	# 组集合变化（新目标出现/换目标）才整套跑一次；敌人成员增删只补「受影响的那一组」。
 	var sig := 0
 	for key in _groups:
 		sig = sig * 31 + int(key)
-		var g: Dictionary = _groups[key]
-		for e in g.get("all", []):
-			if e != null and is_instance_valid(e):
-				sig = sig * 31 + e.get_instance_id()
 	if not _solve_primed or sig != _last_group_sig:
 		_solve_primed = true
 		_last_group_sig = sig
 		_run_full_solve(lead_seconds)
 		return
+	# 新敌人/新组：只对脏组补一次槽位，不等 3 相轮转（最多 1.8s）。
+	if not _groups_dirty.is_empty():
+		var dirty_now := Time.get_ticks_msec()
+		for key in _groups_dirty.keys():
+			if _groups.has(key):
+				_update_one_group(key, lead_seconds, dirty_now, decision_stale_ms())
+		_groups_dirty.clear()
 	_solve_phase = (_solve_phase + 1) % 3
 	if _solve_phase == 0:
 		_build_density()
@@ -342,33 +553,73 @@ static func solve_now_full(lead_seconds: float = 0.0) -> void:
 
 
 static func _assign_groups(lead_seconds: float) -> void:
+	if _groups.is_empty():
+		return
+	var now := Time.get_ticks_msec()
+	# 本地玩家组每轮必算（host 自己的观感优先）；远端组按"最久未更新"轮转，每轮最多 groups_per_solve 个。
+	var local_keys: Array = []
+	var remote_keys: Array = []
 	for key in _groups:
-		var group: Dictionary = _groups[key]
-		var node = group.get("node")
-		if node == null or not is_instance_valid(node):
-			continue
-		var lead: float = lead_seconds
-		if lead <= 0.0:
-			lead = _group_lead(group)
-		var target_pos := EnemyNavField.target_anchor(node)
-		var from_pos: Vector2
-		var attack_anchor: Vector2
-		var body_unreachable := false
-		if EnemyNavField.complex_path_enabled:
-			from_pos = _nearest_reachable_group_enemy_position(group, node)
-			if from_pos == Vector2.ZERO:
-				from_pos = _nearest_group_enemy_position(group, node)
-			EnemyNavField.ensure_rebuilt(node, target_pos, from_pos)
-			attack_anchor = EnemyNavField.get_attack_point(node)
-			if attack_anchor == Vector2.ZERO:
-				attack_anchor = EnemyNavField.target_safe_anchor(node)
-			body_unreachable = not EnemyNavField.is_target_reachable_from(node, from_pos)
+		var node = _groups[key].get("node")
+		if node is Node and (node as Node).is_in_group("RemotePlayer"):
+			remote_keys.append(key)
 		else:
-			# 非壁垒场景没有场：直接以玩家/目标锚点为攻击点，走直连。
+			local_keys.append(key)
+	for key in local_keys:
+		_update_one_group(key, lead_seconds, now, 0)
+	var remote_budget := maxi(0, groups_per_solve)
+	if remote_budget > 0 and not remote_keys.is_empty():
+		remote_keys.sort_custom(func(a, b) -> bool:
+			return int(_group_update_ms.get(a, 0)) < int(_group_update_ms.get(b, 0)))
+		var stale_ms := _max_group_stale_ms(remote_keys.size())
+		for i in mini(remote_budget, remote_keys.size()):
+			_update_one_group(remote_keys[i], lead_seconds, now, stale_ms)
+
+
+## 单组槽位更新（原 _assign_groups 的循环体）。
+## remote_stale_ms > 0 表示这是"降频更新的远端组"：把更大的过期预算写进该组敌人，
+## 否则 ai_steer 会用全局 decision_stale_ms 误判"决策过期"、退回简单追踪（观感更差）。
+static func _update_one_group(key, lead_seconds: float, now: int, remote_stale_ms: int) -> void:
+	var group: Dictionary = _groups.get(key)
+	if group == null:
+		return
+	var node = group.get("node")
+	if node == null or not is_instance_valid(node):
+		return
+	var lead: float = lead_seconds
+	if lead <= 0.0:
+		lead = _group_lead(group)
+	var target_pos := EnemyNavField.target_anchor(node)
+	var from_pos: Vector2
+	var attack_anchor: Vector2
+	var body_unreachable := false
+	if EnemyNavField.complex_path_enabled:
+		from_pos = _nearest_reachable_group_enemy_position(group, node)
+		if from_pos == Vector2.ZERO:
 			from_pos = _nearest_group_enemy_position(group, node)
-			attack_anchor = target_pos
-		_assign_melee_slots(group, attack_anchor, body_unreachable)
-		_assign_ranged_slots(group, attack_anchor, target_pos, body_unreachable)
+		EnemyNavField.ensure_rebuilt(node, target_pos, from_pos)
+		attack_anchor = EnemyNavField.get_attack_point(node)
+		if attack_anchor == Vector2.ZERO:
+			attack_anchor = EnemyNavField.target_safe_anchor(node)
+		body_unreachable = not EnemyNavField.is_target_reachable_from(node, from_pos)
+	else:
+		# 非壁垒场景没有场：直接以玩家/目标锚点为攻击点，走直连。
+		from_pos = _nearest_group_enemy_position(group, node)
+		attack_anchor = target_pos
+	_assign_melee_slots(group, attack_anchor, body_unreachable)
+	_assign_ranged_slots(group, attack_anchor, target_pos, body_unreachable)
+	var stale_budget := remote_stale_ms if remote_stale_ms > 0 else decision_stale_ms()
+	for e in group.get("all", []):
+		var enemy := e as Enemy
+		if enemy != null:
+			enemy._ai_stale_budget_ms = stale_budget
+	_group_update_ms[key] = now
+	_groups_dirty.erase(key)
+
+
+## 远端组最大陈旧时间：_assign_groups 每 3×interval 跑一轮，单个远端组每 remote_count 轮更新一次。
+static func _max_group_stale_ms(remote_count: int) -> int:
+	return 3 * field_interval_ms() * maxi(1, remote_count) + 500
 
 
 static func ensure_route(target: Node2D, from_pos: Vector2) -> void:
@@ -541,11 +792,14 @@ static func _any_enemy_has_profile() -> bool:
 static func _nearest_group_enemy_position(group: Dictionary, node: Node2D) -> Vector2:
 	var best := Vector2.ZERO
 	var best_dist := INF
+	var node_anchor := EnemyNavField.target_anchor(node)
 	for enemy in group.get("all", []):
 		if enemy == null or not is_instance_valid(enemy):
 			continue
-		var p := EnemyNavField.target_anchor(enemy)
-		var d: float = p.distance_squared_to(EnemyNavField.target_anchor(node))
+		# 敌人只需要「所在格」：target_anchor（撞墙碰撞箱中心 + MapBounds 夹回）是给玩家贴墙用的，
+		# 对敌人是纯开销（旧的实现每敌每轮算 2 次）。
+		var p: Vector2 = MapChunks.get_cell_world(MapChunks.world_to_cell(enemy.global_position))
+		var d: float = p.distance_squared_to(node_anchor)
 		if d < best_dist:
 			best_dist = d
 			best = p
@@ -561,7 +815,7 @@ static func _nearest_reachable_group_enemy_position(group: Dictionary, node: Nod
 	for enemy in group.get("all", []):
 		if enemy == null or not is_instance_valid(enemy):
 			continue
-		var p := EnemyNavField.target_anchor(enemy)
+		var p: Vector2 = MapChunks.get_cell_world(MapChunks.world_to_cell(enemy.global_position))
 		if not EnemyNavField.is_target_reachable_from(node, p):
 			continue
 		var d: float = p.distance_squared_to(node_anchor)
@@ -588,6 +842,7 @@ static func _collect() -> void:
 		existing["melee"] = []
 		existing["ranged"] = []
 	var seen: Dictionary = {}
+	var new_ids: Dictionary = {}
 	for raw_enemy in PoolManager.get_active_enemies():
 		var enemy := raw_enemy as Enemy
 		if enemy == null or not _is_candidate(enemy):
@@ -604,6 +859,7 @@ static func _collect() -> void:
 		if group == null:
 			group = {"node": target, "all": [], "melee": [], "ranged": []}
 			_groups[key] = group
+			_groups_dirty[key] = true
 		group["node"] = target
 		group["all"].append(enemy)
 		if enemy.ai_role == ROLE_MELEE:
@@ -611,19 +867,125 @@ static func _collect() -> void:
 		else:
 			group["ranged"].append(enemy)
 		seen[key] = true
+		# 新出现的敌人（新生成/刚解除眩晕/刚换目标）所在组标脏：本轮只补这一组的槽位，
+		# 不再因为敌人增删就整套 _run_full_solve。
+		var eid := enemy.get_instance_id()
+		new_ids[eid] = true
+		if not _known_enemy_ids.has(eid):
+			_groups_dirty[key] = true
+	_known_enemy_ids = new_ids
 	for key in _groups.keys():
 		if not seen.has(key):
 			_groups.erase(key)
-		else:
-			_trim_group(_groups[key])
+			_group_update_ms.erase(key)
+			_groups_dirty.erase(key)
+	_apply_tactical_budget()
 
 
-# 战术分层人数上限（每个目标各自计）：只让最近的 TACTICAL_LIMIT 只参与角色/槽位/密度/反排队，
+## 全局战术名额分配：按玩家人数缩放总量，并按「敌人到其目标距离」全局竞争。
+## 替代旧的「每组各自 TACTICAL_LIMIT」——多人时旧口径的总参与量是 60×N。
+static func _apply_tactical_budget() -> void:
+	if _groups.is_empty():
+		_tactical_used = 0
+		return
+	var single_cap := tactical_limit()
+	var floor_per := mini(TACTICAL_GROUP_FLOOR, single_cap)
+	var total := mini(tactical_budget_total(_groups.size()), single_cap * _groups.size())
+	var picked: Dictionary = {}
+	var per_group_used: Dictionary = {}
+	var used := 0
+	var entries: Array = []
+	for key in _groups:
+		var group: Dictionary = _groups[key]
+		var all_list: Array = group.get("all", [])
+		if all_list.is_empty():
+			per_group_used[key] = 0
+			continue
+		var node = group.get("node")
+		var anchor: Vector2 = (node as Node2D).global_position if node is Node2D else Vector2.ZERO
+		var dists := PackedFloat32Array()
+		dists.resize(all_list.size())
+		for i in all_list.size():
+			dists[i] = (all_list[i] as Enemy).global_position.distance_squared_to(anchor)
+		var order := _sorted_indices(dists, false)
+		var take := mini(floor_per, all_list.size())
+		for i in take:
+			var e := all_list[order[i]] as Enemy
+			picked[e.get_instance_id()] = true
+		used += take
+		per_group_used[key] = take
+		for i in all_list.size():
+			var e := all_list[i] as Enemy
+			if picked.has(e.get_instance_id()):
+				continue
+			entries.append([dists[i], e, key])
+	# 剩余名额：全局按距离升序填满（已入选者不参与；单组不超上限）。
+	# 用 _sorted_indices（纯数组比较）而不是 sort_custom：后者每次比较走 Callable 分发。
+	var g_dists := PackedFloat32Array()
+	var g_enemies: Array = []
+	var g_keys: Array = []
+	for entry in entries:
+		g_dists.append(float(entry[0]))
+		g_enemies.append(entry[1])
+		g_keys.append(entry[2])
+	var order := _sorted_indices(g_dists, false)
+	var cap_left := maxi(0, total - used)
+	for i in order.size():
+		if cap_left <= 0:
+			break
+		var e := g_enemies[order[i]] as Enemy
+		var key = g_keys[order[i]]
+		if int(per_group_used.get(key, 0)) >= single_cap:
+			continue
+		picked[e.get_instance_id()] = true
+		per_group_used[key] = int(per_group_used.get(key, 0)) + 1
+		cap_left -= 1
+	used = 0
+	for key in _groups:
+		var group: Dictionary = _groups[key]
+		var all_list: Array = group.get("all", [])
+		var kept_all: Array = []
+		var kept_melee: Array = []
+		var kept_ranged: Array = []
+		for e in all_list:
+			var enemy := e as Enemy
+			if enemy == null:
+				continue
+			if picked.has(enemy.get_instance_id()):
+				enemy._ai_tactical = true
+				kept_all.append(enemy)
+				used += 1
+				if enemy.ai_role == ROLE_MELEE:
+					kept_melee.append(enemy)
+				else:
+					kept_ranged.append(enemy)
+			else:
+				_demote_from_tactical(enemy)
+		group["all"] = kept_all
+		group["melee"] = kept_melee
+		group["ranged"] = kept_ranged
+	_tactical_used = used
+
+
+## 掉出战术层：清意图 + 关槽位 + 走纯场流（不能用陈旧的「直线可走」判定）。
+static func _demote_from_tactical(enemy: Enemy) -> void:
+	if enemy == null:
+		return
+	enemy._ai_tactical = false
+	enemy._ai_intent = INTENT_NONE
+	enemy._ai_slot_valid = false
+	enemy._ai_target_radius = 0.0
+	enemy._ai_attack_slot = false
+	enemy._ai_role_score = 0.0
+	enemy._ai_flow_direct = false
+
+
+# 战术分层人数上限（每个目标各自计）：只让最近的 tactical_limit() 只参与角色/槽位/密度/反排队，
 # 其余清掉意图，`ai_steer` 会退回纯场流（`_steer_intent` 对 INTENT_NONE 直接返回 flow）。
-# 这样 200ms 一次的求解尖峰与人数脱钩（89 只和 200 只成本相同）。
+# 这样单次求解的尖峰与人数脱钩（89 只和 200 只成本相同）。
 static func _trim_group(group: Dictionary) -> void:
 	var all_list: Array = group.get("all", [])
-	var limit := TACTICAL_LIMIT
+	var limit := tactical_limit()
 	if all_list.size() <= limit:
 		for enemy in all_list:
 			enemy._ai_tactical = true
@@ -655,13 +1017,7 @@ static func _trim_group(group: Dictionary) -> void:
 				kept_ranged.append(enemy)
 			continue
 		# 掉出战术层的：清意图 + 关槽位 + 走纯场流（不能用陈旧的"直线可走"判定）
-		enemy._ai_tactical = false
-		enemy._ai_intent = INTENT_NONE
-		enemy._ai_slot_valid = false
-		enemy._ai_target_radius = 0.0
-		enemy._ai_attack_slot = false
-		enemy._ai_role_score = 0.0
-		enemy._ai_flow_direct = false
+		_demote_from_tactical(enemy)
 	group["all"] = kept_all
 	group["melee"] = kept_melee
 	group["ranged"] = kept_ranged
@@ -672,7 +1028,7 @@ static func _is_candidate(enemy: Enemy) -> bool:
 		return false
 	if enemy.has_meta("network_remote_enemy"):
 		return false
-	# 直接字段访问（Enemy 有 class_name）：get() 走 Variant 查表，每敌 7 次 × 5Hz 是真实开销
+	# 直接字段访问（Enemy 有 class_name）：get() 走 Variant 查表，每敌 7 次 × 每次求解是真实开销
 	if enemy.ai_role == ROLE_NONE:
 		return false
 	if enemy.faction == Faction.PLAYER_SIDE:
@@ -748,9 +1104,9 @@ static func cell_center(cell: Vector2i) -> Vector2:
 
 static func _build_density() -> void:
 	_density.clear()
+	# 所有候选都 splat（含掉出战术层的）：只有战术层内的人「吃」推力，但拥挤度必须按真实人数算。
+	# 旧实现只 splat 战术层，缩容后会把实际拥挤度低估 → 战术层内的人撞上未入层的人。
 	for enemy in _candidates:
-		if not enemy._ai_tactical:
-			continue
 		var base := _cell_of(enemy.global_position)
 		_density[base] = float(_density.get(base, 0.0)) + 1.0
 		for offset in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
@@ -879,23 +1235,23 @@ static func _has_line_of_sight(from: Vector2, to: Vector2) -> bool:
 
 
 static func _update_stuck() -> void:
+	var now := Time.get_ticks_msec()
 	for i in _candidates.size():
 		var enemy := _candidates[i]
 		var position: Vector2 = _ctx_pos[i]
 		if enemy._ai_stuck_anchor == Vector2.ZERO:
 			enemy._ai_stuck_anchor = position
-			enemy._ai_stuck_count = 0
+			enemy._ai_stuck_since_ms = now
 			continue
-		var moved := position.distance_to(enemy._ai_stuck_anchor)
-		if moved < STUCK_EPSILON:
-			var count: int = enemy._ai_stuck_count + 1
-			enemy._ai_stuck_count = count
-			if count >= STUCK_SOLVES:
+		if position.distance_to(enemy._ai_stuck_anchor) < STUCK_EPSILON:
+			# 墙钟判定：求解频率降到 640ms 也不会把脱困从 1.44s 拖到 3s+。
+			if now - enemy._ai_stuck_since_ms >= STUCK_CONFIRM_MS:
 				enemy._ai_unstuck_ticks = UNSTUCK_TICKS
-				enemy._ai_stuck_count = 0
+				enemy._ai_stuck_anchor = position
+				enemy._ai_stuck_since_ms = now
 		else:
-			enemy._ai_stuck_count = 0
-		enemy._ai_stuck_anchor = position
+			enemy._ai_stuck_anchor = position
+			enemy._ai_stuck_since_ms = now
 
 
 # ---------------- 槽位公用 ----------------

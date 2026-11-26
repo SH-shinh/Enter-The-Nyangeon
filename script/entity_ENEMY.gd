@@ -92,8 +92,7 @@ const AI_ATTACK_REACH := 30.0
 ## 场进度比较的前探距离 / 侧步滞后时间
 const AI_FIELD_STEP := 32.0
 const AI_SIDE_COMMIT_MS := 180
-## 决策超过这个时间还没更新，且敌人已到旧锚点/槽位，就退回简单追踪，避免原地停住。
-const AI_DECISION_STALE_MS := 2000
+# 决策过期阈值不再固定：由 EnemyAI.decision_stale_ms() 按当前质量档位给出（降频后放大）。
 const AI_HOLD_RADIUS := 14.0
 const AI_LOS_SKIP := 40.0
 const AI_LOS_STEP := 24.0
@@ -109,7 +108,7 @@ var _ai_density_level: float = 0.0
 var _ai_wall_push: Vector2 = Vector2.ZERO
 var _ai_side_dir: Vector2 = Vector2.ZERO
 var _ai_side_until: int = 0
-# 以下由 EnemyAI 每 5Hz 求解后写入（意图 + 目标点极坐标）
+# 以下由 EnemyAI 每次求解后写入（意图 + 目标点极坐标；求解间隔随质量档位变化）
 var _ai_intent: int = AIIntent.NONE
 var _ai_anchor: Vector2 = Vector2.ZERO # 极坐标原点（压迫=玩家锚点，前插=预判落点）
 var _ai_slot_angle: float = 0.0
@@ -136,9 +135,22 @@ var _ai_los_anchor: Vector2 = Vector2.ZERO
 var _ai_los_target: Vector2 = Vector2.ZERO
 # 场流缓存：场是「按格分段常量」，同一格内重复采样纯浪费（ai_steer 每 tick 要采 2 次）
 var _ai_flow_cell: Vector2i = Vector2i(2147483647, 2147483647)
+## 这里存「单场版本」（EnemyNavField.field_epoch），不是全局 epoch：
+## 任一目标的场重建不再让所有敌人的流场缓存失效。
 var _ai_flow_epoch: int = -1
 var _ai_flow_target_id: int = 0
 var _ai_flow_vec: Vector2 = Vector2.ZERO
+## 目标锚点缓存：target_anchor 会做 MapBounds 夹回 + 查格，每帧每敌被调 2~4 次。
+var _ai_target_anchor: Vector2 = Vector2.ZERO
+var _ai_target_anchor_id: int = 0
+var _ai_target_anchor_pos: Vector2 = Vector2(INF, INF)
+var _ai_target_anchor_topo: int = -1
+## 身体可过探针的「本帧」多槽缓存：dir -> bool（同一敌人的 position 在一帧内不变）。
+var _ai_body_clear_cache: Dictionary = {}
+var _ai_body_clear_frame: int = -1
+## 决策过期预算（ms）：0 = 用 EnemyAI.decision_stale_ms() 全局值。
+## 分帧求解时远端组会被拉长刷新周期，由求解器按组写入更大的预算，避免误判"决策过期"。
+var _ai_stale_budget_ms: int = 0
 var _ai_route_smooth: Vector2 = Vector2.ZERO
 var _ai_route_target_id: int = 0
 var _ai_route_locked: bool = false
@@ -150,7 +162,8 @@ var _ai_route_dir_cell: Vector2i = Vector2i(2147483647, 2147483647)
 var _ai_route_dir_vec: Vector2 = Vector2.ZERO
 # 是否在"战术分层"人数上限内（false = 只走纯场流，不占前排/环带/前插名额）
 var _ai_tactical: bool = true
-var _ai_stuck_count: int = 0
+# 脱困窗口起点（墙钟）：位移一直 < STUCK_EPSILON 超过 STUCK_CONFIRM_MS 就标记脱困。
+var _ai_stuck_since_ms: int = 0
 var _ai_unstuck_ticks: int = 0
 
 const CONVERTED_BUFF: Buff = preload("res://resources/buff/player_buff/converted_buff.tres")
@@ -222,7 +235,7 @@ func _reset_ai_runtime() -> void:
 	_ai_wall_push = Vector2.ZERO
 	_ai_side_dir = Vector2.ZERO
 	_ai_side_until = 0
-	_ai_stuck_count = 0
+	_ai_stuck_since_ms = 0
 	_ai_stuck_anchor = Vector2.ZERO
 	_ai_unstuck_ticks = 0
 	_ai_los_pos = Vector2.ZERO
@@ -231,6 +244,13 @@ func _reset_ai_runtime() -> void:
 	_ai_flow_epoch = -1
 	_ai_flow_target_id = 0
 	_ai_flow_vec = Vector2.ZERO
+	_ai_target_anchor = Vector2.ZERO
+	_ai_target_anchor_id = 0
+	_ai_target_anchor_pos = Vector2(INF, INF)
+	_ai_target_anchor_topo = -1
+	_ai_body_clear_cache.clear()
+	_ai_body_clear_frame = -1
+	_ai_stale_budget_ms = 0
 	_ai_route_smooth = Vector2.ZERO
 	_ai_route_target_id = 0
 	_ai_route_locked = false
@@ -530,23 +550,35 @@ func _cell_at(pos: Vector2) -> Vector2i:
 	return _cell_cache_cell
 
 # 身体宽度判定：前方中心 + 两侧都必须可过，避免侧身擦墙/斜缝。
+# 同帧内 (position, dir) 常被重复判定（toward / 最终 dir / field_dir 各一次），
+# 用「本帧多槽缓存」而不是单槽：单槽在交替调用时必然全 miss。
 func _ai_dir_body_clear(position: Vector2, dir: Vector2) -> bool:
 	if dir.length_squared() < 0.0001:
 		return false
+	var frame := Engine.get_physics_frames()
+	if frame != _ai_body_clear_frame:
+		_ai_body_clear_frame = frame
+		_ai_body_clear_cache.clear()
+	if _ai_body_clear_cache.has(dir):
+		return bool(_ai_body_clear_cache[dir])
+	var ok := _ai_dir_body_clear_impl(position, dir)
+	_ai_body_clear_cache[dir] = ok
+	return ok
+
+func _ai_dir_body_clear_impl(position: Vector2, dir: Vector2) -> bool:
 	var probe := position + dir * AI_LOOKAHEAD
 	# 整段采样：只查终点时，薄墙后面正好是目标格/攻击距离会被豁免骗过，
 	# 结果就是黄色离墙力指向空地、品红最终转向却一头扎进墙里。
 	var steps := maxi(1, ceili(AI_LOOKAHEAD / maxf(1.0, AI_BODY_CLEAR_STEP)))
 	for i in range(1, steps + 1):
+		# 最后一段就是 probe 本身，循环已覆盖，不再重复查一次。
 		if EnemyNavField.is_solid(position + dir * (AI_LOOKAHEAD * float(i) / float(steps))):
 			return false
-	if EnemyNavField.is_solid(probe):
-		return false
 	# 玩家/目标所在格是 goal：贴墙时也允许敌人靠近到攻击距离，身体碰撞会阻止真正穿墙。
 	var target := get_target()
 	if target is Node2D:
 		var target_node := target as Node2D
-		var target_anchor := EnemyNavField.target_anchor(target_node)
+		var target_anchor := _ai_anchor_cached(target_node)
 		var target_cell := _cell_at(target_anchor)
 		var probe_cell := _cell_at(probe)
 		if probe.distance_to(target_anchor) <= AI_ATTACK_REACH \
@@ -556,6 +588,24 @@ func _ai_dir_body_clear(position: Vector2, dir: Vector2) -> bool:
 		return false
 	var side := dir.orthogonal() * AI_BODY_RADIUS
 	return not EnemyNavField.is_solid(probe + side) and not EnemyNavField.is_solid(probe - side)
+
+
+## target_anchor 的每敌缓存：目标移动 <8px 且拓扑版本没变时直接复用。
+## 拓扑版本变化（壁垒重建/换图）必须重算，否则贴墙 snap 会用到旧阻挡集。
+func _ai_anchor_cached(target: Node2D) -> Vector2:
+	if target == null or not is_instance_valid(target):
+		return Vector2.ZERO
+	var id := target.get_instance_id()
+	var pos: Vector2 = target.global_position
+	if _ai_target_anchor_id == id and _ai_target_anchor_pos.distance_squared_to(pos) < 64.0 \
+			and _ai_target_anchor_topo == EnemyNavField.topology_epoch:
+		return _ai_target_anchor
+	var anchor := EnemyNavField.target_anchor(target)
+	_ai_target_anchor_id = id
+	_ai_target_anchor_pos = pos
+	_ai_target_anchor_topo = EnemyNavField.topology_epoch
+	_ai_target_anchor = anchor
+	return anchor
 
 # 前方探针被挡时按「尽量保持原意」的顺序找替代方向：
 # 先沿本体方向的左右，再沿流向的左右，最后才反向朝玩家走（避免远程后撤顶墙时反向扑人）。
@@ -784,15 +834,17 @@ func ai_steer(base_dir: Vector2, _mode: int, _standoff: float = -1.0) -> Vector2
 	EnemyAI.ensure_solved(target, lead)
 	var has_field := EnemyNavField.is_ready(target)
 	var position := global_position
-	var target_anchor := EnemyNavField.target_anchor(target)
+	var target_anchor := _ai_anchor_cached(target)
 	var to_target := target_anchor - position
 	var distance := to_target.length()
 	if distance < 0.001:
 		return base_dir
 	var toward := to_target / distance
 	# 决策过期且已到旧锚点/槽位：不要原地驻留，退回简单追踪（直连/场 sample）。
+	# 分帧求解下远端组的刷新周期更长，预算由求解器按组写入（0 = 用全局阈值）。
+	var stale_budget: int = _ai_stale_budget_ms if _ai_stale_budget_ms > 0 else EnemyAI.decision_stale_ms()
 	if _ai_slot_valid and _ai_decision_ms > 0 \
-			and Time.get_ticks_msec() - _ai_decision_ms > AI_DECISION_STALE_MS \
+			and Time.get_ticks_msec() - _ai_decision_ms > stale_budget \
 			and _at_decision_anchor(position):
 		var simple := base_dir
 		if has_field:
@@ -816,7 +868,21 @@ func ai_steer(base_dir: Vector2, _mode: int, _standoff: float = -1.0) -> Vector2
 	# 场是主方向；FIELD_STRATEGY 只在场的约束下叠加阵型/密度/队列/墙推。
 	var field_dir := Vector2.ZERO
 	if has_field:
-		field_dir = EnemyAI._smooth_field_flow(position, target, toward)
+		# 场是「按格分段常量」：同一格 + 同一张场的版本 + 同一目标时复用上次采样结果。
+		# （旧实现只在 LEGACY 分支有缓存，FIELD_STRATEGY 每帧每敌都要跑 2 次 sample + body_safe。）
+		var flow_cell := _cell_at(position)
+		var target_id := target.get_instance_id()
+		var field_ver := EnemyNavField.field_epoch(target)
+		if _ai_flow_epoch == field_ver and _ai_flow_cell == flow_cell \
+				and _ai_flow_target_id == target_id and _ai_flow_vec != Vector2.ZERO:
+			field_dir = _ai_flow_vec
+		else:
+			field_dir = EnemyAI._smooth_field_flow(position, target, toward)
+			if field_dir != Vector2.ZERO:
+				_ai_flow_cell = flow_cell
+				_ai_flow_epoch = field_ver
+				_ai_flow_target_id = target_id
+				_ai_flow_vec = field_dir
 		if field_dir == Vector2.ZERO:
 			field_dir = toward
 	if EnemyNavField.move_mode == EnemyNavField.MoveMode.PURE_FIELD:
@@ -911,9 +977,11 @@ func _ai_steer_field_strategy(base_dir: Vector2, target: Node2D, position: Vecto
 	if dir.length_squared() < 0.000001:
 		return Vector2.ZERO  # 驻留
 	dir = dir.normalized()
-	dir = _field_blend_direct(dir, position, target, field_dir, toward)
+	# toward 的身体可过判定本函数与 _field_blend_direct 都要用：只算一次（每次 ≈7 次 is_solid）。
+	var toward_ok := _ai_dir_body_clear(position, toward)
+	dir = _field_blend_direct(dir, position, target, field_dir, toward, toward_ok)
 	# 正上/正下等直线可走、场在等距格上斜走的场景：直接按“朝玩家”修正，不再用场进度拉回斜向。
-	var direct_mode := field_dir.dot(toward) < 0.5 and _ai_dir_body_clear(position, toward)
+	var direct_mode := field_dir.dot(toward) < 0.5 and toward_ok
 	# 最终方向必须身体可过；身体能过场方向就退回场，否则用场的相邻格侧步。
 	if not _ai_dir_body_clear(position, dir):
 		if _ai_dir_body_clear(position, field_dir):
@@ -933,12 +1001,13 @@ func _ai_steer_field_strategy(base_dir: Vector2, target: Node2D, position: Vecto
 
 
 func _field_blend_direct(dir: Vector2, position: Vector2, target: Node2D,
-		field_dir: Vector2, toward: Vector2) -> Vector2:
+		field_dir: Vector2, toward: Vector2, direct_ok: bool = true) -> Vector2:
 	if target == null or toward.length_squared() < 0.000001:
 		return dir
 	# 直线的“目标方向”就是玩家方向；不能用 attack anchor，否则锚点偏到槽位时会把敌人带进墙。
 	var direct := toward
-	if not _ai_dir_body_clear(position, direct):
+	# direct_ok 由调用方算好（同一帧内 toward 的身体判定只做一次）。
+	if not direct_ok:
 		return dir
 	var far_direct := field_dir.dot(direct) < 0.5
 	var ahead_direct := _field_dist_ahead(position, target, direct)
@@ -974,9 +1043,13 @@ func _field_progress_worse(position: Vector2, target: Node2D, dir: Vector2, fiel
 ## 场侧步：只在场的相邻格里选身体可过、dist 更低/不升高的方向；带 180ms 滞后，避免 7/8/10/11 两格翻转。
 func _field_side_step(position: Vector2, target: Node2D) -> Vector2:
 	var now := Time.get_ticks_msec()
-	if _ai_side_dir != Vector2.ZERO and now < _ai_side_until \
-			and _ai_dir_body_clear(position, _ai_side_dir):
-		return _ai_side_dir
+	# 提交窗口内复用上次结论：_ai_side_dir==ZERO 表示"上次确认无侧步"，直接返回。
+	# 否则卡墙时每帧都会重跑 8 次 body_clear + 8 次 dist（帧内最大单项）。
+	if now < _ai_side_until:
+		if _ai_side_dir == Vector2.ZERO:
+			return Vector2.ZERO
+		if _ai_dir_body_clear(position, _ai_side_dir):
+			return _ai_side_dir
 	var current := EnemyNavField.dist(position, target)
 	var cell := _cell_at(position)
 	var best := Vector2.ZERO
@@ -997,6 +1070,8 @@ func _field_side_step(position: Vector2, target: Node2D) -> Vector2:
 			best = dir
 	if best == Vector2.ZERO:
 		_ai_side_dir = Vector2.ZERO
+		# 失败也提交半量窗口：否则卡墙时每帧重跑 8 次 body_clear + 8 次 dist。
+		_ai_side_until = now + AI_SIDE_COMMIT_MS / 2
 		return Vector2.ZERO
 	_ai_side_dir = best
 	_ai_side_until = now + AI_SIDE_COMMIT_MS

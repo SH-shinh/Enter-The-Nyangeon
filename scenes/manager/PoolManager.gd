@@ -334,6 +334,10 @@ func get_text_tick_skip() -> int:
 	# 手动档是「上限」（设置项）：自适应只在此基础上再降（skip 更大 = 更疏），不会更密。
 	return maxi(ceiling, _text_tick_skip)
 
+# 只读：对外暴露同一份 FPS 平滑值，供 AI 等其它系统复用（α=0.2，10Hz 更新）。
+func get_fps_ema() -> float:
+	return _fps_ema
+
 # Game.damage_text_freq → 上限 skip：0=关 / 1=低(4) / 2=中(3) / 3=高(2) / 4=最高(1)。
 func _freq_ceiling_skip() -> int:
 	match Game.damage_text_freq:

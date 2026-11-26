@@ -39,6 +39,9 @@ var defense_time: int = 0
 
 var spawn_index: int = 0
 
+# 镜像盾动画复位的代次（新一次开盾会 +1，避免旧定时器误清新盾）
+var _shield_gen: int = 0
+
 var value: Array
 
 func _ready() -> void:
@@ -78,17 +81,30 @@ func _on_network_boss_event(event_name: String, data: Dictionary) -> void:
 	_net_visual_replaying = false
 
 func hurt_defense(_value_index: int):
+	# 镜像：HP 由 host 快照驱动，盾状态必须由 host 的动画事件驱动。
+	# 本地置 can_defense 会让镜像进入 DEFENSE 后无路退出（镜像的 StateMachine 物理帧已被停）。
+	if _is_remote_mirror():
+		return
 	can_shoot = false
 	can_defense = true
 
+
+# 自身或父节点（塔组）带 network_remote_enemy 均视为镜像（meta 只打在塔组根）。
+func _is_remote_mirror() -> bool:
+	if has_meta("network_remote_enemy"):
+		return true
+	var par := get_parent()
+	return par != null and par.has_meta("network_remote_enemy")
+
 func time_count():
 	super.time_count()
-	# 眩晕（stun buff）：Boss 塔的攻击由全局 tick 驱动，不走状态机，这里单独停火。
-	if is_stunned():
-		return
+	# 眩晕（stun buff）：Boss 塔的攻击由全局 tick 驱动，不走状态机，这里只跳过「出招」。
+	# 不能在此提前 return——否则残留 stun 会把 defense_time 倒计时冻住，塔永久停在 DEFENSE
+	# （开盾不休），正是玩家报的「柱子全开盾不结束」。
+	var stunned: bool = is_stunned()
 	if shoot_cd > 0:
 		shoot_cd -= 1
-		if shoot_cd <= 0:
+		if shoot_cd <= 0 and not stunned:
 			shooting_state(tower_type)
 	
 	if defense_time > 0:
@@ -262,6 +278,26 @@ func defense_anim():
 	animation_player_2.play("idle")
 	animation_player_3.play("defense_mod")
 	defense_animation.play("defense_shield_anim")
+	# 镜像自愈：盾的复位原本只写在 time_count 的 defense_time 倒计时分支里，而镜像从不进入
+	# transition_state(DEFENSE)（StateMachine 物理帧被停、defense_time 恒 0）→ 回放的盾动画永久停留。
+	if _is_remote_mirror():
+		_schedule_mirror_shield_reset()
+
+
+func _schedule_mirror_shield_reset() -> void:
+	_shield_gen += 1
+	var gen: int = _shield_gen
+	var sec: float = 3.0
+	var anim = defense_animation.get_animation("defense_shield_anim")
+	if anim != null:
+		sec = maxf(0.5, anim.length)
+	if not is_inside_tree():
+		return
+	await get_tree().create_timer(sec + 0.2).timeout
+	if not is_instance_valid(self) or gen != _shield_gen:
+		return
+	if str(defense_animation.current_animation) == "defense_shield_anim":
+		defense_animation.play("RESET")
 
 func _on_enemy_stats_is_dead() -> void:
 	on_dead.call_deferred()

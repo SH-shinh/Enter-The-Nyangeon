@@ -29,6 +29,9 @@ var _current_phase: int = -1
 # 防止 is_dead 与状态机 DEAD 双路触发导致重复结算
 var _dead_started: bool = false
 var _intruder_escaping: bool = false
+# 免疫看门狗状态（0 = 当前未免疫）
+var _invincible_since_msec: int = 0
+var _invincible_watchdog_warned: bool = false
 
 # 联机：塔组可视动画态广播（host 发、镜像回放）
 var _net_visual_replaying: bool = false
@@ -39,6 +42,13 @@ const PHASE_FLAG_MAX: int = 4
 const ESCAPE_ANIM: StringName = &"enter_anim"
 const ESCAPE_ANIM_FALLBACK_SEC: float = 3.0
 const ESCAPE_ANIM_MARGIN_SEC: float = 0.15
+# 入场演出：同样不能 await animation_finished —— 塔状态机下一物理帧会用循环的 idle/attack_anim
+# 覆盖同一个 animation_player_3，信号永不发出 → 免疫永不解除 → 三塔打不死、回合卡死。
+const ENTER_ANIM: StringName = &"enter_anim"
+const ENTER_ANIM_FALLBACK_SEC: float = 3.0
+const ENTER_ANIM_MARGIN_SEC: float = 0.3
+# 免疫看门狗：任何路径漏掉解除时，超过该时长强制清掉（只留痕一次）。
+const INVINCIBLE_WATCHDOG_MSEC: int = 8000
 # 乱入 FEVER 内击杀：等待死亡动画的上限，防止信号丢失把结算永久挂起。
 const DEATH_WAIT_TIMEOUT_SEC: float = 6.0
 # 场景未配置 attack_sequence 时的内置默认序列（与 resources/boss/tower_attack/*.tres 同源）
@@ -138,6 +148,7 @@ func _reset_schedule() -> void:
 	stop_shoot()
 
 func time_count():
+	_watchdog_invincible()
 	if _intruder_escaping or _dead_started or not _started:
 		return
 	if _in_window:
@@ -281,12 +292,26 @@ func update_tower():
 func _set_towers_invincible(value: bool) -> void:
 	if has_meta("network_remote_enemy"):
 		return
+	_invincible_since_msec = Time.get_ticks_msec() if value else 0
 	for tower in tower_group:
 		if tower == null or not is_instance_valid(tower):
 			continue
 		var health = tower.get("health_component")
 		if health != null:
 			health.is_invincible = value
+
+
+# 免疫看门狗：入场演出若被打断/覆盖（历史坑见 boss_intruder_escape 的注释），
+# 或任何新增退出路径漏掉解除，这里兜底清掉，避免"三塔永久无敌、回合卡死"。
+func _watchdog_invincible() -> void:
+	if _invincible_since_msec <= 0 or _dead_started or _intruder_escaping:
+		return
+	if Time.get_ticks_msec() - _invincible_since_msec < INVINCIBLE_WATCHDOG_MSEC:
+		return
+	_set_towers_invincible(false)
+	if not _invincible_watchdog_warned:
+		_invincible_watchdog_warned = true
+		push_warning("[erosion_tower_group] invincible watchdog fired (%dms); forced off" % INVINCIBLE_WATCHDOG_MSEC)
 
 func boss_dead(tower: ErosionTower):
 	# 聚合血量依赖子塔 hp_changed 时序；结算前强制重算，且只结算一次
@@ -432,9 +457,20 @@ func boss_enter_anim():
 		GameEvents.emit_ui_visible(false)
 		GameEvents.emit_pause_lock(true)
 		get_tree().paused = true
-	await tower_1.animation_player_3.animation_finished
+	# 有界等待，不能 await animation_finished：塔状态机下一物理帧就会用循环的 idle/attack_anim
+	# 覆盖同一个 animation_player_3（同 boss_intruder_escape 注释记录的坑），信号永不发出
+	# → 免疫永久保留 → 三塔打不死、开盾刷怪不停、回合卡死。
+	var enter_len: float = ENTER_ANIM_FALLBACK_SEC
+	if tower_1 != null and is_instance_valid(tower_1):
+		var enter_anim = tower_1.animation_player_3.get_animation(ENTER_ANIM)
+		if enter_anim != null:
+			enter_len = maxf(0.5, enter_anim.length)
+	await get_tree().create_timer(enter_len + ENTER_ANIM_MARGIN_SEC).timeout
+	if not is_instance_valid(self):
+		return
 	for i in tower_group:
-		i.animation_player_3.process_mode = Node.PROCESS_MODE_INHERIT
+		if i != null and is_instance_valid(i):
+			i.animation_player_3.process_mode = Node.PROCESS_MODE_INHERIT
 	if not no_cinematic:
 		GameEvents.emit_camera_reset()
 		GameEvents.emit_ui_visible(true)

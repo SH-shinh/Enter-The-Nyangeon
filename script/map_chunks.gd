@@ -64,6 +64,7 @@ func get_all_cells() -> Array[Vector2i]:
 func get_walkable_polygon() -> PackedVector2Array:
 	if not ensure_ready():
 		return PackedVector2Array()
+	# PackedVector2Array 是 CoW 值类型：返回本身即可，无需 duplicate（省一次分配）。
 	return MapBounds.get_walkable_polygon()
 
 func get_grid(chunk_size: Vector2i) -> MapChunkGrid:
@@ -239,11 +240,19 @@ func _cache_map_cells(tree: SceneTree, map: Node) -> void:
 func _cell_world_for_grid(cell: Vector2i) -> Vector2:
 	return _cell_world(_tilemap, cell)
 
+# 热路径：world_to_cell/get_cell_world 每次都会调用到这里（AI 每帧每敌多次采样）。
+# 原实现走 map.call("local_to_map") 的 Variant 动态分派；改为按具体类型静态调用。
 func _world_to_cell(map: Node, world_pos: Vector2) -> Vector2i:
 	if map == null or not (map is Node2D) or not map.has_method("local_to_map"):
 		return INVALID_CELL
 	var local := (map as Node2D).to_local(world_pos)
-	var cell = map.call("local_to_map", local)
+	var cell
+	if map is TileMapLayer:
+		cell = (map as TileMapLayer).local_to_map(local)
+	elif map is TileMap:
+		cell = (map as TileMap).local_to_map(local)
+	else:
+		cell = map.call("local_to_map", local)
 	if cell is Vector2i:
 		return cell
 	return INVALID_CELL
@@ -251,7 +260,13 @@ func _world_to_cell(map: Node, world_pos: Vector2) -> Vector2i:
 func _cell_world(map: Node, cell: Vector2i) -> Vector2:
 	if map == null or not (map is Node2D) or not map.has_method("map_to_local"):
 		return Vector2.ZERO
-	var local = map.call("map_to_local", cell)
+	var local
+	if map is TileMapLayer:
+		local = (map as TileMapLayer).map_to_local(cell)
+	elif map is TileMap:
+		local = (map as TileMap).map_to_local(cell)
+	else:
+		local = map.call("map_to_local", cell)
 	if local is Vector2:
 		return (map as Node2D).to_global(local)
 	return Vector2.ZERO

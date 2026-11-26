@@ -225,20 +225,22 @@ func _clear_managed_target(enemy) -> void:
 func _pick_target(enemy: Node2D, candidates: Array, current) -> Node2D:
 	var best: Node2D = null
 	var best_score := -1.0
+	var enemy_id := enemy.get_instance_id()
+	var enemy_pos: Vector2 = enemy.global_position
 	for c in candidates:
 		var node: Node2D = c.get("node")
 		var weight: float = float(c.get("weight", 0.0))
 		var radius: float = float(c.get("radius", 0.0))
 		if weight <= 0.0:
 			continue
-		var dist := enemy.global_position.distance_to(node.global_position)
+		var dist := enemy_pos.distance_to(node.global_position)
 		if radius > 0.0 and dist > radius:
 			continue
 		var proximity := 1.0 if radius <= 0.0 else clampf(1.0 - dist / radius, 0.05, 1.0)
 		var effective := weight * (0.6 + 0.4 * proximity)
 		if current == node:
 			effective *= STICKY_BONUS
-		var score := pow(_hash01(enemy.get_instance_id(), node.get_instance_id()), 1.0 / maxf(effective, 0.01))
+		var score := pow(_hash01(enemy_id, node.get_instance_id()), 1.0 / maxf(effective, 0.01))
 		if score > best_score:
 			best_score = score
 			best = node
@@ -249,5 +251,7 @@ func _retarget(enemy) -> void:
 		enemy.force_retarget()
 
 func _hash01(a: int, b: int) -> float:
-	var h := int(hash([a, b]))
+	# 纯整数位混合：原实现 hash([a,b]) 每敌每候选都分配一次 Array（0.25s × 敌人 × 候选）。
+	var h: int = a * 73856093 ^ b * 19349663
+	h = (h ^ (h >> 13)) * 1274126177
 	return float((h & 0x7FFFFFFF) % 10000) / 10000.0
