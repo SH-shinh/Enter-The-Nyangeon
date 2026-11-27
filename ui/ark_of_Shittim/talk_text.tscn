@@ -175,7 +175,7 @@ theme_override_fonts/font = ExtResource("3_mqc3o")
 theme_override_font_sizes/font_size = 10
 text = "您想先从哪件事 开始做起呢，老师？"
 horizontal_alignment = 1
-autowrap_mode = 1
+autowrap_mode = 3
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {

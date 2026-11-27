@@ -13,11 +13,11 @@ const TOAST_HOLD := 2.6
 const TOAST_FADE := 0.4
 
 @onready var list_box: VBoxContainer = %List
-@onready var summary_label: Label = %Summary
+@onready var summary_label: AutoText = %Summary
 @onready var status_label: Label = %Status
 @onready var import_btn: Button = %ImportBtn
 @onready var restart_bar: PanelContainer = %RestartBar
-@onready var restart_label: Label = %RestartLabel
+@onready var restart_label: AutoText = %RestartLabel
 @onready var undo_btn: Button = %UndoBtn
 @onready var restart_btn: Button = %RestartBtn
 @onready var uninstall_btn: Button = %UninstallBtn
@@ -131,6 +131,12 @@ func menu_hide() -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
 		_cancel_drag()
+	elif what == NOTIFICATION_TRANSLATION_CHANGED and is_node_ready():
+		_update_summary()
+		_update_restart_bar()
+		if _drop_hint != null:
+			_drop_hint.text = tr("mod_drop_hint")
+			LocaleFont.apply_control(_drop_hint)
 
 
 func _build_row_styles() -> void:
@@ -682,12 +688,14 @@ func _update_summary() -> void:
 		if bool(m.get("mounted", false)) and str(m.get("error", "")) == "":
 			effective += 1
 	summary_label.text = tr("mod_summary") % [_last_mods.size(), effective, _pending_count()]
+	summary_label.refit()
 
 
 func _update_restart_bar() -> void:
 	var count := _pending_count()
 	restart_bar.visible = count > 0
 	restart_label.text = tr("mod_restart_bar") % count
+	restart_label.refit()
 	undo_btn.disabled = _pending_ids.is_empty()
 
 
@@ -913,6 +921,7 @@ func _show_drop_toast(text: String, failed: bool = false) -> void:
 	if _drop_toast_tween != null and _drop_toast_tween.is_valid():
 		_drop_toast_tween.kill()
 	_drop_toast_label.text = text
+	LocaleFont.apply_control(_drop_toast_label)
 	# 短文案单行、按内容撑宽；长文案（批量失败明细/多行）固定宽度并自动换行。
 	var wrap := text.length() > 28 or text.contains("\n")
 	_drop_toast_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if wrap else TextServer.AUTOWRAP_OFF

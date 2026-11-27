@@ -204,9 +204,9 @@ horizontal_alignment = 1
 
 [node name="PanelContainer6" type="PanelContainer" parent="." unique_id=933907518]
 layout_mode = 0
-offset_left = 464.0
+offset_left = 456.0
 offset_top = 78.0
-offset_right = 480.0
+offset_right = 472.0
 offset_bottom = 98.0
 theme = SubResource("Theme_kaebt")
 
@@ -217,9 +217,9 @@ horizontal_alignment = 1
 
 [node name="PanelContainer7" type="PanelContainer" parent="." unique_id=2008388674]
 layout_mode = 0
-offset_left = 550.0
+offset_left = 558.0
 offset_top = 78.0
-offset_right = 566.0
+offset_right = 574.0
 offset_bottom = 98.0
 theme = SubResource("Theme_kaebt")
 
@@ -230,9 +230,9 @@ horizontal_alignment = 1
 
 [node name="Label6" type="Label" parent="." unique_id=1902892383]
 layout_mode = 0
-offset_left = 501.0
+offset_left = 519.0
 offset_top = 53.0
-offset_right = 616.0
+offset_right = 613.0
 offset_bottom = 75.0
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
@@ -244,17 +244,18 @@ theme_override_fonts/font = ExtResource("3_80dm5")
 theme_override_font_sizes/font_size = 15
 text = "controls_ex"
 horizontal_alignment = 1
+vertical_alignment = 1
 script = ExtResource("4_sxlkp")
 base_font_size = 15
 base_size_y = 22.0
-base_size_x = 115.0
-min_font_size = 9
+base_size_x = 94.0
+min_font_size = 8
 
 [node name="Label5" type="Label" parent="." unique_id=1436840673]
 layout_mode = 0
-offset_left = 415.0
+offset_left = 417.0
 offset_top = 53.0
-offset_right = 530.0
+offset_right = 511.0
 offset_bottom = 75.0
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
@@ -266,11 +267,12 @@ theme_override_fonts/font = ExtResource("3_80dm5")
 theme_override_font_sizes/font_size = 15
 text = "controls_reload"
 horizontal_alignment = 1
+vertical_alignment = 1
 script = ExtResource("4_sxlkp")
 base_font_size = 15
 base_size_y = 22.0
-base_size_x = 115.0
-min_font_size = 9
+base_size_x = 94.0
+min_font_size = 8
 
 [node name="Label" type="Label" parent="." unique_id=428562576]
 layout_mode = 0
@@ -326,9 +328,9 @@ texture = ExtResource("5_otg03")
 
 [node name="Label3" type="Label" parent="." unique_id=1147247499]
 layout_mode = 0
-offset_left = 422.0
+offset_left = 407.0
 offset_top = 125.0
-offset_right = 543.0
+offset_right = 507.0
 offset_bottom = 147.0
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
@@ -339,18 +341,19 @@ theme_override_constants/shadow_outline_size = 2
 theme_override_fonts/font = ExtResource("3_80dm5")
 theme_override_font_sizes/font_size = 15
 text = "controls_shoot"
-horizontal_alignment = 1
+horizontal_alignment = 2
+vertical_alignment = 1
 script = ExtResource("4_sxlkp")
 base_font_size = 15
 base_size_y = 22.0
-base_size_x = 121.0
-min_font_size = 9
+base_size_x = 100.0
+min_font_size = 8
 
 [node name="Label4" type="Label" parent="." unique_id=575684923]
 layout_mode = 0
-offset_left = 481.0
+offset_left = 515.0
 offset_top = 125.0
-offset_right = 602.0
+offset_right = 615.0
 offset_bottom = 147.0
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
@@ -361,12 +364,13 @@ theme_override_constants/shadow_outline_size = 2
 theme_override_fonts/font = ExtResource("3_80dm5")
 theme_override_font_sizes/font_size = 15
 text = "controls_melee"
-horizontal_alignment = 1
+horizontal_alignment = 0
+vertical_alignment = 1
 script = ExtResource("4_sxlkp")
 base_font_size = 15
 base_size_y = 22.0
-base_size_x = 121.0
-min_font_size = 9
+base_size_x = 100.0
+min_font_size = 8
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1368560398]
 libraries/ = SubResource("AnimationLibrary_fut0m")

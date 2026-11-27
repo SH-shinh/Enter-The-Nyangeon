@@ -378,7 +378,7 @@ expand_mode = 1
 flip_v = true
 
 [node name="sort" type="Label" parent="Node2D2/HBoxContainer" unique_id=1641399185]
-custom_minimum_size = Vector2(40, 0)
+custom_minimum_size = Vector2(56, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0.163952, 5.11389e-08, 0.0734891, 1)
 theme_override_colors/font_outline_color = Color(0.164706, 0, 0.0745098, 1)
@@ -394,14 +394,14 @@ clip_text = true
 script = ExtResource("99_autotx")
 base_font_size = 10
 base_size_y = 12.0
-base_size_x = 40.0
+base_size_x = 56.0
 min_font_size = 7
 
 [node name="normal_sort" parent="Node2D2/HBoxContainer" unique_id=854073067 instance=ExtResource("9_wq33p")]
 layout_mode = 2
 
 [node name="sort2" type="Label" parent="Node2D2/HBoxContainer" unique_id=1983292000]
-custom_minimum_size = Vector2(80, 0)
+custom_minimum_size = Vector2(72, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0.163952, 5.11389e-08, 0.0734891, 1)
 theme_override_colors/font_outline_color = Color(0.164706, 0, 0.0745098, 1)
@@ -417,14 +417,14 @@ clip_text = true
 script = ExtResource("99_autotx")
 base_font_size = 10
 base_size_y = 12.0
-base_size_x = 80.0
+base_size_x = 72.0
 min_font_size = 7
 
 [node name="character_sort" parent="Node2D2/HBoxContainer" unique_id=533144830 instance=ExtResource("10_84b8l")]
 layout_mode = 2
 
 [node name="sort3" type="Label" parent="Node2D2/HBoxContainer" unique_id=993215315]
-custom_minimum_size = Vector2(80, 0)
+custom_minimum_size = Vector2(72, 0)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0.163952, 5.11389e-08, 0.0734891, 1)
 theme_override_colors/font_outline_color = Color(0.164706, 0, 0.0745098, 1)
@@ -440,7 +440,7 @@ clip_text = true
 script = ExtResource("99_autotx")
 base_font_size = 10
 base_size_y = 12.0
-base_size_x = 80.0
+base_size_x = 72.0
 min_font_size = 7
 
 [node name="menu_box_gamemode" parent="Node2D2/HBoxContainer" unique_id=356183714 instance=ExtResource("12_k4rcd")]

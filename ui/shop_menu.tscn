@@ -2866,7 +2866,12 @@ theme_override_fonts/font = ExtResource("43_4eamn")
 theme_override_font_sizes/font_size = 12
 text = "button_confirm"
 horizontal_alignment = 1
-autowrap_mode = 2
+vertical_alignment = 1
+script = ExtResource("99_autotx")
+base_font_size = 12
+base_size_x = 115.0
+base_size_y = 14.0
+min_font_size = 8
 
 [node name="lock" type="Label" parent="Node2D/Node2D2/support_shop/support_main/ColorRect/lock_texture" unique_id=927362593]
 layout_mode = 0
@@ -2885,7 +2890,12 @@ theme_override_fonts/font = ExtResource("43_4eamn")
 theme_override_font_sizes/font_size = 15
 text = "button_unlock"
 horizontal_alignment = 1
-autowrap_mode = 2
+vertical_alignment = 1
+script = ExtResource("99_autotx")
+base_font_size = 15
+base_size_x = 115.0
+base_size_y = 18.0
+min_font_size = 8
 
 [node name="ColorRect2" type="ColorRect" parent="Node2D/Node2D2/support_shop/support_main/ColorRect" unique_id=324399798]
 layout_mode = 0
@@ -3001,7 +3011,7 @@ offset_left = 5.0
 offset_top = 45.0
 offset_right = 119.0
 offset_bottom = 62.0
-theme_override_constants/separation = 1
+theme_override_constants/separation = 3
 alignment = 2
 
 [node name="pa_value" type="Label" parent="Node2D/Node2D2/support_shop/exp/lv_icon/PanelContainer/Node2D/HBoxContainer" unique_id=735163716]
@@ -3018,6 +3028,7 @@ theme_override_fonts/font = ExtResource("6_imrhj")
 theme_override_font_sizes/font_size = 10
 text = "+100%"
 horizontal_alignment = 2
+vertical_alignment = 1
 
 [node name="pa_id" type="Label" parent="Node2D/Node2D2/support_shop/exp/lv_icon/PanelContainer/Node2D/HBoxContainer" unique_id=180010315]
 unique_name_in_owner = true
@@ -3033,6 +3044,12 @@ theme_override_fonts/font = ExtResource("6_imrhj")
 theme_override_font_sizes/font_size = 10
 text = "子弹伤害"
 horizontal_alignment = 2
+vertical_alignment = 1
+script = ExtResource("99_autotx")
+base_font_size = 10
+base_size_x = 76.0
+base_size_y = 17.0
+min_font_size = 7
 
 [node name="Label2" type="Label" parent="Node2D/Node2D2/support_shop/exp/lv_icon/PanelContainer/Node2D" unique_id=944462695]
 offset_left = 6.0
@@ -3193,7 +3210,12 @@ theme_override_constants/shadow_outline_size = 2
 theme_override_fonts/font = ExtResource("6_imrhj")
 theme_override_font_sizes/font_size = 10
 text = "作为召唤物登场协助作战，继承50%子弹伤害。"
-autowrap_mode = 1
+autowrap_mode = 3
+script = ExtResource("99_autotx")
+base_font_size = 10
+base_size_x = 260.0
+base_size_y = 33.0
+min_font_size = 7
 
 [node name="Node2D" type="Node2D" parent="Node2D/Node2D2/support_shop/skill" unique_id=1384191210]
 position = Vector2(140, 277)
@@ -3228,7 +3250,12 @@ theme_override_constants/shadow_outline_size = 2
 theme_override_fonts/font = ExtResource("6_imrhj")
 theme_override_font_sizes/font_size = 10
 text = "使用后8s内在自身周围内一定范围提升子弹伤害。（玩家120%，召唤物25%）"
-autowrap_mode = 1
+autowrap_mode = 3
+script = ExtResource("99_autotx")
+base_font_size = 10
+base_size_x = 260.0
+base_size_y = 48.0
+min_font_size = 7
 
 [node name="Node2D" type="Node2D" parent="Node2D" unique_id=1689980379]
 

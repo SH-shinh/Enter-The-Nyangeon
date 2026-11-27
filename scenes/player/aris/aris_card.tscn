@@ -171,7 +171,7 @@ theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = -1
 theme_override_constants/shadow_outline_size = 7
 text = "TENDOU ARIS"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_4ri2b")
 base_size_y = 18.0
 
@@ -190,7 +190,7 @@ theme_override_constants/outline_size = 1
 theme_override_constants/shadow_outline_size = 6
 theme_override_font_sizes/font_size = 9
 text = "THE SWORD OF LIGHT"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_4ri2b")
 base_size_y = 18.0
 
@@ -210,7 +210,7 @@ theme_override_constants/shadow_outline_size = 4
 theme_override_fonts/font = ExtResource("8_o6vkv")
 theme_override_font_sizes/font_size = 12
 text = "射击不消耗弹药，持续射击会使武器过热，随过热程度提升暴击率和子弹伤害。"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_4ri2b")
 base_size_y = 61.0
 

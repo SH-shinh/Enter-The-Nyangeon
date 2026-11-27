@@ -172,7 +172,7 @@ theme_override_constants/shadow_offset_y = -1
 theme_override_constants/shadow_outline_size = 7
 theme_override_font_sizes/font_size = 16
 text = "AMAU AKO"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_6ht3o")
 base_size_y = 18.0
 
@@ -191,7 +191,7 @@ theme_override_constants/outline_size = 1
 theme_override_constants/shadow_outline_size = 6
 theme_override_font_sizes/font_size = 8
 text = "HOT SHOT"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_6ht3o")
 base_size_y = 18.0
 
@@ -211,7 +211,7 @@ theme_override_constants/shadow_outline_size = 4
 theme_override_fonts/font = ExtResource("10_qwg6u")
 theme_override_font_sizes/font_size = 12
 text = "近战使用锁链钳制敌人施加策反值，被策反的敌人所造成的伤害也附加策反值。"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_6ht3o")
 base_size_y = 61.0
 

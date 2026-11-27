@@ -166,7 +166,7 @@ mouse_filter = 2
 color = Color(0.258824, 0.258824, 0.258824, 0.639216)
 
 [node name="Label" type="Label" parent="ColorRect/Node2D/Node2D/ColorRect"]
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_msjpy")
 base_size_y = 18.0
 layout_mode = 0
@@ -181,7 +181,7 @@ theme_override_constants/shadow_outline_size = 7
 text = "HANAOKA YUZU"
 
 [node name="Label2" type="Label" parent="ColorRect/Node2D/Node2D/ColorRect"]
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_msjpy")
 base_size_y = 18.0
 layout_mode = 0
@@ -215,7 +215,7 @@ theme_override_constants/shadow_outline_size = 4
 theme_override_fonts/font = ExtResource("8_jdqpi")
 theme_override_font_sizes/font_size = 12
 text = "子弹造成范围爆炸伤害，连续造成命中可叠加提高10%子弹伤害，中断时清空。"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_msjpy")
 base_size_y = 61.0
 

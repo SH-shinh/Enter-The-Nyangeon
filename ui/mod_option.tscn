@@ -5,6 +5,7 @@
 [ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="3_font7"]
 [ext_resource type="FontFile" uid="uid://dixmxc0ljvfh6" path="res://fonts/BoutiqueBitmap9x9_1.9.ttf" id="4_font9"]
 [ext_resource type="Texture2D" uid="uid://jcqmwo1t8vv0" path="res://ui/ui.png" id="5_ui"]
+[ext_resource type="Script" uid="uid://dkwqr377cp5yf" path="res://script/auto_text.gd" id="6_auto_text"]
 
 [sub_resource type="Animation" id="Animation_reset"]
 length = 0.001
@@ -255,6 +256,13 @@ theme_override_constants/shadow_outline_size = 2
 theme_override_fonts/font = ExtResource("4_font9")
 theme_override_font_sizes/font_size = 13
 text = "mod_summary"
+vertical_alignment = 1
+clip_text = true
+text_overrun_behavior = 3
+script = ExtResource("6_auto_text")
+base_font_size = 13
+base_size_y = 20.0
+min_font_size = 8
 
 [node name="ImportBtn" type="Button" parent="Content/Header" unique_id=1915572661]
 unique_name_in_owner = true
@@ -295,6 +303,12 @@ theme_override_fonts/font = ExtResource("3_font7")
 theme_override_font_sizes/font_size = 10
 text = "mod_restart_bar"
 vertical_alignment = 1
+clip_text = true
+text_overrun_behavior = 3
+script = ExtResource("6_auto_text")
+base_font_size = 10
+base_size_y = 18.0
+min_font_size = 7
 
 [node name="UndoBtn" type="Button" parent="Content/RestartBar/Row" unique_id=363515604]
 unique_name_in_owner = true

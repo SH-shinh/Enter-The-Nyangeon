@@ -1810,7 +1810,7 @@ theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = -1
 theme_override_constants/shadow_outline_size = 7
 text = "SAIBA MOMOI"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("7_n1u3r")
 base_size_y = 18.0
 
@@ -1830,7 +1830,7 @@ theme_override_constants/outline_size = 1
 theme_override_constants/shadow_outline_size = 6
 theme_override_font_sizes/font_size = 9
 text = "UNIQUE IDEA"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("7_n1u3r")
 base_size_y = 18.0
 

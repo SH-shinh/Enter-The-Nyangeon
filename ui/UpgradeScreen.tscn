@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://blq6mggtcjlua" path="res://ui/ability_upgrade_card.tscn" id="2_xb1k4"]
 [ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="4_nbnxg"]
 [ext_resource type="Texture2D" uid="uid://owtvqmd3tfd2" path="res://sprites/update_item/refresh.png" id="5_hkt6i"]
+[ext_resource type="Script" uid="uid://dkwqr377cp5yf" path="res://script/auto_text.gd" id="99_autotx"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_5gotq"]
 blend_mode = 3
@@ -517,9 +518,9 @@ end_cap_mode = 1
 [node name="Node2D" type="Node2D" parent="Node2D3/Next" unique_id=1768948701]
 
 [node name="Label" type="Label" parent="Node2D3/Next/Node2D" unique_id=589255468]
-offset_left = 24.1207
+offset_left = 4.0
 offset_top = 11.0
-offset_right = 76.1207
+offset_right = 91.0
 offset_bottom = 39.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_colors/font_shadow_color = Color(1, 1, 1, 1)
@@ -528,7 +529,14 @@ theme_override_constants/shadow_offset_y = 2
 theme_override_constants/outline_size = 6
 theme_override_constants/shadow_outline_size = 4
 theme_override_font_sizes/font_size = 24
-text = "继续"
+text = "button_next"
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("99_autotx")
+base_font_size = 24
+base_size_x = 87.0
+base_size_y = 28.0
+min_font_size = 12
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="Node2D3/Next" unique_id=310228060]
 libraries/ = SubResource("AnimationLibrary_6hjmf")

@@ -193,7 +193,7 @@ theme_override_constants/shadow_offset_y = -1
 theme_override_constants/shadow_outline_size = 7
 theme_override_font_sizes/font_size = 11
 text = "OTOSE KOTAMA"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_pfltr")
 base_size_y = 18.0
 
@@ -212,7 +212,7 @@ theme_override_constants/outline_size = 1
 theme_override_constants/shadow_outline_size = 6
 theme_override_font_sizes/font_size = 9
 text = "ECHO LINK"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_pfltr")
 base_size_y = 18.0
 
@@ -232,7 +232,7 @@ theme_override_constants/shadow_outline_size = 4
 theme_override_fonts/font = ExtResource("10_ycaxs")
 theme_override_font_sizes/font_size = 12
 text = "停止射击2秒后留下全息影像并隐身；开火破隐，破隐子弹必暴击，背刺时额外获得100%背刺伤害加成。"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_pfltr")
 base_size_y = 61.0
 

@@ -10,7 +10,7 @@ const KIND_MARK_PLAYER := Color(0.92, 0.27, 0.35, 1.0)
 @export var gamemode_conflicting: Array[String]
 
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
-@onready var label: Label = $VBoxContainer/Label
+@onready var label: AutoText = $VBoxContainer/Label
 @onready var texture_rect: TextureRect = $VBoxContainer/TextureRect
 @onready var kind_mark: ColorRect = $VBoxContainer/TextureRect2/ColorRect
 @onready var kind_mark_accent: ColorRect = $VBoxContainer/TextureRect2/ColorRect/ColorRect
@@ -33,16 +33,10 @@ func _ready() -> void:
 	focus_entered.connect(_mouse_enter)
 	focus_exited.connect(_mouse_exit)
 
-func _process(delta: float) -> void:
-	if label.size.x > 39:
-		var now_font = label.get("theme_override_font_sizes/font_size")
-		if now_font > 1:
-			now_font -= 1
-			label.set("theme_override_font_sizes/font_size", now_font)
-
 func get_gamemode_card():
 	gamemode_conflicting = gamemode_card.gamemode_conflicting
 	label.text = str(gamemode_card.game_mode_name) + "_id"
+	label.refit()
 	game_mode = gamemode_card.game_mode_id
 	texture_rect.texture = gamemode_card.game_mode_icon
 	var mark_color := KIND_MARK_ENEMY

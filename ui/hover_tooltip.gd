@@ -8,8 +8,12 @@ const BASE_SCALE := 0.6
 const CONTENT_WIDTH := 350.0
 const MIN_WIDTH := 140.0
 const INSET := 12.0
+const BODY_FONT_SIZE := 18
+const MIN_BODY_FONT_SIZE := 12
+const TITLE_FONT_DELTA := 2
 const TITLE_LINE_SPACING := 3
 const BODY_LINE_SPACING := 4
+const COMPACT_LINE_SPACING := 2
 const SEGMENT_GAP := 4.0
 const TITLE_GAP := 10.0
 const SECTION_LEADING := 8.0
@@ -213,11 +217,16 @@ func _display() -> void:
 	var width := minf(CONTENT_WIDTH, bounds.size.x / BASE_SCALE)
 	var height := bounds.size.y / BASE_SCALE
 	if segments != _last_segments or width != _last_width or height != _last_height:
-		_layout(segments, width, height)
+		var body_size := BODY_FONT_SIZE
+		_layout(segments, width, height, body_size)
+		# shrink font size step by step when content overflows viewport height
+		while truncated and body_size > MIN_BODY_FONT_SIZE:
+			body_size -= 1
+			_layout(segments, width, height, body_size)
 		# 按最长行收窄面板：内容短时不留大片空白，长文本仍受 CONTENT_WIDTH 限制。
 		var fitted := clampf(_measured_width + INSET * 2, MIN_WIDTH, width)
 		if fitted < width - 0.5:
-			_layout(segments, fitted, height)
+			_layout(segments, fitted, height, body_size)
 		_last_segments = segments.duplicate(true)
 		_last_width = width
 		_last_height = height
@@ -232,12 +241,13 @@ func _display() -> void:
 	var anchor: Vector2 = shared.pointer if shared.mode == "mouse" else _active.visible_rect().position + Vector2(_active.visible_rect().size.x, 0)
 	place_at(anchor)
 
-func _layout(segments: Array, width: float, max_height: float) -> void:
+func _layout(segments: Array, width: float, max_height: float, body_size: int = BODY_FONT_SIZE) -> void:
 	for label in _labels:
 		label.hide()
 	var y := INSET
 	var last_gap := 0.0
 	var used: Array[Label] = []
+	var body_spacing := BODY_LINE_SPACING if body_size >= BODY_FONT_SIZE else COMPACT_LINE_SPACING
 	truncated = false
 	_measured_width = 0.0
 	for segment in segments:
@@ -264,9 +274,9 @@ func _layout(segments: Array, width: float, max_height: float) -> void:
 		if role == "section" and not used.is_empty():
 			# 小节前留白：与上一组正文拉开，但不抢名称层级。
 			y += SECTION_LEADING
-		label.add_theme_font_size_override("font_size", 20 if role == "title" else 18)
+		label.add_theme_font_size_override("font_size", body_size + TITLE_FONT_DELTA if role == "title" else body_size)
 		# 行距按层级收紧：标题单行、用更小的行距；正文/次要说明保持同一档。
-		label.add_theme_constant_override("line_spacing", TITLE_LINE_SPACING if role == "title" else BODY_LINE_SPACING)
+		label.add_theme_constant_override("line_spacing", TITLE_LINE_SPACING if role == "title" else body_spacing)
 		label.add_theme_color_override("font_color", COLORS[role])
 		label.max_lines_visible = -1
 		# 原始键交给 Label 自动翻译，LocaleFont 才能识别它是本地化文本（即使译文的字形恰好都存在）。

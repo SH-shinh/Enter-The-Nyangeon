@@ -107,7 +107,7 @@ layout_mode = 2
 theme = ExtResource("2_gts2p")
 theme_override_font_sizes/font_size = 10
 text = "也许不含有草莓,但是味道很甜！"
-autowrap_mode = 1
+autowrap_mode = 3
 
 [node name="RichTextLabel" type="RichTextLabel" parent="ShopUI/ItemChose/ItemTemplate/MarginContainer/VBoxContainer"]
 layout_mode = 2

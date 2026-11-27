@@ -59,6 +59,9 @@ const BASE_LANGUAGES: Array[Dictionary] = [
 	{"locale": "en", "display_name": "English"},
 	{"locale": "pt", "display_name": "Português"},
 	{"locale": "vi_VN", "display_name": "Vietnamese"},
+	{"locale": "ja", "display_name": "日本語"},
+	{"locale": "ko", "display_name": "한국어", "display_font": "res://fonts/Galmuri9.ttf"},
+	{"locale": "ru", "display_name": "Русский", "display_font": "res://fonts/Galmuri9.ttf"},
 ]
 
 # id -> { dir, manifest, enabled, mounted, error }
@@ -906,7 +909,7 @@ func _base_languages_copy() -> Array:
 			"display_name": str(e.get("display_name", "")),
 			"font_map": {},
 			"glyph_ranges": [],
-			"display_font": null,
+			"display_font": e.get("display_font", null),
 		})
 	return out
 
