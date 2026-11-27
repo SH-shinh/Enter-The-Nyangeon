@@ -20,12 +20,12 @@ extends Node2D
 
 @onready var lock_texture: TextureRect = %lock_texture
 
-@onready var ps: Label = %ps
-@onready var ex_skill: Label = %ex_skill
+@onready var ps: AutoText = %ps
+@onready var ex_skill: AutoText = %ex_skill
 
 @onready var lv_value: Label = %lv_value
 @onready var pa_value: Label = %pa_value
-@onready var pa_id: Label = %pa_id
+@onready var pa_id: AutoText = %pa_id
 
 @onready var support_main: PanelContainer = %support_main
 @onready var unlock_cost: Label = %unlock_cost
@@ -50,6 +50,23 @@ func _ready() -> void:
 	add_shop_box()
 	shop_menu.shop_open.connect(_on_shop_open)
 	shop_menu.shop_close.connect(_on_shop_closed)
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSLATION_CHANGED and is_node_ready():
+		# refit pa_id first so deferred sync reads the updated font
+		pa_id.refit()
+		_sync_pa_font.call_deferred()
+
+
+# match pa_value font and size to pa_id so they align
+func _sync_pa_font() -> void:
+	if not is_instance_valid(pa_id) or not is_instance_valid(pa_value):
+		return
+	var f := pa_id.get_theme_font("font")
+	if f != null:
+		pa_value.add_theme_font_override("font", f)
+	pa_value.add_theme_font_size_override("font_size", pa_id.get_theme_font_size("font_size"))
 
 
 # 只在商店打开时按可见范围加载支援立绘，滚出即释放（+余量）。
@@ -153,6 +170,9 @@ func update_card():
 	ps.text = now_support_card.support_id + "_ps"
 	ex_skill.text = now_support_card.support_id + "_ex"
 	pa_id.text = now_support_card.pa_ability
+	for lbl: AutoText in [ps, ex_skill, pa_id]:
+		lbl.refit()
+	_sync_pa_font.call_deferred()
 	pa_value.text = "+" + SupportData.percent_text(SupportData.now_count_ability) + "%"
 	
 	unlock_cost.text = str(now_support_card.unlock_cost)

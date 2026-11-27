@@ -582,6 +582,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.14902, 0.14902, 0.14902, 1)
 theme_override_colors/font_shadow_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/line_spacing = -2
 theme_override_constants/shadow_offset_x = 0
 theme_override_constants/shadow_offset_y = 2
 theme_override_constants/outline_size = 5
@@ -589,14 +590,16 @@ theme_override_constants/shadow_outline_size = 2
 theme_override_font_sizes/font_size = 16
 text = "物品名称"
 horizontal_alignment = 1
+vertical_alignment = 1
 autowrap_mode = 3
 max_lines_visible = 2
 text_overrun_behavior = 3
 script = ExtResource("7_fit")
 base_font_size = 16
 base_size_x = 124.0
-base_size_y = 44.0
-min_font_size = 12
+base_size_y = 22.0
+min_font_size = 8
+wrap_fallback_below = 10
 
 [node name="TextureRect" type="TextureRect" parent="ContentScroll/VBoxContainer" unique_id=624165246]
 unique_name_in_owner = true
@@ -627,7 +630,7 @@ text = "芭娜娜！
 1
 1
 "
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("7_fit")
 base_font_size = 10
 base_size_x = 124.0
@@ -645,7 +648,7 @@ theme_override_constants/shadow_outline_size = 3
 theme_override_fonts/font = ExtResource("2_h2sd1")
 theme_override_font_sizes/font_size = 10
 text = "+99999999属性"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("7_fit")
 base_font_size = 10
 base_size_x = 124.0
@@ -663,7 +666,7 @@ theme_override_constants/shadow_outline_size = 3
 theme_override_fonts/font = ExtResource("2_h2sd1")
 theme_override_font_sizes/font_size = 10
 text = "-99999999属性"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("7_fit")
 base_font_size = 10
 base_size_x = 124.0
