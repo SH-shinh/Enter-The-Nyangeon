@@ -10,6 +10,10 @@ const PIXEL_BOLD := preload("res://fonts/BoutiqueBitmap9x9_Bold_1.9.ttf")
 const ROBOTO_BODY := preload("res://fonts/RobotoCondensed-Light.ttf")
 const ROBOTO_BOLD := preload("res://fonts/RobotoCondensed-Bold.ttf")
 
+# pixel font settings live in .import; only fallbacks are set here
+const GALMURI_9 := preload("res://fonts/Galmuri9.ttf")
+const GALMURI_11 := preload("res://fonts/Galmuri11.ttf")
+
 const META := "_locale_font_orig"
 const META_CONNECTED := "_locale_font_connected"
 const RICH_ITEMS := ["normal_font", "bold_font", "italics_font", "bold_italics_font", "mono_font"]
@@ -18,6 +22,11 @@ const RICH_ITEMS := ["normal_font", "bold_font", "italics_font", "bold_italics_f
 var _locale_fonts: Dictionary = {}
 # locale -> Array[[start, end]] 触发替换的码点区间（仅当像素字缺该字形）
 var _locale_ranges: Dictionary = {}
+# locale -> codepoint ranges that always replace the font (e.g. cyrillic)
+var _locale_force_ranges: Dictionary = {}
+# composite fallback chain for native popup menu
+var _popup_chain: Array[Font] = []
+var _popup_router: FontFile = null
 
 func _ready() -> void:
 	var body_font: FontFile = ROBOTO_BODY
@@ -33,6 +42,17 @@ func _ready() -> void:
 		PIXEL_BOLD: ROBOTO_BOLD,
 	}
 	_locale_ranges["vi_VN"] = [[0x00C0, 0x024F], [0x0300, 0x036F], [0x1E00, 0x1EFF]]
+	# ko/ru pixel fonts (galmuri), fallback to boutique bitmap for missing cjk
+	var galmuri_fallbacks: Array[Font] = [PIXEL_9]
+	var galmuri_9: FontFile = GALMURI_9
+	var galmuri_11: FontFile = GALMURI_11
+	galmuri_9.fallbacks = galmuri_fallbacks
+	galmuri_11.fallbacks = galmuri_fallbacks
+	var galmuri_map := {PIXEL_9: GALMURI_11, PIXEL_7: GALMURI_9, PIXEL_BOLD: GALMURI_11}
+	_locale_fonts["ko"] = galmuri_map
+	_locale_ranges["ko"] = [[0xAC00, 0xD7AF], [0x1100, 0x11FF], [0x3130, 0x318F]]
+	_locale_fonts["ru"] = galmuri_map
+	_locale_force_ranges["ru"] = [[0x0400, 0x052F]]
 	get_tree().node_added.connect(_on_node_added)
 	apply()
 
@@ -78,17 +98,12 @@ func _map_key(locale: String) -> String:
 			return ks
 	return ""
 
-func _map_for(locale: String) -> Dictionary:
+func _lookup(dict: Dictionary, locale: String, fallback):
 	var k := _map_key(locale)
-	if k == "":
-		return {}
-	return _locale_fonts[k]
+	return dict.get(k, fallback) if k != "" else fallback
 
-func _ranges_for(locale: String) -> Array:
-	var k := _map_key(locale)
-	if k == "":
-		return []
-	return _locale_ranges.get(k, [])
+func _map_for(locale: String) -> Dictionary:
+	return _lookup(_locale_fonts, locale, {})
 
 func apply() -> void:
 	if not is_inside_tree():
@@ -98,6 +113,33 @@ func apply() -> void:
 ## 动态提示在计算换行前同步应用字体；无需扫描整棵场景树。
 func apply_control(control: Control) -> void:
 	_apply_node(control, _current_locale())
+
+# composite font for popup menu: 7x7 for latin/cjk, galmuri9 for ko/ru, plus any mod fonts
+func get_popup_pixel_font(extra: Array[Font] = []) -> Font:
+	if _popup_chain.is_empty():
+		var f7_copy := PIXEL_7.duplicate() as FontFile
+		var g9_copy := GALMURI_9.duplicate() as FontFile
+		var no_fallbacks: Array[Font] = []
+		f7_copy.fallbacks = no_fallbacks
+		g9_copy.fallbacks = no_fallbacks
+		f7_copy.set_script_support_override("Cyrl", false)
+		g9_copy.set_script_support_override("Cyrl", true)
+		_popup_chain = [f7_copy, g9_copy, PIXEL_9]
+		_popup_router = FontFile.new()
+		_popup_router.fallbacks = _popup_chain
+	var chain: Array[Font] = _popup_chain.duplicate()
+	for f in extra:
+		if f != null and not is_builtin_font(f) and not chain.has(f):
+			chain.append(f)
+	if chain.size() == _popup_chain.size():
+		return _popup_router
+	var router := FontFile.new()
+	router.fallbacks = chain
+	return router
+
+# already in the default popup chain
+func is_builtin_font(f: Font) -> bool:
+	return f == PIXEL_7 or f == PIXEL_9 or f == PIXEL_BOLD or f == GALMURI_9 or f == GALMURI_11
 
 func _apply_tree(node: Node, locale: String) -> void:
 	_apply_node(node, locale)
@@ -134,13 +176,15 @@ func _replacement_for(font: Font, locale: String) -> Font:
 		return m[font]
 	return null
 
-func _needs_replacement(text: String, pixel: Font, ranges: Array) -> bool:
+func _needs_replacement(text: String, pixel: Font, ranges: Array, force_ranges: Array = []) -> bool:
 	if text.is_empty() or pixel == null:
 		return false
 	if TranslationServer.translate(text) != text:
 		return true
 	for i in text.length():
 		var cp := text.unicode_at(i)
+		if _in_ranges(cp, force_ranges):
+			return true
 		if _in_ranges(cp, ranges) and not pixel.has_char(cp):
 			return true
 	return false
@@ -161,7 +205,7 @@ func _apply_node(node: Node, locale: String) -> void:
 	if not _map_for(locale).is_empty():
 		var items := _items_for(control)
 		var primary := _effective_font(control, items[0], records)
-		if _needs_replacement(String(control.text), primary, _ranges_for(locale)):
+		if _needs_replacement(String(control.text), primary, _lookup(_locale_ranges, locale, []), _lookup(_locale_force_ranges, locale, [])):
 			for item in items:
 				var orig := _effective_font(control, item, records)
 				if orig == null:

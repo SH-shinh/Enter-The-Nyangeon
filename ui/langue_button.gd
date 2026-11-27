@@ -1,7 +1,7 @@
 extends Node2D
 
 ## 语言选择器（主菜单 / 暂停页共用）：语言列表来自 ModManager.get_languages()
-## （内置 4 种 + mod 经 ModAPI.register_language 注册/覆盖），支持 display_font 指定显示名字体。
+## （内置 7 种 + mod 经 ModAPI.register_language 注册/覆盖），支持 display_font 指定显示名字体。
 ## 桌面用 OptionButton 原生下拉；触屏点按开 touch_menu 自定义列表。
 
 @onready var option_button: OptionButton = $OptionButton
@@ -15,6 +15,7 @@ var on_touch: bool = false
 var _langs: Array = []
 
 func _ready() -> void:
+	option_button.fit_to_longest_item = false
 	_rebuild()
 	ModManager.languages_changed.connect(_rebuild)
 	option_button.gui_input.connect(touch_input)
@@ -77,19 +78,17 @@ func _display_font(lang: Dictionary, fallback: Font) -> Font:
 
 # 应用某语言的按钮显示名字体（OptionButton 选中文字 + 原生下拉 PopupMenu，best-effort）。
 func _apply_display_font(lang: Dictionary) -> void:
-	var has := false
 	var f := _display_font(lang, null)
-	if f != null:
-		has = true
-		option_button.add_theme_font_override("font", f)
-	else:
-		option_button.remove_theme_font_override("font")
+	option_button.add_theme_font_override("font", f if f != null else ROW_FALLBACK_FONT)
 	var pop := option_button.get_popup()
 	if pop != null:
-		if has:
-			pop.add_theme_font_override("font", f)
-		else:
-			pop.remove_theme_font_override("font")
+		# use composite font for popup so all language names render properly
+		var extra: Array[Font] = []
+		for l in _langs:
+			var lf := _display_font(l, null)
+			if lf != null:
+				extra.append(lf)
+		pop.add_theme_font_override("font", LocaleFont.get_popup_pixel_font(extra))
 
 func _index_of(locale: String) -> int:
 	for i in _langs.size():
