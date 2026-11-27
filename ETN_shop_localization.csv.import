@@ -6,10 +6,10 @@ uid="uid://b5ow8yfvm1p6p"
 
 [deps]
 
-files=["res://ETN_shop_localization.zh_CN.translation", "res://ETN_shop_localization.en.translation", "res://ETN_shop_localization.pt.translation", "res://ETN_shop_localization.vi_VN.translation"]
+files=["res://ETN_shop_localization.zh_CN.translation", "res://ETN_shop_localization.en.translation", "res://ETN_shop_localization.pt.translation", "res://ETN_shop_localization.vi_VN.translation", "res://ETN_shop_localization.ja.translation", "res://ETN_shop_localization.ko.translation", "res://ETN_shop_localization.ru.translation"]
 
 source_file="res://ETN_shop_localization.csv"
-dest_files=["res://ETN_shop_localization.zh_CN.translation", "res://ETN_shop_localization.en.translation", "res://ETN_shop_localization.pt.translation", "res://ETN_shop_localization.vi_VN.translation"]
+dest_files=["res://ETN_shop_localization.zh_CN.translation", "res://ETN_shop_localization.en.translation", "res://ETN_shop_localization.pt.translation", "res://ETN_shop_localization.vi_VN.translation", "res://ETN_shop_localization.ja.translation", "res://ETN_shop_localization.ko.translation", "res://ETN_shop_localization.ru.translation"]
 
 [params]
 

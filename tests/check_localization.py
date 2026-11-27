@@ -40,12 +40,12 @@ def check(path):
         rows = list(csv.reader(io.StringIO(text, newline=""), strict=True))
     except (UnicodeDecodeError, csv.Error) as error:
         return errors + [str(error)]
-    if not rows or rows[0] != ["", "zh_CN", "en", "pt", "vi_VN"]:
+    if not rows or rows[0] != ["", "zh_CN", "en", "pt", "vi_VN", "ja", "ko", "ru"]:
         errors.append("本地化表头不符合约定")
     seen = set()
     for index, row in enumerate(rows[1:], 2):
-        if len(row) != 5:
-            errors.append(f"记录 {index} 的列数不是 5")
+        if len(row) != 8:
+            errors.append(f"记录 {index} 的列数不是 8")
         elif not row[0] or row[0] in seen:
             errors.append(f"记录 {index} 的 key 为空或重复：{row[0]}")
         else:
