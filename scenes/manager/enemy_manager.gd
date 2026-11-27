@@ -273,7 +273,10 @@ func _schedule_boss_intrusion(generation: int) -> void:
 	var delay_max := maxf(delay_min, level.boss_intrusion_delay_max)
 	var delay := randf_range(delay_min, delay_max)
 	if delay > 0.0:
-		await get_tree().create_timer(delay, true, false, true).timeout
+		# ⚠️ 必须 pause 感知：`create_timer` 的 process_always 默认是 true，传 true 会让倒计时在
+		# 暂停页里照走（实测暂停 10~25s 后恢复即入场）。这里用 (delay, false, false, false)：
+		# 暂停冻结、恢复继续，且跟随 Engine.time_scale（暂停期间 GameEvents 会把 time_scale 强制回 1）。
+		await get_tree().create_timer(delay, false, false, false).timeout
 	if generation != _intrusion_generation:
 		return
 	if int(PlayerData.now_round) != round_index:
