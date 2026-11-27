@@ -472,13 +472,20 @@ static func solve_now(lead_seconds: float = 0.0) -> void:
 	_collect()
 	if _candidates.is_empty():
 		return
+	if EnemyNavField.complex_path_enabled and not EnemyNavField.simple_field_mode \
+			and _groups.size() > 1 and _groups.size() <= EnemyNavField.MAX_FIELDS:
+		# 首建独立于远端槽位轮转，避免第 4 个目标空等下一轮战术求解。
+		for group in _groups.values():
+			var node = group.get("node")
+			if node is Node2D and is_instance_valid(node) and not EnemyNavField.is_ready(node):
+				EnemyNavField.queue_cold_field(node, _nearest_group_enemy_position(group, node))
 	if EnemyNavField.simple_field_mode:
 		for key in _groups:
 			var g: Dictionary = _groups[key]
 			var target_node = g.get("node")
 			if target_node == null or not is_instance_valid(target_node):
 				continue
-			EnemyNavField.ensure_rebuilt(target_node, EnemyNavField.target_anchor(target_node))
+			EnemyNavField.ensure_rebuilt(target_node, EnemyNavField.target_anchor(target_node), Vector2.ZERO, true)
 		_simple_follow()
 		_update_stuck()
 		return
@@ -490,7 +497,7 @@ static func solve_now(lead_seconds: float = 0.0) -> void:
 			if target_node == null or not is_instance_valid(target_node):
 				continue
 			var from_pos := _nearest_group_enemy_position(g, target_node)
-			EnemyNavField.ensure_rebuilt(target_node, EnemyNavField.target_anchor(target_node), from_pos)
+			EnemyNavField.ensure_rebuilt(target_node, EnemyNavField.target_anchor(target_node), from_pos, true)
 			ensure_route(target_node, from_pos)
 		_simple_follow()
 		_update_stuck()
@@ -503,7 +510,7 @@ static func solve_now(lead_seconds: float = 0.0) -> void:
 			if target_node == null or not is_instance_valid(target_node):
 				continue
 			var from_pos := _nearest_group_enemy_position(g, target_node)
-			EnemyNavField.ensure_rebuilt(target_node, EnemyNavField.target_anchor(target_node), from_pos)
+			EnemyNavField.ensure_rebuilt(target_node, EnemyNavField.target_anchor(target_node), from_pos, true)
 		_simple_follow()
 		_update_stuck()
 		return
@@ -521,8 +528,7 @@ static func solve_now(lead_seconds: float = 0.0) -> void:
 		var dirty_now := Time.get_ticks_msec()
 		for key in _groups_dirty.keys():
 			if _groups.has(key):
-				_update_one_group(key, lead_seconds, dirty_now, decision_stale_ms())
-		_groups_dirty.clear()
+				_update_one_group(key, lead_seconds, dirty_now, decision_stale_ms(), true)
 	_solve_phase = (_solve_phase + 1) % 3
 	if _solve_phase == 0:
 		_build_density()
@@ -534,25 +540,25 @@ static func solve_now(lead_seconds: float = 0.0) -> void:
 	_update_stuck()
 
 
-static func _run_full_solve(lead_seconds: float) -> void:
+static func _run_full_solve(lead_seconds: float, scheduled: bool = true) -> void:
 	_build_density()
 	_apply_density_push()
 	_apply_wall_push()
-	_assign_groups(lead_seconds)
+	_assign_groups(lead_seconds, scheduled)
 	_update_stuck()
 
 
-## 测试/一次性入口：不做 3 相拆帧，直接完整跑一轮。
+## 测试/一次性入口：不做 3 相拆帧，直接完整跑一轮；保持同步建场，便于逐项断言。
 static func solve_now_full(lead_seconds: float = 0.0) -> void:
 	_collect()
 	if _candidates.is_empty():
 		return
 	_last_solve_ms = Time.get_ticks_msec()
 	_solve_primed = true
-	_run_full_solve(lead_seconds)
+	_run_full_solve(lead_seconds, false)
 
 
-static func _assign_groups(lead_seconds: float) -> void:
+static func _assign_groups(lead_seconds: float, scheduled: bool = true) -> void:
 	if _groups.is_empty():
 		return
 	var now := Time.get_ticks_msec()
@@ -566,20 +572,20 @@ static func _assign_groups(lead_seconds: float) -> void:
 		else:
 			local_keys.append(key)
 	for key in local_keys:
-		_update_one_group(key, lead_seconds, now, 0)
+		_update_one_group(key, lead_seconds, now, 0, scheduled)
 	var remote_budget := maxi(0, groups_per_solve)
 	if remote_budget > 0 and not remote_keys.is_empty():
 		remote_keys.sort_custom(func(a, b) -> bool:
 			return int(_group_update_ms.get(a, 0)) < int(_group_update_ms.get(b, 0)))
 		var stale_ms := _max_group_stale_ms(remote_keys.size())
 		for i in mini(remote_budget, remote_keys.size()):
-			_update_one_group(remote_keys[i], lead_seconds, now, stale_ms)
+			_update_one_group(remote_keys[i], lead_seconds, now, stale_ms, scheduled)
 
 
 ## 单组槽位更新（原 _assign_groups 的循环体）。
 ## remote_stale_ms > 0 表示这是"降频更新的远端组"：把更大的过期预算写进该组敌人，
 ## 否则 ai_steer 会用全局 decision_stale_ms 误判"决策过期"、退回简单追踪（观感更差）。
-static func _update_one_group(key, lead_seconds: float, now: int, remote_stale_ms: int) -> void:
+static func _update_one_group(key, lead_seconds: float, now: int, remote_stale_ms: int, scheduled: bool = true) -> void:
 	var group: Dictionary = _groups.get(key)
 	if group == null:
 		return
@@ -594,10 +600,15 @@ static func _update_one_group(key, lead_seconds: float, now: int, remote_stale_m
 	var attack_anchor: Vector2
 	var body_unreachable := false
 	if EnemyNavField.complex_path_enabled:
-		from_pos = _nearest_reachable_group_enemy_position(group, node)
+		if scheduled and _groups.size() > 1 and not EnemyNavField.is_ready(node):
+			from_pos = _nearest_group_enemy_position(group, node)
+		else:
+			from_pos = _nearest_reachable_group_enemy_position(group, node)
 		if from_pos == Vector2.ZERO:
 			from_pos = _nearest_group_enemy_position(group, node)
-		EnemyNavField.ensure_rebuilt(node, target_pos, from_pos)
+		if not EnemyNavField.ensure_rebuilt(node, target_pos, from_pos, scheduled):
+			_groups_dirty[key] = true
+			return
 		attack_anchor = EnemyNavField.get_attack_point(node)
 		if attack_anchor == Vector2.ZERO:
 			attack_anchor = EnemyNavField.target_safe_anchor(node)

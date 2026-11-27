@@ -73,6 +73,8 @@ const NEIGHBORS8 := [
 	Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1),
 	Vector2i(1, 1), Vector2i(1, -1), Vector2i(-1, 1), Vector2i(-1, -1),
 ]
+## 与 NEIGHBORS8 的四个对角方向同序，值为对应两条正交边的方向下标。
+const DIAGONAL_SIDES := [Vector2i(0, 2), Vector2i(0, 3), Vector2i(1, 2), Vector2i(1, 3)]
 const DIAGONAL_COST := 1.41421356237
 ## `_rebuild_solid` 的 8 邻域偏移（常量表，避免每格新建数组）。
 const NEIGHBOR_OFFSETS9 := [
@@ -114,6 +116,8 @@ static var _built: bool = false
 static var _sig: int = 0
 static var _cells: Array[Vector2i] = []
 static var _index: Dictionary = {}
+static var _flow_grid_cells: Array[Vector2i] = []
+static var _flow_neighbors := PackedInt32Array()
 static var _world := PackedVector2Array()
 
 # 自动探测到的静态障碍格（建拓扑时刷新）
@@ -149,6 +153,12 @@ static var topology_epoch: int = 0
 static var _rebuild_spent_us: int = 0
 static var _rebuild_budget_frame: int = -1
 static var pending_rebuild: bool = false
+## 分帧建场队列按入队顺序保存目标 instance id 和敌人侧起点，随拓扑失效清空。
+## 只由真实调度（ensure_rebuilt(..., scheduled=true)）入队；每物理帧最多补建一张。
+static var _pending: Dictionary = {}
+## 本物理帧是否已实际重建过一张场：保证排队任务不会在同一帧连建。
+static var _last_build_frame: int = -1
+static var _last_build_process_frame: int = -1
 ## 观测计数：场重建/复用次数（F3 与 ai_probe 用）。
 static var rebuild_count: int = 0
 static var reuse_count: int = 0
@@ -283,6 +293,7 @@ static func ensure_topology() -> bool:
 
 static func _clear_fields() -> void:
 	_fields.clear()
+	_clear_pending()
 	epoch += 1
 
 
@@ -349,6 +360,7 @@ static func _build_topology(sig: int) -> void:
 		var margin := MapBounds.nearest_inside(_world[i], SLOT_MARGIN)
 		_margin_ok[i] = 1 if margin == _world[i] else 0
 		_clearance[i] = _measure_clearance(_world[i], hull)
+	_prepare_flow_neighbors()
 	var t_scan := Time.get_ticks_usec()
 	_scan_static_obstacles()
 	var t_solid := Time.get_ticks_usec()
@@ -368,6 +380,18 @@ static func _build_topology(sig: int) -> void:
 		"total": t_end - t_all,
 		"count": _cells.size(),
 	}
+
+
+## 邻格编号只取决于有序地图格。建墙/撤墙只改变通行性，同一格表可复用。
+static func _prepare_flow_neighbors() -> void:
+	if _flow_grid_cells == _cells:
+		return
+	_flow_grid_cells = _cells.duplicate()
+	_flow_neighbors.resize(_cells.size() * NEIGHBORS8.size())
+	for i in _cells.size():
+		var base := i * NEIGHBORS8.size()
+		for direction in NEIGHBORS8.size():
+			_flow_neighbors[base + direction] = int(_index.get(_cells[i] + NEIGHBORS8[direction], -1))
 
 
 static func _rebuild_solid() -> void:
@@ -419,127 +443,69 @@ static func _nearby_solid_cells(cell: Vector2i, radius_buckets: int = 1) -> Arra
 	return out
 
 
-## 单个 solid 格的菱形相对其格心的四角偏移（64×32 等距格）。
-const WALL_DIAMOND_OFFSETS := [
-	Vector2(0, 0),
-	Vector2(-32, -16),
-	Vector2(0, -32),
-	Vector2(32, -16),
-]
-## 墙距并列容差（px）：相对位移改写会带来 <1e-4 的浮点尾差，此范围内视为相等，
-## 保留候选顺序中的第一项（旧实现用绝对坐标，float32 尾差可能选中后项）。
-const WALL_DIST_TIE_EPS := 0.0001
-## 一次性计算每个格心到最近 solid 格几何边缘的墙面距离。
-## 同拓扑内重复出现「查询格心 - 墙格中心」这同一个相对位移时，菱形几何完全相同：
-## 用相对位移做缓存键，每个位移只算一次四边距离；不假设格坐标映射是仿射的，
-## 也不跨拓扑保留（缓存随本次重建丢弃）。候选顺序（分块顺序 + 块内顺序）
-## 与旧逐格实现完全一致，相等仍取第一项。
+## 一次拓扑重建内，同一分块的格子共享候选墙列表及世界坐标。
 static func _rebuild_wall_clearance() -> void:
 	_wall_clearance.resize(_cells.size())
 	_wall_nearest.resize(_cells.size())
 	if _solid.is_empty():
-		# 保留空墙行为：1000.0，且不重置 _wall_probe_nearest（与旧实现一致）。
-		for i in _cells.size():
-			_wall_clearance[i] = 1000.0
-			_wall_nearest[i] = _wall_probe_nearest
+		_wall_clearance.fill(1000.0)
+		_wall_nearest.fill(_wall_probe_nearest)
 		return
-	if _solid_buckets.is_empty():
-		# 无分块索引时退回逐格通用实现（候选为全量 _solid），不改变语义。
-		for i in _cells.size():
-			_wall_clearance[i] = _measure_wall_clearance(_world[i], _cells[i])
-			_wall_nearest[i] = _wall_probe_nearest
-		return
-	# 每个分块预拼接 3×3 邻块 solid 列表：与 _nearby_solid_cells(cell) 的候选顺序一致，
-	# 但同一块内的所有查询格复用同一份列表，不再逐格做 9 次字典查找和数组拼接。
-	# 值为 [cells: Array[Vector2i], worlds: PackedVector2Array]，两数组按候选顺序平行。
-	var nearby_by_bucket: Dictionary = {}
-	# 相对位移 → 墙距（px）。只在本次拓扑重建内有效。
-	var rel_dist: Dictionary = {}
-	var last_nearest := _wall_probe_nearest
+	var nearby_by_bucket := {}
+	var worlds_by_bucket := {}
 	for i in _cells.size():
-		var center: Vector2 = _world[i]
 		var cell: Vector2i = _cells[i]
-		var bucket_key := Vector2i(floori(float(cell.x) / WALL_BUCKET), floori(float(cell.y) / WALL_BUCKET))
-		var pair: Array
-		if nearby_by_bucket.has(bucket_key):
-			pair = nearby_by_bucket[bucket_key]
-		else:
-			var cells: Array = []
-			var worlds := PackedVector2Array()
-			for bx in range(bucket_key.x - 1, bucket_key.x + 2):
-				for by in range(bucket_key.y - 1, bucket_key.y + 2):
-					var bucket = _solid_buckets.get(Vector2i(bx, by))
-					if bucket == null:
-						continue
-					for wall_cell in bucket:
-						cells.append(wall_cell)
-						worlds.append(_wall_cell_world(wall_cell))
-			pair = [cells, worlds]
-			nearby_by_bucket[bucket_key] = pair
-		var candidates: Array = pair[0]
-		var wall_worlds: PackedVector2Array = pair[1]
-		var best := 1000.0
-		var nearest := Vector2i.ZERO
-		var has_best := false
-		for j in candidates.size():
-			var rel: Vector2 = center - wall_worlds[j]
-			var d: float = rel_dist.get(rel, -1.0)
-			if d < 0.0:
-				d = sqrt(_diamond_distance_sq(rel))
-				rel_dist[rel] = d
-			if not has_best:
-				if d < 1000.0:
-					best = d
-					nearest = candidates[j]
-					has_best = true
-			elif d < best - WALL_DIST_TIE_EPS:
-				best = d
-				nearest = candidates[j]
-		_wall_clearance[i] = best
-		_wall_nearest[i] = nearest
-		last_nearest = nearest
-	_wall_probe_nearest = last_nearest
+		var bucket := Vector2i(floori(float(cell.x) / WALL_BUCKET), floori(float(cell.y) / WALL_BUCKET))
+		if not nearby_by_bucket.has(bucket):
+			var nearby := _nearby_solid_cells(cell)
+			nearby_by_bucket[bucket] = nearby
+			worlds_by_bucket[bucket] = _wall_centers(nearby)
+		_wall_clearance[i] = _nearest_wall_distance(_world[i], nearby_by_bucket[bucket], worlds_by_bucket[bucket])
+		_wall_nearest[i] = _wall_probe_nearest
 
 
-static func _wall_cell_world(cell: Vector2i) -> Vector2:
-	var index := int(_index.get(cell, -1))
-	return _world[index] if index >= 0 else MapChunks.get_cell_world(cell)
-
-
-## 点到 solid 菱形边缘的最近距离平方；s = 查询点 - 墙格中心。
-## 四角是常量，避免旧实现每个墙格新建 corners 数组；四边只比平方，外层一次 sqrt。
-static func _diamond_distance_sq(s: Vector2) -> float:
-	var best := INF
-	for i in 4:
-		var a: Vector2 = WALL_DIAMOND_OFFSETS[i]
-		var b: Vector2 = WALL_DIAMOND_OFFSETS[(i + 1) & 3]
-		var ab := b - a
-		var ap := s - a
-		var t := clampf(ap.dot(ab) / ab.length_squared(), 0.0, 1.0)
-		var d2 := (ap - ab * t).length_squared()
-		if d2 < best:
-			best = d2
-	return best
+static func _wall_centers(candidates: Array) -> PackedVector2Array:
+	var centers := PackedVector2Array()
+	centers.resize(candidates.size())
+	for i in candidates.size():
+		var index := int(_index.get(candidates[i], -1))
+		centers[i] = _world[index] if index >= 0 else MapChunks.get_cell_world(candidates[i])
+	return centers
 
 
 static func _measure_wall_clearance(center: Vector2, center_cell: Vector2i = Vector2i(2147483647, 2147483647)) -> float:
 	if _solid.is_empty():
 		return 1000.0
+	var candidates := _nearby_solid_cells(center_cell) if center_cell != Vector2i(2147483647, 2147483647) else _solid.keys()
+	return _nearest_wall_distance(center, candidates, _wall_centers(candidates))
+
+
+static func _nearest_wall_distance(center: Vector2, candidates: Array, centers: PackedVector2Array) -> float:
+	# 每个墙格的锚点本身就是菱形的底角。离查询点最近的底角给出可靠的距离上界。
+	var vertex_limit_sq := 1000.0 * 1000.0
+	for corner in centers:
+		vertex_limit_sq = minf(vertex_limit_sq, center.distance_squared_to(corner))
+	var limit := sqrt(vertex_limit_sq)
 	var best := 1000.0
 	_wall_probe_nearest = Vector2i.ZERO
-	# 只扫邻近分块：阈值 BODY_CLEARANCE+CELL_SPAN ≈ 53px ≈ 3 格，分块 4 格 × 1 圈足够。
-	var candidates: Array = _nearby_solid_cells(center_cell) if center_cell != Vector2i(2147483647, 2147483647) else _solid.keys()
-	var has_best := false
-	for cell in candidates:
-		var d := sqrt(_diamond_distance_sq(center - _wall_cell_world(cell)))
-		if not has_best:
-			if d < 1000.0:
-				best = d
-				_wall_probe_nearest = cell
-				has_best = true
-		elif d < best - WALL_DIST_TIE_EPS:
+	for i in centers.size():
+		var bottom := centers[i]
+		var left := bottom + Vector2(-32, -16)
+		var top := bottom + Vector2(0, -32)
+		var right := bottom + Vector2(32, -16)
+		# 用实际世界坐标顶点界定包围盒，并为浮点舍入留 1px。候选仍按原顺序比较。
+		var margin := limit + 1.0
+		if center.x < left.x - margin or center.x > right.x + margin:
+			continue
+		if center.y < top.y - margin or center.y > bottom.y + margin:
+			continue
+		var d := minf(_point_segment_distance(center, bottom, left), _point_segment_distance(center, left, top))
+		d = minf(d, _point_segment_distance(center, top, right))
+		d = minf(d, _point_segment_distance(center, right, bottom))
+		if d < best:
 			best = d
-			_wall_probe_nearest = cell
+			limit = minf(limit, best)
+			_wall_probe_nearest = candidates[i]
 	return best
 
 
@@ -664,7 +630,9 @@ static func _mark_rect(rect: Rect2) -> void:
 
 # ---------------- 场构建 ----------------
 
-static func ensure_rebuilt(target: Node2D, anchor: Vector2 = Vector2.ZERO, from_pos: Vector2 = Vector2.ZERO) -> bool:
+## `scheduled=true` 是真实运行路径（EnemyAI 组求解）：多张冷目标场分帧构建，
+## 每物理帧最多建一张，本地玩家优先；单目标/调试直接调用保持原来的同步语义。
+static func ensure_rebuilt(target: Node2D, anchor: Vector2 = Vector2.ZERO, from_pos: Vector2 = Vector2.ZERO, scheduled: bool = false) -> bool:
 	if not complex_path_enabled:
 		return false
 	if target == null or not is_instance_valid(target):
@@ -688,6 +656,7 @@ static func ensure_rebuilt(target: Node2D, anchor: Vector2 = Vector2.ZERO, from_
 	if simple_field_mode:
 		var simple_field: Field = _fields.get(key)
 		if _field_reusable(simple_field, seed, now, target):
+			_drop_pending(key)
 			return true
 		if simple_field == null:
 			_prune_fields()
@@ -696,15 +665,22 @@ static func ensure_rebuilt(target: Node2D, anchor: Vector2 = Vector2.ZERO, from_
 			simple_field = Field.new()
 			_fields[key] = simple_field
 		_rebuild_field(simple_field, seed, -1)
+		_mark_field_built(key)
 		return simple_field.alive
 	var field: Field = _fields.get(key)
 	# 复用命中：只用 O(1) 的玩家侧 safe 格刷新攻击点，跳过 _choose_attack_index 的整图 BFS。
 	# （旧实现无条件先算 _choose_attack_index，随后结果又被 target_safe 覆盖，属纯浪费。）
 	if field != null and field.alive and _field_reusable(field, seed, now, target):
 		reuse_count += 1
+		_drop_pending(key)
 		_refresh_attack_from_safe(field, target)
 		return true
-	# 单帧预算：本轮已经建过场 → 保留旧场（alive 不动），下一轮再补建，避免同帧多组串行尖峰。
+	# 真实调度：本帧已建过一张场（或预算用尽）就排队，下一物理帧补建。
+	# 冷场（field == null）以前绕过预算，四目标建墙后 3 张场同帧首建是 30ms 尖峰的主因。
+	if scheduled and (field == null or not field.alive):
+		if _pending.has(key) or not _can_start_cold_field():
+			_queue_pending(key, from_pos)
+			return false
 	if field != null and field.alive and _rebuild_budget_left() <= 0:
 		pending_rebuild = true
 		_refresh_attack_from_safe(field, target)
@@ -727,11 +703,99 @@ static func ensure_rebuilt(target: Node2D, anchor: Vector2 = Vector2.ZERO, from_
 	_rebuild_field(field, seed, attack, not body_same)
 	_rebuild_spent_us += Time.get_ticks_usec() - t0
 	rebuild_count += 1
-	pending_rebuild = false
+	_mark_field_built(key)
 	if field.alive:
 		# safe/attack 跟 field.dist 走：取流场内最近 body-safe，避免几何最近绕到墙外。
 		_refresh_attack_from_safe(field, target)
 	return field.alive
+
+
+## 真实调度（多目标）预排队：只入队，不在这里建场；物理帧泵按本地玩家优先补建。
+static func queue_cold_field(target: Node2D, from_pos: Vector2) -> void:
+	if target == null or not is_instance_valid(target):
+		return
+	if complex_path_enabled and _ensure_topology():
+		_queue_pending(target.get_instance_id(), from_pos)
+
+
+static func _can_start_cold_field() -> bool:
+	return _last_build_frame != Engine.get_physics_frames() \
+			and _last_build_process_frame != Engine.get_process_frames() and _rebuild_budget_left() > 0
+
+
+static func pump_pending() -> void:
+	var tree := Engine.get_main_loop() as SceneTree
+	if not complex_path_enabled:
+		_clear_pending()
+		return
+	if tree == null or tree.paused:
+		return
+	var next_id := 0
+	for id: int in _pending.keys():
+		var target = instance_from_id(id)
+		if not _pending_target_valid(target):
+			_pending.erase(id)
+			continue
+		if next_id == 0 or (target.is_in_group("Player") and not instance_from_id(next_id).is_in_group("Player")):
+			next_id = id
+	if next_id == 0:
+		_clear_pending()
+		return
+	if not _can_start_cold_field():
+		return
+	var node := instance_from_id(next_id) as Node2D
+	var from_pos: Vector2 = _pending[next_id]
+	_drop_pending(next_id)
+	ensure_rebuilt(node, target_anchor(node), from_pos)
+
+
+static func _queue_pending(key: int, from_pos: Vector2) -> void:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null:
+		return
+	_pending[key] = from_pos
+	pending_rebuild = true
+	if not tree.physics_frame.is_connected(pump_pending):
+		tree.physics_frame.connect(pump_pending)
+
+
+static func _drop_pending(key: int) -> void:
+	if _pending.erase(key) and _pending.is_empty():
+		_clear_pending()
+
+
+static func _clear_pending() -> void:
+	_pending.clear()
+	pending_rebuild = false
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree != null and tree.physics_frame.is_connected(pump_pending):
+		tree.physics_frame.disconnect(pump_pending)
+
+
+static func _mark_field_built(key: int) -> void:
+	_last_build_frame = Engine.get_physics_frames()
+	_last_build_process_frame = Engine.get_process_frames()
+	_drop_pending(key)
+	pending_rebuild = not _pending.is_empty()
+
+
+## 目标失效/倒地/死亡/离场/不再是导航目标：排队任务直接丢弃，不建场。
+static func _pending_target_valid(target) -> bool:
+	if target == null or not (target is Node2D) or not is_instance_valid(target):
+		return false
+	var node := target as Node
+	if node.is_queued_for_deletion() or not node.is_inside_tree():
+		return false
+	if node.get("is_downed") == true:
+		return false
+	var stats = node.get("stats")
+	if stats != null and stats is Object:
+		var hp = stats.get("hp")
+		if hp != null and int(hp) <= 0:
+			return false
+	if node.has_method("is_threat_nav_target") and not node.is_threat_nav_target():
+		return false
+	return true
 
 
 static func _field_reusable(field: Field, seed: Vector2i, now: int, target: Node2D = null) -> bool:
@@ -1164,16 +1228,17 @@ static func _rebuild_flow(field: Field, start: int, goal_zone: Dictionary) -> in
 		var cur := int(top[1])
 		if cur_dist > field.dist[cur] + 0.0001:
 			continue
-		var cur_cell: Vector2i = _cells[cur]
-		for offset in NEIGHBORS8:
-			var next_index: int = int(_index.get(cur_cell + offset, -1))
+		var base := cur * NEIGHBORS8.size()
+		for direction in NEIGHBORS8.size():
+			var next_index := _flow_neighbors[base + direction]
 			if next_index < 0 or passable[next_index] == 0:
 				continue
-			var diagonal: bool = offset.x != 0 and offset.y != 0
+			var diagonal := direction >= 4
 			if not simple_field_mode and diagonal:
 				# 对角步要求两侧正交格都可通行（等价于 _diagonal_ok，但只读 passable 表）。
-				var side_a: int = int(_index.get(cur_cell + Vector2i(offset.x, 0), -1))
-				var side_b: int = int(_index.get(cur_cell + Vector2i(0, offset.y), -1))
+				var sides: Vector2i = DIAGONAL_SIDES[direction - 4]
+				var side_a := _flow_neighbors[base + sides.x]
+				var side_b := _flow_neighbors[base + sides.y]
 				if side_a < 0 or side_b < 0 or passable[side_a] == 0 or passable[side_b] == 0:
 					continue
 			var step := DIAGONAL_COST if diagonal else 1.0
@@ -1194,20 +1259,20 @@ static func _rebuild_flow(field: Field, start: int, goal_zone: Dictionary) -> in
 			if d_safe < safe_best_dist:
 				safe_best_dist = d_safe
 				safe_best = i
-		var cell: Vector2i = _cells[i]
+		var base := i * NEIGHBORS8.size()
 		var best := -1
 		var best_dist: float = field.dist[i]
-		for offset in NEIGHBORS8:
-			var next_index: int = int(_index.get(cell + offset, -1))
+		for direction in NEIGHBORS8.size():
+			var next_index := _flow_neighbors[base + direction]
 			if next_index < 0:
 				continue
 			# start 是玩家/锚点 goal：即使贴墙也允许作为流向终点。
 			if next_index != start and passable[next_index] == 0:
 				continue
-			var diagonal: bool = offset.x != 0 and offset.y != 0
-			if not simple_field_mode and diagonal:
-				var side_a: int = int(_index.get(cell + Vector2i(offset.x, 0), -1))
-				var side_b: int = int(_index.get(cell + Vector2i(0, offset.y), -1))
+			if not simple_field_mode and direction >= 4:
+				var sides: Vector2i = DIAGONAL_SIDES[direction - 4]
+				var side_a := _flow_neighbors[base + sides.x]
+				var side_b := _flow_neighbors[base + sides.y]
 				if side_a < 0 or side_b < 0 or passable[side_a] == 0 or passable[side_b] == 0:
 					continue
 			if field.dist[next_index] < best_dist:
