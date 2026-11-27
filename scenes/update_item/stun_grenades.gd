@@ -16,4 +16,9 @@ func _on_enemy_shock_applied(enemy: Node) -> void:
 		return
 	if enemy.get("is_idle") == 1:
 		return
+	# 重施冷却预判（与 BuffManagerBase.apply_buff 内判定同源）：满层/高频施加会让本回调
+	# 每次感电都跑一遍，冷却内直接返回，避免 BuffRouter 的路由 + hook + manager 解析开销。
+	var manager = enemy.get("enemy_buff_manager")
+	if manager != null and manager.has_method("is_reapply_blocked") and manager.is_reapply_blocked(STUN_BUFF):
+		return
 	BuffRouter.apply_buff(enemy, STUN_BUFF, [1, 0.0, STUN_DURATION], item_id)

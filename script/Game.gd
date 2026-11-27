@@ -26,7 +26,7 @@ const CONFIG_PATH := "user://config.ini"
 var _save_store = SAVE_STORE.new()
 var _loading_playerdata := false
 
-var version_number: String = "v0.5.3.1a-test"
+var version_number: String = "v0.5.3.2"
 
 
 var on_full_screen: bool

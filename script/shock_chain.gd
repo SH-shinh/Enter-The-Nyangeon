@@ -4,6 +4,12 @@ class_name ShockChain
 ## 一次放电只产生一条链：从链头出发，逐跳连到最近的、尚未被本链命中的感电目标；
 ## 链上每个节点按自身层数结算一次感电伤害，并叠加一层「感电易伤」。
 ## 结算由各敌人的 EnemyBuffManager 在 10Hz tick 驱动，本类只做静态协调。
+##
+## 触发频率：**伤害侧没有全局单链上限**——同一 tick 内每个 `shock_cd` 到点的链头各自出一条链
+## （场上感电目标越多，链越多）。上限只作用于**视觉**：`_spawn_arc` 受
+## `PoolManager.fx_allowed("shock_chain", 80ms)` 与电弧池上限限制，电弧数量不随链数量线性增长。
+## 多条链在同一帧结算时靠条目上的 `chain_frame`（= `Engine.get_process_frames()`）去重：
+## 同一帧每个目标最多被一条链命中一次，否则 N 条链 × 6 跳会把同一个目标单帧打 6N 次。
 
 const SHOCK_DOT_ID := "shock_dot"
 ## 玩家侧感电（挂在玩家/召唤物身上的 shock 类 Buff）的层数硬上限。
@@ -18,16 +24,12 @@ const RANGE_STEP := 20.0
 const INTERVAL_TICKS_BASE := 12
 const INTERVAL_TICKS_STEP := 2
 const INTERVAL_TICKS_MIN := 4
-## 同一时刻只允许一条链：两次放电的最小间隔（毫秒）。
-const GLOBAL_GAP_MS := 90
 ## 链头没有搭档时的重试间隔（tick），避免孤立目标每 tick 全表扫描。
 const SHOCK_RETRY_TICKS := 2
 
 const ARC_SCENE: PackedScene = preload("res://scenes/debuff/shock_chain_arc.tscn")
 const FX_POOL := "shock_chain"
 const FX_CATEGORY := &"shock_chain"
-
-static var _last_chain_ms: int = -1000000
 
 
 static func range_for(layer: int) -> float:
@@ -56,6 +58,7 @@ static func is_immune(body: Node) -> bool:
 
 
 ## 由 EnemyBuffManager._tick_shock_dot 调用：倒计时到点则尝试整条链。
+## 多个管理器会在同一帧各自调用本函数（同一 10Hz tick），互不阻塞：各自建链、各自结算。
 static func tick(manager: Node, body: Node, entry: Dictionary) -> void:
 	if body == null or not is_instance_valid(body):
 		return
@@ -65,21 +68,23 @@ static func tick(manager: Node, body: Node, entry: Dictionary) -> void:
 	entry["shock_cd"] = maxi(0, cd)
 	if cd > 0:
 		return
-	var now := Time.get_ticks_msec()
-	if now - _last_chain_ms < GLOBAL_GAP_MS:
-		return
-	var path := _build_path(body, entry, manager)
+	# 同一帧的链共用一个帧标记：同 tick 的所有管理器都在同一个 process 帧内同步执行，
+	# 跨 tick 至少相隔 100ms。用帧号而不是 msec——一帧内多条链结算耗时就会跨毫秒。
+	var frame: int = Engine.get_process_frames()
+	var path := _build_path(body, entry, manager, frame)
 	if path.size() < 2:
 		# 孤立目标：不要每 tick 重扫全表，等下一个重试窗口。
 		entry["shock_cd"] = SHOCK_RETRY_TICKS
 		return
-	_last_chain_ms = now
-	# 先重置整条链的节拍并出表现；再按跳序结算；最后给仍存活的节点叠易伤
+	# 先打帧标记 + 重置整条链的节拍并出表现；再按跳序结算；最后给仍存活的节点叠易伤
 	# （本次命中不吃自己这层 5%，下一次链才吃）。
+	# 帧标记让同帧后续的链跳过这些目标：每个目标每帧最多结算一次。
 	var chain_dir := Vector2.ZERO
 	if path.size() >= 2:
 		chain_dir = (path[path.size() - 1]["body"].global_position - path[0]["body"].global_position).normalized()
 	for p in path:
+		var e: Dictionary = p["entry"]
+		e["chain_frame"] = frame
 		p["manager"].reset_shock_cd()
 	_spawn_arc(path, int(entry["layer"]))
 	for i in path.size():
@@ -133,8 +138,9 @@ static func _manager_for(body: Node) -> Node:
 
 # 从链头贪心走链：每跳取最近的、未被访问过的感电目标，跳距受当前节点层数限制。
 # 候选表一次建好，链段以 {body, manager, entry} 返回，后续循环不再重复查 manager。
-static func _build_path(head: Node, head_entry: Dictionary, head_manager: Node) -> Array:
-	var pool := _candidate_pool(head)
+# frame >= 0 时跳过本帧已被其它链命中的目标（同帧去重）。
+static func _build_path(head: Node, head_entry: Dictionary, head_manager: Node, frame: int = -1) -> Array:
+	var pool := _candidate_pool(head, frame)
 	var path: Array = [{"body": head, "manager": head_manager, "entry": head_entry}]
 	var visited: Dictionary = {head.get_instance_id(): true}
 	var current: Node = head
@@ -153,11 +159,49 @@ static func _build_path(head: Node, head_entry: Dictionary, head_manager: Node) 
 	return path
 
 
-# 一次链只建一次候选表，避免每跳重复 _entry_of / get("enemy_buff_manager")。
-static func _candidate_pool(head: Node) -> Array:
+# 本帧基础候选表缓存（frame >= 0 的真实运行路径）：
+# 同一 tick 内 N 条链原本各自重建一次全表（105 敌 × 7 条链实测 ≈0.57ms/帧），
+# 现在一帧只建一次，链之间只做 O(1) 资格过滤。
+static var _pool_frame: int = -1
+static var _pool_base: Array = []
+
+# 候选表：frame >= 0 时按帧复用基础池；链之间只重校验「本帧已被别的链命中 / 条目失效 / 已回池 / 已死」。
+static func _candidate_pool(head: Node, frame: int = -1) -> Array:
+	if frame >= 0 and frame == _pool_frame:
+		return _filter_pool(_pool_base, head, frame)
+	var pool := _build_pool_base()
+	if frame >= 0:
+		_pool_frame = frame
+		_pool_base = pool
+	return _filter_pool(pool, head, frame)
+
+
+static func _filter_pool(base: Array, head: Node, frame: int) -> Array:
+	var pool: Array = []
+	var head_id: int = head.get_instance_id()
+	for c in base:
+		var e: Node = c["body"]
+		if e == null or not is_instance_valid(e) or e.get_instance_id() == head_id:
+			continue
+		var entry: Dictionary = c["entry"]
+		if bool(entry.get("stop", false)) or int(entry.get("layer", 0)) <= 0:
+			continue
+		if frame >= 0 and int(entry.get("chain_frame", -1)) == frame:
+			continue
+		if e.get("is_idle") == 1:
+			continue
+		var st = e.get("stats")
+		if st != null and st.hp <= 0 and not bool(st.is_test_target):
+			continue
+		pool.append(c)
+	return pool
+
+
+# 建一次「全部合法感电目标」基础表（不含链头过滤：每条链的链头不同）。
+static func _build_pool_base() -> Array:
 	var pool: Array = []
 	for e in Targeting.candidates():
-		if e == null or not is_instance_valid(e) or e == head:
+		if e == null or not is_instance_valid(e):
 			continue
 		if e.get("is_idle") == 1:
 			continue
@@ -177,7 +221,7 @@ static func _candidate_pool(head: Node) -> Array:
 			if comp == null or not is_instance_valid(comp):
 				continue
 			var b: Node = comp.get("body")
-			if b == null or not is_instance_valid(b) or b == head:
+			if b == null or not is_instance_valid(b):
 				continue
 			if b.get("is_idle") == 1 or b.get("is_downed") == true:
 				continue
@@ -232,6 +276,8 @@ static func _entry_of(body: Node) -> Dictionary:
 	return entry
 
 
+## 电弧表现：**只在这里**做全局节流（每条链都会调用，但同一帧/同一窗口只有第一条真正出图）。
+## 伤害结算不走这个门——场上感电目标再多，链数量也照常结算，只有可见电弧数量受限。
 static func _spawn_arc(path: Array, power: int) -> void:
 	if not PoolManager.fx_allowed(FX_CATEGORY, 80):
 		return

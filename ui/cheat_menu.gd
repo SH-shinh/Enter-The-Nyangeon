@@ -21,6 +21,8 @@ var _ai_show_vectors: bool = true
 var _ai_show_nav_flow: bool = true
 var _ai_show_solids: bool = false
 var _simple_follow_btn: Button = null
+## 敌人头顶 UI（HP 条 + BuffCard）显示开关：驱动 autoload 性能条，纯表现、用于性能 A/B。
+var _overhead_btn: Button = null
 
 var test_card = preload("res://ui/test_item_card.tscn")
 var enemy_card_scene = preload("res://ui/test_enemy_card.tscn")
@@ -39,6 +41,7 @@ func _ready() -> void:
 	add_card()
 	add_enemy_card()
 	_ensure_simple_follow_btn()
+	_ensure_overhead_btn()
 
 
 func _ensure_simple_follow_btn() -> void:
@@ -57,6 +60,43 @@ func _ensure_simple_follow_btn() -> void:
 
 func _on_simple_follow_toggled(pressed: bool) -> void:
 	EnemyAI.simple_follow_debug = pressed
+
+
+# 头顶 UI 开关：冒烟探针依赖这两个方法名（tests/_perf_overlay_probe），改名要同步。
+func _ensure_overhead_btn() -> void:
+	if _overhead_btn != null and is_instance_valid(_overhead_btn):
+		return
+	var parent := ai_debug_toggle.get_parent()
+	if parent == null:
+		return
+	_overhead_btn = Button.new()
+	_overhead_btn.text = "HideOverheadUI"
+	_overhead_btn.toggle_mode = true
+	_overhead_btn.set_pressed_no_signal(_overhead_hidden())
+	_overhead_btn.toggled.connect(_on_overhead_toggled)
+	parent.add_child(_overhead_btn)
+
+
+func _perf_overlay() -> Node:
+	return get_node_or_null("/root/DebugPerformanceMonitor")
+
+
+func _overhead_hidden() -> bool:
+	var overlay := _perf_overlay()
+	if overlay == null:
+		return false
+	return bool(overlay.call("is_overhead_hidden"))
+
+
+func _sync_overhead_btn() -> void:
+	if _overhead_btn != null and is_instance_valid(_overhead_btn):
+		_overhead_btn.set_pressed_no_signal(_overhead_hidden())
+
+
+func _on_overhead_toggled(pressed: bool) -> void:
+	var overlay := _perf_overlay()
+	if overlay != null:
+		overlay.call("set_overhead_hidden", pressed)
 
 func _exit_tree() -> void:
 	# 兜底：本菜单在打开状态被释放（如切换场景）时恢复暂停
@@ -86,6 +126,7 @@ func open_menu():
 		return
 	self.visible = true
 	_sync_ai_toggles()
+	_sync_overhead_btn()
 	# 显隐由 UIMode.bind_visibility 自动切换鼠标/准星
 	_set_pause(true)
 

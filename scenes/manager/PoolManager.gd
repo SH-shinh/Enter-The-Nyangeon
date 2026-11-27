@@ -554,9 +554,29 @@ func sort_pool(_body_name: String):
 # ---------------- 归属登记 / 自注销 ----------------
 func _register_node_pool(body: Node, body_name: String) -> void:
 	_node_pool[body.get_instance_id()] = body_name
+	var entry: Dictionary = pool[body_name]
+	if body.has_signal(&"pool_idle_changed"):
+		if not entry.has("idle_candidates"):
+			# 旧弹体或模组节点也可能在同一池；状态未知的成员始终保留为候选。
+			entry["idle_candidates"] = entry["set"].duplicate()
+		_on_pool_idle_changed(body, body.get("is_idle") == 1)
+		if not body.is_connected(&"pool_idle_changed", _on_pool_idle_changed):
+			body.connect(&"pool_idle_changed", _on_pool_idle_changed)
+	elif entry.has("idle_candidates"):
+		entry["idle_candidates"][body] = true
 	if not body.has_meta("_pool_exit_connected"):
 		body.set_meta("_pool_exit_connected", true)
 		body.tree_exiting.connect(_on_pooled_node_exit.bind(body))
+
+func _on_pool_idle_changed(body: Node, idle: bool) -> void:
+	var pid = _node_pool.get(body.get_instance_id())
+	if pid == null:
+		return
+	var candidates: Dictionary = pool[pid]["idle_candidates"]
+	if idle:
+		candidates[body] = true
+	else:
+		candidates.erase(body)
 
 func _on_pooled_node_exit(body: Node) -> void:
 	_remove_node_from_pool(body)
@@ -578,6 +598,8 @@ func _remove_node_from_pool(body: Node) -> void:
 	if idx != -1:
 		arr.remove_at(idx)
 	entry["set"].erase(body)
+	if entry.has("idle_candidates"):
+		entry["idle_candidates"].erase(body)
 	_entry_idle(entry).erase(body)
 	if arr.is_empty():
 		pool.erase(pid)
@@ -617,7 +639,10 @@ func _scan_fill_idle(entry) -> void:
 	var cache: Array = _entry_idle(entry)
 	cache.clear()
 	var tset = entry["set"]
-	for n in entry["body"]:
+	var candidates = entry.get("idle_candidates")
+	# 零或一个候选时，遍历结果与整池扫描完全相同；多个候选沿用注册顺序。
+	var bodies = candidates if candidates != null and candidates.size() <= 1 else entry["body"]
+	for n in bodies:
 		if n != null and is_instance_valid(n) and tset.has(n) and n.get("is_idle") == 1:
 			cache.push_back(n)
 

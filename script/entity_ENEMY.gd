@@ -184,11 +184,27 @@ var convert_gauge: int = 0 #策反进度
 var _outline_base: Dictionary = {} #各描边材质的初始 width/color，策反结束后恢复用
 var _glitch_targets_cache: Array = [] #策反故障目标（首次命中构建，回池清空）
 var _last_glitch_start_ms: int = -100000 #高频去重：同一帧多段伤害不重复写
+## 武器节点缓存（实现 stop_firing/stop_shoot 的后代）：_interrupt_weapons 在眩晕/回池时高频调用，
+## 100+ 敌人时每次 find_children 全子树遍历是单帧 ~1ms 的成本。
+## 激活时建一次；子树直接子节点数变化（动态挂武器）或缓存为空时重建，避免漏停。
+var _weapon_nodes: Array = []
+var _weapon_cache_child_count: int = -1
 
 var overhead_margin: MarginContainer
 var overhead_stack: VBoxContainer
 var _overhead_buff_box: Control
 var _overhead_layout_queued := false
+## 动画帧只置脏，布局在 time_count（10Hz）里 flush，避免每动画帧递归重排。
+var _overhead_dirty: bool = false
+## 10Hz 计算的「是否在屏内」（带余量），离屏时头顶 UI 不画也不排。
+var _overhead_on_screen: bool = true
+## 全局隐藏开关（控制台 HideOverheadUI / 性能条 set_overhead_hidden）：与离屏裁剪叠加。
+static var overhead_ui_globally_hidden: bool = false
+## 离屏裁剪余量（屏数）：1.5 屏外才隐藏，避免贴边抖隐。
+const OVERHEAD_CULL_SCREENS := 1.5
+## 头顶 UI 维护间隔（秒）：10Hz 足够，60Hz 是纯浪费。
+const OVERHEAD_UPDATE_SEC := 0.1
+var _overhead_accum: float = 0.0
 static var _texture_used_rect_cache: Dictionary = {}
 
 func _ready():
@@ -298,11 +314,23 @@ func idle_state():
 			part.idle_state()
 
 func _interrupt_weapons() -> void:
-	for n in find_children("*", "", true, false):
+	# 缓存后遍历（见 _weapon_nodes 注释）；子树直接子节点数变化或缓存为空才重建。
+	if _weapon_nodes.is_empty() or _weapon_cache_child_count != get_child_count():
+		_cache_weapon_nodes()
+	for n in _weapon_nodes:
+		if n == null or not is_instance_valid(n):
+			continue
 		if n.has_method("stop_firing"):
 			n.stop_firing()
 		elif n.has_method("stop_shoot"):
 			n.stop_shoot()
+
+func _cache_weapon_nodes() -> void:
+	_weapon_nodes.clear()
+	_weapon_cache_child_count = get_child_count()
+	for n in find_children("*", "", true, false):
+		if n.has_method("stop_firing") or n.has_method("stop_shoot"):
+			_weapon_nodes.append(n)
 
 func active_state():
 	reset_physics_interpolation()
@@ -311,6 +339,13 @@ func active_state():
 	_target_cache_frame = -1
 	frozen = false
 	_cache_outline_base()
+	# 回池期间子树可能被外部重建（换武器/加发射器），激活时重建一次武器缓存。
+	_weapon_nodes.clear()
+	_weapon_cache_child_count = -1
+	# 头顶 UI：新激活的敌人在下一拍 10Hz 裁剪前先按「在屏内」恢复，避免用上一轮的离屏状态。
+	_overhead_on_screen = true
+	_overhead_dirty = true
+	_apply_overhead_visibility()
 	if !GameEvents.global_time_count.is_connected(time_count):
 		GameEvents.global_time_count.connect(time_count)
 	stats.spawn_hp()
@@ -1124,6 +1159,18 @@ func time_count():
 		if knockback_time <= 0:
 			body_end_knockback()
 
+## 头顶 UI 维护（10Hz 节流）：动画帧只置脏，这里统一 flush；离屏的直接不画也不排。
+## 放 `_process` 而不是 `time_count`：部分敌人（sandbag 等）重写了 `time_count` 且不调 `super`。
+func _process(delta: float) -> void:
+	_overhead_accum += delta
+	if _overhead_accum < OVERHEAD_UPDATE_SEC:
+		return
+	_overhead_accum = 0.0
+	if _overhead_dirty:
+		_overhead_dirty = false
+		_refresh_overhead_layout()
+	_update_overhead_culling()
+
 func apply_conversion_power(power: int) -> int:
 	if power <= 0:
 		return ConvertResult.NONE
@@ -1668,10 +1715,12 @@ func _setup_overhead_display() -> void:
 		overhead_stack.resized.connect(_queue_overhead_layout)
 	var sprite := sprite_2d
 	if sprite != null and is_instance_valid(sprite):
-		if sprite.has_signal("animation_changed") and not sprite.animation_changed.is_connected(_queue_overhead_layout):
-			sprite.animation_changed.connect(_queue_overhead_layout)
-		if sprite.has_signal("frame_changed") and not sprite.frame_changed.is_connected(_queue_overhead_layout):
-			sprite.frame_changed.connect(_queue_overhead_layout)
+		if sprite.has_signal("animation_changed") and not sprite.animation_changed.is_connected(_mark_overhead_dirty):
+			sprite.animation_changed.connect(_mark_overhead_dirty)
+		if sprite.has_signal("frame_changed") and not sprite.frame_changed.is_connected(_mark_overhead_dirty):
+			# 动画帧**不能**直接触发 deferred 布局：每帧 get_combined_minimum_size() 是递归的，
+			# 100+ 敌人 × 动画 fps 就是每帧几百次容器重排。改置脏，10Hz 在 time_count 里统一 flush。
+			sprite.frame_changed.connect(_mark_overhead_dirty)
 	_queue_overhead_layout()
 
 func add_overhead_item(item: Control) -> bool:
@@ -1699,11 +1748,56 @@ func _queue_overhead_layout() -> void:
 	_overhead_layout_queued = true
 	_refresh_overhead_layout.call_deferred()
 
+## 动画帧/动画切换只置脏：真正重排在 time_count（10Hz）里做。
+func _mark_overhead_dirty() -> void:
+	_overhead_dirty = true
+
+## 头顶 UI 可见性 = 在屏内 且 未被全局开关隐藏（控制台 HideOverheadUI / 性能条 API）。
+func _apply_overhead_visibility() -> void:
+	_ensure_overhead_setup()
+	if overhead_margin == null or not is_instance_valid(overhead_margin):
+		return
+	overhead_margin.visible = _overhead_on_screen and not Enemy.overhead_ui_globally_hidden
+
+## 懒初始化：部分敌人（如 sandbag）在自己的 `_ready` 里没有调 `super._ready()`，
+## `_setup_overhead_display()` 就永远不跑；这里兜一次，让裁剪/布局逻辑对所有敌人生效。
+func _ensure_overhead_setup() -> void:
+	if overhead_margin != null and is_instance_valid(overhead_margin):
+		return
+	_setup_overhead_display()
+
+## 10Hz 离屏裁剪：屏幕外敌人不画头顶 UI，也不做布局刷新（160 只里通常只有十几只在屏内）。
+func _update_overhead_culling() -> void:
+	_ensure_overhead_setup()
+	if overhead_margin == null or not is_instance_valid(overhead_margin):
+		return
+	var on_screen := true
+	var vp := get_viewport()
+	var cam := vp.get_camera_2d() if vp != null else null
+	if cam != null:
+		var center: Vector2 = cam.get_screen_center_position()
+		var zoom: Vector2 = cam.zoom
+		var half: Vector2 = vp.get_visible_rect().size * 0.5
+		if zoom.x > 0.0 and zoom.y > 0.0:
+			half /= zoom
+		var limit: Vector2 = half * OVERHEAD_CULL_SCREENS
+		on_screen = absf(global_position.x - center.x) <= limit.x \
+				and absf(global_position.y - center.y) <= limit.y
+	if on_screen != _overhead_on_screen:
+		_overhead_on_screen = on_screen
+		_apply_overhead_visibility()
+		if on_screen:
+			_overhead_dirty = true
+
 func _refresh_overhead_layout() -> void:
 	_overhead_layout_queued = false
+	_ensure_overhead_setup()
 	if overhead_margin == null or overhead_stack == null:
 		return
 	if not is_instance_valid(overhead_margin) or not is_instance_valid(overhead_stack):
+		return
+	# 离屏/被全局隐藏时不排：内容尺寸没变，回屏时再刷（_update_overhead_culling 会置脏）。
+	if not overhead_margin.visible:
 		return
 	var content_size := overhead_stack.get_combined_minimum_size()
 	overhead_margin.size = content_size

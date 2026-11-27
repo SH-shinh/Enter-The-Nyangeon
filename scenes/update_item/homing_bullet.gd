@@ -36,11 +36,11 @@ func _physics_process(_delta: float):
 		_laser.clear_point_targets()
 		_laser = null
 		return
-	var enemies: Array = Targeting.enemies_sorted_by_distance(_laser.global_position)
 	var slots: int = int(_laser.segment_count) - 1
 	var cap: int = mini(int(_laser.get_max_tracked_enemies()), slots)
+	var enemies := Targeting.nearest_enemies(_laser.global_position, cap)
 	for i in range(1, slots + 1):
-		if i <= cap and i - 1 < enemies.size():
+		if i - 1 < enemies.size():
 			_laser.set_point_target(i, enemies[i - 1])
 		else:
 			_laser.set_point_target(i, null)

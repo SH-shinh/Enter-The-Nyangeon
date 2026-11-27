@@ -109,7 +109,7 @@ res://mods/example/defs/characters/example_hero.tscn
 
 ## 8. 安装
 
-- 游戏内：主菜单左下角 **MOD** 按钮 → `导入 zip` → 选 zip → **重启游戏** 生效。
+- 游戏内：主菜单 **OPTION** → **MOD** 页签 → `导入 zip` → 选 zip → **重启游戏** 生效；桌面端也可以把 `.zip` 直接拖进该页签（仅面板展开且当前页为 MOD 时生效）。
 - 手动：把 `<mod_id>.pck` 与 `mod.json` 放到 `user://mods/<mod_id>/`（Windows 为 `%APPDATA%\Godot\app_userdata\Enter The Nyangeon\mods\`）。
 - 桌面端还会扫描**可执行文件同目录的 `mods/`**（便携模式，只读）。
 

@@ -14,10 +14,8 @@ const RELEASE_ORBIT_DIST: float = 96.0
 const AIM_SMOOTH: float = 10.0
 ## 无人机命中带 hare_mark 的敌人时额外回复的电量。
 const ENERGY_HIT_REGEN: float = 2.0
-## 无人机独立基础伤害（T0–T3）：不乘玩家 bullet_damage 基础值，只吃其乘区。
+## 无人机独立基础伤害（T0–T3）：在其上**加算**玩家子弹基础伤害（乘区前的 base+add）。
 const DRONE_BASE_DAMAGE: Array[float] = [24.0, 36.0, 50.0, 66.0]
-## 玩家子弹伤害按该比例加算给无人机（不再直接乘 bullet_damage_mult）。
-const DRONE_BULLET_DAMAGE_RATIO: float = 0.3
 
 @export var player: Node
 @export var phase: float = 0.0
@@ -257,14 +255,18 @@ func _configure_bullet(node: Node, _guard: bool) -> void:
 
 func _pre_bullet(node: Node, guard: bool) -> void:
 	GameEvents.emit_player_shot_position(shoot_position.global_position, node)
-	# 无人机独立基础伤害：不吃玩家 bullet_damage 基础值，但吃 bullet_damage_mult/global/暴击/装备。
+	# 伤害口径：基础值 = 独立基础 + 玩家子弹基础伤害（base_bullet_damage + bullet_damage_add，乘区前）；
+	# 之后整段乘玩家子弹伤害乘区（PlayerData.bullet_damage_mult）、全局/暴击/模式倍率/装备。
 	if node.get("damage_data") != null and player != null and player.get("stats") != null:
 		var dd = node.damage_data
 		var ps = player.get_node_or_null("HarePS")
 		var t: int = clampi(int(ps.get("now_t")), 0, 3) if ps != null else 0
 		var equip: float = float(player.stats.equip_damage) * (1.0 + float(release_level) * 0.03)
-		var base_dmg: float = DRONE_BASE_DAMAGE[t] + float(player.stats.bullet_damage) * DRONE_BULLET_DAMAGE_RATIO
-		var dmg: float = base_dmg * float(player.stats.global_damage)
+		# 乘区前的子弹基础伤害：与 PlayerData 的 bullet_damage 拆解同源（base+add，不含 bullet_damage_mult/ability_mult）。
+		var bullet_base: float = float(maxi(1, PlayerData.base_bullet_damage + PlayerData.bullet_damage_add))
+		var bullet_mult: float = maxf(0.0, float(PlayerData.bullet_damage_mult))
+		var base_dmg: float = DRONE_BASE_DAMAGE[t] + bullet_base
+		var dmg: float = base_dmg * bullet_mult * float(player.stats.global_damage)
 		if bool(dd.is_crit):
 			dmg *= float(player.stats.critical_damage)
 		dmg *= _current_ratio() * equip

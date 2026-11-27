@@ -32,15 +32,31 @@ func _on_enemy_dead(_final_damage: int, _damage_data: DamageData, body_path: Nod
 	if _frame_spreads >= FRAME_SPREAD_LIMIT:
 		return
 	var origin: Vector2 = dead.global_position
-	var spread := 0
-	for enemy in Targeting.enemies_sorted_by_distance(origin):
-		if spread >= _target_count:
-			break
+	# 只收集半径内的候选（不再对全表排序：105 敌整表排序 ≈183µs/次），
+	# 再「每轮取最近的一个」尝试施加 —— 保留原语义：最近者打满层就顺延到下一个，直到成功 N 个。
+	var in_range: Array = []
+	for enemy in Targeting.candidates():
 		if enemy == dead or enemy == null or not is_instance_valid(enemy):
 			continue
-		# 列表按距离升序，超出半径即可整体停手。
-		if origin.distance_to(enemy.global_position) > RADIUS:
+		var d: float = origin.distance_to(enemy.global_position)
+		if d > RADIUS:
+			continue
+		in_range.append({"e": enemy, "d": d})
+	var spread := 0
+	while spread < _target_count and not in_range.is_empty():
+		var best_i := -1
+		var best_d := INF
+		for i in in_range.size():
+			var dd: float = float(in_range[i]["d"])
+			if dd < best_d:
+				best_d = dd
+				best_i = i
+		if best_i < 0:
 			break
+		var enemy = in_range[best_i]["e"]
+		in_range.remove_at(best_i)
+		if enemy == null or not is_instance_valid(enemy):
+			continue
 		if apply_shock(enemy, layers) <= 0:
 			continue
 		spawn_shock_arc(origin, enemy.global_position, 3)

@@ -97,6 +97,7 @@
 - SUPERSEDED: 2026-10-08 `get_pool` 重写为空闲优先（返回的必为空闲节点或 `null`），`FloatingPool` 已删除；见下一条。
 
 ### [Pooling] `get_pool` 空闲优先，无空闲未达上限返回 null，满额才静默回收（2026-10-08 重写）
+- Follow-up / 后续（2026-11-27，来源：test）：同一物理帧内，敌弹可以刚回池就被下一发取用，不能把“全忙”缓存到下一帧。用 `is_idle` 状态变更跟踪候选后，200 发敌弹全忙时每次取弹的扫描读取由 200 次降至 0 次，单发刚回池时由 200 次降至 1 次。多个候选仍按注册顺序回填，避免改变复用次序。证据为本地 `tests/projectile_pool_scan_probe.tscn`、敌弹生命周期、Hare 子弹池与弹幕回归。
 - Evidence / 证据: `scenes/manager/PoolManager.gd`（`get_pool`/`get_pool_idle`/`_recycle`/`detach`/`_node_pool`/`tree_exiting`、`IDLE_LIMITS`）、coop `mods/etn_coop/net/coop_visual_sync.gd`（改用 `PoolManager.detach`）
 - Notes / 说明: 旧实现 `max_value > limit` 时**无条件** `idle_state()` 掉索引处节点，会把存在空闲时的活跃子弹/金币也回收（瞬移/丢值）；且空闲扫描上限 `min(size,64/32)` 会造成「假性无空闲」→ 继续实例化 → 无界增长。现改为：① `get_pool` 空闲优先——先弹 `entry.idle` 懒缓存（O(1)），缓存空则整表扫描并回填缓存（**无扫描上限**）；② 无空闲且 `body.size() < limit` 返回 `null`（调用方新建）；③ 仅 `size >= limit` 且无空闲时静默回收轮转槽位（`_recycle` 优先 `deactivate_silent()`，否则 `idle_state()`）。`limit = -1`（未列出的池）不设限、永不强收。`get_pool_idle` 永不强收（`CoinManager` 依赖，避免回收活跃金币丢值）。`IDLE_LIMITS` 兼作并发上限，故**不抬高**既有值即可保持原游戏手感；新增 `stone_bullet:40`/`cannon_bullet_1:20`/`cannon_flash_1:10` 收敛原先的无上限池。`detach(node)` 公开剥离（纯表现副本）；`_node_pool` + `tree_exiting` 自注销取代热路径 O(n) `_prune_freed_bodies`。⚠️ 调用方**仍应检查 `is_idle`**（防御自定义/异常池）；`clear_pool`/`erase_pool` 仍不释放节点。
 - Source / 来源: code
@@ -1724,6 +1725,12 @@
 - Notes / 说明: **同类孤儿信号**：同次重构还遗留 `GameEvents.enemy_hit_position`（`emit_enemy_hit_position` 从未被调用，唯一订阅者 `scenes/update_item/test_ammo.gd:5`；`test_ammo` 无任何 item/shop 引用，已删除信号+场景）。**通用教训**：信号从"场景脚本"迁移到"资源 + 组件"时，旧场景里 emit 的全局事件必须逐个迁移；审计法=对每个 `GameEvents` 信号交叉检查 `emit_*` 调用与 `.connect`，"有订阅、无发射"即回归。另：编辑器 `@tool` 测试上下文**没有 autoload 实例**，组件内对 `GameEvents`/`PlayerData` 的访问需 `!= null` 短路守卫，`tests/` 才能覆盖该路径（`test_last_stand_success.gd`）。
 - Source / 来源: user + code + test
 - Date / 日期: 2026-10-08
+
+### [Perf/Combat] 追踪激光的等距锁定顺序会改变折线路径
+- Evidence / 证据: `script/targeting.gd:64`、`scenes/update_item/homing_bullet.gd:41`、本地 `tests/laser_targeting_probe.tscn`。
+- Notes / 说明: 对称站位、同点堆叠时，距离相等的敌人在旧版完整排序中未必按注册先后排列。直接按遍历顺序截取前九名会改变途经目标或末位目标。探针按槽位对照旧版，覆盖同距、移动枪口、缩减上限、帧内释放目标和回池。在 Windows Godot 4.7 headless 中，96 个随机分布候选时每次选敌并填槽由 238 µs 降至 33 µs；大量并列时为 185 µs／150 µs。测量复用物理帧候选缓存。
+- Source / 来源: test
+- Date / 日期: 2026-11-27
 
 ### [Mod] player_laser_beam 远端不跟随/不追踪：一次性特效通道不足，需按 effect_id 建持续光束状态通道
 - Evidence / 证据: `scenes/bullet/player_laser_beam.gd`（无 `velocity`；`follow()` `:99`；新增 `network_get_beam_state`/`network_apply_beam_state`、`_physics_process` 远端插值）；`scenes/weapon/Supernova_Abi_Eshuhs_Sword_of_Light/charge_laser_gun.gd:120-124`（`active_state`→`notify_local` 早于 `:155-158` 的 `follow`）；`mods/etn_coop/net/coop_net.gd`（`_on_projectile_spawned` 无 velocity → 一次性特效通道；新增 `_follow_nodes`/`_flush_follow_states`/`_sanitize_follow_entry`/`_server_effect_follow_batch`/`_remote_effect_follow_batch`/`_apply_remote_follow`）、`mods/etn_coop/net/coop_visual_sync.gd`（`get_effect`）；`scenes/update_item/homing_bullet.gd:32-46`（仅本地设 `point_targets`）。
@@ -4295,6 +4302,7 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - Notes / 说明: ① 形态是「一条链走到底」，不是两两独立连线：链头 = 谁先到 `shock_cd` 谁发起；每跳选最近的、未被本链访问过的感电目标，跳距 ≤ 当前节点层数的射程，节点数 ≤ `min(6, 1+链头层数)`。② 链走完**先重置整条链的 `shock_cd`、出表现，再按跳序结算伤害，最后给仍存活的节点叠易伤**；本次命中不吃自己这层 5%，下一次链才吃。顺序反了会让本次链的易伤提前生效（5 层单跳会从 32 涨到 34）。孤立目标（路径 <2）把 `shock_cd` 置 2 tick 重试，避免每 tick 全表扫描。③ **易伤只在链命中时叠**（Maki 的感电直伤不叠）：链只由 host 跑、客机回放同一链；直伤只有拥有者端跑。④ 易伤写 `EnemyStats.anomaly_hurt_damage_mult`（与颜料标记同一乘区、加法共存），靠 `_on_entry_removed` 按 `0.05×vuln_stacks` 回滚；`EnemyStats.update_body_ability()` 不重置该字段，所以不会被属性重算冲掉。⑤ 层上限走施加者的 `shock_layer`（燃烧同机制）、时长恒定 4s/层；客机转发 buff 时 mod 的 `_applier_stats` / `_sanitize_applier_stats` 必须带上 `shock_layer`，否则 host 侧静默退回默认 5。⑥ 占位电弧接口冻结为 `play(points, power)`；正式特效留待后续参考 pixelfx `lightning/chain-lightning`（它是固定路径 + 施法者动作，不能直接当动态链用）。⑦ 联机链路（2026-11-09）：原实现客机镜像也本地跑链（`_tick_shock_dot` 无 gate）并本地 `add_shock_vuln`，而客机的 `resolved_damage` 由自身镜像的 `anomaly_hurt_damage_mult` 算出、被 host 直接采信（`HealthComponent.take_damage(..., resolved_damage)` 在 `resolved_damage>=0` 时不再重算），两端链路径不同会让同一发伤害在两个玩家端数值不同。现改为：host 链走完通过 `ExtensionHooks.on_shock_chain` 广播 net_id 序列 + 每节点 `vuln_stacks`；客机 `ShockChain.replay_remote` 只回放 VFX + `network_set_shock_vuln`，镜像 `_tick_shock_dot` 跳过本地建链；`shock_dot` apply/刷新时 host 补发 `_remote_shock_vuln`，中途加入/重连从 host 当前层数起步。协议 9→10。
 - Source / 来源: user + code + test
 - Date / 日期: 2026-11-09
+- SUPERSEDED: 2026-11-27（来源：user | test）伤害侧的全局单链门 `GLOBAL_GAP_MS=90` / `_last_chain_ms` 已删除——它实际等价「每 tick 全局只出 1 条链」，场上感电目标一多就被按 1/N 摊薄（见文末新条目）；现在伤害侧不限，上限只保留在电弧表现（`fx_allowed("shock_chain", 80ms)` + 池上限）。
 
 ### [Combat] 玩家侧感电：固定 2% 最大生命 + 层=频率 + 免疫接口
 - Evidence / 证据: `resources/buff/player_buff/player_shock.tres`；`resources/buff/components/player_shock_component.gd`（`PLAYER_SHOCK_HP_RATIO=0.02`、`SHOCK_KNOCKBACK_FORCE=140`、`get_shock_entry`/`shock_chain_hit`/`_on_global_tick`）；`script/shock_chain.gd`（`is_immune`、`_candidate_pool` 的 `"ShockCarrier"` 组、`max_hp>0`/`can_hurt` 过滤、`chain_dir` 传给击退）；`scenes/enemies/enemy_fire_field.gd`（`only_hurtable`）；`scenes/enemies/enemy_shock_field.tscn`；`script/Stats.gd`/`SummonedStats.gd`/`EnemyStats.gd`（`shock_immune`）；`scenes/manager/enemy_buff_manager.gd`（`shock_chain_hit` 免疫检查 + 可选击退参数）；`scenes/summoned/mobu_trinity/mobu_trinity.tscn`（`max_hp=0`/`can_hurt=true`）、`scenes/player_support/kei/kei_summoned.tscn`/`scenes/update_item/utaha_turret_body.tscn`（`max_hp=0`/`can_hurt=false`）；`tests/_tmp_player_shock_probe.gd`（本地，不入库）。
@@ -4566,6 +4574,7 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - Notes / 说明: 实测 T0 RELEASE（global=1/equip=1/无暴击）：`bullet_damage 16 → 18`、`32 → 22`；`PlayerData.bullet_damage_mult 1→2` 仍为 18（不再直接乘区）。`global_damage`/暴击/装备/模式倍率/标记易伤不变。比例常量可调，0 即只吃独立基础。
 - Source / 来源: user
 - Date / 日期: 2026-11-14
+- SUPERSEDED: 2026-11-27 口径改为「基础值加算子弹基础伤害（`base_bullet_damage + bullet_damage_add`，乘区前）+ 整段乘 `PlayerData.bullet_damage_mult`」，0.3 系数与 `DRONE_BULLET_DAMAGE_RATIO` 删除（来源：user | test，见文末新条目）。
 ### [Gameplay] shrapnel_bullet 分裂弹继承触发子弹的伤害快照
 - Evidence / 证据: `scenes/update_item/shrapnel_bullet.gd`（`launcher.set("damage_data", damage_data)` + `snapshot_damage=true`）、`scenes/update_item/player_bullet_launcher.gd`（`snapshot_damage`；`_configure_bullet_multi` 复制后清空 `on_damage_dealt`；`_post_bullet` 在 `emit_player_shot_position` 后覆盖 `base_damage`/`is_crit` 并合并 `damage_type`/`source_type`）
 - Notes / 说明: 之前分裂弹走 `player.bullet_hit_damage` 按玩家当前 stats 重算，无人机弹触发时只得到玩家子弹伤害。现在继承父子弹快照：实测父 `base_damage=100`/`is_crit=true`/`EQUIP_DAMAGE`+`EQUIP` → 4 枚子子弹全部 `100`/`true`/标签命中。不继承 `on_damage_dealt`，避免误改父子弹/重复触发；`pratt_helmet` 等其它 launcher 默认 `snapshot_damage=false` 不受影响。
@@ -5204,6 +5213,9 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - Date / 日期: 2026-11-26
 
 ### [Perf/Nav] 普通壁垒建成后的首个拓扑尖峰主要来自全图墙距计算
+- Follow-up / 后续（2026-11-27，来源：test）：单独计时建墙调用，旧版六个独立进程中模板解析占 11.49–11.86 ms，墙层写入连同信号占 0.35–0.38 ms。批量请求场景资源、按路径排序取回后，模板解析降至 7.19–9.21 ms，建墙调用中位数由 20.99 ms 降至 17.96 ms。配置为 Godot 4.7 Windows headless、限 60 FPS、24 个敌人、单目标和四目标各三次。另用两个种子、六张指定模板及按权重抽取共 14 组，同一物理帧内对照旧实现，墙格顺序、贴图变体与玩家四邻接可达格均相同。复测入口为本地 `tests/barricade_frame_probe.tscn` 的 `--profile-build` 与 `--verify-build`。
+- Follow-up / 后续（2026-11-27，来源：test）：优化墙距后，四目标首次建场原为同帧 3 张、隔 108 个物理帧再补 1 张。把队列挂在 `EnemyAI.ensure_solved()` 仍受调用方约 10Hz 的频率限制。改由 `SceneTree.physics_frame` 推进，并在槽位轮转前登记全部缺场组后，24 敌、4 目标、限 60 FPS 三轮均为本地优先、连续 4 个物理帧各建 1 张。建墙至全员就绪从 167–168 个物理帧缩至 26–27 帧；墙存活阶段最长主循环间隔从 30.2–31.5 ms 降到 25.2–27.1 ms，最长帧落在建墙后的首个采样帧。证据：`tests/barricade_frame_probe.gd` 的 `first_target_field` 与 `reb_step`。
+- Follow-up / 后续（2026-11-27，来源：test）：改用最近墙角距离上界、包围盒剔除与分块候选复用后，沿用下述探针和配置，单/四目标各三轮，墙距 7.52–8.98 ms，全拓扑 12.62–14.02 ms。单目标最长主循环帧间隔 24.66–26.04 ms，落在建墙调用后的第一个采样帧；四目标 30.17–31.46 ms，三轮都与同帧首次构建三张目标场重合。八种布局各 729 格逐格对照原算法，距离零误差、最近墙格完全一致。浮点相对坐标改写可能改变近等距墙的胜出顺序，不能用容差放过墙格 ID 差异。
 - Evidence / 证据: `tests/barricade_frame_probe.tscn`（本地探针），`scenes/field_mods/terrain_field_effect.gd:77`、`:93`，`script/enemy_nav_field.gd:350`、`:423`、`:431`。Godot 4.7 + Rapier2D，headless 限 60 FPS，24 个 sweeper，单目标及四目标离线分组各三次。正常帧间隔中位数约 16.7 ms；建墙调用 22.0–26.1 ms，建成后最长主循环帧间隔 64.7–70.5 ms，首次拓扑构建 62.1–67.4 ms。四组目标场随后按同一帧 3 个、另帧 1 个重建。另两次按代码段取时，墙距分别为 58.26/63.63 ms、57.23/62.43 ms（墙距/拓扑总耗时）。
 - Notes / 说明: 此处通过实际 `BarricadeEffect.start()/stop()` 和常规 AI 调度观测，目标使用节点桩，四目标各分配 6 敌。普通建立/撤除各触发一次失效；撤墙后目标场重建为 0，仍可观察到无墙拓扑再次构建。`topology_profile["clear"]` 对应 `_rebuild_wall_clearance()`，计时边界见 `_build_topology()`。后续优化需同时校验距离与最近墙格，局部墙过滤会读取两者。
 - Source / 来源: test
@@ -5219,4 +5231,88 @@ SUPERSEDED: 2026-11-06 改为 Core/Optional 内的 source 1 随机贴图标记�
 - Evidence / 证据: `script/props/prop_health.gd:24-31`（`i.call(owner, 0)`，owner 为场景根）、`scenes/props/oil_barrel.tscn`（`PropStats` 是子节点，`penetrate_resis=999`）、`script/player_bullet.gd:104-108`、`scenes/bullet/normal_bullet.gd:133-138`、`scenes/bullet/megu_bullet.gd:35-48`
 - Notes / 说明: 可破坏道具走 `PropHurtBox` → `PropHealth._on_hit_received` 回调，传入的 victim 是 `SceneProp` 根；根节点只有 `prop_id/faction/is_idle`，`stats` 在 `PropStats` 子节点上、`enemy_buff_manager` 根本不存在。原先直接 `victim.stats.penetrate_resis` / `victim.enemy_buff_manager.apply_buff(...)`，用玩家或召唤物子弹打油桶会报 `Invalid access to property or key 'stats'`。修法：`victim.get("stats")` 为空且属于 `SceneProp` 时回退 `get_node_or_null("PropStats")`（取不到按 0），`enemy_buff_manager` 判空后跳过 buff。新增可破坏道具时记得挂 `PropStats` 子节点，否则子弹/召唤物命中会走「无穿透抗性」分支。
 - Source / 来源: code + test
+- Date / 日期: 2026-11-27
+
+### [Mod/UI] `Window.files_dropped` 只在桌面原生主窗口回调，且没有 drag-enter 事件
+- Evidence / 证据: `ui/option.gd` 的 `_ready`（`OS.has_feature("pc") and DisplayServer.get_name() != "headless"` 才连接）、`_on_files_dropped`；`script/mod_option.gd` 的 `handle_files_dropped`
+- Notes / 说明: 系统文件拖放只在桌面平台由原生窗口抛信号（移动端/Web 不会回调），不能作为移动端导入入口。Godot 没有「文件悬停在窗口上」的事件，只有 drop 那一刻才拿到路径，做不了拖拽悬停高亮，只能在落点后给结果。Windows 下以管理员权限运行、而拖拽源是普通权限程序时，UIPI 会让系统直接不投递拖放事件——属系统限制，代码无需兜底。
+- Source / 来源: code
+- Date / 日期: 2026-11-27
+
+### [Mod/UI] 关闭 option 不会对当前页调 `menu_hide()`，子页 `shown` 不能代表「玩家正看着这一页」
+- Evidence / 证据: `ui/option.gd` 的 `out_option_selected`（只 `button_close()` + 播 `option_out`，未对当前页 `menu_hide()`）、`ui/option.gd` 的 `menu_button_press`（新增 `_active_page`）
+- Notes / 说明: `OptionMenu.shown` 只在页签切换时更新；直接读 `mod_option.shown` 会把「关掉面板之后」仍当成可见。判断某页是否真的对玩家可见要用宿主容器状态（本实现用 `option.gd` 的 `on_option` + `_active_page`，关闭时清空）。同理，系统事件（文件拖放）的接收器应放在宿主 `option.gd`，再按页转发，而不是让页自己判断可见性。
+- Source / 来源: code
+- Date / 日期: 2026-11-27
+
+### [Localization] `tr()` 缺键时返回键名，直接 `%` 格式化会抛 String formatting error
+- Evidence / 证据: `script/mod_option.gd` 的 `_tr_format`（先判 `%` 再格式化）；新键未 reimport 时 `tr("mod_drop_importing") % 1` 实测报 `not all arguments converted during string formatting`（`core/variant/variant_op.h`）
+- Notes / 说明: `ETN_*localization.csv` 追加新键后必须 reimport 才进 `.translation`；在那之前（或某 locale 缺该键）`tr()` 原样返回键名，没有 `%d/%s` 占位符，格式化直接运行时错误。带占位符的新键要么先 reimport，要么走「含 `%` 才格式化」的守卫。
+- Source / 来源: test
+- Date / 日期: 2026-11-27
+
+### [GDScript] `static var` 会让脚本类在退出时无法释放，连带 `preload` 资源计入退出期 RID/资源泄漏
+- Evidence / 证据: `script/mod_option.gd` 的 `_last_drop_sig`/`_last_drop_msec`（初版为 `static var`）；`python tests/run_ui_ux_checks.py --settings-only`：static 版稳定报 `2 RID material + 1 shader + 13 texture leaked at exit` 且 `80 resources still in use`（runner 判失败），改成普通成员变量后恢复 `UI_UX_RESULT checks=23 failures=0`、exit 0。禁用新增 UI 节点、或换回 HEAD 版 `ui/option.gd` 都仍复现，故与节点/构建无关。
+- Notes / 说明: GDScript 静态变量存在脚本级静态存储里，脚本类因此保持引用、退出时未被释放；它持有的 `preload` 常量（字体、场景等）随之仍 in use，headless dummy renderer 把它们记成 RID 泄漏。排查退出期泄漏可先用「静态变量 → 普通成员变量」二分；确实需要跨实例共享时，用 autoload 上的字段而不是 `static var`。
+- Source / 来源: test
+- Date / 日期: 2026-11-27
+
+### [Equip] 「溢出/额外伤害」类道具必须自己防递归：puzzle_cube 的转移曾与 hare_mark 复利叠加
+- Evidence / 证据: `scenes/update_item/puzzle_cube.gd`（加固前 `dead_overflow_damage` + `overflow_count_add`）、`script/health_component.gd:161-164`（对**任何**伤害、含 `TRUE_DAMAGE` 都发 `enemy_over_kill_damage`）、`script/health_component.gd:256-271,290-298`（真伤跳过 `global_hurt_damage` 与 `damage_modifier`，但**仍吃** `_apply_type_vulnerability`）、`script/EnemyStats.gd:64,180-198`（`equip_hurt_damage_mult`）、`resources/buff/enemy_buff/hare_mark.tres:11`（全仓唯一写 `equip_hurt_damage_mult` 的地方）、`scenes/update_item/black_ninpero.gd:31-35` + `resources/buff/enemy_buff/vuln_buff_2.tres:11`（black_ninpero 只认 `BULLET_DAMAGE`，写的是 `global_hurt_damage_mult`）。
+- Notes / 说明: **现象**（user）：Hare 持有 `puzzle_cube` + `black_ninpero` 时转移伤害异常叠加。**根因是自反馈，不是两件道具耦合**：转移伤害（`true_hit` = `EQUIP_DAMAGE` + `TRUE_DAMAGE`）击杀目标会再次触发 `enemy_over_kill_damage`，被原样记成下一次转移 → 10Hz 无限接力；真伤虽跳过全局易伤，却在按类型易伤口仍乘 `equip_hurt_damage_mult`（Hare 标记 +20/30/50/80%），于是每跳 `round(溢出×1.8) − 目标残余血`，**几何增长**（探针实测 50→89→159→285），越过 2^53 后 `int(round(float))` 精度丢失/反号（表现为负数伤害、敌人反而回满血）。`black_ninpero` **不在乘区链上**：`global_hurt_damage_mult` 对真伤无效，其 `add_buff` 又只对 `BULLET_DAMAGE` 生效；它只是把子弹溢出基数抬高（探针对照 A1 全局易伤 / A2 装备易伤 / A3 两者同时 = 50/90/90，有全局易伤时转移不变大）。**通用教训**：凡「监听受击/溢出信号 + 再自己发一次伤害」的道具，发出时都要带 `GameTags.EXTRA_DAMAGE`（统一走 autoload `ExtraDamage.request()`），并在自己的入口按该 flag return；否则一个 10Hz 定时器就能把闭环变成指数放大器。另外这类转移伤害仍会广播 `enemy_damage_taken` 给全部订阅者（无类型过滤的如 `winnipesaukee_stone` 会多射一发石头弹、`ginseng_doll` 会把它算进吸血），排查二次行为时别只盯发起道具。修法要点：自筛目标（跳过 `is_idle` / `hp<=0` 未回池尸体 / `is_invincible` / 无 `health_component` / 非敌方）、消费即清 `overflow_count`、记录时 `clampi(…, transfer_cap)` 兜底数值边界。
+- Source / 来源: code | test
+- Date / 日期: 2026-11-27
+
+### [Gameplay] Hare 无人机伤害 = (独立基础 + 子弹基础伤害) × 子弹伤害乘区
+- Evidence / 证据: `scenes/player/hare/hare_drone.gd`（`DRONE_BASE_DAMAGE`、`_pre_bullet` 的 `bullet_base`/`bullet_mult`/`base_dmg`/`dmg`，删除 `DRONE_BULLET_DAMAGE_RATIO`）、`script/PlayerData.gd:79,138,139,395`（`base_bullet_damage`/`bullet_damage_add`/`bullet_damage_mult` 与 `bullet_damage` 的合成式）、对照先例 `scenes/update_item/shiroko_drone_icon_2.gd:101`（同样只乘 `PlayerData.bullet_damage_mult`）。
+- Notes / 说明: 旧口径（2026-11-14 起）是 `DRONE_BASE_DAMAGE[T] + stats.bullet_damage × 0.3`，`bullet_damage_mult` 基本无效；现改为 **基础值 = `DRONE_BASE_DAMAGE[T] + max(1, PlayerData.base_bullet_damage + PlayerData.bullet_damage_add)`（乘区前），再整段乘 `PlayerData.bullet_damage_mult`**，其余 `stats.global_damage × (暴击?critical_damage) × _current_ratio() × equip` 不变。要点：① 加算项必须取**乘区前**的子弹基础值，不能拿已含乘区的 `stats.bullet_damage`，否则与乘区重复计算；② 不要再乘 `PlayerData.ability_mult`——它已经通过 `stats.global_damage`/`stats.equip_damage` 各生效一次，再乘会三重计算；③ `bullet_damage_mult` 允许 <1（`s_bullet`/`AP_bullet` 等减益），用 `maxf(0, …)` 兜底、最终 `maxi(1, round())` 不会出现 0/负伤害。实测（T0、RELEASE、`global=1`、`equip=1`、`base_bullet_damage=3`）：基线 `24+3 → 17`（旧口径 16）；`mult 2 → 35`（旧口径 17）；`add 17 → 28`；必暴 `→ 26`；`mult 0.5 → 9`。探针 `tests/_hare_drone_damage_probe.tscn`（本地，不入库）修复后 `failures=0`，临时回退旧公式跑同一探针为 `failures=6`（16/17/19/24/16）。
+- Source / 来源: user | test
+- Date / 日期: 2026-11-27
+
+### [Combat] 感电链的全局上限只该限视觉，不能限伤害；同帧多条链必须靠帧号去重
+- Evidence / 证据: `script/shock_chain.gd`（`tick` 的 `Engine.get_process_frames()` 帧标记 + `_build_path`/`_candidate_pool` 的 `frame` 参数与 `entry["chain_frame"]` 去重、`_spawn_arc` 仍走 `PoolManager.fx_allowed(FX_CATEGORY, 80)`）；`scenes/manager/enemy_buff_manager.gd`（`_tick_shock_dot` → `ShockChain.tick`、`reset_shock_cd`、`interval_ticks_for` 4~12 tick）；`scenes/manager/PoolManager.gd:62,113,393`（`FX_BASE_MS` shock_chain 80ms、电弧池上限 12、`fx_allowed`）；`scenes/player/chihiro/chihiro_drone_shock.gd`、`resources/buff/components/player_shock_component.gd`（`ShockCarrier` 也当链头）；本地探针 `tests/_shock_many_probe.tscn`（不入库）。
+- Notes / 说明: **现象**（user）：场上敌人全部感电时，闪电链只有一小部分敌人触发。**根因**：旧实现有全局门 `GLOBAL_GAP_MS=90` + `_last_chain_ms`，而所有敌人的 buff tick 都在同一个 10Hz tick 帧内、`Time.get_ticks_msec()` 相同 ⇒ 实际等价「**每 tick 全局只出 1 条链**」（≤10 条/s），与在场感电数无关；而每个条目的期望频率是每 `interval_ticks_for(层)` 出一次（`shock_layer` 默认 5 → 4 tick），所以场上只要有 ≥5 个 5 层感电敌人就已经把供给吃满，人越多越按 1/N 摊薄。该门自感电首发提交就在，不是回归。**修法（用户裁定：上限只限视觉）**：删掉伤害侧全局门，每个到点链头各自出链；**必须**加同帧去重——否则 N 条链 × 6 跳会把同一目标单帧打 6N 次。去重令牌**不能用 `Time.get_ticks_msec()`**：一帧内结算耗时就会跨毫秒（实测 14 条链的 `now` 从 3731 一路涨到 3749，去重全部失效，24 个目标被打 84 次），要用 `Engine.get_process_frames()`（同 tick 的管理器在同一 process 帧内同步执行，跨 tick 至少 100ms）。视觉仍由 `fx_allowed("shock_chain", 80ms)` + 电弧池 12 限制（同一帧只有第一条链出图）。实测（24 个沙袋、5 层、射程内密排）：改前每 tick 恒 `chains=1 / hits=6 / distinct=6`，12 tick 内每人最少 0 次；改后每 4 tick 一次爆发 `chains=4 / hits=24 / distinct=24`、电弧并发仍为 1、每人最少 3 次。**代价**：爆发帧结算耗时 +3.5ms（24 目标，headless）/ 线性涨（60 目标约 10ms），且 `on_shock_chain` RPC 数量随之上升。**联机核对（2026-11-27，无需改协议/Mod）**：链由 host 权威逐条发可靠 RPC（`coop_net.gd:3146-3164`），客机 `replay_remote` 逐条回放绝对值 `vuln_stacks` + 本机玩家/召唤物 2% + 电弧；客机三处 `_is_remote_mirror`/`is_lan_session`/`_lan` gate 保证不本地建链，同帧去重又在 host 侧完成 ⇒ 客机每帧对同一目标最多回放 1 次，与旧行为语义一致；电弧两端各受 `fx_allowed(80ms)`。包量：24 目标≈1 条/tick（爆发 4 条/帧）、60 目标≈2.5 条/tick（爆发 10 条/帧），单条 100–180B ⇒ 1.5–4KB/s；要压包再升协议 v13→v14 合并成每帧一条批量 RPC。
+- Source / 来源: user | test
+- Date / 日期: 2026-11-27
+
+### [Perf] 感电「施加风暴」：联动 handler 必须先在入口判重施冷却，缓存管理器/玩家解析
+- Evidence / 证据: 用户 Profiler 截图（帧 62677，Chihiro + 大量感电敌人、无壁垒，单帧）：`BuffManagerBase.apply_buff` **887 次 / 10.46ms**、`BuffRouter.apply_buff` 444/2.07ms、`BuffRouter.resolve_manager` 444/4.91ms、`stun_grenades._on_enemy_shock_applied` 442/2.00ms、`ShockEquipItem.apply_shock` 170/1.28ms；对照 `ShockChain.tick` 仅 0.09ms/75、`shock_chain_hit` 0.07/30（**链结算不是主因**）。代码：`scenes/update_item/stun_grenades.gd`、`scenes/manager/buff_manager_base.gd`（`is_reapply_blocked`）、`script/buff_router.gd`（`resolve_manager` 的 `MGR_CACHE_META`）、`script/player_ref.gd`（`resolve_cached`）、`scenes/manager/enemy_buff_manager.gd:_ensure_player`；本地探针 `tests/_stun_gate_probe.tscn`（不入库）。
+- Notes / 说明: **现象**（user）：场景内大量感电敌人时周期性峰值卡顿。**根因**：每次感电施加都会 `emit_enemy_shock_applied` → 震撼弹 handler 无条件 `BuffRouter.apply_buff(stun)`；而 `resources/buff/stun.tres` 的 `reapply_cooldown=1.5` 让这些施加**全部在 `apply_buff` 深处被拒**（不改状态），但路由/`resolve_manager`/hook 的开销照付——单帧 887 次 `apply_buff` 里约 **444 次是纯浪费**，是脚本耗时（55.5ms）里最大的一块。**修法**：① `BuffManagerBase.is_reapply_blocked(buff)`（只读 `_reapply_last`，与 `apply_buff` 内判定同源、不记账）让联动 handler 在入口 return；② `BuffRouter.resolve_manager` 把 manager 缓存在 target meta（`manager.body == target` 校验，池化/重建自动失效）；③ `PlayerRef.resolve_cached()` 按 `Engine.get_process_frames()` 缓存玩家解析（`enemy_buff_manager._ensure_player` 改用它）。**注意**：`get_meta(name, null)` 在 meta 不存在时会直接报错（Godot 4.7 把 `p_default == Variant()` 视同未给默认值），必须先 `has_meta` 再 `get_meta`。**通用教训**：① 监听「已施加/已受伤」这类高频事件、并在里面再加 buff/伤害的 handler，入口先判「本次会不会被拒绝」（冷却/满层/免疫），否则单帧几百次的纯浪费路由会把帧时间放大；② `apply_buff` 这类胖函数里的每个早退条件都值得暴露成只读查询给上游；③ 不要给 `ExtensionHooks` 一层做「空钩子缓存」——mod 用直接字段赋值注入，缓存无法可靠失效，宁可为它保留 2–7ms。**验证**：`tests/_stun_gate_probe.tscn` 21 项全过（冷却内两次感电进入 stun apply 的次数 = 1，修复前为 3；眩晕层数/计时不被冷却内施加改动；冷却解除后重新眩晕 `now_time=0`；`resolve_manager`/`resolve_cached` 正确性）；`tests/_shock_many_probe`、`tests/shock_chain_probe`、`tests/chihiro_full_probe` 仍 `failures=0`。**未做**：按层合并 `apply_buff`（收益 ≈1.5–3ms/帧，但要 mod 携带层数 ⇒ 协议 v13→v14 + 两份副本 + pck 重打，暂缓）。
+- Source / 来源: user | code | test
+- Date / 日期: 2026-11-27
+
+### [Perf] 感电施加减半后剩下的脚本热点：链候选表按帧缓存、传导目标不全排序、武器中断缓存
+- Evidence / 证据: 用户 Profiler 全量截图（60.10ms 帧；Chihiro + **105 只 sweeper** + 大量感电；A+C 已生效）：`Script Functions 18.86ms`、`Process 55.18 - Script 18.86 ≈ 36.3ms` 在脚本外；脚本侧 `apply_buff 2.79/188`、`_take_damage_internal 1.75/47`、`intercept 1.46/219`、`ShockChain._candidate_pool 0.57/7`（81µs/条）、`ShockChain._nearest_shocked 0.72/35`、`Targeting.enemies_sorted_by_distance 1.10/6`（**183µs/次**）、`Enemy._interrupt_weapons 0.95/36`（26µs/次）、`Sweeper.time_count 1.79/61`、`_zigzag/_bowed/_rebuild`（电弧绘制）≈0.7ms。代码：`script/shock_chain.gd`（`_pool_frame`/`_pool_base`/`_filter_pool`/`_build_pool_base`）、`scenes/update_item/weird_wire.gd`（半径内最近 N，插入法）、`script/entity_ENEMY.gd`（`_weapon_nodes`/`_cache_weapon_nodes`，`active_state` 失效重建）。
+- Notes / 说明: ① **感电链的候选表不能每条链重建**：伤害不设上限后同 tick 可能有 7+ 条链，每条都重建 105 敌的候选表（`_entry_of`+字典+过滤）≈81µs；改为按 `Engine.get_process_frames()` 缓存基础池、链之间只做 O(1) 过滤（`chain_frame` / `entry.stop` / `layer<=0` / `is_idle` / `head`），语义不变（候选资格只取决于条目状态，本帧只被 reset/加易伤，不改资格）。② **传导类道具不要对全表排序**：`weird_wire` 死亡时只要半径 200 内最近 1+件数 个目标，却调用 `Targeting.enemies_sorted_by_distance`（105 敌整表排序 183µs/次，6 次/帧=1.1ms）；改成「先按半径收集候选，再每轮取最近的一个尝试施加」O(N·k) 且无排序，**保留原语义**：最近者打满层就顺延到下一个，直到成功 N 个。**不要用 `Targeting.nearest_enemies` 替代**：它在距离并列时会回退到 `enemies_sorted_by_distance`（网格排布的敌人很容易并列），等于没优化。③ **`_interrupt_weapons` 的 `find_children` 全子树遍历要缓存**：眩晕/回池高频调用（26µs/次 × 36 次/帧）；缓存「实现 `stop_firing`/`stop_shoot` 的后代」，`active_state()` 清空重建 + 直接子节点数变化时重建（游戏内这些武器都是场景静态子节点，动态挂载的只有编辑器预览/测试）。④ **Godot Profiler 的「时间」列是选中帧的自身耗时**，各值能直接相加对上 `Script Functions`，可以逐项判断；但面板要拉大才能看到被截断的尾部（本轮 ~6ms 在折叠区）。⑤ **脚本外仍占大头（≈36ms）**：Profile 树只有 Script/Physics/Audio，渲染分类未勾选时看不到；在 105 敌 + 650 Label + 450 Panel 场景里，渲染/画布/头顶 UI 是首要嫌疑，下一轮用逐帧 `Performance` 采样把尖峰帧的 draws/objects 与 `TIME_PROCESS` 对齐再定位。**SUPERSEDED（2026-11-27，同日）**：⑤ 的「渲染/画布/头顶 UI 是首要嫌疑」已被尖峰快照证伪——尖峰帧的 draws/objs/敌人数比平静帧更低（见下一条），优先怀疑一次性开销。
+- Source / 来源: user | code | test
+- Date / 日期: 2026-11-27
+
+### [Perf] 尖峰帧的 draws/objs 反而更低 ⇒ 先怀疑一次性开销，不要先怀疑渲染量
+- Evidence / 证据: `script/DebugPerformanceMonitor.gd`（F3 尖峰快照 `sp` 行 + `user://logs/perf_spikes.log`）；实测（ROUND 12，test_room，132 敌/211 弹）：平静帧 `draws 1878 / objs 6493 / E 132 / res 4096`，而最近三次尖峰 `sp1 40.8ms draws 1369 objs 4667 E 98`、`sp2 33.3ms 1331/4840/130`、`sp3 32.0ms 1508/5183/133` —— **尖峰帧的绘制量与敌人数都比平静帧更低**；同一会话 `res` 持续小涨（4096→4109）。对照 Profiler 帧（60.10ms：Physics 4.9 + Process 55.2，Script 仅 18.86 ⇒ 约 36ms 在脚本外）。
+- Notes / 说明: **判据**：帧时间尖峰但 `draws/objs/enemies` 不升，说明不是「屏幕上的东西太多」，而是**引擎 C++ 侧的一次性开销**（首次着色器编译、字形按需栅格化、资源加载/纹理上传、音频首次播放、GC 等）——这类开销不进 GDScript 计时，也不体现在 draw call 上，所以 Profiler 里表现为「Script 只占一小半，剩下全在 Process」。**排查顺序**：先用 F3 的 `sp` 行比「尖峰帧 vs 平静帧」的 `d/o`；若尖峰帧不更高，直接看快照里的 `res(d=+N)`/`vm`（加载/上传）、`p2d`（物理）、`cas/coin/ftxt`（生成爆发），不要再先削头顶 UI/拖尾。**`eng proc/phys` 不可信**：`Performance.TIME_PROCESS` 实测会给出大于帧时间的读数（16.7ms 帧显示 28.6ms），行尾带 `(!)` 时只能看相对变化；脚本归属仍以 Profiler 帧时间树为准。**工具**：F3 条是 `project.godot` 的 **autoload**（全局唯一，不要再挂进场景，否则第二份实例会把采样与日志翻倍；`_ready` 有单实例保护兜底），`delta>=25ms` 自动抓快照（两行：d/o/E/B/res(d)/vm/p2d + cas/coin/ftxt/pbul/pool/proc/phys）并写 `user://logs/perf_spikes.log`（行首 `f=<帧号> t=<unix 秒>`），不必正好截图到尖峰帧；**敌人头顶 UI 开关放在控制台菜单**（`Panel/VBox/Actions/Debug/HideOverheadUI` → autoload `set_overhead_hidden()`）做 A/B，切换会写分段标记——不再用热键，因为 F2 是 `cheat_menu` 的绑定键（dev_mode 下菜单会 `set_input_as_handled` 吞掉热键，非 dev_mode 又会误触发）。
+- Source / 来源: user | code | test
+- Date / 日期: 2026-11-27
+
+### [Tools] F3 性能条是 autoload：重复挂载会让采样/日志翻倍；`TIME_PROCESS` 是约 1s 滚动平均
+- Evidence / 证据: `project.godot` 的 `[autoload]` 里本来就有 `DebugPerformanceMonitor="*res://ui/debug_performance_monitor.tscn"`（已提交）；我一度又把它挂进 `main.tscn`/`test_room.tscn`，结果 `perf_spikes.log` 里 213 行≈106 帧、**105 组相邻同时间戳对**（两条 `pool` 差 1）。删掉场景挂载 + `_ready` 加 `static _instance_count` 守卫后，探针断言 `autoload 实例存在`、`重复实例已自我销毁` 全部通过（40 项 `failures=0`）。
+- Notes / 说明: ① **先查 autoload**：写/用调试叠层前先看 `project.godot [autoload]`，别重复挂载；叠层统一由 autoload 提供，场景里不要再放。② **static 计数器守卫**也只能兜底（autoload 先 `_ready`，后挂的实例 `queue_free`）。③ **`Performance.TIME_PROCESS` 不是瞬时值**：实测战斗帧 `dt=32.5ms` 时它报 33.9/37.4ms（104~115%），平静帧 `dt=16.7ms` 时报 28.6ms ⇒ 它是约 1 秒的滚动平均（和 `TIME_FPS` 一样每秒才更新），所以只能看趋势、不能当瞬时耗时用。④ 日志统计要注意 1 秒粒度的时间戳会把同一秒的多次快照合并，按「行首 `f=<帧号>`」去重才准。
+- Source / 来源: code | test
+- Date / 日期: 2026-11-27
+
+### [Perf] 敌人头顶 BuffCard 是 100+ 敌人时的隐性大头：60Hz 刷新 + 动画帧触发布局 + 离屏照画
+- Evidence / 证据: 用户 A/B（控制台 `HideOverheadUI`）：关闭头顶 UI 后体感明显变顺；`perf_spikes.log` 两段对照（开 UI 120 尖峰/219s，平均 dt 37.2ms、最大 150ms；关闭 34 尖峰/62s，平均 dt 31.4ms、最大 78.2ms，敌人数 170 vs 133 有混杂）。代码：`ui/BuffCard.gd`（原 `_physics_process` 每物理帧刷图标/层数）、`script/entity_ENEMY.gd`（`sprite_2d.frame_changed` 直连 `_queue_overhead_layout` → deferred `get_combined_minimum_size()`）、`scenes/manager/buff_manager_base.gd:_sync_card_layer`。**验收（2026-11-27，优化后、UI 正常显示）**：同场景一回合 133s 内只记录 **8 个尖峰帧（0.06/s）**，其中 5 个在加载/开局（`res` 增量 1567/664、`E=0~4`），**战斗阶段仅 3 个**（dt 65.7 / 33.3 / 49.9ms，E=105 / 119 / 39），对比优化前战斗 0.55/s、最大 150ms ⇒ 战斗尖峰频率约降到 1/10。
+- Notes / 说明: ① **卡片不要用 `_physics_process`**：160 敌 × 1~3 卡 × 60Hz 是纯 canvas 开销；改为 `GameEvents.global_time_count`（10Hz）驱动 `set_value()`，且图标进度 1/128 内、文字相等时都不写。② **动画帧不能直接触发 deferred 布局**：`frame_changed` 每帧发，`get_combined_minimum_size()` 是递归的；改为置脏 `_overhead_dirty`，10Hz 在 `_process` 节流里统一 flush。③ **离屏不画也不排**：10Hz 用主相机中心 + `viewport.size/2/zoom × 1.5` 判在屏内，屏外 `overhead_margin.visible = false` 并跳过布局。④ **全局开关与裁剪要分层**：`Enemy.overhead_ui_globally_hidden`（static，性能条 API 写）+ 每敌 `_overhead_on_screen`，最终 `visible = 两者与`；否则控制台开关和裁剪会互相覆盖 `visible`。⑤ **`_process` 而不是 `time_count`**：`sandbag` 等敌人重写了 `time_count` 且不调 `super`，挂在 `time_count` 上的维护逻辑会漏。⑥ **懒初始化**：`_setup_overhead_display()` 只在 `Enemy._ready` 里调用，而 `sandbag._ready` 没调 `super._ready()` ⇒ `overhead_margin` 永远是 null；在裁剪/可见性/布局函数入口加 `_ensure_overhead_setup()` 兜底（`_setup_overhead_display` 自身幂等）。
+- Source / 来源: user | code | test
+- Date / 日期: 2026-11-27
+
+### [Godot] `SceneTree.create_timer` 默认 `process_always = true`：暂停时倒计时照走（Boss 乱入在暂停页也计时）
+- Evidence / 证据: `scenes/manager/enemy_manager.gd:276`（修前 `await get_tree().create_timer(delay, true, false, true).timeout`）；签名 `create_timer(time_sec, process_always = true, process_in_physics = false, ignore_time_scale = false)`；暂停页 `ui/pause_screen.gd:48` 设 `get_tree().paused = visible`；`resources/level/level.gd:28-29` 乱入延迟 10~25s。探针 `tests/_boss_intrusion_pause_probe.tscn`（本地）：暂停期间默认 timer 会触发、`create_timer(0.2,false,false,false)` 不触发，恢复后继续触发。
+- Notes / 说明: **现象**（user）：TM 在暂停页停留十几秒，听到突袭入场音效；恢复后 Boss 已经入场，而回合才刚开始不到 5 秒。**根因**：乱入延迟用 `create_timer(delay, true, …)`，`process_always=true` ⇒ 暂停期间照走；`ignore_time_scale=true` 还让它无视 `Engine.time_scale`。取消逻辑（`_intrusion_generation`）与回合校验（`PlayerData.now_round`）都在，纯粹是计时器没暂停感知。**修法**：`create_timer(delay, false, false, false)`（暂停冻结、恢复继续、跟随 time_scale；暂停期间 `GameEvents._apply_time_scale()` 本就把 time_scale 压回 1，所以暂停行为不受影响）。**通用教训**：Godot 4 的 `create_timer` 第二个参数默认就是 `true`，**所有玩法倒计时/延迟必须显式写 `false`**；`true` 只留给「暂停也要走」的演出/看门狗。同类审计（本轮未改，属故意常走）：`script/boss_cinematic.gd`、`script/boss_round_controller.gd`、`script/boss_enemy.gd:191`、`goliath.gd`/`erosion_tower_group.gd` 的撤退演出、`scenes/manager/round_manager.gd`。
+- Source / 来源: user | code | test
+- Date / 日期: 2026-11-27
+
+### [Perf] 别按「调用次数」猜成本：激光每帧 10 次物理查询只 0.043ms/帧，弹幕倒序遍历 0.17µs/次
+- Evidence / 证据: 本地探针 `tests/_hotpath_probe.tscn`（不入库，2026-11-27）：**A. 追踪激光** `player_laser_beam._overlapping_areas()` 用真实 beam 场景（10 段）+ 20 个敌人，120 次调用（=1200 次 `intersect_shape`）总耗时 5125µs ⇒ **42.7µs/次调用、60fps 下约 0.043ms/帧**；把敌人挪远（空射、查询照做）41.3µs/次，差别可忽略。**B. 弹幕** `danmaku_emitter._prune_live()` 塞 120 个在飞节点跑 100 次共 **17µs** ⇒ 0.17µs/次。**C. 壁垒** 现有 `tests/barricade_frame_probe.tscn`（24 敌 / 4 目标）：基线 16.67ms，**建墙帧 22.8ms（+6.2ms）**、墙存续期 4 次导航重建帧最大 **21.5ms（+4.9ms）**、其余正常帧 16.64ms（最大 16.9ms）。
+- Notes / 说明: GPT 型清单按「每帧 N 次查询 / 每发一次 O(n) 遍历」判断热点，但**单次成本才是决定因素**：Rapier 的 `intersect_shape` 在 10 段小矩形上约 4.3µs，`_prune_live` 遍历 120 个节点约 0.17µs。结论：**第 2 条（激光命中检测）与第 3 条（弹幕在飞统计）实测都 <0.05ms/帧，不值得改**；原先想的「复用 params + AABB 预筛」「只在接近预算时 prune」都属于收益~0 的改动，不做。**第 1 条（壁垒）是唯一有量级的**（建墙 +6.2ms、拓扑重建 +4.9ms），但都是**每回合一次**、发生在回合开始（无战斗、有演出），玩家基本感知不到；除非以后确实看到开回合卡顿，否则不优化。**第 4 条（感电链候选表）本会话已修**（帧级缓存），剩余 `_nearest_shocked` 线性扫描整条链仅 0.09ms/75 次调用。**通用教训**：优化前先量「单次成本 × 频率」，别被调用次数吓到；量完不达标就明确记录「不做」及理由，避免下一轮重复研究。
+- Source / 来源: code | test
 - Date / 日期: 2026-11-27

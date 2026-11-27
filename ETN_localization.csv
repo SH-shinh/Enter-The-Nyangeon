@@ -203,3 +203,8 @@ option_casing_cap,弹壳上限,Casing Limit,Limite de Cápsulas,Giới hạn v�
 option_screen_filters,屏幕滤镜,Screen Filters,Filtros de Tela,Bộ Lọc Màn Hình,画面フィルター,화면 필터,Фильтры экрана
 option_screen_filters_mobile_notice,部分机型可能黑屏或闪退，异常时请关闭此选项,Some devices may black-screen or crash; turn this off if needed,Alguns aparelhos podem ficar com tela preta ou travar; desative se necessário,Một số máy có thể đen màn hình hoặc crash; hãy tắt nếu cần,一部端末で暗転・強制終了する場合があります。異常時はオフにしてください,일부 기기에서 검은 화면이나 강제 종료가 발생할 수 있으니 이상 시 꺼 주세요,На части устройств возможен чёрный экран или вылет; при проблемах отключите
 button_next,继续,Next,Próx.,Tiếp,次へ,다음,Далее
+mod_drop_hint,也可把 zip 拖进这里,Or drop a .zip here,Ou arraste um .zip aqui,Hoặc kéo thả tệp .zip vào đây,ここに .zip をドロップして導入,여기에 .zip을 끌어다 놓아도 됩니다,Или перетащите .zip сюда
+mod_drop_no_zip,未检测到 zip 文件,No .zip file found,Nenhum arquivo .zip encontrado,Không tìm thấy tệp .zip,.zip ファイルが見つかりません,.zip 파일을 찾을 수 없습니다,Файлы .zip не найдены
+mod_drop_importing,正在导入 %d 个 zip…,Importing %d .zip file(s)…,Importando %d arquivo(s) .zip…,Đang nhập %d tệp .zip…,%d 個の .zip を導入中…,.zip 파일 %d개 불러오는 중…,Импорт %d файл(ов) .zip…
+mod_drop_ok,已导入 %d 个 Mod，重启游戏后生效,Imported %d mod(s); effective after restart,%d mod(s) importado(s); efeito após reiniciar o jogo,Đã nhập %d Mod; có hiệu lực sau khi khởi động lại,%d 個の Mod を導入しました。再起動後に反映されます,Mod %d개 불러오기 완료. 재시작 후 적용됩니다,Импортировано модов: %d; применится после перезапуска
+mod_drop_fail,导入失败：%s,Import failed: %s,Falha na importação: %s,Nhập thất bại: %s,導入失敗：%s,불러오기 실패: %s,Ошибка импорта: %s

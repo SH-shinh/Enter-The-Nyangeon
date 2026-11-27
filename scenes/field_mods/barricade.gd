@@ -114,8 +114,14 @@ func _parse_map_templates() -> void:
 	if all_cells.is_empty():
 		return
 	var all_set := _cell_set(all_cells)
-	for path in _template_files():
-		var packed = load(path)
+	var paths := _template_files()
+	var requested := {}
+	for path in paths:
+		if ResourceLoader.load_threaded_request(path, "PackedScene") == OK:
+			requested[path] = true
+	# 按文件顺序取回资源，保持固定种子的模板抽选顺序。
+	for path in paths:
+		var packed := ResourceLoader.load_threaded_get(path) if requested.has(path) else load(path)
 		if not (packed is PackedScene):
 			push_warning("BarricadeEffect: template is not a PackedScene: %s" % path)
 			continue
