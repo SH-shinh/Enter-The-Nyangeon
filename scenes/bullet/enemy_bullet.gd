@@ -6,6 +6,7 @@ extends HitBox
 
 signal penetrate_changed
 signal bullet_idle(bullet: Node)
+signal pool_idle_changed(body: Node, idle: bool)
 
 var direction: Vector2 = Vector2.RIGHT
 var speed: int = 100
@@ -23,7 +24,11 @@ var velocity: Vector2
 
 var ACCELERATION: float
 
-var is_idle: int = 1
+var is_idle: int = 1:
+	set(value):
+		if is_idle != value:
+			is_idle = value
+			pool_idle_changed.emit(self, value == 1)
 var is_ready: bool = false
 
 # 生命周期代数：每次成功 active_state 自增。带代数校验的延迟回池调用

@@ -2,6 +2,7 @@ class_name PlayerBullet
 extends HitBox
 
 signal in_idle(bullet_body: Node)
+signal pool_idle_changed(body: Node, idle: bool)
 
 ## 仅破隐子弹使用：击杀时返还本次消耗的穿透值。
 const REFUND_PENETRATE_META := &"refund_penetrate_on_kill"
@@ -40,7 +41,11 @@ var flight_time: float = 0.0
 @export var slow_down: bool = false
 @export var slow_time: float = 0
 
-var is_idle: int = 1
+var is_idle: int = 1:
+	set(value):
+		if is_idle != value:
+			is_idle = value
+			pool_idle_changed.emit(self, value == 1)
 
 var _shape_gen: int = 0
 
