@@ -171,7 +171,7 @@ theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = -1
 theme_override_constants/shadow_outline_size = 7
 text = "NEKOZUKA HIBIKI"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_i1q3j")
 base_size_y = 18.0
 
@@ -190,7 +190,7 @@ theme_override_constants/outline_size = 1
 theme_override_constants/shadow_outline_size = 6
 theme_override_font_sizes/font_size = 9
 text = "FANCY LIGHT"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_i1q3j")
 base_size_y = 18.0
 
@@ -210,7 +210,7 @@ theme_override_constants/shadow_outline_size = 4
 theme_override_fonts/font = ExtResource("10_10x48")
 theme_override_font_sizes/font_size = 12
 text = "不移动时可获得额外射程和100%子弹伤害，击中地图上的标记点可引发额外3次爆炸。（弹匣上限固定为1）"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_i1q3j")
 base_size_y = 61.0
 

@@ -171,7 +171,7 @@ theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = -1
 theme_override_constants/shadow_outline_size = 7
 text = "SHIRAISHI UTAHA"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_bxmxl")
 base_size_y = 18.0
 
@@ -190,7 +190,7 @@ theme_override_constants/outline_size = 1
 theme_override_constants/shadow_outline_size = 6
 theme_override_font_sizes/font_size = 9
 text = "MEISTER ZERO"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_bxmxl")
 base_size_y = 18.0
 
@@ -210,7 +210,7 @@ theme_override_constants/shadow_outline_size = 4
 theme_override_fonts/font = ExtResource("10_rsaxh")
 theme_override_font_sizes/font_size = 12
 text = "初始召唤一台雷酱MK-III，近战使用扳手敲击，敲击召唤物可升级其4点基础攻击力。"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_bxmxl")
 base_size_y = 61.0
 

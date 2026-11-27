@@ -171,7 +171,7 @@ theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = -1
 theme_override_constants/shadow_outline_size = 7
 text = "SHIMOKURA MEGU"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_xafd0")
 base_size_y = 18.0
 
@@ -190,7 +190,7 @@ theme_override_constants/outline_size = 1
 theme_override_constants/shadow_outline_size = 6
 theme_override_font_sizes/font_size = 9
 text = "MOLTEN MEG-MA!"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_xafd0")
 base_size_y = 18.0
 
@@ -210,7 +210,7 @@ theme_override_constants/shadow_outline_size = 4
 theme_override_fonts/font = ExtResource("10_1re4e")
 theme_override_font_sizes/font_size = 12
 text = "按扇形射击，子弹可受异常伤害加成并造成火焰伤害，命中时点燃敌人。"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_xafd0")
 base_size_y = 61.0
 

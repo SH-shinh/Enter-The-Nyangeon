@@ -113,7 +113,7 @@ layout_mode = 2
 theme = ExtResource("2_ravkr")
 theme_override_font_sizes/font_size = 18
 text = "道具效果介绍，测试测试测试测试测试测试测试测试测试测试测试。"
-autowrap_mode = 1
+autowrap_mode = 3
 
 [node name="Refresh" type="Button" parent="Shop"]
 layout_mode = 1

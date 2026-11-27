@@ -171,7 +171,7 @@ theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = -1
 theme_override_constants/shadow_outline_size = 7
 text = "	TOYOMI KOTORI"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_qat35")
 base_size_y = 18.0
 
@@ -190,7 +190,7 @@ theme_override_constants/outline_size = 1
 theme_override_constants/shadow_outline_size = 6
 theme_override_font_sizes/font_size = 9
 text = "PROFESSOR K"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_qat35")
 base_size_y = 18.0
 
@@ -210,7 +210,7 @@ theme_override_constants/shadow_outline_size = 4
 theme_override_fonts/font = ExtResource("10_ri0eg")
 theme_override_font_sizes/font_size = 12
 text = "射击前需要预热，子弹造成最大生命值5%的额外伤害，每发射15颗子弹可获得1点临时生命值。"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_qat35")
 base_size_y = 61.0
 

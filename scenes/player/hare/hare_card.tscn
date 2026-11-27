@@ -175,7 +175,7 @@ theme_override_constants/shadow_offset_y = -1
 theme_override_constants/shadow_outline_size = 7
 theme_override_font_sizes/font_size = 11
 text = "OMAGARI HARE"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_pfltr")
 base_size_y = 18.0
 
@@ -194,7 +194,7 @@ theme_override_constants/outline_size = 1
 theme_override_constants/shadow_outline_size = 6
 theme_override_font_sizes/font_size = 9
 text = "AUTO AIMER"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_pfltr")
 base_size_y = 18.0
 
@@ -214,7 +214,7 @@ theme_override_constants/shadow_outline_size = 4
 theme_override_fonts/font = ExtResource("10_ycaxs")
 theme_override_font_sizes/font_size = 12
 text = "被动技能待设计。"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_pfltr")
 base_size_y = 61.0
 

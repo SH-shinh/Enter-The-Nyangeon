@@ -166,7 +166,7 @@ mouse_filter = 2
 color = Color(0.258824, 0.258824, 0.258824, 0.639216)
 
 [node name="Label" type="Label" parent="ColorRect/Node2D/Node2D/ColorRect"]
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_7tbt6")
 base_size_y = 18.0
 layout_mode = 0
@@ -181,7 +181,7 @@ theme_override_constants/shadow_outline_size = 7
 text = "KUROMI SERIKA"
 
 [node name="Label2" type="Label" parent="ColorRect/Node2D/Node2D/ColorRect"]
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_7tbt6")
 base_size_y = 18.0
 layout_mode = 0
@@ -215,7 +215,7 @@ theme_override_constants/shadow_outline_size = 4
 theme_override_fonts/font = ExtResource("10_pt7d0")
 theme_override_font_sizes/font_size = 12
 text = "可负债花费，负债状态降低全部属性（-10%/-20%/-40%/-60%/-99%），回合开始时不负债则解除。"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_7tbt6")
 base_size_y = 61.0
 

@@ -172,7 +172,7 @@ theme_override_constants/shadow_offset_y = -1
 theme_override_constants/shadow_outline_size = 4
 theme_override_font_sizes/font_size = 14
 text = "IZAYOI NONOMI"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_7oj7b")
 base_size_y = 18.0
 
@@ -191,7 +191,7 @@ theme_override_constants/outline_size = 1
 theme_override_constants/shadow_outline_size = 6
 theme_override_font_sizes/font_size = 9
 text = "MINI NO.5"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_7oj7b")
 base_size_y = 18.0
 
@@ -211,7 +211,7 @@ theme_override_constants/shadow_outline_size = 4
 theme_override_fonts/font = ExtResource("10_6smlc")
 theme_override_font_sizes/font_size = 12
 text = "子弹命中有概率获得1硬币，弹匣为0时仍可消耗1%硬币进行射击，子弹基础伤害只受硬币影响（50%）。"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_7oj7b")
 base_size_y = 61.0
 

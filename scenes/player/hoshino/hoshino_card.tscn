@@ -172,7 +172,7 @@ theme_override_constants/shadow_offset_y = -1
 theme_override_constants/shadow_outline_size = 4
 theme_override_font_sizes/font_size = 14
 text = "TAKANASHI HOSHINO"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_drw64")
 base_size_y = 18.0
 
@@ -191,7 +191,7 @@ theme_override_constants/outline_size = 1
 theme_override_constants/shadow_outline_size = 6
 theme_override_font_sizes/font_size = 9
 text = "EYE OF HORUS"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_drw64")
 base_size_y = 18.0
 
@@ -211,7 +211,7 @@ theme_override_constants/shadow_outline_size = 4
 theme_override_fonts/font = ExtResource("10_7ucgx")
 theme_override_font_sizes/font_size = 12
 text = "远程击杀获得近战充能强化下一次近战攻击，近战击杀获得远程充能强化下一次射击。"
-autowrap_mode = 1
+autowrap_mode = 3
 script = ExtResource("11_drw64")
 base_size_y = 61.0
 

@@ -1,3 +1,4 @@
+class_name AutoText
 extends Label
 
 @export var base_font_size: int = 0
@@ -30,6 +31,10 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_TRANSLATION_CHANGED:
 		_schedule_fit()
 
+# queue a deferred refit after changing text
+func refit() -> void:
+	_schedule_fit()
+
 func _schedule_fit() -> void:
 	if _setting_autowrap:
 		return
@@ -52,6 +57,9 @@ func _do_fit() -> void:
 		return
 	if base_size_y <= 0 and box == null and _initial_size_y <= 0:
 		_initial_size_y = size.y
+	var locale_font := get_node_or_null("/root/LocaleFont")
+	if locale_font != null and locale_font.has_method("apply_control"):
+		locale_font.apply_control(self)
 	var font := get_theme_font("font")
 	if font == null:
 		return
@@ -94,11 +102,16 @@ func _fits(font: Font, displayed: String, budget: Vector2, font_size: int, autow
 	if not autowrap:
 		var single := font.get_string_size(displayed, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
 		return single.x <= budget.x and single.y <= budget.y
-	var wrapped := font.get_multiline_string_size(displayed, HORIZONTAL_ALIGNMENT_LEFT, budget.x, font_size, -1, TextServer.BREAK_GRAPHEME_BOUND)
+	var brk := TextServer.BREAK_MANDATORY | TextServer.BREAK_GRAPHEME_BOUND
+	if autowrap_mode == TextServer.AUTOWRAP_WORD or autowrap_mode == TextServer.AUTOWRAP_WORD_SMART:
+		brk = TextServer.BREAK_MANDATORY | TextServer.BREAK_WORD_BOUND
+		if wrap_fallback_below <= 0:
+			brk |= TextServer.BREAK_GRAPHEME_BOUND
+	var wrapped := font.get_multiline_string_size(displayed, HORIZONTAL_ALIGNMENT_LEFT, budget.x, font_size, -1, brk)
 	var line_height := font.get_height(font_size)
 	var lines := maxi(1, roundi(wrapped.y / line_height))
 	var content_height := wrapped.y + line_spacing * (lines - 1)
-	return content_height <= budget.y
+	return wrapped.x <= budget.x and content_height <= budget.y
 
 func _apply_font_size(font_size: int) -> void:
 	if font_size == _applied_size:
