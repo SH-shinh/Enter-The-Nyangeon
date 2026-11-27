@@ -81,6 +81,15 @@ func _audience_ok(buff: Buff) -> bool:
 		return true
 	return buff.audience == Faction.of_entity(body)
 
+## 重施冷却是否仍在：与 apply_buff 内的判定同源（只读 _reapply_last，不消费也不记账）。
+## 供「联动 handler」（如震撼弹监听 enemy_shock_applied）在走 BuffRouter 前提前短路：
+## 被冷却拒绝的施加本来就不改任何状态，跳过等价，但能省掉每次的路由 + hook + manager 解析。
+func is_reapply_blocked(buff: Buff) -> bool:
+	if buff == null or buff.reapply_cooldown <= 0.0:
+		return false
+	var last_ms := int(_reapply_last.get(buff.id, 0))
+	return last_ms > 0 and Time.get_ticks_msec() - last_ms < int(buff.reapply_cooldown * 1000.0)
+
 func apply_buff(buff: Buff, value: Array, source_id: String = "", applier_stats: Dictionary = {}, applier_peer: int = 0):
 	if ExtensionHooks.intercept_named("enemy_buff_apply_gate", [self, buff, value, source_id]):
 		return
@@ -93,8 +102,7 @@ func apply_buff(buff: Buff, value: Array, source_id: String = "", applier_stats:
 	# 重施冷却：短控/短增益被高频来源重复施加时只忽略本次（不刷新时长、不叠层）。
 	# 记在 manager 上而非 entry 里，buff 过期移除后冷却仍然有效；放行即占冷却（含满层/无效施加）。
 	if buff.reapply_cooldown > 0.0:
-		var last_ms := int(_reapply_last.get(buff.id, 0))
-		if last_ms > 0 and Time.get_ticks_msec() - last_ms < int(buff.reapply_cooldown * 1000.0):
+		if is_reapply_blocked(buff):
 			return
 		_reapply_last[buff.id] = Time.get_ticks_msec()
 	var entry: Dictionary
@@ -521,10 +529,15 @@ func _sync_card_layer(entry: Dictionary):
 	if entry["buff_card"] == null:
 		return
 	# source_refcount：卡片显示"当前来源数"（仅展示；效果仍只算 1 层）
+	var new_layer: int
 	if entry["resource"] != null and entry["resource"].source_refcount:
-		entry["buff_card"].layer = max(1, entry["sources"].size())
+		new_layer = max(1, entry["sources"].size())
 	else:
-		entry["buff_card"].layer = entry["layer"]
+		new_layer = int(entry["layer"])
+	# 层数没变就不写：卡片 Icon/Label 的写入是 canvas 侧开销。
+	if int(entry["buff_card"].layer) == new_layer:
+		return
+	entry["buff_card"].layer = new_layer
 
 func _clear_card(entry: Dictionary):
 	if entry["buff_card"] != null:

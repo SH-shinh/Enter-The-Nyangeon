@@ -31,3 +31,18 @@ static func ensure(from: Node, cached: Variant) -> Node:
 	if is_instance_valid(cached) and cached is Node and cached.is_inside_tree():
 		return cached as Node
 	return resolve(from)
+
+
+## 按 process 帧缓存的解析：同一帧内的批量热点（如 buff 施加/结算里每帧上千次
+## `_ensure_player`）只查一次组；null 也缓存（同一帧内不会换人）。
+## 跨帧令牌用 `Engine.get_process_frames()`，换角色/重载玩家最迟下一帧生效。
+static var _frame_token: int = -1
+static var _frame_player: Node = null
+
+static func resolve_cached(from: Node) -> Node:
+	var frame := Engine.get_process_frames()
+	if frame == _frame_token:
+		return _frame_player
+	_frame_token = frame
+	_frame_player = resolve(from)
+	return _frame_player

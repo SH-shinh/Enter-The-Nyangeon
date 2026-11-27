@@ -53,8 +53,9 @@ func get_player():
 	player = PlayerRef.resolve(self)
 
 # 玩家会在换角色时被销毁重建；buff 管理器长期存活，取用前统一重新解析（见 PlayerRef）。
+# 走帧级缓存：apply/冷却/结算里每帧数百次取用，只查一次组（换角色最迟下一帧生效）。
 func _ensure_player() -> Node:
-	player = PlayerRef.ensure(self, player)
+	player = PlayerRef.resolve_cached(self)
 	return player
 
 func _can_apply() -> bool:
