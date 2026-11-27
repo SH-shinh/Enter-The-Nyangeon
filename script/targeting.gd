@@ -51,8 +51,36 @@ static func nearest_enemy(from: Vector2) -> Node:
 	return best
 
 static func enemies_sorted_by_distance(from: Vector2) -> Array:
-	var arr := candidates().duplicate()
-	arr.sort_custom(func(a, b):
-		return from.distance_squared_to(a.global_position) < from.distance_squared_to(b.global_position)
-	)
+	var arr: Array = []
+	var distances := {}
+	for enemy in candidates():
+		if is_instance_valid(enemy):
+			arr.append(enemy)
+			distances[enemy] = from.distance_squared_to(enemy.global_position)
+	arr.sort_custom(func(a, b): return distances[a] < distances[b])
 	return arr
+
+# 光束每个物理帧只需要最近的几个目标；缓存列表仍可供同帧其他武器共用。
+static func nearest_enemies(from: Vector2, limit: int) -> Array:
+	if limit <= 0:
+		return []
+	var nearest: Array = []
+	var distances := PackedFloat64Array()
+	for enemy in candidates():
+		if not is_instance_valid(enemy):
+			continue
+		var d := from.distance_squared_to(enemy.global_position)
+		if not is_finite(d):
+			return enemies_sorted_by_distance(from).slice(0, limit)
+		if nearest.size() == limit and d > distances[-1]:
+			continue
+		var i := distances.bsearch(d)
+		# 并列可能影响光束的连线顺序或末位取舍，沿用原排序对同距目标的处理。
+		if i < distances.size() and distances[i] == d:
+			return enemies_sorted_by_distance(from).slice(0, limit)
+		distances.insert(i, d)
+		nearest.insert(i, enemy)
+		if nearest.size() > limit:
+			distances.resize(limit)
+			nearest.pop_back()
+	return nearest
