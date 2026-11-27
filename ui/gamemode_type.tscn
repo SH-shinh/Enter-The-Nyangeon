@@ -4,6 +4,7 @@
 [ext_resource type="FontFile" uid="uid://bc6g3b4t4cmu" path="res://fonts/BoutiqueBitmap7x7_1.7.ttf" id="1_t6rmu"]
 [ext_resource type="Resource" uid="uid://cwvyflq4fpd83" path="res://resources/game_mode/blitzkrieg_mode.tres" id="2_c45oc"]
 [ext_resource type="Texture2D" uid="uid://c1rawvvpiqgix" path="res://sprites/item/mission_data_1.png" id="2_ffacl"]
+[ext_resource type="Script" uid="uid://dkwqr377cp5yf" path="res://script/auto_text.gd" id="5_auto_text"]
 
 [sub_resource type="Gradient" id="Gradient_6wln4"]
 offsets = PackedFloat32Array(0)
@@ -14,7 +15,7 @@ gradient = SubResource("Gradient_6wln4")
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_e6ddu"]
 content_margin_left = 3.0
-content_margin_top = 5.0
+content_margin_top = 3.0
 content_margin_right = 3.0
 content_margin_bottom = 3.0
 texture = SubResource("GradientTexture2D_ol5lq")
@@ -147,21 +148,31 @@ gamemode_card = ExtResource("2_c45oc")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=683293050]
 layout_mode = 2
-theme_override_constants/separation = 0
+theme_override_constants/separation = -2
 alignment = 1
 
 [node name="Label" type="Label" parent="VBoxContainer" unique_id=1769071842]
+custom_minimum_size = Vector2(39, 16)
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0.0646965, 0.0646965, 0.0646965, 1)
 theme_override_colors/font_outline_color = Color(0.0627451, 0.0627451, 0.0627451, 1)
+theme_override_constants/line_spacing = -2
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
-theme_override_constants/outline_size = 5
-theme_override_constants/shadow_outline_size = 4
+theme_override_constants/outline_size = 2
+theme_override_constants/shadow_outline_size = 2
 theme_override_fonts/font = ExtResource("1_t6rmu")
 theme_override_font_sizes/font_size = 9
 text = "Blitzkrieg"
 horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+script = ExtResource("5_auto_text")
+base_font_size = 9
+base_size_y = 16.0
+base_size_x = 39.0
+min_font_size = 5
+wrap_fallback_below = 7
 
 [node name="TextureRect" type="TextureRect" parent="VBoxContainer" unique_id=2136208431]
 custom_minimum_size = Vector2(0, 32)

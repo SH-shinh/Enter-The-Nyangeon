@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://bm7r76l27jxaq" path="res://ui/O_icon.png" id="10_6h58s"]
 [ext_resource type="Texture2D" uid="uid://b3fq1xmv7q1yy" path="res://ui/X_icon.png" id="11_240lq"]
 [ext_resource type="Texture2D" uid="uid://d2ou735dcakbc" path="res://ui/sold_out_icon.png" id="12_vx0f3"]
+[ext_resource type="Script" uid="uid://dkwqr377cp5yf" path="res://script/auto_text.gd" id="99_autotx"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_byliw"]
 
@@ -841,9 +842,9 @@ texture = SubResource("GradientTexture2D_ehcjl")
 
 [node name="Label" type="Label" parent="Node2D3/Panel/TextureRect" unique_id=1507986052]
 layout_mode = 0
-offset_left = 8.97901
+offset_left = 4.0
 offset_top = 182.953
-offset_right = 78.979
+offset_right = 97.0
 offset_bottom = 200.953
 theme_override_colors/font_color = Color(0.14902, 0.14902, 0.14902, 1)
 theme_override_colors/font_shadow_color = Color(0.713726, 0.713726, 0.713726, 1)
@@ -855,6 +856,13 @@ theme_override_constants/shadow_outline_size = 4
 theme_override_fonts/font = ExtResource("9_nnu23")
 theme_override_font_sizes/font_size = 15
 text = "shop_purchase"
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("99_autotx")
+base_font_size = 15
+base_size_x = 93.0
+base_size_y = 18.0
+min_font_size = 7
 
 [node name="Yes" type="PanelContainer" parent="Node2D3/Panel/TextureRect" unique_id=136688965]
 unique_name_in_owner = true
